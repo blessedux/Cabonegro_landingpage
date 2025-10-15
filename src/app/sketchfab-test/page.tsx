@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function SketchfabTestPage() {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -24,7 +24,7 @@ export default function SketchfabTestPage() {
     ui_annotations: 0 // Hide annotation controls
   });
 
-  const updateEmbedUrl = () => {
+  const updateEmbedUrl = useCallback(() => {
     const baseUrl = 'https://sketchfab.com/models/8b9d8c7bd5f94181bd034c5a6bc1c77a/embed';
     const params = new URLSearchParams();
     
@@ -35,9 +35,9 @@ export default function SketchfabTestPage() {
     });
     
     return `${baseUrl}?${params.toString()}`;
-  };
+  }, [controls]);
 
-  const handleControlChange = (key: string, value: any) => {
+  const handleControlChange = (key: string, value: boolean | number) => {
     setControls(prev => ({
       ...prev,
       [key]: value
@@ -50,7 +50,7 @@ export default function SketchfabTestPage() {
       console.log('🔄 Updating iframe with URL:', embedUrl);
       iframeRef.current.src = embedUrl;
     }
-  }, [controls]);
+  }, [controls, updateEmbedUrl]);
 
   // Log state changes
   useEffect(() => {
@@ -192,7 +192,7 @@ export default function SketchfabTestPage() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  const navigateToAnnotation = (annotationIndex: number) => {
+  const navigateToAnnotation = useCallback((annotationIndex: number) => {
     console.log(`🎯 Navigating to annotation ${annotationIndex + 1} of ${totalAnnotations}`);
     
     if (iframeRef.current?.contentWindow) {
@@ -214,7 +214,7 @@ export default function SketchfabTestPage() {
         annotation: annotationIndex
       }, 'https://sketchfab.com');
     }
-  };
+  }, [totalAnnotations]);
 
   return (
     <div className="w-full h-screen overflow-hidden">
@@ -308,7 +308,7 @@ export default function SketchfabTestPage() {
                     setupListeners();
                   `;
                   
-                  (iframeRef.current.contentWindow as any).eval(script);
+                  (iframeRef.current.contentWindow as Window & { eval: (script: string) => void }).eval(script);
                 } catch (error) {
                   console.log('❌ Could not inject script:', error);
                 }

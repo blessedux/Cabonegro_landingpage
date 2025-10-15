@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three-stdlib';
 import L from 'leaflet';
@@ -33,16 +33,8 @@ export default function InteractiveMap({
   const LAT = -52.847785;
   const LNG = -70.192089;
 
+  // Add ESC key listener
   useEffect(() => {
-    // Initialize Leaflet map first, then Three.js after a short delay
-    initLeafletMap();
-    
-    // Wait for map to fully load before adding Three.js overlay
-    setTimeout(() => {
-      initThreeJS();
-    }, 500);
-
-    // Add ESC key listener
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isExploreMode && onExploreModeChange) {
         onExploreModeChange(false);
@@ -52,7 +44,6 @@ export default function InteractiveMap({
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      cleanup();
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [isExploreMode, onExploreModeChange]);
@@ -79,7 +70,7 @@ export default function InteractiveMap({
     }
   };
 
-  const initLeafletMap = () => {
+  const initLeafletMap = useCallback(() => {
     if (!mapRef.current) return;
 
     // Create Leaflet map
@@ -119,9 +110,9 @@ export default function InteractiveMap({
     `);
 
     mapInstanceRef.current = map;
-  };
+  }, [LAT, LNG]);
 
-  const initThreeJS = () => {
+  const initThreeJS = useCallback(() => {
     if (!mapRef.current) return;
 
     // Create Three.js scene
@@ -224,9 +215,9 @@ export default function InteractiveMap({
     };
 
     window.addEventListener('resize', handleResize);
-  };
+  }, [isExploreMode]);
 
-  const create3DTerrain = () => {
+  const create3DTerrain = useCallback(() => {
     if (!sceneRef.current) return;
 
     // Create realistic terrain based on Punta Arenas area
@@ -234,7 +225,7 @@ export default function InteractiveMap({
     createCaboNegroIndustrialPark();
     createCoastalFeatures();
     createRoadsAndInfrastructure();
-  };
+  }, []);
 
   const createRealisticTerrain = () => {
     if (!sceneRef.current) return;
@@ -495,7 +486,7 @@ export default function InteractiveMap({
     sceneRef.current.add(secondaryRoad2);
   };
 
-  const initVisualMeshSystem = () => {
+  const initVisualMeshSystem = useCallback(() => {
     if (!sceneRef.current) return;
 
     // Create a visual mesh system for location visualization
@@ -505,7 +496,7 @@ export default function InteractiveMap({
     if (mapInstanceRef.current) {
       mapInstanceRef.current.on('click', handleMapClick);
     }
-  };
+  }, []);
 
   const createLocationVisualization = () => {
     if (!sceneRef.current) return;
@@ -614,6 +605,21 @@ export default function InteractiveMap({
       }
     });
   };
+
+  // Initialize map and 3D scene
+  useEffect(() => {
+    // Initialize Leaflet map first, then Three.js after a short delay
+    initLeafletMap();
+    
+    // Wait for map to fully load before adding Three.js overlay
+    setTimeout(() => {
+      initThreeJS();
+    }, 500);
+
+    return () => {
+      cleanup();
+    };
+  }, [initLeafletMap, initThreeJS]);
 
   return (
     <div className={`relative ${className}`} style={{ zIndex: -1 }}>
