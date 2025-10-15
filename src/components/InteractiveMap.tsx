@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three-stdlib';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 interface InteractiveMapProps {
   className?: string;
@@ -32,8 +34,13 @@ export default function InteractiveMap({
   const LNG = -70.192089;
 
   useEffect(() => {
-    // Initialize Three.js directly without Leaflet map
-    initThreeJS();
+    // Initialize Leaflet map first, then Three.js after a short delay
+    initLeafletMap();
+    
+    // Wait for map to fully load before adding Three.js overlay
+    setTimeout(() => {
+      initThreeJS();
+    }, 500);
 
     // Add ESC key listener
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -67,16 +74,59 @@ export default function InteractiveMap({
     if (controlsRef.current) {
       controlsRef.current.dispose();
     }
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+    }
   };
 
-  // Leaflet map removed - using pure Three.js scene
+  const initLeafletMap = () => {
+    if (!mapRef.current) return;
+
+    // Create Leaflet map
+    const map = L.map(mapRef.current, {
+      center: [LAT, LNG],
+      zoom: 15,
+      zoomControl: true,
+      attributionControl: true,
+    });
+
+    // Add OpenStreetMap tiles (free, no API key required)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Add a marker at the location
+    const marker = L.marker([LAT, LNG], {
+      icon: L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="background: #ff6a00; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+      }),
+    }).addTo(map);
+
+    // Add popup
+    marker.bindPopup(`
+      <div style="text-align: center;">
+        <h3 style="margin: 0 0 8px 0; color: #ff6a00;">Cabo Negro</h3>
+        <p style="margin: 0; font-size: 12px;">Parque Industrial</p>
+        <p style="margin: 4px 0 0 0; font-size: 10px; color: #666;">
+          Lat: ${LAT}<br>
+          Lng: ${LNG}
+        </p>
+      </div>
+    `);
+
+    mapInstanceRef.current = map;
+  };
 
   const initThreeJS = () => {
     if (!mapRef.current) return;
 
     // Create Three.js scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87CEEB); // Sky blue background
+    scene.background = null; // Transparent background to show Leaflet map
     sceneRef.current = scene;
 
     // Camera with proper 3D perspective - adjusted for wider view
@@ -93,25 +143,24 @@ export default function InteractiveMap({
     // Renderer
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true,
-      alpha: false,
+      alpha: true, // Enable alpha for transparency
     });
     renderer.setSize(mapRef.current.clientWidth, mapRef.current.clientHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
-    // Position the Three.js canvas as background
+    // Position the Three.js canvas to overlay the map
     const canvas = renderer.domElement;
     canvas.style.position = 'absolute';
     canvas.style.top = '0';
     canvas.style.left = '0';
-    canvas.style.zIndex = '-1'; // Negative z-index to ensure it stays behind everything
+    canvas.style.zIndex = '1000'; // High z-index to overlay the map
     canvas.style.width = '100%';
     canvas.style.height = '100%';
 
-    // Make sure the container has relative positioning and stays behind
+    // Make sure the map container has relative positioning
     mapRef.current.style.position = 'relative';
-    mapRef.current.style.zIndex = '-1';
     mapRef.current.appendChild(canvas);
 
     // Add orbital controls for 3D navigation - adjusted for wider view
@@ -452,7 +501,10 @@ export default function InteractiveMap({
     // Create a visual mesh system for location visualization
     createLocationVisualization();
     
-    // No map click handler needed - pure 3D scene
+    // Add click handler for map interaction
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.on('click', handleMapClick);
+    }
   };
 
   const createLocationVisualization = () => {
@@ -495,7 +547,53 @@ export default function InteractiveMap({
     sceneRef.current.add(locationMarker);
   };
 
-  // Map click handlers removed - using pure 3D scene
+  const handleMapClick = (e: L.LeafletMouseEvent) => {
+    if (!sceneRef.current) return;
+
+    const { lat, lng } = e.latlng;
+    console.log('Map clicked at:', lat, lng);
+
+    // Convert lat/lng to 3D coordinates
+    const worldPos = latLngToWorldPosition(lat, lng);
+    
+    // Update visual elements
+    updateLocationVisualization(worldPos);
+  };
+
+  const latLngToWorldPosition = (lat: number, lng: number) => {
+    // Convert lat/lng to world coordinates relative to the center
+    const centerLat = LAT;
+    const centerLng = LNG;
+    
+    // Simple conversion (you can make this more sophisticated)
+    const latDiff = lat - centerLat;
+    const lngDiff = lng - centerLng;
+    
+    // Scale factor (adjust based on your needs)
+    const scale = 100000; // meters per degree (approximate)
+    
+    return {
+      x: lngDiff * scale,
+      z: -latDiff * scale, // Negative because lat increases upward
+      y: 0
+    };
+  };
+
+  const updateLocationVisualization = (worldPos: { x: number; y: number; z: number }) => {
+    if (!sceneRef.current) return;
+
+    sceneRef.current.traverse((child) => {
+      if (child.userData.type === 'selection-ring') {
+        child.position.x = worldPos.x;
+        child.position.z = worldPos.z;
+        child.visible = true;
+      } else if (child.userData.type === 'location-marker') {
+        child.position.x = worldPos.x;
+        child.position.z = worldPos.z;
+        child.visible = true;
+      }
+    });
+  };
 
   const animateObjects = () => {
     if (!sceneRef.current) return;

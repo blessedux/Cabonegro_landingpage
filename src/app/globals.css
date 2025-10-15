@@ -2,6 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Sketchfab Embed Styles */
+.sketchfab-embed-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sketchfab-embed-wrapper iframe {
+  border: none;
+  display: block;
+}
+
+/* Scroll Test Page Styles */
+.scroll-section {
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.scroll-section.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-section.fade-out {
+  opacity: 0;
+  transform: translateY(2rem);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
