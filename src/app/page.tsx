@@ -31,35 +31,35 @@ export default function Home() {
       {!isExploreMode && (
         <section className="relative h-screen flex items-center justify-center z-50">
           <div className="text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-2 drop-shadow-2xl">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-2 drop-shadow-2xl leading-tight">
               <span className="text-white">Cabo</span>
               <span className="text-cyan-400">Negro</span>
             </h1>
-            <p className="text-lg md:text-xl text-white tracking-[0.3em] uppercase drop-shadow-lg">
+            <p className="text-sm sm:text-lg md:text-xl text-white tracking-[0.2em] sm:tracking-[0.3em] uppercase drop-shadow-lg">
               PARQUE INDUSTRIAL
             </p>
           </div>
           
           {/* Action buttons */}
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-[60] pointer-events-auto">
-            <div className="flex gap-4">
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-[60] pointer-events-auto px-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center">
               <button
                 onClick={() => setIsExploreMode(true)}
-                className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-cyan-400/30"
+                className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-cyan-400/30 w-full sm:w-auto"
               >
-                <div className="flex items-center space-x-2">
-                  <span className="text-lg">Explorar</span>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center justify-center space-x-2">
+                  <span className="text-base sm:text-lg">Explorar</span>
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
                   </svg>
                 </div>
               </button>
               
-              <Link href="/scroll-test">
-                <button className="bg-white/20 hover:bg-white/30 text-white font-bold py-4 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/30">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">Porque Cabo Negro?</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <Link href="/scroll-test" className="w-full sm:w-auto">
+                <button className="bg-white/20 hover:bg-white/30 text-white font-bold py-3 px-6 sm:py-4 sm:px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 backdrop-blur-sm border border-white/30 w-full">
+                  <div className="flex items-center justify-center space-x-2">
+                    <span className="text-base sm:text-lg">Porque Cabo Negro?</span>
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </div>
@@ -75,13 +75,13 @@ export default function Home() {
         <section className="relative py-20 z-40">
           <div className="container mx-auto px-6">
             <div className="max-w-6xl mx-auto">
-              <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 shadow-2xl">
+              <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6 sm:p-8 lg:p-12 shadow-2xl">
                 <h2 className="text-sm md:text-base text-gray-600 mb-4 uppercase tracking-wider">
                   EL FUTURO DEL DESARROLLO
                 </h2>
-                <h3 className="text-5xl md:text-7xl font-bold mb-12">INDUSTRIAL</h3>
+                <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-8 sm:mb-12 leading-tight">INDUSTRIAL</h3>
 
-                <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
                   <div className="bg-black aspect-video rounded-lg overflow-hidden">
                     {/* Video placeholder */}
                   </div>
@@ -106,9 +106,9 @@ export default function Home() {
         <section id="proyecto" className="relative py-20 z-40">
           <div className="container mx-auto px-6">
             <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 shadow-2xl">
-              <h2 className="text-5xl md:text-6xl font-bold text-center mb-16">PROYECTO</h2>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-12 sm:mb-16 leading-tight">PROYECTO</h2>
 
-              <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
+              <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto mb-8 sm:mb-12">
                 <div className="text-center">
                   <div className="aspect-[4/3] relative mb-6 overflow-hidden rounded-lg">
                     <img
@@ -167,8 +167,8 @@ export default function Home() {
         <section className="relative py-20 z-40">
           <div className="container mx-auto px-6 text-center">
             <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 shadow-2xl">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">UBICACIÓN</h2>
-              <h3 className="text-5xl md:text-7xl font-bold mb-20">ESTRATÉGICA</h3>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4">UBICACIÓN</h2>
+              <h3 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-12 sm:mb-20 leading-tight">ESTRATÉGICA</h3>
             </div>
           </div>
         </section>
@@ -179,9 +179,9 @@ export default function Home() {
         <section id="ubicacion" className="relative py-20 z-40">
           <div className="container mx-auto px-6">
             <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 shadow-2xl">
-              <h2 className="text-5xl md:text-6xl font-bold text-center mb-16">UBICACIÓN</h2>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-12 sm:mb-16 leading-tight">UBICACIÓN</h2>
 
-              <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
+              <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto mb-8 sm:mb-12">
                 <div className="text-center">
                   <div className="aspect-[4/3] relative mb-6 overflow-hidden rounded-lg">
                     <img
@@ -240,9 +240,9 @@ export default function Home() {
         <section className="relative py-20 z-40">
           <div className="container mx-auto px-6">
             <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 shadow-2xl">
-              <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+              <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
                 <div>
-                  <h2 className="text-4xl md:text-5xl font-bold mb-8">
+                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 sm:mb-8 leading-tight">
                     LA MEJOR ZONA LOGÍSTICA DE RESPALDO
                   </h2>
                   <p className="text-gray-700 mb-6 leading-relaxed">
@@ -270,11 +270,11 @@ export default function Home() {
         <section className="relative py-20 z-40">
           <div className="container mx-auto px-6">
             <div className="bg-white/90 backdrop-blur-md rounded-2xl p-12 shadow-2xl">
-              <h2 className="text-5xl md:text-6xl font-bold text-center mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-12 sm:mb-16 leading-tight">
                 NUESTROS<br />CLIENTES
               </h2>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-12 max-w-5xl mx-auto items-center">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 lg:gap-12 max-w-5xl mx-auto items-center">
                 <div className="flex items-center justify-center">
                   <img
                     src="https://ext.same-assets.com/1355652569/247720957.png"
@@ -371,9 +371,6 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-black/90 backdrop-blur-md text-white text-center py-6">
-            <p className="text-xl font-bold">WWW.CABONEGRO.CL</p>
-          </div>
         </footer>
       )}
     </div>
