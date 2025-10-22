@@ -1,148 +1,122 @@
 'use client'
 
-import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { X } from 'lucide-react'
+import { Globe2, Zap, Building2, Anchor, FileCheck, TrendingUp } from 'lucide-react'
 
 const features = [
   {
-    id: 'web-configurator',
-    title: 'Web Configurator',
-    description: 'Customize and purchase your dream bike with ease, with options to personalize and make it one-of-a-kind, supported by our knowledgeable salesman assistants who are ready to assist you every step of the way.'
+    id: 'strategic-gateway',
+    title: 'Strategic Gateway',
+    icon: Globe2,
+    description: 'Panama Canal alternative connecting Atlantic and Pacific Oceans',
+    highlights: [
+      'Primary gateway to Antarctica',
+      'Free of tolls and geopolitical risks',
+      'Atlantic-Pacific maritime corridor'
+    ]
   },
   {
-    id: 'virtual-tours',
-    title: 'Virtual tours',
-    description: 'Conventional web approaches usually are either fast and simple or slow and unsupported on mobile devices. Vinode is the first web application to deliver photorealistic 3D with the scalability of a simple website. It works on every device and browser with low hosting and maintenance costs.'
+    id: 'h2v-opportunity',
+    title: 'H₂V Opportunity',
+    icon: Zap,
+    description: 'Magallanes could produce 13% of the world\'s green hydrogen',
+    highlights: [
+      '200+ projects filed or under review',
+      'Expected to double regional GDP',
+      'EDF entering by end of 2025'
+    ]
   },
   {
-    id: 'management-panel',
-    title: 'Management panel',
-    description: 'Vinode, as a next-gen eCommerce experience, includes a CMS and CRM system. CMS Features: Edit investment data, unit data, localization info, features info. Add and update images. CRM Features: Customers list, Customer page with names, emails, number, unit, time spent.'
+    id: 'industrial-park',
+    title: 'Industrial Park Ready',
+    icon: Building2,
+    description: '300+ hectares of ready-to-build industrial infrastructure',
+    highlights: [
+      'Connected to Route 9N main corridor',
+      '6 internal roads (33% built)',
+      '13 MW electrical capacity'
+    ]
   },
   {
-    id: 'marketing-content',
-    title: 'Marketing content',
-    description: 'Our offer includes videos and renders to use on social media & other channels of distribution. In the real estate sector, where visuals matter, a study by the National Association of Realtors found that 90% of real estate agents use social media to some extent.'
+    id: 'maritime-terminal',
+    title: 'Maritime Terminal',
+    icon: Anchor,
+    description: 'Dual-phase port construction ready-to-build by 2026',
+    highlights: [
+      'Protected port location',
+      'Phase 1: 350m platform + ramp',
+      'Phase 2: 350m bridge + 300m pier'
+    ]
   },
   {
-    id: 'interactive-kiosk',
-    title: 'Interactive office kiosk',
-    description: 'Sales office app is dedicated to presenting the investments. You have 2 options available: Presentation mode - show the investment like on the web but with complete freedom of movement. Autoplay mode - shows the investment videos when no one is using the screen.'
-  }
-]
-
-const platformFeatures = [
-  {
-    title: 'Interactive 3D models',
-    features: ['Easy to embed on any website', 'Works on any device', 'Online and offline', '3D model', 'Easy-to-use advanced search']
+    id: 'regulatory-advantage',
+    title: 'Regulatory Advantage',
+    icon: FileCheck,
+    description: 'New urban plan includes Cabo Negro as industrial nucleus',
+    highlights: [
+      '3,258 hectares added to urban limits',
+      'Industrial zoning approved',
+      'Orderly growth framework'
+    ]
   },
   {
-    title: 'Virtual tours',
-    features: ['3D plans', 'Virtual walk', '360 views']
-  },
-  {
-    title: 'Back panel',
-    features: ['CRM', 'CMS']
-  },
-  {
-    title: 'Dynamic PDF',
-    features: ['Unit-specific visualization', 'Real-time pricing & data', 'Downloadable client summary']
-  },
-  {
-    title: 'Kiosk app',
-    features: ['Standalone app', 'Pixel streaming ready', 'Works offline']
-  },
-  {
-    title: 'Smart filters',
-    features: ['Building selection', 'Size & price range', 'Rooms, floors, orientation', 'Additional features']
+    id: 'wind-potential',
+    title: 'Wind Power Potential',
+    icon: TrendingUp,
+    description: '7× Chile\'s current power generation capacity',
+    highlights: [
+      'Massive wind potential in region',
+      'Low hosting and maintenance costs',
+      'Sustainable energy infrastructure'
+    ]
   }
 ]
 
 export default function Features() {
-  const [activeFeature, setActiveFeature] = useState<string | null>(null)
-
   return (
-    <>
-      {/* Features Overview */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold">Complete sales process</h3>
-              <p className="text-gray-400">Vinode supports at every stage of the sales process</p>
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold">No loading time</h3>
-              <p className="text-gray-400">Under 1s loading leads to improving website conversion rate by 2x</p>
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-2xl font-bold">All devices</h3>
-              <p className="text-gray-400">Deploy your page on all devices. Works offline as a stand-alone app</p>
-            </div>
-          </div>
+    <section className="py-20 px-6">
+      <div className="container mx-auto">
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">Strategic Investment Opportunity</h2>
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+            Cabo Negro represents a unique convergence of strategic location, renewable energy potential, and ready-to-build infrastructure
+          </p>
         </div>
-      </section>
 
-      {/* Platform Features with Modals */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => (
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {features.map((feature) => {
+            const IconComponent = feature.icon
+            return (
               <Card
                 key={feature.id}
-                className="bg-white/5 border-white/10 cursor-pointer hover:bg-white/10 transition-all"
-                onClick={() => setActiveFeature(feature.id)}
+                className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300"
               >
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold text-white">{feature.title}</h3>
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-4 bg-white/10 rounded-full">
+                      <IconComponent className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">{feature.title}</h3>
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {feature.description}
+                    </p>
+                    <ul className="space-y-2 text-left w-full">
+                      {feature.highlights.map((highlight, index) => (
+                        <li key={index} className="text-gray-400 text-sm flex items-start">
+                          <span className="text-white mr-2">•</span>
+                          {highlight}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+            )
+          })}
         </div>
-
-        {/* Feature Modal */}
-        {activeFeature && (
-          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6">
-            <Card className="bg-black border-white/20 max-w-2xl w-full relative">
-              <button
-                className="absolute top-4 right-4 text-white hover:text-gray-300"
-                onClick={() => setActiveFeature(null)}
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <CardContent className="p-8">
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  {features.find(f => f.id === activeFeature)?.title}
-                </h2>
-                <p className="text-gray-300 leading-relaxed">
-                  {features.find(f => f.id === activeFeature)?.description}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </section>
-
-      {/* Vinode Platform Features */}
-      <section className="py-20 px-6 bg-white/5" id="About">
-        <div className="container mx-auto">
-          <h2 className="text-5xl font-bold mb-4">Vinode platform</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-            {platformFeatures.map((feature, index) => (
-              <div key={index} className="space-y-4">
-                <h3 className="text-2xl font-bold">{feature.title}</h3>
-                <ul className="space-y-2">
-                  {feature.features.map((item, i) => (
-                    <li key={i} className="text-gray-400 text-sm">{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </>
+      </div>
+    </section>
   )
 }
