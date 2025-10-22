@@ -45,9 +45,11 @@ export default function Navbar() {
                 ))}
               </div>
 
-              <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
-                Contact Us
-              </Button>
+              <a href="/contact">
+                <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
+                  Contact Us
+                </Button>
+              </a>
             </div>
 
             {/* Mobile Menu Button */}
@@ -116,13 +118,15 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                <Button 
-                  variant="outline" 
-                  className="uppercase border-white text-white hover:bg-white hover:text-black w-full mt-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Contact Us
-                </Button>
+                <a href="/contact" className="w-full mt-2">
+                  <Button
+                    variant="outline"
+                    className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Contact Us
+                  </Button>
+                </a>
               </div>
             </div>
           </div>

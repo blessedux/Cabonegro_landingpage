@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import Typewriter from '@/components/ui/Typewriter'
+import Link from 'next/link'
 
 export default function Hero() {
   return (
@@ -22,9 +23,11 @@ export default function Hero() {
             <Button size="lg" variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
               Explore Terrain
             </Button>
-            <Button size="lg" variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
-              View Deck
-            </Button>
+            <Link href="/deck">
+              <Button size="lg" variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
+                View Deck
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
