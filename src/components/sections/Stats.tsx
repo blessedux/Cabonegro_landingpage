@@ -61,7 +61,7 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
         cancelAnimationFrame(animationFrame)
       }
     }
-  }, [isVisible, end, duration])
+  }, [isVisible, end, duration, start])
 
   return (
     <div ref={ref} className={className}>

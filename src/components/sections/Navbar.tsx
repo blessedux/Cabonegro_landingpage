@@ -1,12 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
+import { useAnimation } from '@/contexts/AnimationContext'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState('EN')
+  const [isVisible, setIsVisible] = useState(false)
+  const [isHidden, setIsHidden] = useState(false)
+  const router = useRouter()
+  const { startFadeOut, isNavbarHidden } = useAnimation()
 
   const languages = [
     { code: 'EN', name: 'English' },
@@ -14,8 +20,33 @@ export default function Navbar() {
     { code: 'PT', name: 'Português' }
   ]
 
+  // Dropdown animation on page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true)
+    }, 100) // Small delay for smooth entrance
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Handle Explore Terrain click
+  const handleExploreTerrain = () => {
+    startFadeOut()
+    
+    // Navigate to explore route after animations
+    setTimeout(() => {
+      router.push('/explore')
+    }, 1000)
+  }
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 p-4">
+    <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
+      isNavbarHidden 
+        ? '-translate-y-full opacity-0' 
+        : isVisible 
+          ? 'top-0 translate-y-0 opacity-100' 
+          : '-translate-y-full opacity-0'
+    }`}>
       <nav className="container mx-auto">
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4">
@@ -23,7 +54,12 @@ export default function Navbar() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#Explore" className="text-sm hover:text-gray-300 transition-colors uppercase">Explore Terrain</a>
+              <button 
+                onClick={handleExploreTerrain}
+                className="text-sm hover:text-gray-300 transition-colors uppercase"
+              >
+                Explore Terrain
+              </button>
               <a href="#Deck" className="text-sm hover:text-gray-300 transition-colors uppercase">View Deck</a>
               <a href="#Partners" className="text-sm hover:text-gray-300 transition-colors uppercase">Partners</a>
               <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
@@ -71,13 +107,15 @@ export default function Navbar() {
           }`}>
             <div className="px-6 pb-6 border-t border-white/10">
               <div className="flex flex-col gap-4 pt-4">
-                <a 
-                  href="#Explore" 
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleExploreTerrain()
+                  }}
+                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
                 >
                   Explore Terrain
-                </a>
+                </button>
                 <a 
                   href="#Deck" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
