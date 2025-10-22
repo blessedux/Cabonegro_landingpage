@@ -11,7 +11,6 @@ import HowItWorks from '@/components/sections/HowItWorks'
 import Projects from '@/components/sections/Projects'
 import Partners from '@/components/sections/Partners'
 import FAQ from '@/components/sections/FAQ'
-import Blog from '@/components/sections/Blog'
 import Footer from '@/components/sections/Footer'
 
 export default function Home() {
@@ -32,7 +31,6 @@ export default function Home() {
       <Projects />
       <Partners />
       <FAQ />
-      <Blog />
       <Footer />
     </div>
   )
