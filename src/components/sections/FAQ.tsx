@@ -8,6 +8,7 @@ import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { MagicText } from "@/components/ui/magic-text"
 
 interface HeroAction {
   label: string
@@ -203,10 +204,21 @@ export default function FAQ() {
   return (
     <section className="py-20 px-6" id="FAQ">
       <div className="container mx-auto max-w-4xl">
-        <h2 className="text-4xl md:text-5xl font-bold mb-6">Investment & Joint Venture Strategy</h2>
-        <p className="text-gray-400 text-lg mb-12 max-w-3xl mx-auto text-center">
-          From Vision to Ready-to-Build: Seeking capital to bring Cabo Negro Terminal to Ready-to-Build stage
-        </p>
+        <motion.h2 
+          initial={{ x: -50, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ margin: "-10% 0px -10% 0px" }}
+          className="text-4xl md:text-5xl font-bold mb-6"
+        >
+          Investment & Joint Venture Strategy
+        </motion.h2>
+        <div className="mb-12 max-w-3xl mx-auto text-center">
+          <MagicText 
+            text="From Vision to Ready-to-Build: Seeking capital to bring Cabo Negro Terminal to Ready-to-Build stage"
+            className="text-gray-400 text-lg"
+          />
+        </div>
 
         <div className="space-y-4">
           {faqs.map((faq, index) => (
