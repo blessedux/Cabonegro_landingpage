@@ -30,6 +30,7 @@ export default function BlurTextAnimation({
   animationDelay = 4000
 }: BlurTextAnimationProps) {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   const textWords = useMemo(() => {
     if (words) return words;
@@ -44,19 +45,24 @@ export default function BlurTextAnimation({
       
       const baseDelay = index * 0.06;
       
-      const microVariation = (Math.random() - 0.5) * 0.05;
+      // Use deterministic values for SSR, random only on client
+      const microVariation = isClient ? (Math.random() - 0.5) * 0.05 : 0;
+      const blurVariation = isClient ? Math.floor(Math.random() * 8) : 4;
       
       return {
         text: word,
         duration: 2.2 + Math.cos(index * 0.3) * 0.3,
         delay: baseDelay + exponentialDelay + microVariation,
-        blur: 12 + Math.floor(Math.random() * 8),
+        blur: 12 + blurVariation,
         scale: 0.9 + Math.sin(index * 0.2) * 0.05
       };
     });
-  }, [text, words]);
+  }, [text, words, isClient]);
 
   useEffect(() => {
+    // Set client state to enable random values
+    setIsClient(true);
+    
     // Start animation once and keep it visible
     const timer = setTimeout(() => {
       setIsAnimating(true);
