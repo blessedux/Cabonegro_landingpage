@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { Globe2, Zap, Building2, Anchor, FileCheck, TrendingUp } from 'lucide-react'
+import { MagicText } from '@/components/ui/magic-text'
 
 const features = [
   {
@@ -89,10 +90,21 @@ export default function Features() {
       <div className="container mx-auto">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">Strategic Investment Opportunity</h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Cabo Negro represents a unique convergence of strategic location, renewable energy potential, and ready-to-build infrastructure
-          </p>
+          <motion.h2 
+            initial={{ x: -50, opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ margin: "-10% 0px -10% 0px" }}
+            className="text-4xl md:text-5xl font-bold mb-4"
+          >
+            Strategic Investment Opportunity
+          </motion.h2>
+          <div className="max-w-3xl mx-auto">
+            <MagicText 
+              text="Cabo Negro represents a unique convergence of strategic location, renewable energy potential, and ready-to-build infrastructure"
+              className="text-xl text-gray-400"
+            />
+          </div>
         </div>
 
         {/* Features Grid */}
