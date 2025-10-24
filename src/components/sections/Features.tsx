@@ -1,10 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Card, CardContent } from '@/components/ui/card'
+import { motion } from 'framer-motion'
 import { Globe2, Zap, Building2, Anchor, FileCheck, TrendingUp } from 'lucide-react'
 import { MagicText } from '@/components/ui/magic-text'
+import { 
+  HoverSlider,
+  HoverSliderImage,
+  HoverSliderImageWrap,
+  TextStaggerHover 
+} from '@/components/ui/animated-slideshow'
 
 const features = [
   {
@@ -82,8 +86,6 @@ const features = [
 ]
 
 export default function Features() {
-  const [featureItems, setFeatureItems] = useState(features)
-  const [isDragging, setIsDragging] = useState(false)
 
   return (
     <section className="py-20 px-6">
@@ -107,102 +109,52 @@ export default function Features() {
           </div>
         </div>
 
-        {/* Features Grid */}
-        <motion.div 
-          className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: { staggerChildren: 0.1 }
-            }
-          }}
-        >
-          {featureItems.map((feature, index) => {
-            const IconComponent = feature.icon
-            return (
-              <motion.div
-                key={feature.id}
-                layoutId={`feature-${feature.id}`}
-                className="relative overflow-hidden rounded-xl cursor-move"
-                variants={{
-                  hidden: { y: 50, scale: 0.9, opacity: 0 },
-                  visible: {
-                    y: 0,
-                    scale: 1,
-                    opacity: 1,
-                    transition: {
-                      type: "spring",
-                      stiffness: 350,
-                      damping: 25,
-                      delay: index * 0.05
-                    }
-                  }
-                }}
-                whileHover={{ scale: isDragging ? 1 : 1.02 }}
-                whileDrag={{ 
-                  scale: 1.05,
-                  rotate: 2,
-                  boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-                  zIndex: 10
-                }}
-                drag
-                dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                dragElastic={1}
-                onDragStart={() => setIsDragging(true)}
-                onDragEnd={(e, info) => {
-                  setIsDragging(false)
-                  const moveDistance = info.offset.x + info.offset.y
-                  if (Math.abs(moveDistance) > 50) {
-                    const newItems = [...featureItems]
-                    const draggedItem = newItems[index]
-                    const targetIndex = moveDistance > 0 ?
-                      Math.min(index + 1, featureItems.length - 1) :
-                      Math.max(index - 1, 0)
-                    newItems.splice(index, 1)
-                    newItems.splice(targetIndex, 0, draggedItem)
-                    setFeatureItems(newItems)
-                  }
-                }}
-              >
-                <Card className="bg-white/5 border-2 border-white/20 hover:bg-white/10 transition-all duration-300 relative overflow-hidden h-full">
-                  {/* Background Image */}
-                  <div className="absolute inset-0">
-                    <img
-                      src={feature.image}
-                      alt={feature.title}
-                      className="w-full h-full object-cover opacity-20"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
+        {/* Animated Slideshow */}
+        <HoverSlider className="min-h-[80vh] place-content-center p-6 md:px-12 bg-transparent text-white">
+          <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
+            / strategic advantages
+          </h3>
+          <div className="flex flex-wrap items-center justify-evenly gap-6 md:gap-12">
+            <div className="flex flex-col space-y-2 md:space-y-4">
+              {features.map((feature, index) => (
+                <TextStaggerHover
+                  key={feature.id}
+                  index={index}
+                  className="cursor-pointer text-4xl font-bold uppercase tracking-tighter"
+                  text={feature.title}
+                />
+              ))}
+            </div>
+            <HoverSliderImageWrap className="w-full max-w-lg">
+              {features.map((feature, index) => (
+                <div key={feature.id} className="relative">
+                  <HoverSliderImage
+                    index={index}
+                    imageUrl={feature.image}
+                    src={feature.image}
+                    alt={feature.title}
+                    className="size-full max-h-96 object-cover rounded-lg"
+                    loading="eager"
+                    decoding="async"
+                  />
+                  {/* Overlay with feature info */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-lg" />
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <p className="text-sm text-gray-200 mb-2">{feature.description}</p>
+                    <ul className="space-y-1">
+                      {feature.highlights.slice(0, 2).map((highlight, highlightIndex) => (
+                        <li key={highlightIndex} className="text-xs text-gray-300 flex items-start">
+                          <span className="text-cyan-400 mr-2">•</span>
+                          {highlight}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  
-                  <CardContent className="p-8 relative z-10 h-full flex flex-col">
-                    <div className="flex flex-col items-center text-center space-y-4 flex-1">
-                      <div className="p-4 bg-white/20 rounded-full backdrop-blur-sm">
-                        <IconComponent className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white">{feature.title}</h3>
-                      <p className="text-gray-200 text-sm leading-relaxed">
-                        {feature.description}
-                      </p>
-                      <ul className="space-y-2 text-left w-full mt-auto">
-                        {feature.highlights.map((highlight, highlightIndex) => (
-                          <li key={highlightIndex} className="text-gray-300 text-sm flex items-start">
-                            <span className="text-white mr-2">•</span>
-                            {highlight}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )
-          })}
-        </motion.div>
+                </div>
+              ))}
+            </HoverSliderImageWrap>
+          </div>
+        </HoverSlider>
       </div>
     </section>
   )
