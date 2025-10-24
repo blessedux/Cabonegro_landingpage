@@ -7,7 +7,8 @@ import {
   HoverSlider,
   HoverSliderImage,
   HoverSliderImageWrap,
-  TextStaggerHover 
+  TextStaggerHover,
+  useHoverSliderContext
 } from '@/components/ui/animated-slideshow'
 
 const features = [
@@ -85,6 +86,67 @@ const features = [
   }
 ]
 
+// Custom component to handle conditional overlay
+function FeatureImageWithOverlay({ feature, index }: { feature: any, index: number }) {
+  const { activeSlide } = useHoverSliderContext()
+  const isActive = activeSlide === index
+  
+  return (
+    <div className="relative">
+      <HoverSliderImage
+        index={index}
+        imageUrl={feature.image}
+        src={feature.image}
+        alt={feature.title}
+        className="size-full max-h-96 object-cover rounded-lg"
+        loading="eager"
+        decoding="async"
+      />
+      {/* Overlay with feature info - only visible when image is active */}
+      {isActive && (
+        <motion.div 
+          className="absolute inset-0 text-white"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {/* Full-width gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
+          {/* Progressive blur effect using multiple layers */}
+          <div className="absolute bottom-0 left-0 right-0 h-1/2">
+            {/* Layer 1: Light blur at top */}
+            <div className="absolute top-0 left-0 right-0 h-1/3 backdrop-blur-[1px]" />
+            {/* Layer 2: Medium blur in middle */}
+            <div className="absolute top-1/3 left-0 right-0 h-1/3 backdrop-blur-[2px]" />
+            {/* Layer 3: Strong blur at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-1/3 backdrop-blur-[4px]" />
+          </div>
+          
+          {/* Text content at bottom */}
+          <motion.div 
+            className="absolute bottom-0 left-0 right-0 p-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            <p className="text-sm text-white mb-2 font-bold drop-shadow-lg">{feature.description}</p>
+            <ul className="space-y-1">
+              {feature.highlights.slice(0, 2).map((highlight: string, highlightIndex: number) => (
+                <li key={highlightIndex} className="text-xs text-gray-100 flex items-start font-semibold drop-shadow-md">
+                  <span className="text-cyan-400 mr-2 font-bold drop-shadow-lg">•</span>
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </motion.div>
+      )}
+    </div>
+  )
+}
+
 export default function Features() {
 
   return (
@@ -114,45 +176,28 @@ export default function Features() {
           <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
             / strategic advantages
           </h3>
-          <div className="flex flex-wrap items-center justify-evenly gap-6 md:gap-12">
-            <div className="flex flex-col space-y-2 md:space-y-4">
+          <div className="flex flex-col md:flex-row items-center justify-evenly gap-6 md:gap-12">
+            {/* Mobile: Images first, then titles */}
+            <HoverSliderImageWrap className="w-full max-w-lg order-1 md:order-2">
+              {features.map((feature, index) => (
+                <FeatureImageWithOverlay 
+                  key={feature.id} 
+                  feature={feature} 
+                  index={index} 
+                />
+              ))}
+            </HoverSliderImageWrap>
+            {/* Mobile: Titles second */}
+            <div className="flex flex-col space-y-2 md:space-y-4 order-2 md:order-1">
               {features.map((feature, index) => (
                 <TextStaggerHover
                   key={feature.id}
                   index={index}
-                  className="cursor-pointer text-4xl font-bold uppercase tracking-tighter"
+                  className="cursor-pointer text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none"
                   text={feature.title}
                 />
               ))}
             </div>
-            <HoverSliderImageWrap className="w-full max-w-lg">
-              {features.map((feature, index) => (
-                <div key={feature.id} className="relative">
-                  <HoverSliderImage
-                    index={index}
-                    imageUrl={feature.image}
-                    src={feature.image}
-                    alt={feature.title}
-                    className="size-full max-h-96 object-cover rounded-lg"
-                    loading="eager"
-                    decoding="async"
-                  />
-                  {/* Overlay with feature info */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-lg" />
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <p className="text-sm text-gray-200 mb-2">{feature.description}</p>
-                    <ul className="space-y-1">
-                      {feature.highlights.slice(0, 2).map((highlight, highlightIndex) => (
-                        <li key={highlightIndex} className="text-xs text-gray-300 flex items-start">
-                          <span className="text-cyan-400 mr-2">•</span>
-                          {highlight}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </HoverSliderImageWrap>
           </div>
         </HoverSlider>
       </div>
