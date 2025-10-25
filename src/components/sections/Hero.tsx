@@ -3,10 +3,13 @@ import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import Link from 'next/link'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
 export default function Hero() {
   const router = useRouter()
   const { startFadeOut } = useAnimation()
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false)
+  // Removed hover state - keeping only click interactions
 
   const handleExploreTerrain = () => {
     startFadeOut()
@@ -17,12 +20,51 @@ export default function Hero() {
     }, 1000)
   }
 
+  // Removed performance monitoring and console logging
+
+  // Removed hover handlers - keeping only click interactions for Spline scenes
+
+  const handleClick = (event: React.MouseEvent) => {
+    // Click handler for future interactive features
+    // Currently just tracks click coordinates for potential use
+  }
+
   return (
-    <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center">
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-black/95 to-black z-0" />
-      <div className="container mx-auto relative z-10 flex justify-center">
-        <div className="max-w-4xl text-center w-full">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+    <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center overflow-hidden" style={{ touchAction: 'pan-y' }}>
+      {/* Background Spline Scene - Glowing Planet Particles */}
+      <div 
+        className="absolute inset-0 z-0 overflow-hidden"
+        onClick={handleClick}
+      >
+        <iframe 
+          src='https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/' 
+          frameBorder='0' 
+          width='100%' 
+          height='100%'
+          className="w-full h-full"
+          onLoad={() => {
+            setBackgroundLoaded(true)
+          }}
+          style={{ 
+            border: 'none',
+            background: 'transparent',
+            transform: 'scale(1.3)',
+            transformOrigin: 'center center',
+            pointerEvents: 'auto' // Enable pointer events for interaction
+          }}
+        />
+      </div>
+
+      {/* Subtle gradient overlay for better text readability - positioned to not block interactions */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40 z-2 pointer-events-none" />
+      
+
+      <div className="container mx-auto relative z-10 flex justify-start pointer-events-none">
+        <div className="max-w-4xl w-full px-6 lg:px-12 pointer-events-auto">
+          <h1 
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none"
+            style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+          >
             <BlurTextAnimation 
               text="Gateway to the South of the World"
               fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
@@ -30,20 +72,29 @@ export default function Hero() {
               animationDelay={6000}
             />
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed text-center">
+          <p 
+            className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl leading-relaxed text-left select-none"
+            style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+          >
             Cabo Negro is a Strategic Industrial & Maritime Hub <br></br>of the Southern Hemisphere.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-start items-start">
             <Button 
               size="lg" 
               variant="outline" 
-              className="uppercase border-white text-white hover:bg-white hover:text-black"
+              className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
               onClick={handleExploreTerrain}
+              style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
             >
               Explore Terrain
             </Button>
             <Link href="/deck">
-              <Button size="lg" variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
+                style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+              >
                 View Deck
               </Button>
             </Link>
