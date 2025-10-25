@@ -237,9 +237,9 @@ export default function Features() {
           <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
             / strategic advantages
           </h3>
-          <div className="flex flex-col md:flex-row items-center justify-evenly gap-6 md:gap-12">
+          <div className="flex flex-col lg:flex-row items-start justify-between gap-6 lg:gap-12">
             {/* Mobile: Images first, then titles */}
-            <HoverSliderImageWrap className="w-full max-w-lg order-1 md:order-2">
+            <HoverSliderImageWrap className="w-full max-w-lg order-1 lg:order-2">
               {features.map((feature, index) => (
                 <FeatureImageWithOverlay 
                   key={feature.id} 
@@ -249,17 +249,17 @@ export default function Features() {
               ))}
             </HoverSliderImageWrap>
             {/* Mobile: Titles second */}
-            <div className="flex flex-col space-y-2 md:space-y-4 order-2 md:order-1">
+            <div className="flex flex-col space-y-2 lg:space-y-4 order-2 lg:order-1 min-w-0 flex-shrink-0 w-full lg:w-auto">
               {features.map((feature, index) => (
-                <div key={feature.id} className="flex flex-col">
+                <div key={feature.id} className="flex flex-col min-w-0 text-left">
                   <TextStaggerHover
                     index={index}
-                    className="cursor-pointer text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight"
+                    className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left"
                     text={feature.titleLine1}
                   />
                   <TextStaggerHover
                     index={index}
-                    className="cursor-pointer text-2xl sm:text-3xl md:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight"
+                    className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left"
                     text={feature.titleLine2}
                   />
                 </div>

@@ -1,0 +1,309 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { gsap } from 'gsap'
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
+import { SplitText } from 'gsap/SplitText'
+
+// Register GSAP plugins
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrambleTextPlugin, SplitText)
+}
+
+interface TerminalLine {
+  id: string
+  top: number
+  text: string
+  type: 'highlight' | 'faded'
+  scramble?: boolean
+}
+
+interface PreloaderProps {
+  onComplete?: () => void
+  duration?: number
+  className?: string
+}
+
+const TERMINAL_LINES: TerminalLine[] = [
+  // Main lines
+  { id: 'line-1', top: 0, text: 'Industrial Development: Cabo Negro Zone', type: 'faded', scramble: true },
+  { id: 'line-2', top: 0, text: 'Strategic Location Secured', type: 'highlight', scramble: true },
+  { id: 'line-3', top: 30, text: 'Initiating Infrastructure Analysis', type: 'faded', scramble: true },
+  { id: 'line-4', top: 30, text: 'Prime Investment Opportunity Detected', type: 'highlight', scramble: true },
+  { id: 'line-5', top: 60, text: 'Beginning Industrial Park Development', type: 'highlight', scramble: true },
+  { id: 'line-6', top: 90, text: 'Economic Growth Matrices Aligned', type: 'highlight', scramble: true },
+  { id: 'line-7', top: 165, text: 'Investment Portfolio Stabilized', type: 'highlight', scramble: true },
+  { id: 'line-8', top: 195, text: 'Market Forces Operating in Harmony', type: 'highlight', scramble: true },
+  { id: 'line-9', top: 225, text: 'Business Ecosystem Expanding', type: 'highlight', scramble: true },
+  { id: 'line-10', top: 255, text: 'Industrial Gateway Stabilizing', type: 'highlight', scramble: true },
+  { id: 'line-11', top: 285, text: 'Economic Parameters Optimized', type: 'highlight', scramble: true },
+  
+  // Background faded lines
+  { id: 'bg-1', top: 15, text: 'Market Fluctuation Analysis Complete', type: 'faded', scramble: true },
+  { id: 'bg-2', top: 45, text: 'Initiating Strategic Planning Phase', type: 'faded', scramble: true },
+  { id: 'bg-3', top: 75, text: 'Scanning Global Investment Opportunities', type: 'faded', scramble: true },
+  { id: 'bg-4', top: 105, text: 'Analyzing Regional Economic Density', type: 'faded', scramble: true },
+  { id: 'bg-5', top: 180, text: 'Processing Market Intelligence Data', type: 'faded', scramble: true },
+  { id: 'bg-6', top: 210, text: 'Calibrating Investment Displacement', type: 'faded', scramble: true },
+  { id: 'bg-7', top: 240, text: 'Evaluating Economic Resonance', type: 'faded', scramble: true },
+  { id: 'bg-8', top: 270, text: 'Stabilizing Financial Framework', type: 'faded', scramble: true },
+]
+
+const QUOTE_LINES = [
+  'Industrial excellence transcends boundaries',
+  'weaving strategic partnerships',
+  'into transformative opportunities',
+  'beyond conventional limits.'
+]
+
+export default function Preloader({ onComplete, duration = 6, className = '' }: PreloaderProps) {
+  const [progress, setProgress] = useState(0)
+  const [isVisible, setIsVisible] = useState(true)
+  
+  const preloaderRef = useRef<HTMLDivElement>(null)
+  const progressBarRef = useRef<HTMLDivElement>(null)
+  const terminalLinesRef = useRef<HTMLDivElement[]>([])
+  const quoteLinesRef = useRef<HTMLDivElement[]>([])
+  
+  const specialChars = '▪'
+
+  useEffect(() => {
+    if (!preloaderRef.current) return
+
+    const animatePreloader = () => {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          setIsVisible(false)
+          onComplete?.()
+        }
+      })
+
+      // Set initial states
+      gsap.set(terminalLinesRef.current, { opacity: 0 })
+      gsap.set(quoteLinesRef.current, { y: '100%' })
+
+      // Sort terminal lines by top position
+      const sortedLines = [...terminalLinesRef.current].sort((a, b) => {
+        const aTop = parseInt(a.style.top || '0')
+        const bTop = parseInt(b.style.top || '0')
+        return aTop - bTop
+      })
+
+      // Animate terminal lines
+      const textRevealTl = gsap.timeline()
+      
+      sortedLines.forEach((line, index) => {
+        const baseOpacity = index % 2 === 0 ? 1 : 0.7
+        const timePoint = (index / sortedLines.length) * (duration * 0.8)
+
+        // Reveal line
+        textRevealTl.to(line, {
+          opacity: baseOpacity,
+          duration: 0.3
+        }, timePoint)
+
+        // Add scramble effect to spans with data-scramble
+        const scrambleSpans = line.querySelectorAll('[data-scramble="true"]')
+        scrambleSpans.forEach((span) => {
+          const originalText = span.getAttribute('data-original-text') || span.textContent || ''
+          
+          textRevealTl.to(span, {
+            duration: 0.8,
+            scrambleText: {
+              text: originalText,
+              chars: specialChars,
+              revealDelay: 0,
+              speed: 0.3
+            },
+            ease: 'none'
+          }, timePoint + 0.1)
+        })
+      })
+
+      tl.add(textRevealTl, 0)
+
+      // Add glitch effects
+      for (let i = 0; i < 3; i++) {
+        const randomTime = 1 + i * 1.5
+        tl.call(() => {
+          const glitchTl = gsap.timeline()
+          const allScrambleSpans = document.querySelectorAll('[data-scramble="true"]')
+          const randomSpans = []
+
+          const numToGlitch = 3 + Math.floor(Math.random() * 3)
+          for (let j = 0; j < numToGlitch; j++) {
+            const randomIndex = Math.floor(Math.random() * allScrambleSpans.length)
+            randomSpans.push(allScrambleSpans[randomIndex])
+          }
+
+          randomSpans.forEach((span) => {
+            const text = span.textContent || span.getAttribute('data-original-text') || ''
+            
+            glitchTl.to(span, {
+              duration: 0.2,
+              scrambleText: {
+                text: text,
+                chars: specialChars,
+                revealDelay: 0,
+                speed: 0.1
+              },
+              ease: 'none',
+              repeat: 1
+            }, Math.random() * 0.5)
+          })
+        }, [], randomTime)
+      }
+
+      // Staggered disappearing effect
+      const disappearTl = gsap.timeline()
+      disappearTl.to(sortedLines, {
+        opacity: 0,
+        duration: 0.2,
+        stagger: 0.1,
+        ease: 'power1.in'
+      })
+
+      tl.add(disappearTl, duration - 1)
+
+      // Progress bar animation
+      tl.eventCallback('onUpdate', () => {
+        const progressPercent = Math.min(99, tl.progress() * 100)
+        setProgress(progressPercent)
+      })
+
+      // Force final progress update
+      tl.call(() => {
+        setProgress(100)
+      }, [], duration - 0.5)
+
+      return tl
+    }
+
+    const revealContent = () => {
+      const revealTl = gsap.timeline()
+
+      // Clip preloader from bottom to top
+      revealTl.to(preloaderRef.current, {
+        clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)',
+        duration: 0.64,
+        ease: 'cubic-bezier(0.65,0.05,0.36,1)'
+      })
+
+      // Animate quote lines
+      revealTl.to(quoteLinesRef.current, {
+        y: '0%',
+        duration: 0.64,
+        stagger: 0.1,
+        ease: 'cubic-bezier(0.65,0.05,0.36,1)'
+      }, '-=0.2')
+
+      return revealTl
+    }
+
+    // Start animation
+    const mainTl = animatePreloader()
+    
+    // After main animation completes, reveal content
+    mainTl.then(() => {
+      revealContent()
+    })
+
+    return () => {
+      mainTl.kill()
+    }
+  }, [duration, onComplete])
+
+  if (!isVisible) return null
+
+  return (
+    <div 
+      ref={preloaderRef}
+      className={`fixed inset-0 z-50 bg-black flex items-center justify-center ${className}`}
+      style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' }}
+    >
+      {/* Pure Black Background */}
+      <div className="absolute inset-0 bg-black" />
+
+      {/* Quote Section */}
+      <div className="absolute bottom-8 left-8 z-10 text-white max-w-2xl">
+        <h2 className="text-5xl leading-none font-normal">
+          {QUOTE_LINES.map((line, index) => (
+            <span key={index} className="block overflow-hidden">
+              <span 
+                ref={(el) => {
+                  if (el) quoteLinesRef.current[index] = el as HTMLDivElement
+                }}
+                className="inline-block"
+              >
+                {line}
+              </span>
+            </span>
+          ))}
+        </h2>
+      </div>
+
+      {/* Scroll Text */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 text-white text-base">
+        Scroll
+      </div>
+
+      {/* Terminal Preloader */}
+      <div className="w-[90%] max-w-4xl h-auto max-h-[500px] py-4 relative overflow-hidden block opacity-100">
+        {/* Border Top */}
+        <div className="absolute top-0 left-0 w-full h-8 flex justify-between items-center px-2.5 text-xs text-white font-secondary uppercase tracking-wider">
+          <span>Industrial Gateway</span>
+          <span>Development Initiated</span>
+        </div>
+
+        {/* Terminal Container */}
+        <div className="relative h-[350px] mt-8 overflow-hidden p-2.5">
+          {TERMINAL_LINES.map((line, index) => (
+            <div
+              key={line.id}
+              ref={(el) => {
+                if (el) terminalLinesRef.current[index] = el
+              }}
+              className="absolute text-sm leading-tight tracking-wider whitespace-nowrap overflow-hidden w-full left-0 pl-2.5 font-light font-primary"
+              style={{ top: `${line.top}px` }}
+            >
+              <span 
+                className={`inline-block ${
+                  line.type === 'highlight' 
+                    ? 'text-white font-normal uppercase tracking-widest' 
+                    : 'opacity-50 uppercase tracking-widest'
+                }`}
+                data-scramble={line.scramble ? 'true' : undefined}
+                data-original-text={line.text}
+              >
+                {line.text}
+              </span>
+            </div>
+          ))}
+
+          {/* Progress Line */}
+          <div className="absolute top-[135px] left-0 w-full h-5 flex items-center pl-2.5">
+            <span className="font-normal mr-2.5 text-sm text-white uppercase tracking-widest font-primary">
+              Processing
+            </span>
+            <div className="w-48 h-px bg-white/20 relative overflow-hidden">
+              <div 
+                ref={progressBarRef}
+                className="h-full bg-white transition-none"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <span className="text-white font-normal ml-2.5 uppercase tracking-widest font-primary" data-scramble="true" data-original-text="Market Analysis">
+              Market Analysis
+            </span>
+          </div>
+        </div>
+
+        {/* Border Bottom */}
+        <div className="absolute bottom-0 left-0 w-full h-8 flex justify-between items-center px-2.5 text-xs text-white font-secondary uppercase tracking-wider">
+          <span>Development Sequence Complete</span>
+          <span>Industrial Gateway Open</span>
+        </div>
+      </div>
+    </div>
+  )
+}

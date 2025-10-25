@@ -1,2 +1,4 @@
 - [] update images on faetures section gallery
--
+- [] hero section toggle button between versions
+- [] translate content to chinese.
+- [] preloader animation
