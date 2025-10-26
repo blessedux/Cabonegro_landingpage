@@ -1,0 +1,104 @@
+{
+  "navigation": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "projects": "Proyectos",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "title": "Cabo Negro",
+    "subtitle": "Desarrollo Industrial Estratégico",
+    "description": "Oportunidades de inversión transformadoras en la zona industrial más estratégica de Chile",
+    "cta": "Explorar Oportunidades"
+  },
+  "features": {
+    "title": "Oportunidad de Inversión Estratégica",
+    "subtitle": "Cabo Negro representa una convergencia única de ubicación estratégica, potencial de energía renovable e infraestructura lista para construir",
+    "strategicGateway": {
+      "title": "Puerta de Entrada Estratégica",
+      "description": "Alternativa al Canal de Panamá conectando los Océanos Atlántico y Pacífico",
+      "highlights": [
+        "Puerta de entrada principal a la Antártida",
+        "Libre de peajes y riesgos geopolíticos",
+        "Corredor marítimo Atlántico-Pacífico"
+      ]
+    },
+    "h2vOpportunity": {
+      "title": "Oportunidad H₂V",
+      "description": "Magallanes podría producir el 13% del hidrógeno verde mundial",
+      "highlights": [
+        "200+ proyectos presentados o en revisión",
+        "Se espera duplicar el PIB regional",
+        "EDF ingresando a finales de 2025"
+      ]
+    },
+    "industrialReady": {
+      "title": "Listo para Industria",
+      "description": "300+ hectáreas de infraestructura industrial lista para construir",
+      "highlights": [
+        "Conectado al corredor principal Ruta 9N",
+        "6 caminos internos (33% construidos)",
+        "Capacidad eléctrica de 13 MW"
+      ]
+    },
+    "maritimeTerminal": {
+      "title": "Terminal Marítimo",
+      "description": "Construcción de puerto en dos fases lista para construir en 2026",
+      "highlights": [
+        "Ubicación de puerto protegido",
+        "Fase 1: Plataforma de 350m + rampa",
+        "Fase 2: Puente de 350m + muelle de 300m"
+      ]
+    },
+    "regulatoryAdvantage": {
+      "title": "Ventaja Regulatoria",
+      "description": "Nuevo plan urbano incluye Cabo Negro como núcleo industrial",
+      "highlights": [
+        "3,258 hectáreas agregadas a límites urbanos",
+        "Zonificación industrial aprobada",
+        "Marco de crecimiento ordenado"
+      ]
+    },
+    "windPotential": {
+      "title": "Potencial Eólico",
+      "description": "7× la capacidad actual de generación de energía de Chile",
+      "highlights": [
+        "Enorme potencial eólico en la región",
+        "Bajos costos de alojamiento y mantenimiento",
+        "Infraestructura de energía sostenible"
+      ]
+    }
+  },
+  "preloader": {
+    "terminal": {
+      "title": "Puerta de Entrada Industrial",
+      "subtitle": "Desarrollo Iniciado",
+      "lines": {
+        "coordinates": "Desarrollo Industrial: Zona Cabo Negro",
+        "coordinatesLocked": "Ubicación Estratégica Asegurada",
+        "calibration": "Iniciando Análisis de Infraestructura",
+        "singularity": "Oportunidad de Inversión Principal Detectada",
+        "tesseract": "Iniciando Desarrollo de Parque Industrial",
+        "matrices": "Matrices de Crecimiento Económico Alineadas",
+        "entanglement": "Portafolio de Inversión Estabilizado",
+        "strings": "Fuerzas del Mercado Operando en Armonía",
+        "aperture": "Ecosistema Empresarial Expandido",
+        "gateway": "Puerta de Entrada Industrial Estabilizada",
+        "parameters": "Parámetros Económicos Optimizados"
+      },
+      "progress": "Procesando Análisis de Mercado",
+      "complete": "Secuencia de Desarrollo Completa",
+      "open": "Puerta de Entrada Industrial Abierta"
+    },
+    "layout": {
+      "brand": "CABO NEGRO",
+      "tagline": "Desarrollo Industrial",
+      "loading": "Cargando",
+      "status": "Inicializando Puerta de Entrada Industrial"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 Desarrollo Industrial Cabo Negro. Todos los derechos reservados.",
+    "coordinates": "51.5074° N, 0.1278° W"
+  }
+}

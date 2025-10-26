@@ -11,93 +11,9 @@ import {
   useHoverSliderContext
 } from '@/components/ui/animated-slideshow'
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 
-const features = [
-  {
-    id: 'strategic-gateway',
-    title: 'Strategic Gateway',
-    titleLine1: 'Strategic',
-    titleLine2: 'Gateway',
-    icon: Globe2,
-    description: 'Panama Canal alternative connecting Atlantic and Pacific Oceans',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center',
-    highlights: [
-      'Primary gateway to Antarctica',
-      'Free of tolls and geopolitical risks',
-      'Atlantic-Pacific maritime corridor'
-    ]
-  },
-  {
-    id: 'h2v-opportunity',
-    title: 'H₂V Opportunity',
-    titleLine1: 'H₂V',
-    titleLine2: 'Opportunity',
-    icon: Zap,
-    description: 'Magallanes could produce 13% of the world\'s green hydrogen',
-    image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
-    highlights: [
-      '200+ projects filed or under review',
-      'Expected to double regional GDP',
-      'EDF entering by end of 2025'
-    ]
-  },
-  {
-    id: 'industrial-park',
-    title: 'Industrial Ready',
-    titleLine1: 'Industrial',
-    titleLine2: 'Ready',
-    icon: Building2,
-    description: '300+ hectares of ready-to-build industrial infrastructure',
-    image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=600&fit=crop&crop=center',
-    highlights: [
-      'Connected to Route 9N main corridor',
-      '6 internal roads (33% built)',
-      '13 MW electrical capacity'
-    ]
-  },
-  {
-    id: 'maritime-terminal',
-    title: 'Maritime Terminal',
-    titleLine1: 'Maritime',
-    titleLine2: 'Terminal',
-    icon: Anchor,
-    description: 'Dual-phase port construction ready-to-build by 2026',
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&crop=center',
-    highlights: [
-      'Protected port location',
-      'Phase 1: 350m platform + ramp',
-      'Phase 2: 350m bridge + 300m pier'
-    ]
-  },
-  {
-    id: 'regulatory-advantage',
-    title: 'Regulatory Advantage',
-    titleLine1: 'Regulatory',
-    titleLine2: 'Advantage',
-    icon: FileCheck,
-    description: 'New urban plan includes Cabo Negro as industrial nucleus',
-    image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=600&fit=crop&crop=center',
-    highlights: [
-      '3,258 hectares added to urban limits',
-      'Industrial zoning approved',
-      'Orderly growth framework'
-    ]
-  },
-  {
-    id: 'wind-potential',
-    title: 'Wind Power Potential',
-    titleLine1: 'Wind Power',
-    titleLine2: 'Potential',
-    icon: TrendingUp,
-    description: '7× Chile\'s current power generation capacity',
-    image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
-    highlights: [
-      'Massive wind potential in region',
-      'Low hosting and maintenance costs',
-      'Sustainable energy infrastructure'
-    ]
-  }
-]
+// Features will be created dynamically using translations
 
 // Custom component to handle conditional overlay
 function FeatureImageWithOverlay({ feature, index }: { feature: any, index: number }) {
@@ -208,6 +124,71 @@ function FeatureImageWithOverlay({ feature, index }: { feature: any, index: numb
 }
 
 export default function Features() {
+  const t = useTranslations('features')
+
+  // Create features array using translations
+  const features = [
+    {
+      id: 'strategic-gateway',
+      title: t('strategicGateway.title'),
+      titleLine1: t('strategicGateway.title').split(' ')[0],
+      titleLine2: t('strategicGateway.title').split(' ').slice(1).join(' '),
+      icon: Globe2,
+      description: t('strategicGateway.description'),
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center',
+      highlights: t.raw('strategicGateway.highlights')
+    },
+    {
+      id: 'h2v-opportunity',
+      title: t('h2vOpportunity.title'),
+      titleLine1: t('h2vOpportunity.title').split(' ')[0],
+      titleLine2: t('h2vOpportunity.title').split(' ').slice(1).join(' '),
+      icon: Zap,
+      description: t('h2vOpportunity.description'),
+      image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
+      highlights: t.raw('h2vOpportunity.highlights')
+    },
+    {
+      id: 'industrial-park',
+      title: t('industrialReady.title'),
+      titleLine1: t('industrialReady.title').split(' ')[0],
+      titleLine2: t('industrialReady.title').split(' ').slice(1).join(' '),
+      icon: Building2,
+      description: t('industrialReady.description'),
+      image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=600&fit=crop&crop=center',
+      highlights: t.raw('industrialReady.highlights')
+    },
+    {
+      id: 'maritime-terminal',
+      title: t('maritimeTerminal.title'),
+      titleLine1: t('maritimeTerminal.title').split(' ')[0],
+      titleLine2: t('maritimeTerminal.title').split(' ').slice(1).join(' '),
+      icon: Anchor,
+      description: t('maritimeTerminal.description'),
+      image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&crop=center',
+      highlights: t.raw('maritimeTerminal.highlights')
+    },
+    {
+      id: 'regulatory-advantage',
+      title: t('regulatoryAdvantage.title'),
+      titleLine1: t('regulatoryAdvantage.title').split(' ')[0],
+      titleLine2: t('regulatoryAdvantage.title').split(' ').slice(1).join(' '),
+      icon: FileCheck,
+      description: t('regulatoryAdvantage.description'),
+      image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=600&fit=crop&crop=center',
+      highlights: t.raw('regulatoryAdvantage.highlights')
+    },
+    {
+      id: 'wind-potential',
+      title: t('windPotential.title'),
+      titleLine1: t('windPotential.title').split(' ')[0],
+      titleLine2: t('windPotential.title').split(' ').slice(1).join(' '),
+      icon: TrendingUp,
+      description: t('windPotential.description'),
+      image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
+      highlights: t.raw('windPotential.highlights')
+    }
+  ]
 
   return (
     <section className="py-20 px-6">
@@ -221,11 +202,11 @@ export default function Features() {
             viewport={{ margin: "-10% 0px -10% 0px" }}
             className="text-4xl md:text-5xl font-bold mb-4"
           >
-            Strategic Investment Opportunity
+            {t('title')}
           </motion.h2>
           <div className="max-w-3xl mx-auto">
             <MagicText 
-              text="Cabo Negro represents a unique convergence of strategic location, renewable energy potential, and ready-to-build infrastructure"
+              text={t('subtitle')}
               className="text-xl text-gray-400"
             />
           </div>

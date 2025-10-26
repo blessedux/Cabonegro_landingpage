@@ -1,0 +1,104 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "projects": "Projects",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Cabo Negro",
+    "subtitle": "Strategic Industrial Development",
+    "description": "Transformative investment opportunities in Chile's most strategic industrial zone",
+    "cta": "Explore Opportunities"
+  },
+  "features": {
+    "title": "Strategic Investment Opportunity",
+    "subtitle": "Cabo Negro represents a unique convergence of strategic location, renewable energy potential, and ready-to-build infrastructure",
+    "strategicGateway": {
+      "title": "Strategic Gateway",
+      "description": "Panama Canal alternative connecting Atlantic and Pacific Oceans",
+      "highlights": [
+        "Primary gateway to Antarctica",
+        "Free of tolls and geopolitical risks",
+        "Atlantic-Pacific maritime corridor"
+      ]
+    },
+    "h2vOpportunity": {
+      "title": "H₂V Opportunity",
+      "description": "Magallanes could produce 13% of the world's green hydrogen",
+      "highlights": [
+        "200+ projects filed or under review",
+        "Expected to double regional GDP",
+        "EDF entering by end of 2025"
+      ]
+    },
+    "industrialReady": {
+      "title": "Industrial Ready",
+      "description": "300+ hectares of ready-to-build industrial infrastructure",
+      "highlights": [
+        "Connected to Route 9N main corridor",
+        "6 internal roads (33% built)",
+        "13 MW electrical capacity"
+      ]
+    },
+    "maritimeTerminal": {
+      "title": "Maritime Terminal",
+      "description": "Dual-phase port construction ready-to-build by 2026",
+      "highlights": [
+        "Protected port location",
+        "Phase 1: 350m platform + ramp",
+        "Phase 2: 350m bridge + 300m pier"
+      ]
+    },
+    "regulatoryAdvantage": {
+      "title": "Regulatory Advantage",
+      "description": "New urban plan includes Cabo Negro as industrial nucleus",
+      "highlights": [
+        "3,258 hectares added to urban limits",
+        "Industrial zoning approved",
+        "Orderly growth framework"
+      ]
+    },
+    "windPotential": {
+      "title": "Wind Power Potential",
+      "description": "7× Chile's current power generation capacity",
+      "highlights": [
+        "Massive wind potential in region",
+        "Low hosting and maintenance costs",
+        "Sustainable energy infrastructure"
+      ]
+    }
+  },
+  "preloader": {
+    "terminal": {
+      "title": "Industrial Gateway",
+      "subtitle": "Development Initiated",
+      "lines": {
+        "coordinates": "Industrial Development: Cabo Negro Zone",
+        "coordinatesLocked": "Strategic Location Secured",
+        "calibration": "Initiating Infrastructure Analysis",
+        "singularity": "Prime Investment Opportunity Detected",
+        "tesseract": "Beginning Industrial Park Development",
+        "matrices": "Economic Growth Matrices Aligned",
+        "entanglement": "Investment Portfolio Stabilized",
+        "strings": "Market Forces Operating in Harmony",
+        "aperture": "Business Ecosystem Expanding",
+        "gateway": "Industrial Gateway Stabilizing",
+        "parameters": "Economic Parameters Optimized"
+      },
+      "progress": "Processing Market Analysis",
+      "complete": "Development Sequence Complete",
+      "open": "Industrial Gateway Open"
+    },
+    "layout": {
+      "brand": "CABO NEGRO",
+      "tagline": "Industrial Development",
+      "loading": "Loading",
+      "status": "Initializing Industrial Gateway"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 Cabo Negro Industrial Development. All rights reserved.",
+    "coordinates": "51.5074° N, 0.1278° W"
+  }
+}
