@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
-// import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
-// import Preloader from '@/components/ui/preloader'
+import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
+import Preloader from '@/components/ui/preloader'
 import Navbar from '@/components/sections/Navbar'
 import Hero from '@/components/sections/Hero'
 import CookieBanner from '@/components/sections/CookieBanner'
@@ -18,9 +18,25 @@ import Footer from '@/components/sections/Footer'
 function HomeContent() {
   const [showCookieBanner, setShowCookieBanner] = useState(true)
   const { isFadingOut } = useAnimation()
+  const { isPreloaderVisible, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+
+  const handlePreloaderComplete = () => {
+    setPreloaderComplete(true)
+    setPreloaderVisible(false)
+  }
 
   return (
-    <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+    <>
+      {/* Preloader - Always shows first */}
+      {isPreloaderVisible && (
+        <Preloader 
+          onComplete={handlePreloaderComplete}
+          duration={6}
+        />
+      )}
+
+      {/* Main Content - Only shows after preloader completes */}
+      <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${isPreloaderVisible ? 'opacity-0' : 'opacity-100'}`}>
         <Navbar />
         <Hero />
         <CookieBanner 
@@ -35,13 +51,16 @@ function HomeContent() {
         <FAQ />
         <Footer />
       </div>
+    </>
   )
 }
 
 export default function Home() {
   return (
-    <AnimationProvider>
-      <HomeContent />
-    </AnimationProvider>
+    <PreloaderProvider>
+      <AnimationProvider>
+        <HomeContent />
+      </AnimationProvider>
+    </PreloaderProvider>
   )
 }
