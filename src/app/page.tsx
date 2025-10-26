@@ -9,7 +9,6 @@ import Hero from '@/components/sections/Hero'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
 import Projects from '@/components/sections/Projects'
-import Timeline from '@/components/sections/Timeline'
 import Partners from '@/components/sections/Partners'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
@@ -140,7 +139,8 @@ function HomeContent() {
       )}
 
       {/* Main Content - Only shows after preloader fade completes */}
-      <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${preloaderFadeComplete ? 'opacity-100' : 'opacity-0'}`}>
+      {preloaderFadeComplete && (
+        <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
         {/* Navigation */}
         <Navbar />
         
@@ -150,7 +150,6 @@ function HomeContent() {
           <Features />
           <Stats />
           <Projects />
-          <Timeline />
           <Partners />
           <FAQ />
         </main>
@@ -162,7 +161,8 @@ function HomeContent() {
         {showCookieBanner && (
           <CookieBanner onAccept={() => setShowCookieBanner(false)} />
         )}
-      </div>
+        </div>
+      )}
     </>
   )
 }

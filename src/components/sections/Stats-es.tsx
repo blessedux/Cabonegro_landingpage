@@ -70,16 +70,16 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
   )
 }
 
-export default function Stats() {
+export default function StatsEs() {
   return (
     <section className="py-20 px-6 bg-white/5">
       <div className="container mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Cabo Negro by the Numbers
+            Cabo Negro en Números
           </h2>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-            Key statistics that define the scale and impact of Chile's premier industrial and maritime hub
+            Estadísticas clave que definen la escala e impacto del principal centro industrial y marítimo de Chile
           </p>
         </div>
 
@@ -88,24 +88,24 @@ export default function Stats() {
             <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
               <AnimatedCounter end={13} suffix="%" />
             </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">of world's green hydrogen</p>
-            <p className="text-gray-500 text-xs">Magallanes production potential</p>
+            <p className="text-gray-300 text-sm font-medium mb-2">del hidrógeno verde mundial</p>
+            <p className="text-gray-500 text-xs">Potencial de producción de Magallanes</p>
           </div>
           
           <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
             <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
               <AnimatedCounter end={300} suffix="+" />
             </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">hectares</p>
-            <p className="text-gray-500 text-xs">Industrial park area</p>
+            <p className="text-gray-300 text-sm font-medium mb-2">hectáreas</p>
+            <p className="text-gray-500 text-xs">Área del parque industrial</p>
           </div>
           
           <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
             <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
               <AnimatedCounter end={200} suffix="+" />
             </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">H₂V projects</p>
-            <p className="text-gray-500 text-xs">Filed or under review at SEA</p>
+            <p className="text-gray-300 text-sm font-medium mb-2">proyectos H₂V</p>
+            <p className="text-gray-500 text-xs">Presentados o en revisión en SEA</p>
           </div>
         </div>
 
@@ -114,16 +114,16 @@ export default function Stats() {
             <div className="text-4xl md:text-5xl font-bold mb-4 text-white">
               <AnimatedCounter end={13} suffix=" MW" />
             </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">electrical capacity</p>
-            <p className="text-gray-500 text-xs">Current infrastructure</p>
+            <p className="text-gray-300 text-sm font-medium mb-2">capacidad eléctrica</p>
+            <p className="text-gray-500 text-xs">Infraestructura actual</p>
           </div>
           
           <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
             <div className="text-4xl md:text-5xl font-bold mb-4 text-white">
               <AnimatedCounter end={2.1} start={0.6} suffix="×" />
             </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">regional GDP</p>
-            <p className="text-gray-500 text-xs">Expected growth from H₂V</p>
+            <p className="text-gray-300 text-sm font-medium mb-2">PIB regional</p>
+            <p className="text-gray-500 text-xs">Crecimiento esperado del H₂V</p>
           </div>
         </div>
       </div>

@@ -1,0 +1,101 @@
+import { Button } from '@/components/ui/button'
+import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
+import Link from 'next/link'
+import { useAnimation } from '@/contexts/AnimationContext'
+import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+
+export default function HeroEs() {
+  const router = useRouter()
+  const { startFadeOut } = useAnimation()
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false)
+
+  const handleExploreTerrain = () => {
+    startFadeOut()
+    
+    // Navigate to explore route after animations
+    setTimeout(() => {
+      router.push('/es/explore')
+    }, 1000)
+  }
+
+  const handleClick = (event: React.MouseEvent) => {
+    // Click handler for future interactive features
+    // Currently just tracks click coordinates for potential use
+  }
+
+  return (
+    <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center overflow-hidden" style={{ touchAction: 'pan-y' }}>
+      {/* Background Spline Scene - Glowing Planet Particles */}
+      <div 
+        className="absolute inset-0 z-0 overflow-hidden"
+        onClick={handleClick}
+      >
+        <iframe 
+          src='https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/' 
+          frameBorder='0' 
+          width='100%' 
+          height='100%'
+          className="w-full h-full"
+          onLoad={() => {
+            setBackgroundLoaded(true)
+          }}
+          style={{ 
+            border: 'none',
+            background: 'transparent',
+            transform: 'scale(1.3)',
+            transformOrigin: 'center center',
+            pointerEvents: 'auto' // Enable pointer events for interaction
+          }}
+        />
+      </div>
+
+      {/* Subtle gradient overlay for better text readability - positioned to not block interactions */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40 z-2 pointer-events-none" />
+      
+
+      <div className="container mx-auto relative z-10 flex justify-start pointer-events-none">
+        <div className="max-w-4xl w-full px-6 lg:px-12 pointer-events-auto">
+          <h1 
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none"
+            style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+          >
+            <BlurTextAnimation 
+              text="Puerta de Entrada al Sur del Mundo"
+              fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
+              textColor="text-white"
+              animationDelay={6000}
+            />
+          </h1>
+          <p 
+            className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl leading-relaxed text-left select-none"
+            style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+          >
+            Cabo Negro es un Centro Industrial y Marítimo Estratégico <br></br>del Hemisferio Sur.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-start items-start">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
+              onClick={handleExploreTerrain}
+              style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+            >
+              Explorar Terreno
+            </Button>
+            <Link href="/es/deck">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
+                style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+              >
+                Ver Deck
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

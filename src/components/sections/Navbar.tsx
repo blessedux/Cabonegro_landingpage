@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
@@ -9,18 +9,20 @@ import { usePreloader } from '@/contexts/PreloaderContext'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [selectedLanguage, setSelectedLanguage] = useState('EN')
   const [isVisible, setIsVisible] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const router = useRouter()
+  const pathname = usePathname()
   const { startFadeOut, isNavbarHidden } = useAnimation()
   const { isPreloaderVisible, isPreloaderComplete } = usePreloader()
 
   const languages = [
-    { code: 'EN', name: 'English' },
-    { code: 'ES', name: 'Español' },
-    { code: 'PT', name: 'Português' }
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'es', name: 'Español', flag: '🇨🇱' }
   ]
+
+  // Determine current language from pathname
+  const currentLocale = pathname.startsWith('/es') ? 'es' : 'en'
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
@@ -32,6 +34,17 @@ export default function Navbar() {
       return () => clearTimeout(timer)
     }
   }, [isPreloaderComplete, isPreloaderVisible])
+
+  // Handle language change
+  const handleLanguageChange = (newLocale: string) => {
+    if (newLocale === 'en') {
+      // Navigate to main page (English)
+      router.push('/')
+    } else {
+      // Navigate to Spanish version
+      router.push('/es')
+    }
+  }
 
   // Handle Explore Terrain click
   const handleExploreTerrain = () => {
@@ -73,14 +86,14 @@ export default function Navbar() {
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
-                    onClick={() => setSelectedLanguage(lang.code)}
+                    onClick={() => handleLanguageChange(lang.code)}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
-                      selectedLanguage === lang.code
+                      currentLocale === lang.code
                         ? 'text-white bg-white/20'
                         : 'text-gray-400 hover:text-white'
                     }`}
                   >
-                    {lang.code}
+                    {lang.code.toUpperCase()}
                   </button>
                 ))}
               </div>
@@ -148,14 +161,14 @@ export default function Navbar() {
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
-                      onClick={() => setSelectedLanguage(lang.code)}
+                      onClick={() => handleLanguageChange(lang.code)}
                       className={`text-xs px-2 py-1 rounded transition-colors ${
-                        selectedLanguage === lang.code
+                        currentLocale === lang.code
                           ? 'text-white bg-white/20'
                           : 'text-gray-400 hover:text-white'
                       }`}
                     >
-                      {lang.code}
+                      {lang.code.toUpperCase()}
                     </button>
                   ))}
                 </div>

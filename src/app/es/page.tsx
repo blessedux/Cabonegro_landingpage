@@ -1,19 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { NextIntlClientProvider } from 'next-intl'
 import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
 import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
-import Preloader from '@/components/ui/preloader'
-import Hero from '@/components/sections/Hero'
+import Preloader from '@/components/ui/preloader-es'
+import Hero from '@/components/sections/Hero-es'
 import Features from '@/components/sections/Features'
-import Stats from '@/components/sections/Stats'
-import Projects from '@/components/sections/Projects'
-import Timeline from '@/components/sections/Timeline'
+import Stats from '@/components/sections/Stats-es'
+import Projects from '@/components/sections/Projects-es'
 import Partners from '@/components/sections/Partners'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
 import CookieBanner from '@/components/sections/CookieBanner'
+import spanishMessages from '../../../messages/es.json'
 
 function HomeContent() {
   const [showCookieBanner, setShowCookieBanner] = useState(true)
@@ -41,9 +42,6 @@ function HomeContent() {
         fontLink.type = 'font/woff2'
         fontLink.crossOrigin = 'anonymous'
         document.head.appendChild(fontLink)
-
-        // Preload critical images (if any)
-        // Add any other critical assets here
 
         // Mark assets as preloaded
         setAssetsPreloaded(true)
@@ -77,7 +75,8 @@ function HomeContent() {
       )}
 
       {/* Main Content - Only shows after preloader fade completes */}
-      <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${preloaderFadeComplete ? 'opacity-100' : 'opacity-0'}`}>
+      {preloaderFadeComplete && (
+        <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
         {/* Navigation */}
         <Navbar />
         
@@ -87,7 +86,6 @@ function HomeContent() {
           <Features />
           <Stats />
           <Projects />
-          <Timeline />
           <Partners />
           <FAQ />
         </main>
@@ -99,16 +97,19 @@ function HomeContent() {
         {showCookieBanner && (
           <CookieBanner onAccept={() => setShowCookieBanner(false)} />
         )}
-      </div>
+        </div>
+      )}
     </>
   )
 }
 
-export default function Home() {
+export default function SpanishHome() {
   return (
     <PreloaderProvider>
       <AnimationProvider>
-        <HomeContent />
+        <NextIntlClientProvider messages={spanishMessages} locale="es">
+          <HomeContent />
+        </NextIntlClientProvider>
       </AnimationProvider>
     </PreloaderProvider>
   )

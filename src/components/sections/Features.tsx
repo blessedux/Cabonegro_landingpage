@@ -109,7 +109,7 @@ function FeatureImageWithOverlay({ feature, index }: { feature: any, index: numb
           >
             <p className="text-sm text-white mb-2 font-bold drop-shadow-lg">{feature.description}</p>
             <ul className="space-y-1">
-              {feature.highlights.slice(0, 2).map((highlight: string, highlightIndex: number) => (
+              {(Array.isArray(feature.highlights) ? feature.highlights : []).slice(0, 2).map((highlight: string, highlightIndex: number) => (
                 <li key={highlightIndex} className="text-xs text-gray-100 flex items-start font-semibold drop-shadow-md">
                   <span className="text-cyan-400 mr-2 font-bold drop-shadow-lg">•</span>
                   {highlight}
@@ -136,7 +136,7 @@ export default function Features() {
       icon: Globe2,
       description: t('strategicGateway.description'),
       image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center',
-      highlights: t.raw('strategicGateway.highlights')
+      highlights: Array.isArray(t.raw('strategicGateway.highlights')) ? t.raw('strategicGateway.highlights') : []
     },
     {
       id: 'h2v-opportunity',
@@ -146,7 +146,7 @@ export default function Features() {
       icon: Zap,
       description: t('h2vOpportunity.description'),
       image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
-      highlights: t.raw('h2vOpportunity.highlights')
+      highlights: Array.isArray(t.raw('h2vOpportunity.highlights')) ? t.raw('h2vOpportunity.highlights') : []
     },
     {
       id: 'industrial-park',
@@ -156,7 +156,7 @@ export default function Features() {
       icon: Building2,
       description: t('industrialReady.description'),
       image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=600&fit=crop&crop=center',
-      highlights: t.raw('industrialReady.highlights')
+      highlights: Array.isArray(t.raw('industrialReady.highlights')) ? t.raw('industrialReady.highlights') : []
     },
     {
       id: 'maritime-terminal',
@@ -166,7 +166,7 @@ export default function Features() {
       icon: Anchor,
       description: t('maritimeTerminal.description'),
       image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&crop=center',
-      highlights: t.raw('maritimeTerminal.highlights')
+      highlights: Array.isArray(t.raw('maritimeTerminal.highlights')) ? t.raw('maritimeTerminal.highlights') : []
     },
     {
       id: 'regulatory-advantage',
@@ -176,7 +176,7 @@ export default function Features() {
       icon: FileCheck,
       description: t('regulatoryAdvantage.description'),
       image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=600&fit=crop&crop=center',
-      highlights: t.raw('regulatoryAdvantage.highlights')
+      highlights: Array.isArray(t.raw('regulatoryAdvantage.highlights')) ? t.raw('regulatoryAdvantage.highlights') : []
     },
     {
       id: 'wind-potential',
@@ -186,7 +186,7 @@ export default function Features() {
       icon: TrendingUp,
       description: t('windPotential.description'),
       image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
-      highlights: t.raw('windPotential.highlights')
+      highlights: Array.isArray(t.raw('windPotential.highlights')) ? t.raw('windPotential.highlights') : []
     }
   ]
 

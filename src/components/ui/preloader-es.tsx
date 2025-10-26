@@ -17,31 +17,30 @@ interface PreloaderProps {
   className?: string
 }
 
-const TERMINAL_LINES: TerminalLine[] = [
-  // Main lines - Cabo Negro specific
-  { id: 'line-1', top: 0, text: 'Cabo Negro Industrial Zone: Magallanes Region', type: 'faded', scramble: true },
-  { id: 'line-2', top: 0, text: 'Strategic Gateway to Antarctica Secured', type: 'highlight', scramble: true },
-  { id: 'line-3', top: 30, text: 'Analyzing H₂V Green Hydrogen Potential', type: 'faded', scramble: true },
-  { id: 'line-4', top: 30, text: '13% Global Green Hydrogen Production Detected', type: 'highlight', scramble: true },
-  { id: 'line-5', top: 60, text: 'Initializing Maritime Terminal Construction', type: 'highlight', scramble: true },
-  { id: 'line-6', top: 90, text: 'Panama Canal Alternative Route Activated', type: 'highlight', scramble: true },
-  { id: 'line-7', top: 165, text: '300+ Hectares Industrial Infrastructure Ready', type: 'highlight', scramble: true },
-  { id: 'line-8', top: 195, text: 'Route 9N Main Corridor Connected', type: 'highlight', scramble: true },
-  { id: 'line-9', top: 225, text: 'Atlantic-Pacific Maritime Corridor Opening', type: 'highlight', scramble: true },
-  { id: 'line-10', top: 255, text: 'EDF Investment Pipeline Stabilizing', type: 'highlight', scramble: true },
-  { id: 'line-11', top: 285, text: 'Regional GDP Doubling Projection Confirmed', type: 'highlight', scramble: true },
+const TERMINAL_LINES_ES: TerminalLine[] = [
+  // Main lines - Cabo Negro specific in Spanish
+  { id: 'line-1', top: 0, text: 'Zona Industrial Cabo Negro: Región de Magallanes', type: 'faded', scramble: true },
+  { id: 'line-2', top: 0, text: 'Puerta de Entrada Estratégica a la Antártida Asegurada', type: 'highlight', scramble: true },
+  { id: 'line-3', top: 30, text: 'Analizando Potencial de Hidrógeno Verde H₂V', type: 'faded', scramble: true },
+  { id: 'line-4', top: 30, text: '13% de Producción Mundial de Hidrógeno Verde Detectada', type: 'highlight', scramble: true },
+  { id: 'line-5', top: 60, text: 'Inicializando Construcción de Terminal Marítimo', type: 'highlight', scramble: true },
+  { id: 'line-6', top: 90, text: 'Ruta Alternativa al Canal de Panamá Activada', type: 'highlight', scramble: true },
+  { id: 'line-7', top: 165, text: '300+ Hectáreas de Infraestructura Industrial Lista', type: 'highlight', scramble: true },
+  { id: 'line-8', top: 195, text: 'Corredor Principal Ruta 9N Conectado', type: 'highlight', scramble: true },
+  { id: 'line-9', top: 225, text: 'Corredor Marítimo Atlántico-Pacífico Abriendo', type: 'highlight', scramble: true },
+  { id: 'line-10', top: 255, text: 'Canal de Inversión EDF Estabilizando', type: 'highlight', scramble: true },
+  { id: 'line-11', top: 285, text: 'Proyección de Duplicación del PIB Regional Confirmada', type: 'highlight', scramble: true },
   
-  // Background faded lines - Technical details
-  { id: 'bg-1', top: 15, text: 'Wind Power Potential: 7× Chile Current Capacity', type: 'faded', scramble: true },
-  { id: 'bg-2', top: 45, text: 'Processing 200+ Filed H₂V Projects', type: 'faded', scramble: true },
-  { id: 'bg-3', top: 75, text: 'Scanning 3,258 Hectares Urban Expansion', type: 'faded', scramble: true },
-  { id: 'bg-4', top: 105, text: 'Analyzing 13 MW Electrical Capacity', type: 'faded', scramble: true },
-  { id: 'bg-5', top: 180, text: 'Processing Phase 1: 350m Platform + Ramp', type: 'faded', scramble: true },
-  { id: 'bg-6', top: 210, text: 'Calibrating Phase 2: 350m Bridge + 300m Pier', type: 'faded', scramble: true },
-  { id: 'bg-7', top: 240, text: 'Evaluating Geopolitical Risk Assessment', type: 'faded', scramble: true },
-  { id: 'bg-8', top: 270, text: 'Stabilizing Industrial Zoning Framework', type: 'faded', scramble: true },
+  // Background faded lines - Technical details in Spanish
+  { id: 'bg-1', top: 15, text: 'Potencial Eólico: 7× Capacidad Actual de Chile', type: 'faded', scramble: true },
+  { id: 'bg-2', top: 45, text: 'Procesando 200+ Proyectos H₂V Presentados', type: 'faded', scramble: true },
+  { id: 'bg-3', top: 75, text: 'Escaneando 3,258 Hectáreas de Expansión Urbana', type: 'faded', scramble: true },
+  { id: 'bg-4', top: 105, text: 'Analizando Capacidad Eléctrica de 13 MW', type: 'faded', scramble: true },
+  { id: 'bg-5', top: 180, text: 'Procesando Fase 1: Plataforma de 350m + Rampa', type: 'faded', scramble: true },
+  { id: 'bg-6', top: 210, text: 'Calibrando Fase 2: Puente de 350m + Muelle de 300m', type: 'faded', scramble: true },
+  { id: 'bg-7', top: 240, text: 'Evaluando Evaluación de Riesgo Geopolítico', type: 'faded', scramble: true },
+  { id: 'bg-8', top: 270, text: 'Estabilizando Marco de Zonificación Industrial', type: 'faded', scramble: true },
 ]
-
 
 // Custom scramble effect function
 const scrambleText = (element: HTMLElement, originalText: string, chars: string = '▪', speed: number = 0.1) => {
@@ -70,7 +69,7 @@ const scrambleText = (element: HTMLElement, originalText: string, chars: string 
   return () => clearInterval(interval)
 }
 
-export default function Preloader({ onComplete, duration = 6, className = '' }: PreloaderProps) {
+export default function PreloaderEs({ onComplete, duration = 6, className = '' }: PreloaderProps) {
   const [progress, setProgress] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
   const [isFadingOut, setIsFadingOut] = useState(false)
@@ -223,13 +222,13 @@ export default function Preloader({ onComplete, duration = 6, className = '' }: 
       <div className="w-[90%] max-w-4xl h-auto max-h-[500px] py-4 relative overflow-hidden block opacity-100">
         {/* Border Top */}
         <div className="absolute top-0 left-0 w-full h-8 flex justify-between items-center px-2.5 text-xs text-white font-secondary uppercase tracking-wider">
-          <span>Cabo Negro Industrial Zone</span>
-          <span>Strategic Development Active</span>
+          <span>Zona Industrial Cabo Negro</span>
+          <span>Desarrollo Estratégico Activo</span>
         </div>
 
         {/* Terminal Container */}
         <div className="relative h-[350px] mt-8 overflow-hidden p-2.5">
-          {TERMINAL_LINES.map((line, index) => (
+          {TERMINAL_LINES_ES.map((line, index) => (
             <div
               key={line.id}
               ref={(el) => {
@@ -255,7 +254,7 @@ export default function Preloader({ onComplete, duration = 6, className = '' }: 
           {/* Progress Line */}
           <div className="absolute top-[135px] left-0 w-full h-5 flex items-center pl-2.5">
             <span className="font-normal mr-2.5 text-sm text-white uppercase tracking-widest font-primary">
-              Initializing
+              Inicializando
             </span>
             <div className="w-48 h-px bg-white/20 relative overflow-hidden">
               <div 
@@ -267,17 +266,17 @@ export default function Preloader({ onComplete, duration = 6, className = '' }: 
             <span 
               className="text-white font-normal ml-2.5 uppercase tracking-widest font-primary" 
               data-scramble="true" 
-              data-original-text="H₂V Infrastructure"
+              data-original-text="Infraestructura H₂V"
             >
-              H₂V Infrastructure
+              Infraestructura H₂V
             </span>
           </div>
         </div>
 
         {/* Border Bottom */}
         <div className="absolute bottom-0 left-0 w-full h-8 flex justify-between items-center px-2.5 text-xs text-white font-secondary uppercase tracking-wider">
-          <span>Strategic Gateway Sequence Complete</span>
-          <span>Cabo Negro Industrial Zone Active</span>
+          <span>Secuencia de Puerta de Entrada Estratégica Completa</span>
+          <span>Zona Industrial Cabo Negro Activa</span>
         </div>
       </div>
     </div>
