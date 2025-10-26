@@ -4,9 +4,10 @@ import { createContext, useContext, useState, ReactNode } from 'react'
 
 interface PreloaderContextType {
   isPreloaderVisible: boolean
-  setPreloaderVisible: (visible: boolean) => void
   isPreloaderComplete: boolean
-  setPreloaderComplete: (complete: boolean) => void
+  showPreloader: () => void
+  hidePreloader: () => void
+  completePreloader: () => void
 }
 
 const PreloaderContext = createContext<PreloaderContextType | undefined>(undefined)
@@ -15,21 +16,31 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const [isPreloaderVisible, setIsPreloaderVisible] = useState(true)
   const [isPreloaderComplete, setIsPreloaderComplete] = useState(false)
 
-  const setPreloaderVisible = (visible: boolean) => {
-    setIsPreloaderVisible(visible)
+  const showPreloader = () => {
+    setIsPreloaderVisible(true)
+    setIsPreloaderComplete(false)
   }
 
-  const setPreloaderComplete = (complete: boolean) => {
-    setIsPreloaderComplete(complete)
+  const hidePreloader = () => {
+    setIsPreloaderVisible(false)
+  }
+
+  const completePreloader = () => {
+    setIsPreloaderComplete(true)
+    // Auto-hide after completion
+    setTimeout(() => {
+      setIsPreloaderVisible(false)
+    }, 1000)
   }
 
   return (
     <PreloaderContext.Provider
       value={{
         isPreloaderVisible,
-        setPreloaderVisible,
         isPreloaderComplete,
-        setPreloaderComplete,
+        showPreloader,
+        hidePreloader,
+        completePreloader,
       }}
     >
       {children}
