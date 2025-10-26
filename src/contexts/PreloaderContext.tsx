@@ -5,6 +5,8 @@ import { createContext, useContext, useState, ReactNode } from 'react'
 interface PreloaderContextType {
   isPreloaderVisible: boolean
   isPreloaderComplete: boolean
+  setPreloaderVisible: (visible: boolean) => void
+  setPreloaderComplete: (complete: boolean) => void
   showPreloader: () => void
   hidePreloader: () => void
   completePreloader: () => void
@@ -38,6 +40,8 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
       value={{
         isPreloaderVisible,
         isPreloaderComplete,
+        setPreloaderVisible: setIsPreloaderVisible,
+        setPreloaderComplete: setIsPreloaderComplete,
         showPreloader,
         hidePreloader,
         completePreloader,

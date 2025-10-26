@@ -1,66 +1,54 @@
 'use client'
 
 import { useState } from 'react'
-import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
-import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
 import Preloader from '@/components/ui/preloader'
-import Navbar from '@/components/sections/Navbar'
-import Hero from '@/components/sections/Hero'
-import CookieBanner from '@/components/sections/CookieBanner'
-import Features from '@/components/sections/Features'
-import IndustrialSpecs from '@/components/sections/IndustrialSpecs'
-import Stats from '@/components/sections/Stats'
-import H2VOpportunity from '@/components/sections/HowItWorks'
-import IndustrialPark from '@/components/sections/Projects'
-import FAQ from '@/components/sections/FAQ'
-import Footer from '@/components/sections/Footer'
 
-function HomeContent() {
-  const [showCookieBanner, setShowCookieBanner] = useState(true)
-  const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+export default function Home() {
+  const [showPreloader, setShowPreloader] = useState(true)
+  const [preloaderComplete, setPreloaderComplete] = useState(false)
 
   const handlePreloaderComplete = () => {
     setPreloaderComplete(true)
-    setPreloaderVisible(false)
+    setShowPreloader(false)
   }
 
   return (
-    <>
-      {/* Preloader - Always shows first */}
-      {isPreloaderVisible && (
+    <div className="min-h-screen bg-black text-white">
+      {/* Preloader */}
+      {showPreloader && (
         <Preloader 
           onComplete={handlePreloaderComplete}
           duration={6}
         />
       )}
 
-      {/* Main Content - Only shows after preloader completes */}
-      <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${isPreloaderVisible ? 'opacity-0' : 'opacity-100'}`}>
-        <Navbar />
-        <Hero />
-        <CookieBanner 
-          showCookieBanner={showCookieBanner}
-          setShowCookieBanner={setShowCookieBanner}
-        />
-        <Features />
-        <IndustrialSpecs />
-        <Stats />
-        <H2VOpportunity />
-        <IndustrialPark />
-        <FAQ />
-        <Footer />
+      {/* Main Content */}
+      <div className={`transition-opacity duration-1000 ${showPreloader ? 'opacity-0' : 'opacity-100'}`}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-8">
+            <h1 className="text-6xl font-bold text-white">
+              Cabo Negro Industrial Development
+            </h1>
+            
+            <div className="space-y-4 text-gray-300">
+              <p className="text-xl">
+                Welcome to Cabo Negro - Chile's strategic gateway to industrial excellence.
+              </p>
+              
+              <div className="bg-gray-900/50 p-6 rounded-lg border border-gray-700 max-w-2xl mx-auto">
+                <h3 className="text-lg font-semibold mb-3 text-white">Industrial Zone Features:</h3>
+                <ul className="text-left space-y-2">
+                  <li>• H₂V Green Hydrogen Production Hub</li>
+                  <li>• Maritime Terminal Infrastructure</li>
+                  <li>• Panama Canal Alternative Route</li>
+                  <li>• 300+ Hectares Industrial Development</li>
+                  <li>• Strategic Atlantic-Pacific Corridor</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </>
-  )
-}
-
-export default function Home() {
-  return (
-    <PreloaderProvider>
-      <AnimationProvider>
-        <HomeContent />
-      </AnimationProvider>
-    </PreloaderProvider>
+    </div>
   )
 }

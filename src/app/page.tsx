@@ -1,28 +1,132 @@
 'use client'
 
-import { useState } from 'react'
-import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
+import { useState, useEffect } from 'react'
+import { NextIntlClientProvider } from 'next-intl'
 import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
+import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader'
-import Navbar from '@/components/sections/Navbar'
 import Hero from '@/components/sections/Hero'
-import CookieBanner from '@/components/sections/CookieBanner'
 import Features from '@/components/sections/Features'
-import IndustrialSpecs from '@/components/sections/IndustrialSpecs'
 import Stats from '@/components/sections/Stats'
-import H2VOpportunity from '@/components/sections/HowItWorks'
-import IndustrialPark from '@/components/sections/Projects'
+import Projects from '@/components/sections/Projects'
+import Timeline from '@/components/sections/Timeline'
+import Partners from '@/components/sections/Partners'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
+import Navbar from '@/components/sections/Navbar'
+import CookieBanner from '@/components/sections/CookieBanner'
+
+// Mock messages for the main page
+const messages = {
+  features: {
+    title: "Strategic Investment Opportunity",
+    subtitle: "Cabo Negro represents a unique convergence of strategic location, renewable energy potential, and ready-to-build infrastructure",
+    strategicGateway: {
+      title: "Strategic Gateway",
+      description: "Panama Canal alternative connecting Atlantic and Pacific Oceans",
+      highlights: [
+        "Primary gateway to Antarctica",
+        "Free of tolls and geopolitical risks",
+        "Atlantic-Pacific maritime corridor"
+      ]
+    },
+    h2vOpportunity: {
+      title: "H₂V Opportunity",
+      description: "Magallanes could produce 13% of the world's green hydrogen",
+      highlights: [
+        "200+ projects filed or under review",
+        "Expected to double regional GDP",
+        "EDF entering by end of 2025"
+      ]
+    },
+    industrialReady: {
+      title: "Industrial Ready",
+      description: "300+ hectares of ready-to-build industrial infrastructure",
+      highlights: [
+        "Connected to Route 9N main corridor",
+        "6 internal roads (33% built)",
+        "13 MW electrical capacity"
+      ]
+    },
+    maritimeTerminal: {
+      title: "Maritime Terminal",
+      description: "Dual-phase port construction ready-to-build by 2026",
+      highlights: [
+        "Protected port location",
+        "Phase 1: 350m platform + ramp",
+        "Phase 2: 350m bridge + 300m pier"
+      ]
+    },
+    regulatoryAdvantage: {
+      title: "Regulatory Advantage",
+      description: "Streamlined permitting and international compliance",
+      highlights: [
+        "SEA environmental approval",
+        "International maritime standards",
+        "Fast-track development process"
+      ]
+    },
+    investmentReady: {
+      title: "Investment Ready",
+      description: "Immediate development opportunities with proven infrastructure",
+      highlights: [
+        "Ready-to-build industrial lots",
+        "Existing utility connections",
+        "Strategic partnership opportunities"
+      ]
+    }
+  }
+}
 
 function HomeContent() {
   const [showCookieBanner, setShowCookieBanner] = useState(true)
+  const [assetsPreloaded, setAssetsPreloaded] = useState(false)
+  const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
   const { isFadingOut } = useAnimation()
   const { isPreloaderVisible, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+
+  // Preload critical assets
+  useEffect(() => {
+    const preloadAssets = async () => {
+      try {
+        // Preload Spline scene
+        const splineLink = document.createElement('link')
+        splineLink.rel = 'preload'
+        splineLink.href = 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/'
+        splineLink.as = 'document'
+        document.head.appendChild(splineLink)
+
+        // Preload critical fonts
+        const fontLink = document.createElement('link')
+        fontLink.rel = 'preload'
+        fontLink.href = '/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2'
+        fontLink.as = 'font'
+        fontLink.type = 'font/woff2'
+        fontLink.crossOrigin = 'anonymous'
+        document.head.appendChild(fontLink)
+
+        // Preload critical images (if any)
+        // Add any other critical assets here
+
+        // Mark assets as preloaded
+        setAssetsPreloaded(true)
+      } catch (error) {
+        console.warn('Asset preloading failed:', error)
+        setAssetsPreloaded(true) // Continue anyway
+      }
+    }
+
+    preloadAssets()
+  }, [])
 
   const handlePreloaderComplete = () => {
     setPreloaderComplete(true)
     setPreloaderVisible(false)
+    
+    // Wait for preloader fade to complete before showing main content
+    setTimeout(() => {
+      setPreloaderFadeComplete(true)
+    }, 1000) // Match the preloader fade duration
   }
 
   return (
@@ -35,21 +139,29 @@ function HomeContent() {
         />
       )}
 
-      {/* Main Content - Only shows after preloader completes */}
-      <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${isPreloaderVisible ? 'opacity-0' : 'opacity-100'}`}>
+      {/* Main Content - Only shows after preloader fade completes */}
+      <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${preloaderFadeComplete ? 'opacity-100' : 'opacity-0'}`}>
+        {/* Navigation */}
         <Navbar />
-        <Hero />
-        <CookieBanner 
-          showCookieBanner={showCookieBanner}
-          setShowCookieBanner={setShowCookieBanner}
-        />
-        <Features />
-        <IndustrialSpecs />
-        <Stats />
-        <H2VOpportunity />
-        <IndustrialPark />
-        <FAQ />
+        
+        {/* Main Sections */}
+        <main>
+          <Hero />
+          <Features />
+          <Stats />
+          <Projects />
+          <Timeline />
+          <Partners />
+          <FAQ />
+        </main>
+        
+        {/* Footer */}
         <Footer />
+        
+        {/* Cookie Banner */}
+        {showCookieBanner && (
+          <CookieBanner onAccept={() => setShowCookieBanner(false)} />
+        )}
       </div>
     </>
   )
@@ -57,10 +169,12 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <PreloaderProvider>
-      <AnimationProvider>
-        <HomeContent />
-      </AnimationProvider>
-    </PreloaderProvider>
+    <NextIntlClientProvider messages={messages} locale="en">
+      <PreloaderProvider>
+        <AnimationProvider>
+          <HomeContent />
+        </AnimationProvider>
+      </PreloaderProvider>
+    </NextIntlClientProvider>
   )
 }

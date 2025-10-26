@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
+import { usePreloader } from '@/contexts/PreloaderContext'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -13,6 +14,7 @@ export default function Navbar() {
   const [isHidden, setIsHidden] = useState(false)
   const router = useRouter()
   const { startFadeOut, isNavbarHidden } = useAnimation()
+  const { isPreloaderVisible, isPreloaderComplete } = usePreloader()
 
   const languages = [
     { code: 'EN', name: 'English' },
@@ -20,14 +22,16 @@ export default function Navbar() {
     { code: 'PT', name: 'Português' }
   ]
 
-  // Dropdown animation on page load
+  // Dropdown animation only after preloader completes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, 100) // Small delay for smooth entrance
+    if (isPreloaderComplete && !isPreloaderVisible) {
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+      }, 500) // Delay for smooth entrance after preloader
 
-    return () => clearTimeout(timer)
-  }, [])
+      return () => clearTimeout(timer)
+    }
+  }, [isPreloaderComplete, isPreloaderVisible])
 
   // Handle Explore Terrain click
   const handleExploreTerrain = () => {
@@ -41,7 +45,7 @@ export default function Navbar() {
 
   return (
     <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      isNavbarHidden 
+      isNavbarHidden || isPreloaderVisible
         ? '-translate-y-full opacity-0' 
         : isVisible 
           ? 'top-0 translate-y-0 opacity-100' 
