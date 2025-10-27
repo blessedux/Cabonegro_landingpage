@@ -81,11 +81,13 @@ export default function Navbar() {
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
-              <img 
-                src="/cabonegro_logo.png" 
-                alt="Cabo Negro" 
-                className="h-11 w-auto"
-              />
+              <Link href="/" className="cursor-pointer">
+                <img 
+                  src="/cabonegro_logo.png" 
+                  alt="Cabo Negro" 
+                  className="h-11 w-auto hover:opacity-80 transition-opacity"
+                />
+              </Link>
             </div>
 
             {/* Desktop Navigation */}
@@ -97,7 +99,6 @@ export default function Navbar() {
                 Explore Terrain
               </button>
               <Link href="/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">View Deck</Link>
-              <a href="#Partners" className="text-sm hover:text-gray-300 transition-colors uppercase">Partners</a>
               <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
               
               {/* Language Toggle */}
@@ -159,13 +160,6 @@ export default function Navbar() {
                 >
                   View Deck
                 </Link>
-                <a 
-                  href="#Partners" 
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Partners
-                </a>
                 <a 
                   href="#FAQ" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
