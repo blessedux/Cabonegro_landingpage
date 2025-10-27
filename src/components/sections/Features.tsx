@@ -239,7 +239,7 @@ export default function Features() {
 
   return (
     <DarkGradientBg className="min-h-screen">
-      <section ref={featuresRef} className="py-20 px-6 overflow-visible">
+      <section ref={featuresRef} className="py-20 px-3 md:px-6 overflow-visible">
         <div className="container mx-auto overflow-visible">
           {/* Rounded Card Container */}
           <div className="relative overflow-visible">
@@ -268,14 +268,14 @@ export default function Features() {
               {isMobile ? (
                 /* Mobile Layout: Full width background with titles */
                 <HoverSlider className="min-h-[80vh] place-content-center bg-transparent text-white">
-                  <div className="px-6 md:px-12 py-6">
+                  <div className="px-3 md:px-12 py-6">
                     <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
                       / strategic advantages
                     </h3>
                   </div>
                   
                   {/* Background container constrained to card boundaries */}
-                  <div className="relative min-h-[60vh] mx-6 md:mx-12 overflow-hidden rounded-2xl">
+                  <div className="relative min-h-[60vh] mx-3 md:mx-12 overflow-hidden rounded-2xl">
                     {/* Image Gallery Container */}
                     <div className="absolute inset-0 rounded-2xl">
                       {features.map((feature, index) => (
@@ -331,7 +331,7 @@ export default function Features() {
                     </div>
                     
                     {/* Titles overlay */}
-                    <div className="relative z-10 p-6 flex flex-col space-y-4">
+                    <div className="relative z-10 p-3 md:p-6 flex flex-col space-y-4">
                       {features.map((feature, index) => (
                         <div 
                           key={feature.id} 

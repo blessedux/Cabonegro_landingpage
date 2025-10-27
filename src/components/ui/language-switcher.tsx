@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { usePreloader } from '@/contexts/PreloaderContext'
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -12,18 +13,39 @@ export default function LanguageSwitcher() {
   const router = useRouter()
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  const { setPreloaderComplete, setPreloaderVisible } = usePreloader()
   
   // Determine current language from pathname
   const currentLocale = pathname.startsWith('/es') ? 'es' : 'en'
   const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
 
   const handleLanguageChange = (newLocale: string) => {
+    // Remove current locale prefix from pathname
+    let pathWithoutLocale = pathname
+    if (pathname.startsWith('/es')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/es'
+    }
+    
+    // Ensure path starts with '/'
+    if (!pathWithoutLocale.startsWith('/')) {
+      pathWithoutLocale = '/' + pathWithoutLocale
+    }
+    
+    // Handle empty path (root)
+    if (pathWithoutLocale === '/') {
+      pathWithoutLocale = ''
+    }
+    
+    // Reset preloader state to prevent black screen
+    setPreloaderComplete(true)
+    setPreloaderVisible(false)
+    
+    // Navigate to the new locale with the same path
+    // English routes don't have a prefix, Spanish routes use /es prefix
     if (newLocale === 'en') {
-      // Navigate to main page (English)
-      router.push('/')
+      router.push(pathWithoutLocale || '/')
     } else {
-      // Navigate to Spanish version
-      router.push('/es')
+      router.push('/es' + pathWithoutLocale)
     }
     setIsOpen(false)
   }

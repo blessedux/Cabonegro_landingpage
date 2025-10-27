@@ -47,12 +47,28 @@ export default function NavbarEs() {
 
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
+    // Remove current locale prefix from pathname
+    let pathWithoutLocale = pathname
+    if (pathname.startsWith('/es')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/es'
+    }
+    
+    // Ensure path starts with '/'
+    if (!pathWithoutLocale.startsWith('/')) {
+      pathWithoutLocale = '/' + pathWithoutLocale
+    }
+    
+    // Handle empty path (root)
+    if (pathWithoutLocale === '/') {
+      pathWithoutLocale = ''
+    }
+    
+    // Navigate to the new locale with the same path
+    // English routes don't have a prefix, Spanish routes use /es prefix
     if (newLocale === 'en') {
-      // Navigate to main page (English)
-      router.push('/')
+      router.push(pathWithoutLocale || '/')
     } else {
-      // Navigate to Spanish version
-      router.push('/es')
+      router.push('/es' + pathWithoutLocale)
     }
   }
 
@@ -99,7 +115,7 @@ export default function NavbarEs() {
                 Explorar Terreno
               </button>
               <Link href="/es/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">Ver Deck</Link>
-              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">Preguntas Frecuentes</a>
+              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
               
               {/* Language Toggle */}
               <div className="flex items-center gap-2">
@@ -165,7 +181,7 @@ export default function NavbarEs() {
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Preguntas Frecuentes
+                  FAQ
                 </a>
                 
                 {/* Mobile Language Toggle */}

@@ -82,7 +82,6 @@ const messages = {
 }
 
 function HomeContent() {
-  const [showCookieBanner, setShowCookieBanner] = useState(true)
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
   const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
   const { isFadingOut } = useAnimation()
@@ -168,10 +167,7 @@ function HomeContent() {
         <Footer />
         
         {/* Cookie Banner */}
-        <CookieBanner 
-          showCookieBanner={showCookieBanner} 
-          setShowCookieBanner={setShowCookieBanner} 
-        />
+        <CookieBanner />
         </div>
       )}
     </>

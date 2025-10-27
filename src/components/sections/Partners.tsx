@@ -33,7 +33,7 @@ export default function Partners() {
   const descriptionOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
   return (
-    <section ref={partnersRef} className="py-20 px-6 relative overflow-hidden bg-black">
+    <section ref={partnersRef} className="py-20 px-3 md:px-6 relative overflow-hidden bg-black">
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-16">
           <motion.div

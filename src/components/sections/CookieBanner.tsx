@@ -1,13 +1,11 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { useCookieBanner } from '@/contexts/CookieBannerContext'
 
-interface CookieBannerProps {
-  showCookieBanner: boolean
-  setShowCookieBanner: (show: boolean) => void
-}
+export default function CookieBanner() {
+  const { showCookieBanner, acceptCookies, rejectCookies } = useCookieBanner()
 
-export default function CookieBanner({ showCookieBanner, setShowCookieBanner }: CookieBannerProps) {
   if (!showCookieBanner) return null
 
   return (
@@ -20,14 +18,14 @@ export default function CookieBanner({ showCookieBanner, setShowCookieBanner }: 
           <Button
             variant="outline"
             className="uppercase border-white text-white hover:bg-white hover:text-black"
-            onClick={() => setShowCookieBanner(false)}
+            onClick={acceptCookies}
           >
             Accept All
           </Button>
           <Button
             variant="ghost"
             className="uppercase text-white hover:text-gray-300"
-            onClick={() => setShowCookieBanner(false)}
+            onClick={rejectCookies}
           >
             Reject Non-Essential
           </Button>

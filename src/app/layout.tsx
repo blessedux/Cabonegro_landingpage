@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
+import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +22,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <PreloaderProvider>
           <AnimationProvider>
-            {children}
+            <CookieBannerProvider>
+              {children}
+            </CookieBannerProvider>
           </AnimationProvider>
         </PreloaderProvider>
       </body>

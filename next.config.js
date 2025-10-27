@@ -36,6 +36,19 @@ const nextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-src 'self' https://my.spline.design https://*.spline.design; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com; font-src 'self' https://fonts.cdnfonts.com; img-src 'self' data: https:; connect-src 'self' https://my.spline.design https://*.spline.design;"
+          }
+        ]
+      }
+    ]
+  }
 };
 
 module.exports = withNextIntl(nextConfig);

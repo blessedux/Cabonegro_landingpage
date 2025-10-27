@@ -16,7 +16,6 @@ import Navbar from '@/components/sections/Navbar'
 import CookieBanner from '@/components/sections/CookieBanner'
 
 function HomeContent() {
-  const [showCookieBanner, setShowCookieBanner] = useState(true)
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
   const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
   const { isFadingOut } = useAnimation()
@@ -104,10 +103,7 @@ function HomeContent() {
           <Footer />
 
           {/* Cookie Banner */}
-          <CookieBanner 
-            showCookieBanner={showCookieBanner} 
-            setShowCookieBanner={setShowCookieBanner} 
-          />
+          <CookieBanner />
         </div>
       )}
     </>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '@/components/sections/Navbar'
 import Footer from '@/components/sections/Footer'
+import { DownloadDeckButton } from '@/components/ui/download-deck-button'
 
 function DeckPageContent() {
   const [isVisible, setIsVisible] = useState(false)
@@ -19,7 +20,15 @@ function DeckPageContent() {
       <Navbar />
       
       {isVisible && (
-        <main className="pt-20 h-screen">
+        <main className="pt-20 h-screen relative">
+          {/* Download Button Overlay */}
+          <div className="absolute top-24 right-4 z-10">
+            <DownloadDeckButton 
+              variant="outline"
+              className="bg-black/80 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-black shadow-lg"
+            />
+          </div>
+          
           <div className="h-full">
             <iframe 
               src="https://gamma.app/embed/8uz4114rec81me0" 
