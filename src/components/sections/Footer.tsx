@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default function Footer() {
   return (
@@ -11,10 +12,10 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-wrap gap-8">
-            <a href="#Explore" className="text-sm text-gray-400 hover:text-white uppercase">Explore Terrain</a>
-            <a href="#Deck" className="text-sm text-gray-400 hover:text-white uppercase">View Deck</a>
-            <a href="#Partners" className="text-sm text-gray-400 hover:text-white uppercase">Partners</a>
-            <a href="#FAQ" className="text-sm text-gray-400 hover:text-white uppercase">FAQ</a>
+            <Link href="/explore" className="text-sm text-gray-400 hover:text-white uppercase">Explore Terrain</Link>
+            <Link href="/deck" className="text-sm text-gray-400 hover:text-white uppercase">View Deck</Link>
+            <Link href="/partners" className="text-sm text-gray-400 hover:text-white uppercase">Partners</Link>
+            <Link href="/#FAQ" className="text-sm text-gray-400 hover:text-white uppercase">FAQ</Link>
           </div>
         </div>
       </div>
