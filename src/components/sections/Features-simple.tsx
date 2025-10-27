@@ -12,7 +12,7 @@ const features = [
     titleLine2: 'Gateway',
     icon: Globe2,
     description: 'Positioned at the southern tip of Chile, Cabo Negro offers unparalleled access to Antarctica and global shipping routes.',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center',
+    image: '/stretegicgateway.webp',
     highlights: ['Gateway to Antarctica', 'Global Shipping Routes', 'Strategic Location']
   },
   {
@@ -22,7 +22,7 @@ const features = [
     titleLine2: 'Opportunity',
     icon: Zap,
     description: 'Strategic positioning for green hydrogen production, contributing to Chile\'s 13% global production target.',
-    image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
+    image: '/h2_hydrogen.png',
     highlights: ['13% Global H₂V', 'Green Hydrogen', 'Sustainable Energy']
   },
   {

@@ -171,7 +171,7 @@ export default function Features() {
       titleLine2: t('strategicGateway.title').split(' ').slice(1).join(' '),
       icon: Globe2,
       description: t('strategicGateway.description'),
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&crop=center',
+      image: '/stretegicgateway.webp',
       highlights: Array.isArray(t.raw('strategicGateway.highlights')) ? t.raw('strategicGateway.highlights') : []
     },
     {
@@ -181,7 +181,7 @@ export default function Features() {
       titleLine2: t('h2vOpportunity.title').split(' ').slice(1).join(' '),
       icon: Zap,
       description: t('h2vOpportunity.description'),
-      image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
+      image: '/h2_hydrogen.png',
       highlights: Array.isArray(t.raw('h2vOpportunity.highlights')) ? t.raw('h2vOpportunity.highlights') : []
     },
     {
