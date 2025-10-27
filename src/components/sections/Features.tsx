@@ -22,7 +22,7 @@ interface Feature {
   title: string;
   titleLine1: string;
   titleLine2: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   description: string;
   image: string;
   highlights: string[];

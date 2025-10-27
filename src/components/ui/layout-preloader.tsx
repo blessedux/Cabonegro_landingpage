@@ -443,7 +443,7 @@ export default function LayoutPreloader({ onComplete, duration = 6, className = 
     )
 
     return mainTl
-  }, [])
+  }, [onComplete])
 
   const handleRestart = () => {
     initAnimation()

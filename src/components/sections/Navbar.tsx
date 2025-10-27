@@ -140,13 +140,13 @@ export default function Navbar() {
                 >
                   Explore Terrain
                 </button>
-                <a 
+                <Link 
                   href="/deck" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   View Deck
-                </a>
+                </Link>
                 <a 
                   href="#Partners" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
