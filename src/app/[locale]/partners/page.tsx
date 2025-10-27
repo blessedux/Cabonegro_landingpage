@@ -3,6 +3,7 @@
 import React, { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useTranslations } from 'next-intl'
+import Link from 'next/link'
 import { GradientHeading } from '@/components/ui/gradient-heading'
 import { MagicText } from '@/components/ui/magic-text'
 import Image from 'next/image'
@@ -162,12 +163,12 @@ export default function PartnersPage() {
               <p className="text-gray-400 mb-6">
                 Interested in becoming a strategic partner? Contact us to explore collaboration opportunities.
               </p>
-              <a 
+              <Link 
                 href="/contact"
                 className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-300"
               >
                 Get in Touch
-              </a>
+              </Link>
             </div>
           </motion.div>
         </div>

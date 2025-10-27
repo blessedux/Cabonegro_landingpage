@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function PartnersPageEs() {
   return (
     <div className="min-h-screen bg-black text-white">
@@ -32,12 +34,12 @@ export default function PartnersPageEs() {
               <p className="text-gray-400 mb-6">
                 Estamos trabajando en una página completa de socios. Mientras tanto, puedes ver nuestros socios en la página principal.
               </p>
-              <a 
+              <Link 
                 href="/es"
                 className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-300"
               >
                 Volver al Inicio
-              </a>
+              </Link>
             </div>
           </div>
         </div>
