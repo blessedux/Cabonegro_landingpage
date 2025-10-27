@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { gsap } from 'gsap'
 import { CustomEase } from 'gsap/CustomEase'
 import { Flip } from 'gsap/Flip'
@@ -192,7 +192,7 @@ export default function LayoutPreloader({ onComplete, duration = 6, className = 
   }
 
   // Function to initialize the animation
-  const initAnimation = () => {
+  const initAnimation = useCallback(() => {
     // Kill any existing timeline
     if (mainTlRef.current) mainTlRef.current.kill()
 
@@ -443,7 +443,7 @@ export default function LayoutPreloader({ onComplete, duration = 6, className = 
     )
 
     return mainTl
-  }
+  }, [])
 
   const handleRestart = () => {
     initAnimation()

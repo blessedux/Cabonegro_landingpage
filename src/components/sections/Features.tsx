@@ -17,8 +17,19 @@ import { useTranslations } from 'next-intl'
 
 // Features will be created dynamically using translations
 
+interface Feature {
+  id: string;
+  title: string;
+  titleLine1: string;
+  titleLine2: string;
+  icon: React.ComponentType<any>;
+  description: string;
+  image: string;
+  highlights: string[];
+}
+
 // Custom component to handle conditional overlay
-function FeatureImageWithOverlay({ feature, index }: { feature: any, index: number }) {
+function FeatureImageWithOverlay({ feature, index }: { feature: Feature, index: number }) {
   const { activeSlide } = useHoverSliderContext()
   const isActive = activeSlide === index
   const [showMobileOverlay, setShowMobileOverlay] = useState(false)
@@ -289,8 +300,8 @@ export default function Features() {
                   <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
                     / strategic advantages
                   </h3>
-                   /* Desktop Layout: Original gallery + titles */
-                   <div className="flex flex-col lg:flex-row items-start justify-between gap-6 lg:gap-12">
+                  {/* Desktop Layout: Original gallery + titles */}
+                  <div className="flex flex-col lg:flex-row items-start justify-between gap-6 lg:gap-12">
                      {/* Desktop: Images first, then titles */}
                      <motion.div
                        style={{

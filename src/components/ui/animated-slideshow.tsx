@@ -12,7 +12,10 @@ interface HoverSliderImageProps {
   index: number
   imageUrl: string
 }
-interface HoverSliderProps {}
+interface HoverSliderProps {
+  className?: string;
+  children?: React.ReactNode;
+}
 interface HoverSliderContextValue {
   activeSlide: number
   changeSlide: (index: number) => void

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
@@ -83,7 +84,7 @@ export default function Navbar() {
               >
                 Explore Terrain
               </button>
-              <a href="/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">View Deck</a>
+              <Link href="/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">View Deck</Link>
               <a href="#Partners" className="text-sm hover:text-gray-300 transition-colors uppercase">Partners</a>
               <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
               
@@ -104,11 +105,11 @@ export default function Navbar() {
                 ))}
               </div>
 
-              <a href="/contact">
+              <Link href="/contact">
                 <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
                   Contact Us
                 </Button>
-              </a>
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -179,7 +180,7 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                <a href="/contact" className="w-full mt-2">
+                <Link href="/contact" className="w-full mt-2">
                   <Button
                     variant="outline"
                     className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
@@ -187,7 +188,7 @@ export default function Navbar() {
                   >
                     Contact Us
                   </Button>
-                </a>
+                </Link>
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
@@ -83,7 +84,7 @@ export default function NavbarEs() {
               >
                 Explorar Terreno
               </button>
-              <a href="/es/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">Ver Deck</a>
+              <Link href="/es/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">Ver Deck</Link>
               <a href="#Partners" className="text-sm hover:text-gray-300 transition-colors uppercase">Socios</a>
               <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">Preguntas Frecuentes</a>
               
@@ -104,11 +105,11 @@ export default function NavbarEs() {
                 ))}
               </div>
 
-              <a href="/es/contact">
+              <Link href="/es/contact">
                 <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
                   Contacto
                 </Button>
-              </a>
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -139,13 +140,13 @@ export default function NavbarEs() {
                 >
                   Explorar Terreno
                 </button>
-                <a 
+                <Link 
                   href="/es/deck" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Ver Deck
-                </a>
+                </Link>
                 <a 
                   href="#Partners" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
@@ -179,7 +180,7 @@ export default function NavbarEs() {
                   ))}
                 </div>
 
-                <a href="/es/contact" className="w-full mt-2">
+                <Link href="/es/contact" className="w-full mt-2">
                   <Button
                     variant="outline"
                     className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
@@ -187,7 +188,7 @@ export default function NavbarEs() {
                   >
                     Contáctanos
                   </Button>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
