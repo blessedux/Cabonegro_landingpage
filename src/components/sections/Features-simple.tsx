@@ -32,7 +32,7 @@ const features = [
     titleLine2: 'Ready',
     icon: Building2,
     description: '300+ hectares of industrial land ready for development with world-class infrastructure and logistics.',
-    image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=600&fit=crop&crop=center',
+    image: '/model4.png',
     highlights: ['300+ Hectares', 'World-Class Infrastructure', 'Ready for Development']
   },
   {

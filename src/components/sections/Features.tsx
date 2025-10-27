@@ -191,7 +191,7 @@ export default function Features() {
       titleLine2: t('industrialReady.title').split(' ').slice(1).join(' '),
       icon: Building2,
       description: t('industrialReady.description'),
-      image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=800&h=600&fit=crop&crop=center',
+      image: '/model4.png',
       highlights: Array.isArray(t.raw('industrialReady.highlights')) ? t.raw('industrialReady.highlights') : []
     },
     {
