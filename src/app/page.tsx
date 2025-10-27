@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { NextIntlClientProvider } from 'next-intl'
-import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
-import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
+import { usePreloader } from '@/contexts/PreloaderContext'
+import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader'
 import Hero from '@/components/sections/Hero'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
+import Partners from '@/components/sections/Partners'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
@@ -72,6 +73,11 @@ const messages = {
         "Strategic partnership opportunities"
       ]
     }
+  },
+  partners: {
+    title: "Trusted Partners",
+    subtitle: "Strategic Alliances",
+    description: "Working with industry leaders to build Chile's premier industrial and maritime hub"
   }
 }
 
@@ -154,6 +160,7 @@ function HomeContent() {
           <Hero />
           <Features />
           <Stats />
+          <Partners />
           <FAQ />
         </main>
         
@@ -174,11 +181,7 @@ function HomeContent() {
 export default function Home() {
   return (
     <NextIntlClientProvider messages={messages} locale="en">
-      <PreloaderProvider>
-        <AnimationProvider>
-          <HomeContent />
-        </AnimationProvider>
-      </PreloaderProvider>
+      <HomeContent />
     </NextIntlClientProvider>
   )
 }

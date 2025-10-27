@@ -1,6 +1,8 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { PreloaderProvider } from '@/contexts/PreloaderContext';
+import { AnimationProvider } from '@/contexts/AnimationContext';
 
 const locales = ['en', 'es'];
 
@@ -24,7 +26,11 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <PreloaderProvider>
+            <AnimationProvider>
+              {children}
+            </AnimationProvider>
+          </PreloaderProvider>
         </NextIntlClientProvider>
       </body>
     </html>

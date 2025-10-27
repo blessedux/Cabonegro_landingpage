@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
-import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
+import { usePreloader } from '@/contexts/PreloaderContext'
+import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader'
 import Hero from '@/components/sections/Hero'
 import Features from '@/components/sections/Features'
@@ -115,11 +115,5 @@ function HomeContent() {
 }
 
 export default function Home() {
-  return (
-    <PreloaderProvider>
-      <AnimationProvider>
-        <HomeContent />
-      </AnimationProvider>
-    </PreloaderProvider>
-  )
+  return <HomeContent />
 }

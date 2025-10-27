@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { PreloaderProvider } from '@/contexts/PreloaderContext'
-import { AnimationProvider } from '@/contexts/AnimationContext'
 import NavbarEs from '@/components/sections/Navbar-es'
 import FooterEs from '@/components/sections/Footer-es'
 
@@ -17,7 +15,7 @@ function DeckPageContentEs() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black text-white">
       <NavbarEs />
       
       {isVisible && (
@@ -40,11 +38,5 @@ function DeckPageContentEs() {
 }
 
 export default function DeckPageEs() {
-  return (
-    <PreloaderProvider>
-      <AnimationProvider>
-        <DeckPageContentEs />
-      </AnimationProvider>
-    </PreloaderProvider>
-  )
+  return <DeckPageContentEs />
 }

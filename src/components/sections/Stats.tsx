@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { MagicText } from '@/components/ui/magic-text'
 
 interface AnimatedCounterProps {
   end: number
@@ -78,10 +79,6 @@ export default function Stats() {
     offset: ["start end", "end start"]
   })
   
-  const titleY = useTransform(scrollYProgress, [0, 1], [50, -50])
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0])
-  const descriptionY = useTransform(scrollYProgress, [0, 1], [30, -30])
-  const descriptionOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
   return (
     <section 
@@ -99,24 +96,15 @@ export default function Stats() {
       
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-16">
-          <motion.h2 
-            className="text-4xl md:text-5xl font-bold mb-6"
-            style={{
-              y: titleY,
-              opacity: titleOpacity
-            }}
-          >
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
             Cabo Negro by the Numbers
-          </motion.h2>
-          <motion.p 
-            className="text-gray-400 text-lg max-w-3xl mx-auto"
-            style={{
-              y: descriptionY,
-              opacity: descriptionOpacity
-            }}
-          >
-            Key statistics that define the scale and impact of Chile's premier industrial and maritime hub
-          </motion.p>
+          </h2>
+          <div className="max-w-3xl mx-auto">
+            <MagicText 
+              text="Key statistics that define the scale and impact of Chile's premier industrial and maritime hub"
+              className="text-gray-400 text-lg"
+            />
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">

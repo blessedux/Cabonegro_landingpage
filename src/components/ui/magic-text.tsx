@@ -32,7 +32,7 @@ export const MagicText: React.FC<MagicTextProps> = ({ text, className = "" }) =>
  
   const { scrollYProgress } = useScroll({
     target: container,
-    offset: ["start 0.8", "start 0.15"],
+    offset: ["start 0.9", "start 0.3"],
   });
   
   const words = text.split(" ");

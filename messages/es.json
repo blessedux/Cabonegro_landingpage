@@ -97,6 +97,11 @@
       "status": "Inicializando Puerta de Entrada Industrial"
     }
   },
+  "partners": {
+    "title": "Socios de Confianza",
+    "subtitle": "Alianzas Estratégicas",
+    "description": "Trabajando con líderes de la industria para construir el principal centro industrial y marítimo de Chile"
+  },
   "footer": {
     "copyright": "© 2025 Desarrollo Industrial Cabo Negro. Todos los derechos reservados.",
     "coordinates": "51.5074° N, 0.1278° W"

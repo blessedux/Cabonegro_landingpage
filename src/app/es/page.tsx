@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { NextIntlClientProvider } from 'next-intl'
-import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
-import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
+import { usePreloader } from '@/contexts/PreloaderContext'
+import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader-es'
 import Hero from '@/components/sections/Hero-es'
 import Features from '@/components/sections/Features'
@@ -92,7 +92,6 @@ function HomeContent() {
           <Hero />
           <Features />
           <Stats />
-          <Projects />
           <Partners />
           <FAQ />
         </main>
@@ -113,12 +112,8 @@ function HomeContent() {
 
 export default function SpanishHome() {
   return (
-    <PreloaderProvider>
-      <AnimationProvider>
-        <NextIntlClientProvider messages={spanishMessages} locale="es">
-          <HomeContent />
-        </NextIntlClientProvider>
-      </AnimationProvider>
-    </PreloaderProvider>
+    <NextIntlClientProvider messages={spanishMessages} locale="es">
+      <HomeContent />
+    </NextIntlClientProvider>
   )
 }

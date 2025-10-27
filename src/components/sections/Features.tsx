@@ -140,6 +140,7 @@ export default function Features() {
   const t = useTranslations('features')
   const featuresRef = useRef(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [activeSlide, setActiveSlide] = useState(0)
   
   // Check if device is mobile
   useEffect(() => {
@@ -150,7 +151,7 @@ export default function Features() {
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-  
+
   // Scroll-based animations scoped to Features component
   const { scrollYProgress } = useScroll({
     target: featuresRef,
@@ -229,6 +230,13 @@ export default function Features() {
     }
   ]
 
+  // Handle slide changes on mobile (triggered by title hover)
+  const handleSlideChange = (index: number) => {
+    if (isMobile) {
+      setActiveSlide(index)
+    }
+  }
+
   return (
     <DarkGradientBg className="min-h-screen">
       <section ref={featuresRef} className="py-20 px-6 overflow-visible">
@@ -260,37 +268,89 @@ export default function Features() {
               {isMobile ? (
                 /* Mobile Layout: Full width background with titles */
                 <HoverSlider className="min-h-[80vh] place-content-center bg-transparent text-white">
-                  <div className="w-screen relative -mx-6 md:-mx-12">
-                    <div className="px-6 md:px-12 py-6">
-                      <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
-                        / strategic advantages
-                      </h3>
-                    </div>
-                    
-                    {/* Full width background container */}
-                    <div className="relative min-h-[60vh] w-full overflow-hidden">
-                      {/* Background Image Container - full width */}
-                      <div className="absolute inset-0 bg-gray-800 w-full">
-                        {/* Placeholder for background images */}
-                      </div>
-                      
-                      {/* Titles overlay */}
-                      <div className="relative z-10 p-6 flex flex-col space-y-4">
-                        {features.map((feature, index) => (
-                          <div key={feature.id} className="flex flex-col min-w-0 text-left">
-                            <TextStaggerHover
-                              index={index}
-                              className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-white"
-                              text={feature.titleLine1}
+                  <div className="px-6 md:px-12 py-6">
+                    <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
+                      / strategic advantages
+                    </h3>
+                  </div>
+                  
+                  {/* Background container constrained to card boundaries */}
+                  <div className="relative min-h-[60vh] mx-6 md:mx-12 overflow-hidden rounded-2xl">
+                    {/* Image Gallery Container */}
+                    <div className="absolute inset-0 rounded-2xl">
+                      {features.map((feature, index) => (
+                        <motion.div
+                          key={feature.id}
+                          className="absolute inset-0 rounded-2xl"
+                          initial={{ opacity: 0 }}
+                          animate={{ 
+                            opacity: isMobile ? (activeSlide === index ? 1 : 0) : 0 
+                          }}
+                          transition={{ 
+                            duration: 0.4, 
+                            ease: "easeInOut" 
+                          }}
+                        >
+                          <img
+                            src={feature.image}
+                            alt={feature.title}
+                            className="w-full h-full object-cover rounded-2xl"
+                            loading="lazy"
+                          />
+                          
+                          {/* Progressive blur overlay */}
+                          <div className="absolute inset-0 rounded-2xl">
+                            {/* Center clear area */}
+                            <div className="absolute inset-8 bg-transparent" />
+                            
+                            {/* Progressive blur borders - more subtle */}
+                            <div 
+                              className="absolute inset-0 backdrop-blur-[1px] rounded-2xl"
+                              style={{
+                                maskImage: 'radial-gradient(ellipse at center, transparent 40%, black 60%)',
+                                WebkitMaskImage: 'radial-gradient(ellipse at center, transparent 40%, black 60%)',
+                              }}
                             />
-                            <TextStaggerHover
-                              index={index}
-                              className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-white"
-                              text={feature.titleLine2}
+                            <div 
+                              className="absolute inset-0 backdrop-blur-[2px] rounded-2xl"
+                              style={{
+                                maskImage: 'radial-gradient(ellipse at center, transparent 30%, black 70%)',
+                                WebkitMaskImage: 'radial-gradient(ellipse at center, transparent 30%, black 70%)',
+                              }}
+                            />
+                            <div 
+                              className="absolute inset-0 backdrop-blur-[4px] rounded-2xl"
+                              style={{
+                                maskImage: 'radial-gradient(ellipse at center, transparent 20%, black 80%)',
+                                WebkitMaskImage: 'radial-gradient(ellipse at center, transparent 20%, black 80%)',
+                              }}
                             />
                           </div>
-                        ))}
-                      </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                    
+                    {/* Titles overlay */}
+                    <div className="relative z-10 p-6 flex flex-col space-y-4">
+                      {features.map((feature, index) => (
+                        <div 
+                          key={feature.id} 
+                          className="flex flex-col min-w-0 text-left"
+                          onMouseEnter={() => handleSlideChange(index)}
+                          onTouchStart={() => handleSlideChange(index)}
+                        >
+                          <TextStaggerHover
+                            index={index}
+                            className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-white hover:text-cyan-400 transition-colors duration-300"
+                            text={feature.titleLine1}
+                          />
+                          <TextStaggerHover
+                            index={index}
+                            className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-white hover:text-cyan-400 transition-colors duration-300"
+                            text={feature.titleLine2}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </HoverSlider>

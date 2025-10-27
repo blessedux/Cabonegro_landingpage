@@ -97,6 +97,11 @@
       "status": "Initializing Industrial Gateway"
     }
   },
+  "partners": {
+    "title": "Trusted Partners",
+    "subtitle": "Strategic Alliances",
+    "description": "Working with industry leaders to build Chile's premier industrial and maritime hub"
+  },
   "footer": {
     "copyright": "© 2025 Cabo Negro Industrial Development. All rights reserved.",
     "coordinates": "51.5074° N, 0.1278° W"

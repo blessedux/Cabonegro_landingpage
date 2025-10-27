@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { PreloaderProvider, usePreloader } from '@/contexts/PreloaderContext'
-import { AnimationProvider, useAnimation } from '@/contexts/AnimationContext'
+import { usePreloader } from '@/contexts/PreloaderContext'
+import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
@@ -74,11 +74,5 @@ function ExploreContent() {
 }
 
 export default function ExplorePage() {
-  return (
-    <PreloaderProvider>
-      <AnimationProvider>
-        <ExploreContent />
-      </AnimationProvider>
-    </PreloaderProvider>
-  )
+  return <ExploreContent />
 }
