@@ -1,19 +1,46 @@
+'use client'
+
+import { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/card'
 import { MapPin, Route, Zap, Droplets, Building2 } from 'lucide-react'
 
 export default function IndustrialPark() {
+  const projectsRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: projectsRef,
+    offset: ["start end", "end start"]
+  })
+  
+  const titleY = useTransform(scrollYProgress, [0, 1], [50, -50])
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0])
+  const descriptionY = useTransform(scrollYProgress, [0, 1], [30, -30])
+  const descriptionOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+
   return (
-    <section className="py-20 px-6 bg-white/5" id="IndustrialPark">
+    <section ref={projectsRef} className="py-20 px-6 bg-white/5" id="IndustrialPark">
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold mb-6"
+            style={{
+              y: titleY,
+              opacity: titleOpacity
+            }}
+          >
             Cabo Negro Industrial Park
-          </h2>
-          <p className="text-gray-400 text-lg max-w-4xl mx-auto">
+          </motion.h2>
+          <motion.p 
+            className="text-gray-400 text-lg max-w-4xl mx-auto"
+            style={{
+              y: descriptionY,
+              opacity: descriptionOpacity
+            }}
+          >
             A ready-to-build industrial ecosystem designed for the hydrogen era. 
             Over <span className="text-white font-bold">300 hectares</span> of strategically located land 
             with world-class infrastructure.
-          </p>
+          </motion.p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-16">

@@ -77,6 +77,9 @@ export default {
         '2xl': '1536px',
       },
       },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
     }
   },
   plugins: [require("tailwindcss-animate")],

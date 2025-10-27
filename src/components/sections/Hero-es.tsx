@@ -4,11 +4,22 @@ import Link from 'next/link'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 
 export default function HeroEs() {
   const router = useRouter()
   const { startFadeOut } = useAnimation()
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  
+  // Trigger hero animations after preloader fade out
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true)
+    }, 200) // Small delay to ensure smooth transition from preloader
+    
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleExploreTerrain = () => {
     startFadeOut()
@@ -56,24 +67,47 @@ export default function HeroEs() {
 
       <div className="container mx-auto relative z-10 flex justify-start pointer-events-none">
         <div className="max-w-4xl w-full px-6 lg:px-12 pointer-events-auto">
-          <h1 
+          <motion.h1 
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none"
             style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: 0.2, // Start immediately after preloader fade
+              ease: "easeOut" 
+            }}
           >
             <BlurTextAnimation 
               text="Puerta de Entrada al Sur del Mundo"
               fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
               textColor="text-white"
-              animationDelay={6000}
+              animationDelay={0} // Start immediately with the h1 fade-in
             />
-          </h1>
-          <p 
+          </motion.h1>
+          <motion.p 
             className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl leading-relaxed text-left select-none"
             style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: 1.0, // Start after h1 completes (0.2s + 0.8s)
+              ease: "easeOut" 
+            }}
           >
-            Cabo Negro es un Centro Industrial y Marítimo Estratégico <br></br>del Hemisferio Sur.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-start items-start">
+            Cabo Negro es un Centro Industrial y Marítimo <br></br>Estratégico del Hemisferio Sur.
+          </motion.p>
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-start items-start"
+            initial={{ opacity: 0, y: 20 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: 1.0, // Same delay as subtitle - they appear together
+              ease: "easeOut" 
+            }}
+          >
             <Button 
               size="lg" 
               variant="outline" 
@@ -93,7 +127,7 @@ export default function HeroEs() {
                 Ver Deck
               </Button>
             </Link>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

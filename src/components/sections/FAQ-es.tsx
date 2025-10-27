@@ -28,30 +28,30 @@ interface HeroProps {
   actionsClassName?: string
 }
 
-const faqs = [
+const faqsEs = [
   {
-    question: 'What is the investment structure for Cabo Negro Terminal?',
-    answer: 'The project follows a structured 3-phase development timeline designed to minimize risk while maximizing returns. Phase 1 focuses on capital raising and initial studies (6 months), Phase 2 involves comprehensive engineering and regulatory approvals (24 months), and Phase 3 covers project sale or construction partnerships (12 months). This staged approach allows investors to participate in Chile\'s industrial transformation with clear milestones and exit opportunities.'
+    question: '¿Cuál es la estructura de inversión para el Terminal Cabo Negro?',
+    answer: 'El proyecto sigue una línea de tiempo estructurada de desarrollo en 3 fases diseñada para minimizar riesgos mientras maximiza retornos. La Fase 1 se enfoca en recaudación de capital y estudios iniciales (6 meses), la Fase 2 involucra ingeniería integral y aprobaciones regulatorias (24 meses), y la Fase 3 cubre venta del proyecto o asociaciones de construcción (12 meses). Este enfoque por etapas permite a los inversionistas participar en la transformación industrial de Chile con hitos claros y oportunidades de salida.'
   },
   {
-    question: 'Who are the key partners in this project?',
-    answer: 'The project is developed by J&P S.A. (landowners), PPG S.A. (maritime concession holders), and Compas Marine (JV and terminal expertise). These partnerships provide the necessary land, regulatory approvals, and maritime expertise.'
+    question: '¿Quiénes son los socios clave en este proyecto?',
+    answer: 'El proyecto es desarrollado por J&P S.A. (propietarios de tierras), PPG S.A. (titulares de concesión marítima), y Compas Marine (JV y experiencia en terminales). Estas asociaciones proporcionan la tierra necesaria, aprobaciones regulatorias y experiencia marítima.'
   },
   {
-    question: 'What makes Cabo Negro strategically important?',
-    answer: 'Cabo Negro is positioned as the primary gateway to Antarctica and serves as an alternative route to the Panama Canal, free of tolls and geopolitical risks. It\'s located at the heart of the Magallanes Region, connecting Atlantic and Pacific Oceans.'
+    question: '¿Qué hace estratégicamente importante a Cabo Negro?',
+    answer: 'Cabo Negro está posicionado como la puerta de entrada principal a la Antártida y sirve como ruta alternativa al Canal de Panamá, libre de peajes y riesgos geopolíticos. Está ubicado en el corazón de la Región de Magallanes, conectando los Océanos Atlántico y Pacífico.'
   },
   {
-    question: 'What is the regulatory status of the project?',
-    answer: 'The new Plan Regulador 2024-2026 extends urban limits to include Cabo Negro (3,258 hectares) and declares the area as the future industrial nucleus. This allows orderly growth and zoning for large-scale industrial projects.'
+    question: '¿Cuál es el estado regulatorio del proyecto?',
+    answer: 'El nuevo Plan Regulador 2024-2026 extiende los límites urbanos para incluir Cabo Negro (3,258 hectáreas) y declara el área como el futuro núcleo industrial. Esto permite crecimiento ordenado y zonificación para proyectos industriales a gran escala.'
   },
   {
-    question: 'How does this project support Chile\'s hydrogen economy?',
-    answer: 'The terminal reduces CAPEX for H₂V companies by providing shared port infrastructure, enables faster project deployment, and reduces environmental footprint. It\'s designed specifically to serve Chile\'s growing hydrogen export industry.'
+    question: '¿Cómo apoya este proyecto la economía del hidrógeno de Chile?',
+    answer: 'El terminal reduce CAPEX para empresas H₂V al proporcionar infraestructura portuaria compartida, permite despliegue más rápido de proyectos y reduce la huella ambiental. Está diseñado específicamente para servir la creciente industria de exportación de hidrógeno de Chile.'
   },
   {
-    question: 'What are the environmental considerations?',
-    answer: 'The port has independent environmental impact vs. full hydrogen plants, is protected from tides/waves/currents, and enables reduced environmental footprint through shared infrastructure. All development follows Chile\'s environmental regulations.'
+    question: '¿Cuáles son las consideraciones ambientales?',
+    answer: 'El puerto tiene impacto ambiental independiente vs. plantas completas de hidrógeno, está protegido de mareas/olas/corrientes, y permite huella ambiental reducida a través de infraestructura compartida. Todo el desarrollo sigue las regulaciones ambientales de Chile.'
   }
 ]
 
@@ -198,7 +198,7 @@ const Hero = React.forwardRef<HTMLElement, HeroProps>(
 )
 Hero.displayName = "Hero"
 
-export default function FAQ() {
+export default function FAQEs() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   return (
@@ -211,17 +211,17 @@ export default function FAQ() {
           viewport={{ margin: "-10% 0px -10% 0px" }}
           className="text-4xl md:text-5xl font-bold mb-6"
         >
-          Investment & Joint Venture Strategy
+          Estrategia de Inversión y Joint Venture
         </motion.h2>
         <div className="mb-12 max-w-3xl mx-auto text-center">
           <MagicText 
-            text="From Vision to Ready-to-Build: Seeking capital to bring Cabo Negro Terminal to Ready-to-Build stage"
+            text="De la Visión a Listo para Construir: Buscando capital para llevar el Terminal Cabo Negro a la etapa Listo para Construir"
             className="text-gray-400 text-lg"
           />
         </div>
 
         <div className="space-y-4">
-          {faqs.map((faq, index) => (
+          {faqsEs.map((faq, index) => (
             <Card
               key={index}
               className="bg-white/5 border-white/10 cursor-pointer"
@@ -246,17 +246,17 @@ export default function FAQ() {
 
         <div className="mt-16 -mx-6 sm:-mx-8 md:-mx-10 lg:-mx-12 xl:-mx-16 overflow-hidden">
           <Hero
-            title="Secure Your Position in Chile's Industrial Future"
-            subtitle="Exclusive opportunity for early investors: Partner with established Chilean real estate leaders in the world's most stable emerging market.\nProfitable returns through strategic industrial infrastructure development."
+            title="Asegura Tu Posición en el Futuro Industrial de Chile"
+            subtitle="Oportunidad exclusiva para inversionistas tempranos: Asóciate con líderes establecidos en bienes raíces chilenos en el mercado emergente más estable del mundo.\nRetornos rentables a través del desarrollo estratégico de infraestructura industrial."
             actions={[
               {
-                label: "Download Investment Proposal",
-                href: "/deck",
+                label: "Descargar Propuesta de Inversión",
+                href: "/es/deck",
                 variant: "default"
               },
               {
-                label: "Schedule Investor Meeting",
-                href: "/contact",
+                label: "Programar Reunión de Inversionistas",
+                href: "/es/contact",
                 variant: "outline"
               }
             ]}

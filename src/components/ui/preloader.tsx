@@ -220,64 +220,67 @@ export default function Preloader({ onComplete, duration = 6, className = '' }: 
       <div className="absolute inset-0 bg-black" />
 
       {/* Terminal Preloader */}
-      <div className="w-[90%] max-w-4xl h-auto max-h-[500px] py-4 relative overflow-hidden block opacity-100">
+      <div className="w-[95%] sm:w-[90%] max-w-4xl h-auto py-4 relative overflow-hidden block opacity-100">
         {/* Border Top */}
-        <div className="absolute top-0 left-0 w-full h-8 flex justify-between items-center px-2.5 text-xs text-white font-secondary uppercase tracking-wider">
-          <span>Cabo Negro Industrial Zone</span>
-          <span>Strategic Development Active</span>
+        <div className="absolute top-0 left-0 w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider">
+          <span className="truncate">Cabo Negro Industrial Zone</span>
+          <span className="truncate">Strategic Development Active</span>
         </div>
 
         {/* Terminal Container */}
-        <div className="relative h-[350px] mt-8 overflow-hidden p-2.5">
-          {TERMINAL_LINES.map((line, index) => (
-            <div
-              key={line.id}
-              ref={(el) => {
-                if (el) terminalLinesRef.current[index] = el
-              }}
-              className="absolute text-sm leading-tight tracking-wider whitespace-nowrap overflow-hidden w-full left-0 pl-2.5 font-light font-primary"
-              style={{ top: `${line.top}px` }}
-            >
-              <span 
-                className={`inline-block ${
-                  line.type === 'highlight' 
-                    ? 'text-white font-normal uppercase tracking-widest' 
-                    : 'opacity-50 uppercase tracking-widest'
-                }`}
-                data-scramble={line.scramble ? 'true' : undefined}
-                data-original-text={line.text}
+        <div className="relative min-h-[400px] sm:min-h-[350px] mt-6 sm:mt-8 overflow-hidden p-2 sm:p-2.5">
+          <div className="space-y-2 sm:space-y-3">
+            {TERMINAL_LINES.map((line, index) => (
+              <div
+                key={line.id}
+                ref={(el) => {
+                  if (el) terminalLinesRef.current[index] = el
+                }}
+                className="text-xs sm:text-sm leading-relaxed sm:leading-tight tracking-wider font-light font-primary px-2 sm:px-2.5"
               >
-                {line.text}
-              </span>
-            </div>
-          ))}
+                <span 
+                  className={`inline-block ${
+                    line.type === 'highlight' 
+                      ? 'text-white font-normal uppercase tracking-widest' 
+                      : 'opacity-50 uppercase tracking-widest'
+                  }`}
+                  data-scramble={line.scramble ? 'true' : undefined}
+                  data-original-text={line.text}
+                >
+                  {line.text}
+                </span>
+              </div>
+            ))}
 
-          {/* Progress Line */}
-          <div className="absolute top-[135px] left-0 w-full h-5 flex items-center pl-2.5">
-            <span className="font-normal mr-2.5 text-sm text-white uppercase tracking-widest font-primary">
-              Initializing
-            </span>
-            <div className="w-48 h-px bg-white/20 relative overflow-hidden">
-              <div 
-                ref={progressBarRef}
-                className="h-full bg-white transition-none"
-                style={{ width: `${progress}%` }}
-              />
+            {/* Progress Line */}
+            <div className="mt-4 sm:mt-6 px-2 sm:px-2.5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-0">
+                <span className="font-normal text-xs sm:text-sm text-white uppercase tracking-widest font-primary">
+                  Initializing
+                </span>
+                <div className="w-full sm:w-48 h-px bg-white/20 relative overflow-hidden">
+                  <div 
+                    ref={progressBarRef}
+                    className="h-full bg-white transition-none"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <span 
+                  className="text-white font-normal text-xs sm:text-sm uppercase tracking-widest font-primary" 
+                  data-scramble="true" 
+                  data-original-text="H₂V Infrastructure"
+                >
+                  H₂V Infrastructure
+                </span>
+              </div>
             </div>
-            <span 
-              className="text-white font-normal ml-2.5 uppercase tracking-widest font-primary" 
-              data-scramble="true" 
-              data-original-text="H₂V Infrastructure"
-            >
-              H₂V Infrastructure
-            </span>
           </div>
         </div>
 
         {/* Border Bottom */}
-        <div className="absolute bottom-0 left-0 w-full h-8 flex justify-between items-center px-2.5 text-xs text-white font-secondary uppercase tracking-wider">
-          <span>Strategic Gateway Sequence Complete</span>
-          <span>Cabo Negro Industrial Zone Active</span>
+        <div className="absolute bottom-0 left-0 w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider">
+          <span className="truncate">Strategic Gateway Sequence Complete</span>
+          <span className="truncate">Cabo Negro Industrial Zone Active</span>
         </div>
       </div>
     </div>

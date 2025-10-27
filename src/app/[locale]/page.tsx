@@ -20,7 +20,7 @@ function HomeContent() {
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
   const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete } = usePreloader()
 
   // Preload critical assets
   useEffect(() => {
@@ -56,6 +56,13 @@ function HomeContent() {
     preloadAssets()
   }, [])
 
+  // If user has seen preloader before, skip it and show content immediately
+  useEffect(() => {
+    if (hasSeenPreloader) {
+      setPreloaderFadeComplete(true)
+    }
+  }, [hasSeenPreloader])
+
   const handlePreloaderComplete = () => {
     setPreloaderComplete(true)
     setPreloaderVisible(false)
@@ -77,29 +84,32 @@ function HomeContent() {
       )}
 
       {/* Main Content - Only shows after preloader fade completes */}
-      <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${preloaderFadeComplete ? 'opacity-100' : 'opacity-0'}`}>
-        {/* Navigation */}
-        <Navbar />
-        
-        {/* Main Sections */}
-        <main>
-          <Hero />
-          <Features />
-          <Stats />
-          <Projects />
-          <Timeline />
-          <Partners />
-          <FAQ />
-        </main>
+      {preloaderFadeComplete && (
+        <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+          {/* Navigation */}
+          <Navbar />
+          
+          {/* Main Sections */}
+          <main>
+            <Hero />
+            <Features />
+            <Stats />
+            <Projects />
+            <Timeline />
+            <Partners />
+            <FAQ />
+          </main>
 
-        {/* Footer */}
-        <Footer />
+          {/* Footer */}
+          <Footer />
 
-        {/* Cookie Banner */}
-        {showCookieBanner && (
-          <CookieBanner onAccept={() => setShowCookieBanner(false)} />
-        )}
-      </div>
+          {/* Cookie Banner */}
+          <CookieBanner 
+            showCookieBanner={showCookieBanner} 
+            setShowCookieBanner={setShowCookieBanner} 
+          />
+        </div>
+      )}
     </>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRef } from 'react'
 import { Globe2, Zap, Building2, Anchor, FileCheck, TrendingUp } from 'lucide-react'
 import { MagicText } from '@/components/ui/magic-text'
 import { 
@@ -10,6 +11,7 @@ import {
   TextStaggerHover,
   useHoverSliderContext
 } from '@/components/ui/animated-slideshow'
+import { DarkGradientBg } from '@/components/ui/elegant-dark-pattern'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 
@@ -40,13 +42,13 @@ function FeatureImageWithOverlay({ feature, index }: { feature: any, index: numb
   }, [isActive, isMobile])
   
   return (
-    <div className="relative">
+    <div className="relative rounded-3xl overflow-hidden">
       <HoverSliderImage
         index={index}
         imageUrl={feature.image}
         src={feature.image}
         alt={feature.title}
-        className="size-full max-h-96 object-cover rounded-lg"
+        className="size-full max-h-96 object-cover rounded-3xl"
         loading="eager"
         decoding="async"
       />
@@ -54,7 +56,7 @@ function FeatureImageWithOverlay({ feature, index }: { feature: any, index: numb
       {/* Mobile Overlay - only covers this specific image, behind text */}
       {isMobile && showMobileOverlay && (
         <motion.div
-          className="absolute inset-0 bg-[#2D1B1B] bg-opacity-30 z-5 rounded-lg"
+          className="absolute inset-0 bg-[#2D1B1B] bg-opacity-30 z-5 rounded-3xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5, ease: "easeInOut" }}
@@ -125,6 +127,28 @@ function FeatureImageWithOverlay({ feature, index }: { feature: any, index: numb
 
 export default function Features() {
   const t = useTranslations('features')
+  const featuresRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(false)
+  
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  // Scroll-based animations scoped to Features component
+  const { scrollYProgress } = useScroll({
+    target: featuresRef,
+    offset: ["start end", "end start"]
+  })
+  // const galleryWidth = useTransform(scrollYProgress, [0, 1], ['60%', '80%'])
+  const galleryWidth = '80%' // Fixed width for now
+  const galleryTranslateY = useTransform(scrollYProgress, [0, 1], [0, 100])
+  const galleryTranslateX = useTransform(scrollYProgress, [0, 1], [0, -20])
 
   // Create features array using translations
   const features = [
@@ -165,7 +189,7 @@ export default function Features() {
       titleLine2: t('maritimeTerminal.title').split(' ').slice(1).join(' '),
       icon: Anchor,
       description: t('maritimeTerminal.description'),
-      image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop&crop=center',
+      image: '/cabo_negro1.webp',
       highlights: Array.isArray(t.raw('maritimeTerminal.highlights')) ? t.raw('maritimeTerminal.highlights') : []
     },
     {
@@ -180,75 +204,139 @@ export default function Features() {
     },
     {
       id: 'wind-potential',
-      title: t('windPotential.title'),
-      titleLine1: t('windPotential.title').split(' ')[0],
-      titleLine2: t('windPotential.title').split(' ').slice(1).join(' '),
+      title: 'Wind Power Potential',
+      titleLine1: 'Wind',
+      titleLine2: 'Power Potential',
       icon: TrendingUp,
-      description: t('windPotential.description'),
+      description: '7× Chile\'s current power generation capacity',
       image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
-      highlights: Array.isArray(t.raw('windPotential.highlights')) ? t.raw('windPotential.highlights') : []
+      highlights: [
+        'Massive wind potential in region',
+        'Low hosting and maintenance costs',
+        'Sustainable energy infrastructure'
+      ]
     }
   ]
 
   return (
-    <section className="py-20 px-6">
-      <div className="container mx-auto">
-        {/* Section Header */}
-        <div className="text-center mb-16">
-          <motion.h2 
-            initial={{ x: -50, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ margin: "-10% 0px -10% 0px" }}
-            className="text-4xl md:text-5xl font-bold mb-4"
-          >
-            {t('title')}
-          </motion.h2>
-          <div className="max-w-3xl mx-auto">
-            <MagicText 
-              text={t('subtitle')}
-              className="text-xl text-gray-400"
-            />
-          </div>
-          
-        </div>
-
-        {/* Animated Slideshow */}
-        <HoverSlider className="min-h-[80vh] place-content-center p-6 md:px-12 bg-transparent text-white">
-          <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
-            / strategic advantages
-          </h3>
-          <div className="flex flex-col lg:flex-row items-start justify-between gap-6 lg:gap-12">
-            {/* Mobile: Images first, then titles */}
-            <HoverSliderImageWrap className="w-full max-w-lg order-1 lg:order-2">
-              {features.map((feature, index) => (
-                <FeatureImageWithOverlay 
-                  key={feature.id} 
-                  feature={feature} 
-                  index={index} 
-                />
-              ))}
-            </HoverSliderImageWrap>
-            {/* Mobile: Titles second */}
-            <div className="flex flex-col space-y-2 lg:space-y-4 order-2 lg:order-1 min-w-0 flex-shrink-0 w-full lg:w-auto">
-              {features.map((feature, index) => (
-                <div key={feature.id} className="flex flex-col min-w-0 text-left">
-                  <TextStaggerHover
-                    index={index}
-                    className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left"
-                    text={feature.titleLine1}
-                  />
-                  <TextStaggerHover
-                    index={index}
-                    className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left"
-                    text={feature.titleLine2}
+    <DarkGradientBg className="min-h-screen">
+      <section ref={featuresRef} className="py-20 px-6 overflow-visible">
+        <div className="container mx-auto overflow-visible">
+          {/* Rounded Card Container */}
+          <div className="relative overflow-visible">
+            {/* Card with border and subtle background */}
+            <div className="relative bg-black/20 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl overflow-visible">
+              {/* Section Header */}
+              <div className="text-center mb-16">
+                <motion.h2 
+                  initial={{ x: -50, opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  viewport={{ margin: "-10% 0px -10% 0px" }}
+                  className="text-4xl md:text-5xl font-bold mb-4 text-white"
+                >
+                  {t('title')}
+                </motion.h2>
+                <div className="max-w-3xl mx-auto">
+                  <MagicText 
+                    text={t('subtitle')}
+                    className="text-xl text-gray-300"
                   />
                 </div>
-              ))}
+              </div>
+
+              {/* Animated Slideshow */}
+              {isMobile ? (
+                /* Mobile Layout: Full width background with titles */
+                <HoverSlider className="min-h-[80vh] place-content-center bg-transparent text-white">
+                  <div className="w-screen relative -mx-6 md:-mx-12">
+                    <div className="px-6 md:px-12 py-6">
+                      <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
+                        / strategic advantages
+                      </h3>
+                    </div>
+                    
+                    {/* Full width background container */}
+                    <div className="relative min-h-[60vh] w-full overflow-hidden">
+                      {/* Background Image Container - full width */}
+                      <div className="absolute inset-0 bg-gray-800 w-full">
+                        {/* Placeholder for background images */}
+                      </div>
+                      
+                      {/* Titles overlay */}
+                      <div className="relative z-10 p-6 flex flex-col space-y-4">
+                        {features.map((feature, index) => (
+                          <div key={feature.id} className="flex flex-col min-w-0 text-left">
+                            <TextStaggerHover
+                              index={index}
+                              className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-white"
+                              text={feature.titleLine1}
+                            />
+                            <TextStaggerHover
+                              index={index}
+                              className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-white"
+                              text={feature.titleLine2}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </HoverSlider>
+              ) : (
+                /* Desktop Layout: Original gallery + titles */
+                <HoverSlider className="min-h-[80vh] place-content-center p-6 md:px-12 bg-transparent text-white">
+                  <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
+                    / strategic advantages
+                  </h3>
+                   /* Desktop Layout: Original gallery + titles */
+                   <div className="flex flex-col lg:flex-row items-start justify-between gap-6 lg:gap-12">
+                     {/* Desktop: Images first, then titles */}
+                     <motion.div
+                       style={{
+                         width: galleryWidth,
+                         marginLeft: 'auto',
+                         marginRight: '0',
+                         transform: `translateX(${galleryTranslateX}%) translateY(${galleryTranslateY}px)`,
+                         overflow: 'visible',
+                         transformOrigin: 'right center'
+                       }}
+                       className="order-1 lg:order-2 rounded-3xl"
+                     >
+                       <HoverSliderImageWrap className="w-full max-w-none overflow-visible rounded-3xl">
+                       {features.map((feature, index) => (
+                         <FeatureImageWithOverlay 
+                           key={feature.id} 
+                           feature={feature} 
+                           index={index} 
+                         />
+                       ))}
+                     </HoverSliderImageWrap>
+                     </motion.div>
+                     {/* Desktop: Titles second */}
+                     <div className="flex flex-col space-y-2 lg:space-y-4 order-2 lg:order-1 min-w-0 flex-shrink-0 w-full lg:w-auto">
+                       {features.map((feature, index) => (
+                         <div key={feature.id} className="flex flex-col min-w-0 text-left">
+                           <TextStaggerHover
+                             index={index}
+                             className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left text-white"
+                             text={feature.titleLine1}
+                           />
+                           <TextStaggerHover
+                             index={index}
+                             className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left text-white"
+                             text={feature.titleLine2}
+                           />
+                         </div>
+                       ))}
+                     </div>
+                   </div>
+                </HoverSlider>
+              )}
             </div>
           </div>
-        </HoverSlider>
-      </div>
-    </section>
+        </div>
+      </section>
+    </DarkGradientBg>
   )
 }

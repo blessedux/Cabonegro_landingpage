@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 interface AnimatedCounterProps {
   end: number
@@ -71,20 +72,55 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
 }
 
 export default function Stats() {
+  const statsRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: statsRef,
+    offset: ["start end", "end start"]
+  })
+  
+  const titleY = useTransform(scrollYProgress, [0, 1], [50, -50])
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0])
+  const descriptionY = useTransform(scrollYProgress, [0, 1], [30, -30])
+  const descriptionOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+
   return (
-    <section className="py-20 px-6 bg-white/5">
-      <div className="container mx-auto">
+    <section 
+      ref={statsRef} 
+      className="py-20 px-6 relative overflow-hidden"
+      style={{
+        backgroundImage: 'url(/cabonegro_wirefram2.webp)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Background overlay for better text readability */}
+      <div className="absolute inset-0 bg-black/60"></div>
+      
+      <div className="container mx-auto relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold mb-6"
+            style={{
+              y: titleY,
+              opacity: titleOpacity
+            }}
+          >
             Cabo Negro by the Numbers
-          </h2>
-          <p className="text-gray-400 text-lg max-w-3xl mx-auto">
+          </motion.h2>
+          <motion.p 
+            className="text-gray-400 text-lg max-w-3xl mx-auto"
+            style={{
+              y: descriptionY,
+              opacity: descriptionOpacity
+            }}
+          >
             Key statistics that define the scale and impact of Chile's premier industrial and maritime hub
-          </p>
+          </motion.p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
+          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
             <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
               <AnimatedCounter end={13} suffix="%" />
             </div>
@@ -92,7 +128,7 @@ export default function Stats() {
             <p className="text-gray-500 text-xs">Magallanes production potential</p>
           </div>
           
-          <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
+          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
             <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
               <AnimatedCounter end={300} suffix="+" />
             </div>
@@ -100,7 +136,7 @@ export default function Stats() {
             <p className="text-gray-500 text-xs">Industrial park area</p>
           </div>
           
-          <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
+          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
             <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
               <AnimatedCounter end={200} suffix="+" />
             </div>
@@ -110,7 +146,7 @@ export default function Stats() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
+          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
             <div className="text-4xl md:text-5xl font-bold mb-4 text-white">
               <AnimatedCounter end={13} suffix=" MW" />
             </div>
@@ -118,7 +154,7 @@ export default function Stats() {
             <p className="text-gray-500 text-xs">Current infrastructure</p>
           </div>
           
-          <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
+          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
             <div className="text-4xl md:text-5xl font-bold mb-4 text-white">
               <AnimatedCounter end={2.1} start={0.6} suffix="×" />
             </div>

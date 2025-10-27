@@ -8,8 +8,6 @@ import Preloader from '@/components/ui/preloader'
 import Hero from '@/components/sections/Hero'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
-import Projects from '@/components/sections/Projects'
-import Partners from '@/components/sections/Partners'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
@@ -82,7 +80,7 @@ function HomeContent() {
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
   const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete } = usePreloader()
 
   // Preload critical assets
   useEffect(() => {
@@ -118,6 +116,13 @@ function HomeContent() {
     preloadAssets()
   }, [])
 
+  // If user has seen preloader before, skip it and show content immediately
+  useEffect(() => {
+    if (hasSeenPreloader) {
+      setPreloaderFadeComplete(true)
+    }
+  }, [hasSeenPreloader])
+
   const handlePreloaderComplete = () => {
     setPreloaderComplete(true)
     setPreloaderVisible(false)
@@ -149,8 +154,6 @@ function HomeContent() {
           <Hero />
           <Features />
           <Stats />
-          <Projects />
-          <Partners />
           <FAQ />
         </main>
         
@@ -158,9 +161,10 @@ function HomeContent() {
         <Footer />
         
         {/* Cookie Banner */}
-        {showCookieBanner && (
-          <CookieBanner onAccept={() => setShowCookieBanner(false)} />
-        )}
+        <CookieBanner 
+          showCookieBanner={showCookieBanner} 
+          setShowCookieBanner={setShowCookieBanner} 
+        />
         </div>
       )}
     </>

@@ -7,7 +7,7 @@ import { Menu, X } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 
-export default function Navbar() {
+export default function NavbarEs() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
@@ -52,7 +52,7 @@ export default function Navbar() {
     
     // Navigate to explore route after animations
     setTimeout(() => {
-      router.push('/explore')
+      router.push('/es/explore')
     }, 1000)
   }
 
@@ -81,11 +81,11 @@ export default function Navbar() {
                 onClick={handleExploreTerrain}
                 className="text-sm hover:text-gray-300 transition-colors uppercase"
               >
-                Explore Terrain
+                Explorar Terreno
               </button>
-              <a href="/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">View Deck</a>
-              <a href="#Partners" className="text-sm hover:text-gray-300 transition-colors uppercase">Partners</a>
-              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
+              <a href="/es/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">Ver Deck</a>
+              <a href="#Partners" className="text-sm hover:text-gray-300 transition-colors uppercase">Socios</a>
+              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">Preguntas Frecuentes</a>
               
               {/* Language Toggle */}
               <div className="flex items-center gap-2">
@@ -104,9 +104,9 @@ export default function Navbar() {
                 ))}
               </div>
 
-              <a href="/contact">
+              <a href="/es/contact">
                 <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
-                  Contact Us
+                  Contacto
                 </Button>
               </a>
             </div>
@@ -137,33 +137,33 @@ export default function Navbar() {
                   }}
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
                 >
-                  Explore Terrain
+                  Explorar Terreno
                 </button>
                 <a 
-                  href="/deck" 
+                  href="/es/deck" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  View Deck
+                  Ver Deck
                 </a>
                 <a 
                   href="#Partners" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Partners
+                  Socios
                 </a>
                 <a 
                   href="#FAQ" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  FAQ
+                  Preguntas Frecuentes
                 </a>
                 
                 {/* Mobile Language Toggle */}
                 <div className="flex items-center gap-2 py-2">
-                  <span className="text-sm text-gray-400 uppercase">Language:</span>
+                  <span className="text-sm text-gray-400 uppercase">Idioma:</span>
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
@@ -179,13 +179,13 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                <a href="/contact" className="w-full mt-2">
+                <a href="/es/contact" className="w-full mt-2">
                   <Button
                     variant="outline"
                     className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Contact Us
+                    Contáctanos
                   </Button>
                 </a>
               </div>
