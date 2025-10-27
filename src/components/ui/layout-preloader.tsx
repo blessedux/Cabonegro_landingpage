@@ -25,6 +25,19 @@ const gentleIn = CustomEase.create("gentleIn", "0.38, 0.005, 0.215, 1")
 // Initial zoom level for all images
 const INITIAL_ZOOM = 1.2
 
+interface GridPositions {
+  firstColumnLeft: number;
+  lastColumnRight: number;
+  column7Left: number;
+  columnPositions: Array<{
+    left: number;
+    right: number;
+    width: number;
+    center: number;
+  }>;
+  padding: number;
+}
+
 export default function LayoutPreloader({ onComplete, duration = 6, className = '' }: LayoutPreloaderProps) {
   const [isVisible, setIsVisible] = useState(true)
   const [showRestart, setShowRestart] = useState(false)
@@ -88,7 +101,7 @@ export default function LayoutPreloader({ onComplete, duration = 6, className = 
   }
 
   // Function to align header elements to grid
-  const alignHeaderToGrid = (gridPositions: any) => {
+  const alignHeaderToGrid = (gridPositions: GridPositions) => {
     const headerLeft = document.querySelector(".header-left")
     const headerMiddle = document.querySelector(".header-middle")
     const headerRight = document.querySelector(".header-right")
@@ -448,7 +461,7 @@ export default function LayoutPreloader({ onComplete, duration = 6, className = 
         mainTlRef.current.kill()
       }
     }
-  }, [])
+  }, [initAnimation])
 
   if (!isVisible) return null
 
