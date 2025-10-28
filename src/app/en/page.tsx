@@ -14,7 +14,8 @@ import { Roadmap } from '@/components/sections/Roadmap'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
-import CookieBanner from '@/components/sections/CookieBanner'
+import { NextIntlClientProvider } from 'next-intl'
+import englishMessages from '../../messages/en.json'
 
 function HomeContent() {
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
@@ -112,6 +113,10 @@ function HomeContent() {
   )
 }
 
-export default function Home() {
-  return <HomeContent />
+export default function EnglishHome() {
+  return (
+    <NextIntlClientProvider messages={englishMessages} locale="en">
+      <HomeContent />
+    </NextIntlClientProvider>
+  )
 }
