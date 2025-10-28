@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { NextIntlClientProvider } from 'next-intl'
 import { useAnimation } from '@/contexts/AnimationContext'
-import { usePreloader } from '@/contexts/PreloaderContext'
-import PreloaderZh from '@/components/ui/preloader-zh'
 import NavbarZh from '@/components/sections/Navbar-zh'
 import HeroZh from '@/components/sections/Hero-zh'
 import Features from '@/components/sections/Features'
@@ -117,53 +115,28 @@ const messages = {
 }
 
 function HomeContent() {
-  const [isVisible, setIsVisible] = useState(false)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, hasSeenPreloader } = usePreloader()
-
-  useEffect(() => {
-    // If user has seen preloader before, show content immediately
-    if (hasSeenPreloader) {
-      setIsVisible(true)
-    } else {
-      // Show preloader first, then content
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 6000) // Match preloader duration
-      return () => clearTimeout(timer)
-    }
-  }, [hasSeenPreloader])
 
   return (
-    <>
-      {/* Preloader - Only show if user hasn't seen it before */}
-      {isPreloaderVisible && !hasSeenPreloader && (
-        <PreloaderZh onComplete={() => setIsVisible(true)} />
-      )}
+    <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+      {/* Navigation */}
+      <NavbarZh />
+      
+      {/* Main Sections */}
+      <main>
+        <HeroZh />
+        <Features />
+        <Stats />
+        <Partners />
+        <FAQ />
+      </main>
 
-      {/* Main Content - Show immediately if user has seen preloader, or after preloader completes */}
-      {isVisible && (
-        <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
-          {/* Navigation */}
-          <NavbarZh />
-          
-          {/* Main Sections */}
-          <main>
-            <HeroZh />
-            <Features />
-            <Stats />
-            <Partners />
-            <FAQ />
-          </main>
+      {/* Footer */}
+      <Footer />
 
-          {/* Footer */}
-          <Footer />
-
-          {/* Cookie Banner */}
-          <CookieBanner />
-        </div>
-      )}
-    </>
+      {/* Cookie Banner */}
+      <CookieBanner />
+    </div>
   )
 }
 

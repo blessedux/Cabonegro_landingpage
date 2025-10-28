@@ -26,25 +26,10 @@ export default function NavbarZh() {
   // Determine current language from pathname
   const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
 
-  // Dropdown animation only after preloader completes
+  // Show navbar immediately
   useEffect(() => {
-    // Check if we're on the deck route - show navbar immediately
-    if (pathname.includes('/deck')) {
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 100) // Quick delay for deck route
-      return () => clearTimeout(timer)
-    }
-    
-    // Normal preloader logic for other routes
-    if (isPreloaderComplete && !isPreloaderVisible) {
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 500) // Delay for smooth entrance after preloader
-
-      return () => clearTimeout(timer)
-    }
-  }, [isPreloaderComplete, isPreloaderVisible, pathname])
+    setIsVisible(true)
+  }, [])
 
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
@@ -94,14 +79,7 @@ export default function NavbarZh() {
 
   return (
     <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck route, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') 
-        ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
-        : (isNavbarHidden || isPreloaderVisible
-            ? '-translate-y-full opacity-0' 
-            : isVisible 
-              ? 'top-0 translate-y-0 opacity-100' 
-              : '-translate-y-full opacity-0')
+      isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100'
     }`}>
       <nav className="container mx-auto">
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
