@@ -24,7 +24,7 @@ export default function NavbarEs() {
   ]
 
   // Determine current language from pathname
-  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
+  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/en') ? 'en' : 'es'
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
@@ -54,6 +54,8 @@ export default function NavbarEs() {
       pathWithoutLocale = pathname.substring(3) // Remove '/es'
     } else if (pathname.startsWith('/zh')) {
       pathWithoutLocale = pathname.substring(3) // Remove '/zh'
+    } else if (pathname.startsWith('/en')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/en'
     }
     
     // Ensure path starts with '/'
@@ -67,9 +69,9 @@ export default function NavbarEs() {
     }
     
     // Navigate to the new locale with the same path
-    // English routes don't have a prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
+    // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
     if (newLocale === 'en') {
-      const targetPath = pathWithoutLocale || '/'
+      const targetPath = '/en' + pathWithoutLocale
       router.push(targetPath)
     } else if (newLocale === 'es') {
       const targetPath = '/es' + pathWithoutLocale
