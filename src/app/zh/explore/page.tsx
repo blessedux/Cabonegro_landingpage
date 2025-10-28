@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { NextIntlClientProvider } from 'next-intl'
 import { usePreloader } from '@/contexts/PreloaderContext'
-import UnifiedNavbar from '@/components/sections/UnifiedNavbar'
+import NavbarZh from '@/components/sections/Navbar-zh'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
 import GoogleMaps3DScene from '@/components/ui/google-maps-3d-scene'
@@ -32,7 +32,7 @@ function ExploreContent() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
-        <UnifiedNavbar />
+        <NavbarZh />
       
       {/* Main Content - Google Maps 3D Scene */}
       <main className="pt-32 pb-20 px-6">

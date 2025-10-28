@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { NextIntlClientProvider } from 'next-intl'
 import { usePreloader } from '@/contexts/PreloaderContext'
-import UnifiedNavbar from '@/components/sections/UnifiedNavbar'
+import NavbarZh from '@/components/sections/Navbar-zh'
 import Contact from '@/components/sections/Contact'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
@@ -28,7 +28,7 @@ function ContactContent() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
-        <UnifiedNavbar />
+        <NavbarZh />
       
       {/* Main Content */}
       <main className="pt-32 pb-20 px-6">

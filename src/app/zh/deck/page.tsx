@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { NextIntlClientProvider } from 'next-intl'
-import UnifiedNavbar from '@/components/sections/UnifiedNavbar'
+import NavbarZh from '@/components/sections/Navbar-zh'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
 
@@ -25,7 +25,7 @@ function DeckContent() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <UnifiedNavbar />
+      <NavbarZh />
       
       {isVisible && (
         <main className="pt-0 h-screen">
