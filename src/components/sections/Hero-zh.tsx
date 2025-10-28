@@ -36,23 +36,37 @@ export default function HeroZh() {
   }
 
   return (
-    <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center overflow-hidden" style={{ touchAction: 'pan-y' }}>
+    <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center overflow-hidden bg-black" style={{ touchAction: 'pan-y' }}>
+      {/* Black background */}
+      <div className="absolute inset-0 bg-black z-0" />
+      
       {/* Background Spline Scene - Glowing Planet Particles */}
       <div 
-        className="absolute inset-0 z-0 overflow-hidden"
+        className="absolute inset-0 z-1 overflow-hidden"
         onClick={handleClick}
       >
         <iframe 
           src='https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/' 
-          className="w-full h-full border-0"
+          frameBorder='0' 
+          width='100%' 
+          height='100%'
+          className="w-full h-full"
+          onLoad={() => {
+            setBackgroundLoaded(true)
+          }}
           style={{ 
-            pointerEvents: 'none',
-            transform: 'scale(1.1)',
-            transformOrigin: 'center center'
+            border: 'none',
+            background: 'transparent',
+            transform: 'scale(1.3)',
+            transformOrigin: 'center center',
+            pointerEvents: 'auto'
           }}
           title="3D Background Scene"
         />
       </div>
+
+      {/* Subtle gradient overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40 z-2 pointer-events-none" />
 
       {/* Content Container */}
       <div className="relative z-10 max-w-7xl mx-auto text-center">
@@ -109,9 +123,6 @@ export default function HeroZh() {
           </motion.div>
         </motion.div>
       </div>
-
-      {/* Gradient Overlay for better text readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
     </section>
   )
 }
