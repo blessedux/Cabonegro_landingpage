@@ -94,6 +94,25 @@ const messages = {
         "可持续能源基础设施"
       ]
     }
+  },
+  "partners": {
+    "title": "值得信赖的合作伙伴",
+    "subtitle": "战略联盟",
+    "description": "与行业领导者合作，建设智利首屈一指的工业和海事中心"
+  },
+  "stats": {
+    "title": "项目统计",
+    "subtitle": "关键指标",
+    "description": "卡波内格罗工业开发的重要数据"
+  },
+  "faq": {
+    "title": "常见问题",
+    "subtitle": "解答您的疑问",
+    "description": "关于卡波内格罗工业开发项目的常见问题"
+  },
+  "footer": {
+    "copyright": "© 2025 卡波内格罗工业开发。保留所有权利。",
+    "coordinates": "51.5074° N, 0.1278° W"
   }
 }
 
