@@ -9,7 +9,7 @@ import HeroZh from '@/components/sections/Hero-zh'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
 import Partners from '@/components/sections/Partners'
-import FAQ from '@/components/sections/FAQ'
+import FAQZh from '@/components/sections/FAQ-zh'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
 
@@ -128,7 +128,7 @@ function HomeContent() {
         <Features />
         <Stats />
         <Partners />
-        <FAQ />
+        <FAQZh />
       </main>
 
       {/* Footer */}
