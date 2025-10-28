@@ -6,8 +6,8 @@ import { NextIntlClientProvider } from 'next-intl'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import PreloaderZh from '@/components/ui/preloader-zh'
-import UnifiedNavbar from '@/components/sections/UnifiedNavbar'
-import Hero from '@/components/sections/Hero'
+import NavbarZh from '@/components/sections/Navbar-zh'
+import HeroZh from '@/components/sections/Hero-zh'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
 import Partners from '@/components/sections/Partners'
@@ -45,16 +45,16 @@ const messages = {
       "description": "连接大西洋和太平洋的巴拿马运河替代方案",
       "highlights": [
         "通往南极洲的主要门户",
-        "无通行费和地缘政治风险",
+        "无通行费和地缘政治稳定位置",
         "大西洋-太平洋海上走廊"
       ]
     },
     "h2vOpportunity": {
       "title": "H₂V机会",
-      "description": "麦哲伦地区可生产世界13%的绿色氢气",
+      "description": "麦哲伦地区正在探索重要的绿色氢气潜力",
       "highlights": [
         "200多个项目已提交或正在审查中",
-        "预计将使地区GDP翻倍",
+        "区域氢气行业正在增长",
         "EDF将于2025年底进入"
       ]
     },
@@ -126,11 +126,11 @@ function HomeContent() {
       {isVisible && (
         <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
           {/* Navigation */}
-          <UnifiedNavbar />
+          <NavbarZh />
           
           {/* Main Sections */}
           <main>
-            <Hero />
+            <HeroZh />
             <Features />
             <Stats />
             <Partners />

@@ -15,7 +15,7 @@ export default function NavbarZh() {
   const router = useRouter()
   const pathname = usePathname()
   const { startFadeOut, isNavbarHidden } = useAnimation()
-  const { isPreloaderVisible, isPreloaderComplete, setPreloaderComplete, setPreloaderVisible } = usePreloader()
+  const { isPreloaderVisible, isPreloaderComplete } = usePreloader()
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -66,9 +66,7 @@ export default function NavbarZh() {
       pathWithoutLocale = ''
     }
     
-    // Reset preloader state to prevent black screen during language switch
-    setPreloaderComplete(true)
-    setPreloaderVisible(false)
+    // Navigate immediately without complex transitions
     
     // Navigate to the new locale with the same path
     // English routes don't have a prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
