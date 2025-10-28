@@ -15,7 +15,7 @@ import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
 import { NextIntlClientProvider } from 'next-intl'
-import englishMessages from '../../messages/en.json'
+import englishMessages from '../../../messages/en.json'
 
 function HomeContent() {
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
