@@ -88,7 +88,7 @@ export default function Navbar() {
     
     // Navigate to explore route after animations
     setTimeout(() => {
-      router.push('/explore')
+      router.push('/en/explore')
     }, 1000)
   }
 
