@@ -126,8 +126,8 @@ export default function NavbarZh() {
                     }}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
                       currentLocale === lang.code
-                        ? 'text-white bg-white/20'
-                        : 'text-gray-400 hover:text-white'
+                        ? 'text-white bg-white/20 border border-white/30'
+                        : 'text-white hover:text-gray-300'
                     }`}
                   >
                     {lang.code.toUpperCase()}
@@ -197,8 +197,8 @@ export default function NavbarZh() {
                       }}
                       className={`text-xs px-2 py-1 rounded transition-colors ${
                         currentLocale === lang.code
-                          ? 'text-white bg-white/20'
-                          : 'text-gray-400 hover:text-white'
+                          ? 'text-white bg-white/20 border border-white/30'
+                          : 'text-white hover:text-gray-300'
                       }`}
                     >
                       {lang.code.toUpperCase()}
