@@ -24,7 +24,7 @@ export default function NavbarZh() {
   ]
 
   // Determine current language from pathname
-  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
+  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/en') ? 'en' : 'zh'
 
   // Show navbar immediately
   useEffect(() => {
@@ -33,13 +33,20 @@ export default function NavbarZh() {
 
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
+    console.log('Language change requested:', newLocale)
+    console.log('Current pathname:', pathname)
+    
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
     if (pathname.startsWith('/es')) {
       pathWithoutLocale = pathname.substring(3) // Remove '/es'
     } else if (pathname.startsWith('/zh')) {
       pathWithoutLocale = pathname.substring(3) // Remove '/zh'
+    } else if (pathname.startsWith('/en')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/en'
     }
+    
+    console.log('Path without locale:', pathWithoutLocale)
     
     // Ensure path starts with '/'
     if (!pathWithoutLocale.startsWith('/')) {
@@ -54,15 +61,18 @@ export default function NavbarZh() {
     // Navigate immediately without complex transitions
     
     // Navigate to the new locale with the same path
-    // English routes don't have a prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
+    // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
     if (newLocale === 'en') {
-      const targetPath = pathWithoutLocale || '/'
+      const targetPath = '/en' + pathWithoutLocale
+      console.log('Navigating to English:', targetPath)
       router.push(targetPath)
     } else if (newLocale === 'es') {
       const targetPath = '/es' + pathWithoutLocale
+      console.log('Navigating to Spanish:', targetPath)
       router.push(targetPath)
     } else if (newLocale === 'zh') {
       const targetPath = '/zh' + pathWithoutLocale
+      console.log('Navigating to Chinese:', targetPath)
       router.push(targetPath)
     }
   }
