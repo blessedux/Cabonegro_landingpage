@@ -25,7 +25,7 @@ export function WorldMap({
 
   const svgMap = map.getSVG({
     radius: 0.22,
-    color: theme === "dark" ? "#FFFFFF40" : "#00000040",
+    color: "#FFFFFF", // Always white dots
     shape: "circle",
     backgroundColor: theme === "dark" ? "black" : "white",
   });
@@ -77,7 +77,7 @@ export function WorldMap({
                   pathLength: 1,
                 }}
                 transition={{
-                  duration: 1,
+                  duration: 3, // Slower animation (was 1)
                   delay: 0.5 * i,
                   ease: "easeOut",
                 }}
@@ -116,7 +116,7 @@ export function WorldMap({
                   attributeName="r"
                   from="2"
                   to="8"
-                  dur="1.5s"
+                  dur="3s"
                   begin="0s"
                   repeatCount="indefinite"
                 />
@@ -124,7 +124,7 @@ export function WorldMap({
                   attributeName="opacity"
                   from="0.5"
                   to="0"
-                  dur="1.5s"
+                  dur="3s"
                   begin="0s"
                   repeatCount="indefinite"
                 />
@@ -148,7 +148,7 @@ export function WorldMap({
                   attributeName="r"
                   from="2"
                   to="8"
-                  dur="1.5s"
+                  dur="3s"
                   begin="0s"
                   repeatCount="indefinite"
                 />
@@ -156,7 +156,7 @@ export function WorldMap({
                   attributeName="opacity"
                   from="0.5"
                   to="0"
-                  dur="1.5s"
+                  dur="3s"
                   begin="0s"
                   repeatCount="indefinite"
                 />

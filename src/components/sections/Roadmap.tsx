@@ -6,42 +6,6 @@ export function Roadmap() {
   return (
     <div className="py-20 dark:bg-black bg-white w-full">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-16">
-          <motion.h2
-            className="font-bold text-3xl md:text-5xl dark:text-white text-black mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            Global{" "}
-            <span className="text-blue-500">
-              {"Connectivity".split("").map((letter, idx) => (
-                <motion.span
-                  key={idx}
-                  className="inline-block"
-                  initial={{ x: -10, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.5, delay: idx * 0.04 }}
-                >
-                  {letter}
-                </motion.span>
-              ))}
-            </span>
-          </motion.h2>
-          <motion.p
-            className="text-sm md:text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            Cabo Negro's strategic position creates a new maritime corridor connecting 
-            Asia-Pacific markets with South America, offering an alternative route to 
-            the Panama Canal and direct access to Antarctica.
-          </motion.p>
-        </div>
-
         <motion.div
           className="mb-16"
           initial={{ opacity: 0, scale: 0.95 }}
