@@ -3,6 +3,8 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
+import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
+import { ThemeProvider } from 'next-themes';
 
 const locales = ['en', 'es', 'zh'];
 
@@ -23,15 +25,24 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body>
-        <NextIntlClientProvider messages={messages}>
-          <PreloaderProvider>
-            <AnimationProvider>
-              {children}
-            </AnimationProvider>
-          </PreloaderProvider>
-        </NextIntlClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <NextIntlClientProvider messages={messages}>
+            <PreloaderProvider>
+              <AnimationProvider>
+                <CookieBannerProvider>
+                  {children}
+                </CookieBannerProvider>
+              </AnimationProvider>
+            </PreloaderProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
