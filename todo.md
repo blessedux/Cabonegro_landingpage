@@ -7,3 +7,4 @@
 - [] Work on Explore feature
 - [] animate planet scene transition
 - [] animate the actual location
+- Corregir lenguaje sensible en prelodaer

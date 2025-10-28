@@ -19,11 +19,12 @@ export default function Navbar() {
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', flag: '🇨🇱' }
+    { code: 'es', name: 'Español', flag: '🇨🇱' },
+    { code: 'zh', name: '中文', flag: '🇨🇳' }
   ]
 
   // Determine current language from pathname
-  const currentLocale = pathname.startsWith('/es') ? 'es' : 'en'
+  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
@@ -51,6 +52,8 @@ export default function Navbar() {
     let pathWithoutLocale = pathname
     if (pathname.startsWith('/es')) {
       pathWithoutLocale = pathname.substring(3) // Remove '/es'
+    } else if (pathname.startsWith('/zh')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/zh'
     }
     
     // Ensure path starts with '/'
@@ -64,11 +67,16 @@ export default function Navbar() {
     }
     
     // Navigate to the new locale with the same path
-    // English routes don't have a prefix, Spanish routes use /es prefix
+    // English routes don't have a prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
     if (newLocale === 'en') {
-      router.push(pathWithoutLocale || '/')
-    } else {
-      router.push('/es' + pathWithoutLocale)
+      const targetPath = pathWithoutLocale || '/'
+      router.push(targetPath)
+    } else if (newLocale === 'es') {
+      const targetPath = '/es' + pathWithoutLocale
+      router.push(targetPath)
+    } else if (newLocale === 'zh') {
+      const targetPath = '/zh' + pathWithoutLocale
+      router.push(targetPath)
     }
   }
 
