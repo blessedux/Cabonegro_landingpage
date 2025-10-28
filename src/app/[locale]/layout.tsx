@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
 
-const locales = ['en', 'es'];
+const locales = ['en', 'es', 'zh'];
 
 export default async function LocaleLayout({
   children,
