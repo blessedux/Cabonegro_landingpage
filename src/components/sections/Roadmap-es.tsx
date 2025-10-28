@@ -22,9 +22,9 @@ export function RoadmapEs() {
                   label: "Tokio, Japón"
                 },
                 end: {
-                  lat: -52.9184,
-                  lng: -70.8294,
-                  label: "Cabo Negro, Chile"
+                  lat: -54.8019,
+                  lng: -68.3030,
+                  label: "Tierra del Fuego, Chile"
                 },
               },
               {
@@ -34,9 +34,9 @@ export function RoadmapEs() {
                   label: "Singapur"
                 },
                 end: { 
-                  lat: -52.9184, 
-                  lng: -70.8294,
-                  label: "Cabo Negro, Chile"
+                  lat: -54.8019, 
+                  lng: -68.3030,
+                  label: "Tierra del Fuego, Chile"
                 },
               },
               {
@@ -46,9 +46,9 @@ export function RoadmapEs() {
                   label: "Hong Kong"
                 },
                 end: { 
-                  lat: -52.9184, 
-                  lng: -70.8294,
-                  label: "Cabo Negro, Chile"
+                  lat: -54.8019, 
+                  lng: -68.3030,
+                  label: "Tierra del Fuego, Chile"
                 },
               },
               {
@@ -56,6 +56,18 @@ export function RoadmapEs() {
                   lat: -33.8688, 
                   lng: 151.2093,
                   label: "Sídney, Australia"
+                },
+                end: { 
+                  lat: -54.8019, 
+                  lng: -68.3030,
+                  label: "Tierra del Fuego, Chile"
+                },
+              },
+              {
+                start: { 
+                  lat: -54.8019, 
+                  lng: -68.3030,
+                  label: "Tierra del Fuego, Chile"
                 },
                 end: { 
                   lat: -52.9184, 
@@ -82,9 +94,9 @@ export function RoadmapEs() {
                   label: "Cabo Negro, Chile"
                 },
                 end: { 
-                  lat: 40.7128, 
-                  lng: -74.0060,
-                  label: "Nueva York, EE.UU."
+                  lat: -33.4489, 
+                  lng: -70.6693,
+                  label: "Santiago, Chile"
                 },
               },
               {
@@ -94,21 +106,9 @@ export function RoadmapEs() {
                   label: "Cabo Negro, Chile"
                 },
                 end: { 
-                  lat: 51.5074, 
-                  lng: -0.1278,
-                  label: "Londres, Reino Unido"
-                },
-              },
-              {
-                start: { 
-                  lat: -52.9184, 
-                  lng: -70.8294,
-                  label: "Cabo Negro, Chile"
-                },
-                end: { 
-                  lat: 23.1291, 
-                  lng: 113.2644,
-                  label: "Guangzhou, China"
+                  lat: -12.0464, 
+                  lng: -77.0428,
+                  label: "Lima, Perú"
                 },
               },
             ]}
