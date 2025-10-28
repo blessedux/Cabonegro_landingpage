@@ -175,6 +175,16 @@ export default function Features() {
       highlights: Array.isArray(t.raw('strategicGateway.highlights')) ? t.raw('strategicGateway.highlights') : []
     },
     {
+      id: 'maritime-terminal',
+      title: t('maritimeTerminal.title'),
+      titleLine1: t('maritimeTerminal.title').split(' ')[0],
+      titleLine2: t('maritimeTerminal.title').split(' ').slice(1).join(' '),
+      icon: Anchor,
+      description: t('maritimeTerminal.description'),
+      image: '/cabo_negro1.webp',
+      highlights: Array.isArray(t.raw('maritimeTerminal.highlights')) ? t.raw('maritimeTerminal.highlights') : []
+    },
+    {
       id: 'h2v-opportunity',
       title: t('h2vOpportunity.title'),
       titleLine1: t('h2vOpportunity.title').split(' ')[0],
@@ -193,16 +203,6 @@ export default function Features() {
       description: t('industrialReady.description'),
       image: '/model4.png',
       highlights: Array.isArray(t.raw('industrialReady.highlights')) ? t.raw('industrialReady.highlights') : []
-    },
-    {
-      id: 'maritime-terminal',
-      title: t('maritimeTerminal.title'),
-      titleLine1: t('maritimeTerminal.title').split(' ')[0],
-      titleLine2: t('maritimeTerminal.title').split(' ').slice(1).join(' '),
-      icon: Anchor,
-      description: t('maritimeTerminal.description'),
-      image: '/cabo_negro1.webp',
-      highlights: Array.isArray(t.raw('maritimeTerminal.highlights')) ? t.raw('maritimeTerminal.highlights') : []
     },
     {
       id: 'regulatory-advantage',
