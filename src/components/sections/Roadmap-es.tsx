@@ -3,8 +3,13 @@ import { WorldMap } from "@/components/ui/world-map";
 import { motion } from "framer-motion";
 
 export function RoadmapEs() {
+  console.log('RoadmapEs component is rendering!')
   return (
     <div className="py-20 dark:bg-black bg-white w-full">
+      {/* TEST ELEMENT - REMOVE AFTER DEBUGGING */}
+      <div className="bg-green-500 text-white p-4 text-center text-xl font-bold">
+        🚨 ROADMAP ESPAÑOL FUNCIONANDO! 🚨
+      </div>
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <motion.h2
