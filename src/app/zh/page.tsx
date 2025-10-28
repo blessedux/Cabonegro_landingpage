@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { NextIntlClientProvider } from 'next-intl'
+import { PreloaderProvider } from '@/contexts/PreloaderContext'
+import { AnimationProvider } from '@/contexts/AnimationContext'
+import { CookieBannerProvider } from '@/contexts/CookieBannerContext'
+import { ThemeProvider } from 'next-themes'
 import { useAnimation } from '@/contexts/AnimationContext'
 import NavbarZh from '@/components/sections/Navbar-zh'
 import HeroZh from '@/components/sections/Hero-zh'
@@ -142,8 +146,25 @@ function HomeContent() {
 
 export default function ChineseHome() {
   return (
-    <NextIntlClientProvider messages={messages} locale="zh">
-      <HomeContent />
-    </NextIntlClientProvider>
+    <html lang="zh" suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <NextIntlClientProvider messages={messages} locale="zh">
+            <PreloaderProvider>
+              <AnimationProvider>
+                <CookieBannerProvider>
+                  <HomeContent />
+                </CookieBannerProvider>
+              </AnimationProvider>
+            </PreloaderProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   )
 }

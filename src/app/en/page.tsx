@@ -16,6 +16,10 @@ import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
 import CookieBanner from '@/components/sections/CookieBanner'
 import { NextIntlClientProvider } from 'next-intl'
+import { PreloaderProvider } from '@/contexts/PreloaderContext'
+import { AnimationProvider } from '@/contexts/AnimationContext'
+import { CookieBannerProvider } from '@/contexts/CookieBannerContext'
+import { ThemeProvider } from 'next-themes'
 import englishMessages from '../../../messages/en.json'
 
 function HomeContent() {
@@ -116,8 +120,25 @@ function HomeContent() {
 
 export default function EnglishHome() {
   return (
-    <NextIntlClientProvider messages={englishMessages} locale="en">
-      <HomeContent />
-    </NextIntlClientProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <NextIntlClientProvider messages={englishMessages} locale="en">
+            <PreloaderProvider>
+              <AnimationProvider>
+                <CookieBannerProvider>
+                  <HomeContent />
+                </CookieBannerProvider>
+              </AnimationProvider>
+            </PreloaderProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   )
 }
