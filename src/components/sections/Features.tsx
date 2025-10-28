@@ -216,17 +216,13 @@ export default function Features() {
     },
     {
       id: 'wind-potential',
-      title: 'Wind Power Potential',
-      titleLine1: 'Wind',
-      titleLine2: 'Power Potential',
+      title: t('windPotential.title'),
+      titleLine1: t('windPotential.title').split(' ')[0],
+      titleLine2: t('windPotential.title').split(' ').slice(1).join(' '),
       icon: TrendingUp,
-      description: '7× Chile\'s current power generation capacity',
+      description: t('windPotential.description'),
       image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
-      highlights: [
-        'Massive wind potential in region',
-        'Low hosting and maintenance costs',
-        'Sustainable energy infrastructure'
-      ]
+      highlights: Array.isArray(t.raw('windPotential.highlights')) ? t.raw('windPotential.highlights') : []
     }
   ]
 
@@ -244,9 +240,9 @@ export default function Features() {
           {/* Rounded Card Container */}
           <div className="relative overflow-visible">
             {/* Card with border and subtle background */}
-            <div className="relative bg-black/20 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl overflow-visible">
+            <div className="relative bg-black/20 backdrop-blur-sm border border-white/10 rounded-3xl p-0 sm:p-6 md:p-12 shadow-2xl overflow-visible">
               {/* Section Header */}
-              <div className="text-center mb-16">
+              <div className="text-center mb-16 px-4 sm:px-0">
                 <motion.h2 
                   initial={{ x: -50, opacity: 0 }}
                   whileInView={{ x: 0, opacity: 1 }}
@@ -268,14 +264,14 @@ export default function Features() {
               {isMobile ? (
                 /* Mobile Layout: Full width background with titles */
                 <HoverSlider className="min-h-[80vh] place-content-center bg-transparent text-white">
-                  <div className="px-3 md:px-12 py-6">
+                  <div className="px-0 sm:px-3 md:px-12 py-6">
                     <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
                       / strategic advantages
                     </h3>
                   </div>
                   
                   {/* Background container constrained to card boundaries */}
-                  <div className="relative min-h-[60vh] mx-3 md:mx-12 overflow-hidden rounded-2xl">
+                  <div className="relative min-h-[60vh] mx-0 md:mx-12 overflow-hidden rounded-2xl">
                     {/* Image Gallery Container */}
                     <div className="absolute inset-0 rounded-2xl">
                       {features.map((feature, index) => (

@@ -39,19 +39,10 @@ function ExploreContent() {
 
   return (
     <>
-      {/* Preloader - Always shows first */}
-      {isPreloaderVisible && (
-        <Preloader 
-          onComplete={handlePreloaderComplete}
-          duration={6}
-        />
-      )}
-
-      {/* Main Content - Only shows after preloader fade completes */}
-      {preloaderFadeComplete && (
-        <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
-          {/* Navigation */}
-          <Navbar />
+      {/* Simplified version - bypass preloader for reliability */}
+      <div className="min-h-screen bg-black text-white">
+        {/* Navigation */}
+        <Navbar />
           
           {/* Main Content - Spline Scene */}
           <main className="pt-32 pb-20 px-6">
@@ -165,7 +156,6 @@ function ExploreContent() {
           {/* Cookie Banner */}
           <CookieBanner />
         </div>
-      )}
     </>
   )
 }

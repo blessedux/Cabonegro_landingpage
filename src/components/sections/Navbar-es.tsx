@@ -101,7 +101,7 @@ export default function NavbarEs() {
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-11 w-auto hover:opacity-80 transition-opacity"
+                  className="h-12 w-auto hover:opacity-80 transition-opacity"
                 />
               </Link>
             </div>

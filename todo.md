@@ -1,4 +1,9 @@
-- [] update images on faetures section gallery
-- [] hero section toggle button between versions
+- [x] update images on faetures section gallery
 - [] translate content to chinese.
-- [] preloader animation
+- [x] preloader animation
+- [] hero alternative toggle button between versions
+- [] Improve texts on preloader
+- [] Fix logos on partners component
+- [] Work on Explore feature
+- [] animate planet scene transition
+- [] animate the actual location
