@@ -185,14 +185,14 @@ export default function Features() {
       highlights: Array.isArray(t.raw('maritimeTerminal.highlights')) ? t.raw('maritimeTerminal.highlights') : []
     },
     {
-      id: 'h2v-opportunity',
-      title: t('h2vOpportunity.title'),
-      titleLine1: t('h2vOpportunity.title').split(' ')[0],
-      titleLine2: t('h2vOpportunity.title').split(' ').slice(1).join(' '),
-      icon: Zap,
-      description: t('h2vOpportunity.description'),
-      image: '/h2_hydrogen.png',
-      highlights: Array.isArray(t.raw('h2vOpportunity.highlights')) ? t.raw('h2vOpportunity.highlights') : []
+      id: 'wind-potential',
+      title: t('windPotential.title'),
+      titleLine1: t('windPotential.title').split(' ')[0],
+      titleLine2: t('windPotential.title').split(' ').slice(1).join(' '),
+      icon: TrendingUp,
+      description: t('windPotential.description'),
+      image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
+      highlights: Array.isArray(t.raw('windPotential.highlights')) ? t.raw('windPotential.highlights') : []
     },
     {
       id: 'industrial-park',
@@ -215,14 +215,14 @@ export default function Features() {
       highlights: Array.isArray(t.raw('regulatoryAdvantage.highlights')) ? t.raw('regulatoryAdvantage.highlights') : []
     },
     {
-      id: 'wind-potential',
-      title: t('windPotential.title'),
-      titleLine1: t('windPotential.title').split(' ')[0],
-      titleLine2: t('windPotential.title').split(' ').slice(1).join(' '),
-      icon: TrendingUp,
-      description: t('windPotential.description'),
-      image: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop&crop=center',
-      highlights: Array.isArray(t.raw('windPotential.highlights')) ? t.raw('windPotential.highlights') : []
+      id: 'h2v-opportunity',
+      title: t('h2vOpportunity.title'),
+      titleLine1: t('h2vOpportunity.title').split(' ')[0],
+      titleLine2: t('h2vOpportunity.title').split(' ').slice(1).join(' '),
+      icon: Zap,
+      description: t('h2vOpportunity.description'),
+      image: '/h2_hydrogen.png',
+      highlights: Array.isArray(t.raw('h2vOpportunity.highlights')) ? t.raw('h2vOpportunity.highlights') : []
     }
   ]
 
