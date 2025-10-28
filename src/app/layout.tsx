@@ -4,6 +4,7 @@ import "./globals.css";
 import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
 import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
+import { ThemeProvider } from 'next-themes';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,15 +19,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <PreloaderProvider>
-          <AnimationProvider>
-            <CookieBannerProvider>
-              {children}
-            </CookieBannerProvider>
-          </AnimationProvider>
-        </PreloaderProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <PreloaderProvider>
+            <AnimationProvider>
+              <CookieBannerProvider>
+                {children}
+              </CookieBannerProvider>
+            </AnimationProvider>
+          </PreloaderProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
