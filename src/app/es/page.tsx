@@ -10,6 +10,7 @@ import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats-es'
 import Projects from '@/components/sections/Projects-es'
 import Partners from '@/components/sections/Partners-es'
+import { RoadmapEs } from '@/components/sections/Roadmap-es'
 import FAQ from '@/components/sections/FAQ-es'
 import Footer from '@/components/sections/Footer-es'
 import Navbar from '@/components/sections/Navbar-es'
@@ -92,6 +93,7 @@ function HomeContent() {
           <Features />
           <Stats />
           <Partners />
+          <RoadmapEs />
           <FAQ />
         </main>
 
