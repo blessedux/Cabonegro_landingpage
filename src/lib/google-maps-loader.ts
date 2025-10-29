@@ -4,7 +4,7 @@
 declare global {
   interface Window {
     google: {
-      maps: any;
+      maps: typeof google.maps;
     };
   }
 }
@@ -91,7 +91,7 @@ class GoogleMapsLoader {
           this.loadTimeout = null
         }
         console.log('📦 Google Maps script loaded successfully')
-        console.log('🔍 Google Maps API version:', (window as any).google?.maps?.version || 'unknown')
+        console.log('🔍 Google Maps API version:', (window as unknown as { google?: typeof google }).google?.maps?.version || 'unknown')
         this.isLoaded = true
         this.isLoading = false
         resolve()

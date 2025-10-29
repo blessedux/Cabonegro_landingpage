@@ -38,7 +38,7 @@ export default function GoogleMaps3DScene({
   const [hasError, setHasError] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<any>(null)
+  const mapInstanceRef = useRef<google.maps.Map | null>(null)
   const animationRef = useRef<number | null>(null)
   const rotationIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -231,25 +231,25 @@ export default function GoogleMaps3DScene({
   const initializeMap = () => {
     console.log('🔍 initializeMap called')
     console.log('🔍 mapRef.current:', mapRef.current)
-    console.log('🔍 window.google:', (window as any).google)
-    console.log('🔍 window.google.maps:', (window as any).google?.maps)
+    console.log('🔍 window.google:', (window as unknown as { google?: typeof google }).google)
+    console.log('🔍 window.google.maps:', (window as unknown as { google?: typeof google }).google?.maps)
     
     if (!mapRef.current) {
       console.error('❌ mapRef.current is null')
       return
     }
     
-    if (!(window as any).google) {
+    if (!(window as unknown as { google?: typeof google }).google) {
       console.error('❌ window.google is not available')
       return
     }
     
-    if (!(window as any).google.maps) {
+    if (!(window as unknown as { google?: typeof google }).google.maps) {
       console.error('❌ window.google.maps is not available')
       return
     }
     
-    if (!(window as any).google.maps.MapTypeId) {
+    if (!(window as unknown as { google?: typeof google }).google.maps.MapTypeId) {
       console.error('❌ window.google.maps.MapTypeId is not available')
       return
     }
@@ -264,14 +264,14 @@ export default function GoogleMaps3DScene({
       console.log('   📐 Tilt:', tilt)
       console.log('   🧭 Heading:', heading)
 
-      const map = new (window as any).google.maps.Map(mapRef.current, {
+      const map = new (window as unknown as { google: typeof google }).google.maps.Map(mapRef.current, {
         center: center,
         zoom: 0, // Start from very far away (space view)
         tilt: 0, // Start with no tilt
         heading: 0, // Start facing Asia
-        mapTypeId: mode === 'hybrid' ? (window as any).google.maps.MapTypeId?.HYBRID || 'hybrid' : 
-                   mode === 'satellite' ? (window as any).google.maps.MapTypeId?.SATELLITE || 'satellite' :
-                   (window as any).google.maps.MapTypeId?.TERRAIN || 'terrain',
+        mapTypeId: mode === 'hybrid' ? (window as unknown as { google: typeof google }).google.maps.MapTypeId?.HYBRID || 'hybrid' : 
+                   mode === 'satellite' ? (window as unknown as { google: typeof google }).google.maps.MapTypeId?.SATELLITE || 'satellite' :
+                   (window as unknown as { google: typeof google }).google.maps.MapTypeId?.TERRAIN || 'terrain',
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
