@@ -5,6 +5,7 @@ import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
 import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
 import { ThemeProvider } from 'next-themes';
+import { PageTransitionWrapper } from '@/components/ui/PageTransitionWrapper';
 
 const locales = ['en', 'es', 'zh'];
 
@@ -37,7 +38,9 @@ export default async function LocaleLayout({
             <PreloaderProvider>
               <AnimationProvider>
                 <CookieBannerProvider>
-                  {children}
+                  <PageTransitionWrapper>
+                    {children}
+                  </PageTransitionWrapper>
                 </CookieBannerProvider>
               </AnimationProvider>
             </PreloaderProvider>

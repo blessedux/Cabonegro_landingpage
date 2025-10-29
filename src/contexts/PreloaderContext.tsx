@@ -6,11 +6,14 @@ interface PreloaderContextType {
   isPreloaderVisible: boolean
   isPreloaderComplete: boolean
   hasSeenPreloader: boolean
+  isPreloaderBVisible: boolean
   setPreloaderVisible: (visible: boolean) => void
   setPreloaderComplete: (complete: boolean) => void
   showPreloader: () => void
   hidePreloader: () => void
   completePreloader: () => void
+  showPreloaderB: () => void
+  hidePreloaderB: () => void
 }
 
 const PreloaderContext = createContext<PreloaderContextType | undefined>(undefined)
@@ -19,6 +22,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const [isPreloaderVisible, setIsPreloaderVisible] = useState(false)
   const [isPreloaderComplete, setIsPreloaderComplete] = useState(false)
   const [hasSeenPreloader, setHasSeenPreloader] = useState(false)
+  const [isPreloaderBVisible, setIsPreloaderBVisible] = useState(false)
 
   // Check if user has seen preloader before on mount
   useEffect(() => {
@@ -52,17 +56,28 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
     }, 1000)
   }
 
+  const showPreloaderB = () => {
+    setIsPreloaderBVisible(true)
+  }
+
+  const hidePreloaderB = () => {
+    setIsPreloaderBVisible(false)
+  }
+
   return (
     <PreloaderContext.Provider
       value={{
         isPreloaderVisible,
         isPreloaderComplete,
         hasSeenPreloader,
+        isPreloaderBVisible,
         setPreloaderVisible: setIsPreloaderVisible,
         setPreloaderComplete: setIsPreloaderComplete,
         showPreloader,
         hidePreloader,
         completePreloader,
+        showPreloaderB,
+        hidePreloaderB,
       }}
     >
       {children}

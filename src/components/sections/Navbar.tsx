@@ -15,7 +15,7 @@ export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const { startFadeOut, isNavbarHidden } = useAnimation()
-  const { isPreloaderVisible, isPreloaderComplete } = usePreloader()
+  const { isPreloaderVisible, isPreloaderComplete, showPreloaderB } = usePreloader()
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -28,11 +28,11 @@ export default function Navbar() {
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
-    // Check if we're on the deck route - show navbar immediately
-    if (pathname.includes('/deck')) {
+    // Check if we're on the deck or explore route - show navbar immediately
+    if (pathname.includes('/deck') || pathname.includes('/explore')) {
       const timer = setTimeout(() => {
         setIsVisible(true)
-      }, 100) // Quick delay for deck route
+      }, 100) // Quick delay for deck/explore routes
       return () => clearTimeout(timer)
     }
     
@@ -48,6 +48,16 @@ export default function Navbar() {
 
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
+    // Check if we're on a special page (explore, deck, contact)
+    const isOnSpecialPage = pathname.includes('/explore') || 
+                           pathname.includes('/deck') || 
+                           pathname.includes('/contact')
+    
+    // If switching language on special page, show PreloaderB
+    if (isOnSpecialPage) {
+      showPreloaderB()
+    }
+    
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
     if (pathname.startsWith('/es')) {
@@ -70,21 +80,25 @@ export default function Navbar() {
     
     // Navigate to the new locale with the same path
     // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
-    if (newLocale === 'en') {
-      const targetPath = '/en' + pathWithoutLocale
-      router.push(targetPath)
-    } else if (newLocale === 'es') {
-      const targetPath = '/es' + pathWithoutLocale
-      router.push(targetPath)
-    } else if (newLocale === 'zh') {
-      const targetPath = '/zh' + pathWithoutLocale
-      router.push(targetPath)
-    }
+    const delay = isOnSpecialPage ? 100 : 0
+    setTimeout(() => {
+      if (newLocale === 'en') {
+        const targetPath = '/en' + pathWithoutLocale
+        router.push(targetPath)
+      } else if (newLocale === 'es') {
+        const targetPath = '/es' + pathWithoutLocale
+        router.push(targetPath)
+      } else if (newLocale === 'zh') {
+        const targetPath = '/zh' + pathWithoutLocale
+        router.push(targetPath)
+      }
+    }, delay)
   }
 
   // Handle Explore Terrain click
   const handleExploreTerrain = () => {
     startFadeOut()
+    showPreloaderB()
     
     // Navigate to explore route after animations
     setTimeout(() => {
@@ -94,8 +108,8 @@ export default function Navbar() {
 
   return (
     <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck route, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') 
+      // For deck and explore routes, only hide if navbar is explicitly hidden
+      pathname.includes('/deck') || pathname.includes('/explore')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
         : (isNavbarHidden || isPreloaderVisible
             ? '-translate-y-full opacity-0' 
@@ -124,7 +138,15 @@ export default function Navbar() {
               >
                 Explore Terrain
               </button>
-              <Link href="/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">View Deck</Link>
+              <button 
+                onClick={() => {
+                  showPreloaderB()
+                  setTimeout(() => router.push('/deck'), 100)
+                }}
+                className="text-sm hover:text-gray-300 transition-colors uppercase"
+              >
+                View Deck
+              </button>
               <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
               
               {/* Language Toggle */}
@@ -144,11 +166,16 @@ export default function Navbar() {
                 ))}
               </div>
 
-              <Link href="/contact">
-                <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
-                  Contact Us
-                </Button>
-              </Link>
+              <Button
+                variant="outline"
+                className="uppercase border-white text-white hover:bg-white hover:text-black"
+                onClick={() => {
+                  showPreloaderB()
+                  setTimeout(() => router.push('/contact'), 100)
+                }}
+              >
+                Contact Us
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -179,13 +206,16 @@ export default function Navbar() {
                 >
                   Explore Terrain
                 </button>
-                <Link 
-                  href="/deck" 
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    showPreloaderB()
+                    setTimeout(() => router.push('/deck'), 100)
+                  }}
+                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
                 >
                   View Deck
-                </Link>
+                </button>
                 <a 
                   href="#FAQ" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
@@ -212,15 +242,21 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                <Link href="/contact" className="w-full mt-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    showPreloaderB()
+                    setTimeout(() => router.push('/contact'), 100)
+                  }}
+                  className="w-full mt-2"
+                >
                   <Button
                     variant="outline"
                     className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
-                    onClick={() => setMobileMenuOpen(false)}
                   >
                     Contact Us
                   </Button>
-                </Link>
+                </button>
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import Link from 'next/link'
 import { useAnimation } from '@/contexts/AnimationContext'
+import { usePreloader } from '@/contexts/PreloaderContext'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -9,6 +10,7 @@ import { motion } from 'framer-motion'
 export default function Hero() {
   const router = useRouter()
   const { startFadeOut } = useAnimation()
+  const { showPreloaderB } = usePreloader()
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   
@@ -23,11 +25,19 @@ export default function Hero() {
 
   const handleExploreTerrain = () => {
     startFadeOut()
+    showPreloaderB()
     
     // Navigate to explore route after animations
     setTimeout(() => {
       router.push('/explore')
     }, 1000)
+  }
+
+  const handleDeckClick = () => {
+    showPreloaderB()
+    setTimeout(() => {
+      router.push('/deck')
+    }, 100)
   }
 
   // Removed performance monitoring and console logging
@@ -121,16 +131,15 @@ export default function Hero() {
             >
               Explore Terrain
             </Button>
-            <Link href="/deck">
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
-                style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
-              >
-                View Deck
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
+              onClick={handleDeckClick}
+              style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+            >
+              View Deck
+            </Button>
           </motion.div>
         </div>
       </div>
