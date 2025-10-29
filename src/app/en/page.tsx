@@ -7,8 +7,6 @@ import Preloader from '@/components/ui/preloader'
 import Hero from '@/components/sections/Hero'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
-import Projects from '@/components/sections/Projects'
-import Timeline from '@/components/sections/Timeline'
 import Partners from '@/components/sections/Partners'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
@@ -99,8 +97,6 @@ function HomeContent() {
             <Hero />
             <Features />
             <Stats />
-            <Projects />
-            <Timeline />
             <Partners />
             <FAQ />
           </main>
