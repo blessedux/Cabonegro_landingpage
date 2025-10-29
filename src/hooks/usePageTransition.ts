@@ -46,15 +46,27 @@ export function usePageTransition() {
 
       // Check if this is a language switch on home (don't show PreloaderB)
       const isLanguageSwitchOnHome = wasOnHome && isOnHome && prevPath !== currentPath
+      
+      // Check if this is a language switch on special pages (both paths are special pages but different locales)
+      // Extract page type (explore/deck/contact) from paths
+      const prevPageType = prevPath.split('/')[2] // e.g., 'explore' from '/es/explore'
+      const currentPageType = currentPath.split('/')[2] // e.g., 'explore' from '/en/explore'
+      const prevLocale = prevPath.split('/')[1] // e.g., 'es'
+      const currentLocale = currentPath.split('/')[1] // e.g., 'en'
+      
+      const isLanguageSwitchOnSpecial = wasOnSpecial && isOnSpecial && 
+                                        prevPath !== currentPath &&
+                                        prevLocale !== currentLocale &&
+                                        prevPageType === currentPageType // Same page type (explore/deck/contact)
 
       // Show PreloaderB if:
       // 1. Navigating from home to any page OR from any page to home
-      // 2. Navigating between special pages
-      // 3. Switching languages on special pages (explore/deck/contact)
+      // 2. Navigating between different special pages (e.g., explore to deck)
+      // 3. Switching languages on special pages (e.g., /es/explore to /en/explore)
       const shouldShowPreloaderB = 
         (!isLanguageSwitchOnHome && (wasOnHome || isOnHome)) || // Home navigation
-        (wasOnSpecial || isOnSpecial) || // Special page navigation
-        (wasOnSpecial && !wasOnHome && !isOnHome && prevPath.split('/')[1] !== currentPath.split('/')[1]) // Language switch on special pages
+        (wasOnSpecial && isOnSpecial && !isLanguageSwitchOnSpecial && prevPageType !== currentPageType) || // Different special pages
+        isLanguageSwitchOnSpecial // Language switch on same special page
 
       if (shouldShowPreloaderB) {
         showPreloaderB()
