@@ -10,7 +10,6 @@ import Stats from '@/components/sections/Stats'
 import Projects from '@/components/sections/Projects'
 import Timeline from '@/components/sections/Timeline'
 import Partners from '@/components/sections/Partners'
-import { Roadmap } from '@/components/sections/Roadmap'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
@@ -103,7 +102,6 @@ function HomeContent() {
             <Projects />
             <Timeline />
             <Partners />
-            <Roadmap />
             <FAQ />
           </main>
 
