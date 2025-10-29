@@ -12,6 +12,7 @@ import Preloader from '@/components/ui/preloader-es'
 import Hero from '@/components/sections/Hero-es'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats-es'
+import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 import Projects from '@/components/sections/Projects-es'
 import Partners from '@/components/sections/Partners-es'
 import FAQ from '@/components/sections/FAQ-es'
@@ -95,6 +96,7 @@ function HomeContent() {
           <Hero />
           <Features />
           <Stats />
+          <CaboNegroRulerCarousel />
           <Partners />
           <FAQ />
         </main>

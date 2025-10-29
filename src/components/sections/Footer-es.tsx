@@ -14,7 +14,6 @@ export default function FooterEs() {
           <div className="flex flex-wrap gap-8">
             <Link href="/es/explore" className="text-sm text-gray-400 hover:text-white uppercase">Explorar Terreno</Link>
             <Link href="/es/deck" className="text-sm text-gray-400 hover:text-white uppercase">Ver Deck</Link>
-            <Link href="/es/partners" className="text-sm text-gray-400 hover:text-white uppercase">Socios</Link>
             <Link href="/es#FAQ" className="text-sm text-gray-400 hover:text-white uppercase">Preguntas Frecuentes</Link>
           </div>
         </div>

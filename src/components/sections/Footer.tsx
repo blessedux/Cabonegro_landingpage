@@ -14,7 +14,6 @@ export default function Footer() {
           <div className="flex flex-wrap gap-8">
             <Link href="/explore" className="text-sm text-gray-400 hover:text-white uppercase">Explore Terrain</Link>
             <Link href="/deck" className="text-sm text-gray-400 hover:text-white uppercase">View Deck</Link>
-            <Link href="/partners" className="text-sm text-gray-400 hover:text-white uppercase">Partners</Link>
             <Link href="/#FAQ" className="text-sm text-gray-400 hover:text-white uppercase">FAQ</Link>
           </div>
         </div>

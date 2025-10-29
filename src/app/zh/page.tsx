@@ -14,6 +14,7 @@ import NavbarZh from '@/components/sections/Navbar-zh'
 import HeroZh from '@/components/sections/Hero-zh'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
+import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 import Partners from '@/components/sections/Partners'
 import FAQZh from '@/components/sections/FAQ-zh'
 import Footer from '@/components/sections/Footer'
@@ -195,6 +196,7 @@ function HomeContent() {
             <HeroZh />
             <Features />
             <Stats />
+            <CaboNegroRulerCarousel />
             <Partners />
             <FAQZh />
           </main>
