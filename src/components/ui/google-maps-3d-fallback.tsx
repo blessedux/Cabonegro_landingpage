@@ -3,6 +3,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import googleMapsLoader from '@/lib/google-maps-loader'
 
+// Type declarations for Google Maps API
+declare global {
+  interface Window {
+    google: {
+      maps: any;
+    };
+  }
+}
+
 interface GoogleMaps3DProps {
   center?: { lat: number; lng: number }
   range?: number
@@ -34,7 +43,7 @@ export default function GoogleMaps3D({
   const [hasError, setHasError] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<google.maps.Map | null>(null)
+  const mapInstanceRef = useRef<any>(null)
   const animationRef = useRef<number | null>(null)
   const rotationIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -123,17 +132,17 @@ export default function GoogleMaps3D({
   }, [onLoad, onError, stopAutoRotation])
 
   const initializeMap = () => {
-    if (!mapRef.current || !(window as unknown as { google?: typeof google }).google) return
+    if (!mapRef.current || !(window as unknown as { google?: any }).google) return
 
     try {
-      const map = new (window as unknown as { google: typeof google }).google.maps.Map(mapRef.current, {
+      const map = new (window as unknown as { google: any }).google.maps.Map(mapRef.current, {
         center: center,
         zoom: 15,
         tilt: 0, // Start with 0 tilt for smooth animation
         heading: 0, // Start with 0 heading for smooth animation
-        mapTypeId: mode === 'hybrid' ? (window as unknown as { google: typeof google }).google.maps.MapTypeId.HYBRID : 
-                   mode === 'satellite' ? (window as unknown as { google: typeof google }).google.maps.MapTypeId.SATELLITE :
-                   (window as unknown as { google: typeof google }).google.maps.MapTypeId.TERRAIN,
+        mapTypeId: mode === 'hybrid' ? (window as unknown as { google: any }).google.maps.MapTypeId.HYBRID : 
+                   mode === 'satellite' ? (window as unknown as { google: any }).google.maps.MapTypeId.SATELLITE :
+                   (window as unknown as { google: any }).google.maps.MapTypeId.TERRAIN,
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,

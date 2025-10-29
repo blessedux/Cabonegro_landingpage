@@ -51,7 +51,7 @@ For more information, visit: https://cabonegro.com
     headers.set('Content-Disposition', 'attachment; filename="Cabo_Negro_Investors_Deck.zip"')
     headers.set('Content-Length', zipBuffer.length.toString())
     
-    return new NextResponse(zipBuffer, {
+    return new Response(new Uint8Array(zipBuffer), {
       status: 200,
       headers,
     })
