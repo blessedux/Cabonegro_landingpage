@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { NextIntlClientProvider } from 'next-intl'
 import { usePreloader } from '@/contexts/PreloaderContext'
-import NavbarEs from '@/components/sections/Navbar-es'
+import NavbarZh from '@/components/sections/Navbar-zh'
 import Contact from '@/components/sections/Contact'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
 
 const messages = {
   "contact": {
-    "title": "Contáctanos",
-    "subtitle": "Obtén más información"
+    "title": "联系我们",
+    "subtitle": "获取更多信息"
   }
 }
 
@@ -28,7 +28,7 @@ function ContactContent() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
-        <NavbarEs />
+        <NavbarZh />
       
       {/* Main Content */}
       <main className="pt-32 pb-20 px-6">
@@ -44,9 +44,9 @@ function ContactContent() {
   )
 }
 
-export default function SpanishContact() {
+export default function ChineseContact() {
   return (
-    <NextIntlClientProvider messages={messages} locale="es">
+    <NextIntlClientProvider messages={messages} locale="zh">
       <ContactContent />
     </NextIntlClientProvider>
   )

@@ -7,13 +7,17 @@ import Preloader from '@/components/ui/preloader'
 import Hero from '@/components/sections/Hero'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
-import Projects from '@/components/sections/Projects'
-import Timeline from '@/components/sections/Timeline'
 import Partners from '@/components/sections/Partners'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
 import CookieBanner from '@/components/sections/CookieBanner'
+import { NextIntlClientProvider } from 'next-intl'
+import { PreloaderProvider } from '@/contexts/PreloaderContext'
+import { AnimationProvider } from '@/contexts/AnimationContext'
+import { CookieBannerProvider } from '@/contexts/CookieBannerContext'
+import { ThemeProvider } from 'next-themes'
+import englishMessages from '../../../messages/en.json'
 
 function HomeContent() {
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
@@ -93,8 +97,6 @@ function HomeContent() {
             <Hero />
             <Features />
             <Stats />
-            <Projects />
-            <Timeline />
             <Partners />
             <FAQ />
           </main>
@@ -110,6 +112,27 @@ function HomeContent() {
   )
 }
 
-export default function Home() {
-  return <HomeContent />
+export default function EnglishHome() {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <NextIntlClientProvider messages={englishMessages} locale="en">
+            <PreloaderProvider>
+              <AnimationProvider>
+                <CookieBannerProvider>
+                  <HomeContent />
+                </CookieBannerProvider>
+              </AnimationProvider>
+            </PreloaderProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  )
 }

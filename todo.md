@@ -2,8 +2,9 @@
 - [] translate content to chinese.
 - [x] preloader animation
 - [] hero alternative toggle button between versions
-- [] Improve texts on preloader
+- [x] Improve texts on preloader
 - [] Fix logos on partners component
 - [] Work on Explore feature
 - [] animate planet scene transition
 - [] animate the actual location
+- [x]Corregir lenguaje sensible en prelodaer

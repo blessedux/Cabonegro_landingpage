@@ -8,7 +8,7 @@ import { Menu, X } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 
-export default function Navbar() {
+export default function NavbarZh() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
@@ -24,30 +24,18 @@ export default function Navbar() {
   ]
 
   // Determine current language from pathname
-  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/en') ? 'en' : 'en'
+  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/en') ? 'en' : 'zh'
 
-  // Dropdown animation only after preloader completes
+  // Show navbar immediately
   useEffect(() => {
-    // Check if we're on the deck route - show navbar immediately
-    if (pathname.includes('/deck')) {
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 100) // Quick delay for deck route
-      return () => clearTimeout(timer)
-    }
-    
-    // Normal preloader logic for other routes
-    if (isPreloaderComplete && !isPreloaderVisible) {
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 500) // Delay for smooth entrance after preloader
-
-      return () => clearTimeout(timer)
-    }
-  }, [isPreloaderComplete, isPreloaderVisible, pathname])
+    setIsVisible(true)
+  }, [])
 
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
+    console.log('Language change requested:', newLocale)
+    console.log('Current pathname:', pathname)
+    
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
     if (pathname.startsWith('/es')) {
@@ -57,6 +45,8 @@ export default function Navbar() {
     } else if (pathname.startsWith('/en')) {
       pathWithoutLocale = pathname.substring(3) // Remove '/en'
     }
+    
+    console.log('Path without locale:', pathWithoutLocale)
     
     // Ensure path starts with '/'
     if (!pathWithoutLocale.startsWith('/')) {
@@ -68,16 +58,21 @@ export default function Navbar() {
       pathWithoutLocale = ''
     }
     
+    // Navigate immediately without complex transitions
+    
     // Navigate to the new locale with the same path
     // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
     if (newLocale === 'en') {
       const targetPath = '/en' + pathWithoutLocale
+      console.log('Navigating to English:', targetPath)
       router.push(targetPath)
     } else if (newLocale === 'es') {
       const targetPath = '/es' + pathWithoutLocale
+      console.log('Navigating to Spanish:', targetPath)
       router.push(targetPath)
     } else if (newLocale === 'zh') {
       const targetPath = '/zh' + pathWithoutLocale
+      console.log('Navigating to Chinese:', targetPath)
       router.push(targetPath)
     }
   }
@@ -88,30 +83,23 @@ export default function Navbar() {
     
     // Navigate to explore route after animations
     setTimeout(() => {
-      router.push('/en/explore')
+      router.push('/zh/explore')
     }, 1000)
   }
 
   return (
     <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck route, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') 
-        ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
-        : (isNavbarHidden || isPreloaderVisible
-            ? '-translate-y-full opacity-0' 
-            : isVisible 
-              ? 'top-0 translate-y-0 opacity-100' 
-              : '-translate-y-full opacity-0')
+      isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100'
     }`}>
       <nav className="container mx-auto">
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
-              <Link href="/" className="cursor-pointer">
+              <Link href="/zh" className="cursor-pointer">
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-12 w-auto hover:opacity-80 transition-opacity"
+                  className="h-11 w-auto hover:opacity-80 transition-opacity"
                 />
               </Link>
             </div>
@@ -122,17 +110,20 @@ export default function Navbar() {
                 onClick={handleExploreTerrain}
                 className="text-sm hover:text-gray-300 transition-colors uppercase"
               >
-                Explore Terrain
+                探索地形
               </button>
-              <Link href="/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">View Deck</Link>
-              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
+              <Link href="/zh/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">查看甲板</Link>
+              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">常见问题</a>
               
               {/* Language Toggle */}
               <div className="flex items-center gap-2">
                 {languages.map((lang) => (
                   <button
                     key={lang.code}
-                    onClick={() => handleLanguageChange(lang.code)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      handleLanguageChange(lang.code)
+                    }}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
                       currentLocale === lang.code
                         ? 'text-white bg-white/20 border border-white/30'
@@ -144,9 +135,9 @@ export default function Navbar() {
                 ))}
               </div>
 
-              <Link href="/contact">
+              <Link href="/zh/contact">
                 <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
-                  Contact Us
+                  联系我们
                 </Button>
               </Link>
             </div>
@@ -177,30 +168,33 @@ export default function Navbar() {
                   }}
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
                 >
-                  Explore Terrain
+                  探索地形
                 </button>
                 <Link 
-                  href="/deck" 
+                  href="/zh/deck" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  View Deck
+                  查看甲板
                 </Link>
                 <a 
                   href="#FAQ" 
                   className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  FAQ
+                  常见问题
                 </a>
                 
                 {/* Mobile Language Toggle */}
                 <div className="flex items-center gap-2 py-2">
-                  <span className="text-sm text-gray-400 uppercase">Language:</span>
+                  <span className="text-sm text-gray-400 uppercase">语言:</span>
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        handleLanguageChange(lang.code)
+                      }}
                       className={`text-xs px-2 py-1 rounded transition-colors ${
                         currentLocale === lang.code
                           ? 'text-white bg-white/20 border border-white/30'
@@ -212,13 +206,13 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                <Link href="/contact" className="w-full mt-2">
+                <Link href="/zh/contact" className="w-full mt-2">
                   <Button
                     variant="outline"
                     className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Contact Us
+                    联系我们
                   </Button>
                 </Link>
               </div>

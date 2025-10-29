@@ -9,6 +9,7 @@ import Hero from '@/components/sections/Hero'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
 import Partners from '@/components/sections/Partners'
+import { Roadmap } from '@/components/sections/Roadmap'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
@@ -160,6 +161,7 @@ function HomeContent() {
           <Features />
           <Stats />
           <Partners />
+          <Roadmap />
           <FAQ />
         </main>
         

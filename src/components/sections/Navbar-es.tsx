@@ -19,11 +19,12 @@ export default function NavbarEs() {
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'es', name: 'Español', flag: '🇨🇱' }
+    { code: 'es', name: 'Español', flag: '🇨🇱' },
+    { code: 'zh', name: '中文', flag: '🇨🇳' }
   ]
 
   // Determine current language from pathname
-  const currentLocale = pathname.startsWith('/es') ? 'es' : 'en'
+  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/en') ? 'en' : 'es'
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
@@ -51,6 +52,10 @@ export default function NavbarEs() {
     let pathWithoutLocale = pathname
     if (pathname.startsWith('/es')) {
       pathWithoutLocale = pathname.substring(3) // Remove '/es'
+    } else if (pathname.startsWith('/zh')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/zh'
+    } else if (pathname.startsWith('/en')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/en'
     }
     
     // Ensure path starts with '/'
@@ -64,11 +69,16 @@ export default function NavbarEs() {
     }
     
     // Navigate to the new locale with the same path
-    // English routes don't have a prefix, Spanish routes use /es prefix
+    // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
     if (newLocale === 'en') {
-      router.push(pathWithoutLocale || '/')
-    } else {
-      router.push('/es' + pathWithoutLocale)
+      const targetPath = '/en' + pathWithoutLocale
+      router.push(targetPath)
+    } else if (newLocale === 'es') {
+      const targetPath = '/es' + pathWithoutLocale
+      router.push(targetPath)
+    } else if (newLocale === 'zh') {
+      const targetPath = '/zh' + pathWithoutLocale
+      router.push(targetPath)
     }
   }
 
@@ -125,8 +135,8 @@ export default function NavbarEs() {
                     onClick={() => handleLanguageChange(lang.code)}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
                       currentLocale === lang.code
-                        ? 'text-white bg-white/20'
-                        : 'text-gray-400 hover:text-white'
+                        ? 'text-white bg-white/20 border border-white/30'
+                        : 'text-white hover:text-gray-300'
                     }`}
                   >
                     {lang.code.toUpperCase()}
@@ -193,8 +203,8 @@ export default function NavbarEs() {
                       onClick={() => handleLanguageChange(lang.code)}
                       className={`text-xs px-2 py-1 rounded transition-colors ${
                         currentLocale === lang.code
-                          ? 'text-white bg-white/20'
-                          : 'text-gray-400 hover:text-white'
+                          ? 'text-white bg-white/20 border border-white/30'
+                          : 'text-white hover:text-gray-300'
                       }`}
                     >
                       {lang.code.toUpperCase()}

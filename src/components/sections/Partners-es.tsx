@@ -10,12 +10,12 @@ import { MagicText } from '@/components/ui/magic-text'
 // Define the logos from your public/logos directory
 const partnerLogos = [
   { name: "Cabo Negro", id: 1, src: "/logos/cabonegro_logo.png", alt: "Cabo Negro Logo" },
-  { name: "Armada", id: 3, src: "/logos/Armada_white.png", alt: "Armada Logo" },
-  { name: "CORFO", id: 4, src: "/logos/Logo_Corfo_white.png", alt: "CORFO Logo" },
-  { name: "H2 Chile", id: 5, src: "/logos/MARCA-H2CHILE-white.png", alt: "H2 Chile Logo" },
-  { name: "Patagon", id: 6, src: "/logos/patagon_white.png", alt: "Patagon Logo" },
-  { name: "UMAG", id: 7, src: "/logos/umag_logo.png", alt: "UMAG Logo" },
-  { name: "YLMV", id: 8, src: "/logos/ylmv_blanco.png", alt: "YLMV Logo" },
+  { name: "Armada", id: 2, src: "/logos/Armada_white.png", alt: "Armada Logo" },
+  { name: "CORFO", id: 3, src: "/logos/Logo_Corfo_white.png", alt: "CORFO Logo" },
+  { name: "H2 Chile", id: 4, src: "/logos/MARCA-H2CHILE-white.png", alt: "H2 Chile Logo" },
+  { name: "Patagon", id: 5, src: "/logos/patagon_white.png", alt: "Patagon Logo" },
+  { name: "UMAG", id: 6, src: "/logos/umag_logo.png", alt: "UMAG Logo" },
+  { name: "YLMV", id: 7, src: "/logos/ylmv_blanco.png", alt: "YLMV Logo" },
 ]
 
 export default function PartnersEs() {

@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { NextIntlClientProvider } from 'next-intl'
+import { PreloaderProvider } from '@/contexts/PreloaderContext'
+import { AnimationProvider } from '@/contexts/AnimationContext'
+import { CookieBannerProvider } from '@/contexts/CookieBannerContext'
+import { ThemeProvider } from 'next-themes'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader-es'
@@ -108,8 +112,25 @@ function HomeContent() {
 
 export default function SpanishHome() {
   return (
-    <NextIntlClientProvider messages={spanishMessages} locale="es">
-      <HomeContent />
-    </NextIntlClientProvider>
+    <html lang="es" suppressHydrationWarning>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          <NextIntlClientProvider messages={spanishMessages} locale="es">
+            <PreloaderProvider>
+              <AnimationProvider>
+                <CookieBannerProvider>
+                  <HomeContent />
+                </CookieBannerProvider>
+              </AnimationProvider>
+            </PreloaderProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   )
 }
