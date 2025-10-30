@@ -110,11 +110,12 @@ export default function NavbarZh() {
 
   // Handle Explore Terrain click
   const handleExploreTerrain = () => {
+    if (pathname.includes('/explore')) {
+      setIsNavbarHidden(false)
+      return
+    }
     startFadeOut()
     showPreloaderB()
-    
-    // Navigate to explore route - let usePageTransition handle PreloaderB on route change
-    // Small delay to ensure PreloaderB state is set before navigation
     setTimeout(() => {
       router.push('/zh/explore')
     }, 100)

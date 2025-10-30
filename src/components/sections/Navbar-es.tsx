@@ -110,11 +110,13 @@ export default function NavbarEs() {
 
   // Handle Explore Terrain click
   const handleExploreTerrain = () => {
+    // If already on explore, keep navbar and do nothing
+    if (pathname.includes('/explore')) {
+      setIsNavbarHidden(false)
+      return
+    }
     startFadeOut()
     showPreloaderB()
-    
-    // Navigate to explore route - let usePageTransition handle PreloaderB on route change
-    // Small delay to ensure PreloaderB state is set before navigation
     setTimeout(() => {
       router.push('/es/explore')
     }, 100)
