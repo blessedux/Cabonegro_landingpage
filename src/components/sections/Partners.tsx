@@ -42,7 +42,7 @@ export default function Partners() {
         animate={{ x: [0, 8, 0], y: [0, -6, 0] }}
         transition={{ duration: 16, ease: "easeInOut", repeat: Infinity }}
         style={{
-          backgroundImage: `radial-gradient(circle 700px at 18% 15%, rgba(255,255,255,0.40), transparent 62%)`,
+          backgroundImage: `radial-gradient(circle 700px at 18% 15%, rgba(255,255,255,0.18), transparent 62%)`,
         }}
       />
       <motion.div
@@ -51,7 +51,7 @@ export default function Partners() {
         animate={{ x: [0, -10, 0], y: [0, 8, 0] }}
         transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
         style={{
-          backgroundImage: `radial-gradient(circle 800px at 82% 85%, rgba(255,255,255,0.32), transparent 68%)`,
+          backgroundImage: `radial-gradient(circle 800px at 82% 85%, rgba(255,255,255,0.14), transparent 68%)`,
         }}
       />
 
@@ -68,7 +68,15 @@ export default function Partners() {
       />
 
       {/* Cross-fade overlay to blend content smoothly */}
-      <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-black/60 via-black/20 to-black/70" />
+      <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-black/70 via-black/25 to-black/80" />
+
+      {/* Edge vignette to ease glow into borders */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          background: `radial-gradient(120% 120% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.85) 100%)`,
+        }}
+      />
 
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-16">
