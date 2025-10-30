@@ -65,7 +65,7 @@ export default function EnglishContactPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
-      <main className="pt-32 pb-20 px-6">
+      <main className="pt-20 md:pt-24 pb-16 px-6">
         <AboutPage />
       </main>
       <Footer />

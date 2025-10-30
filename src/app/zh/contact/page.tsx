@@ -43,7 +43,7 @@ export default function ChineseContactPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <NavbarZh />
-      <main className="pt-32 pb-20 px-6">
+      <main className="pt-20 md:pt-24 pb-16 px-6">
         <AboutPage />
       </main>
       <Footer />
