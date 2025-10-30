@@ -181,16 +181,16 @@ export function WorldMap({
               >
                 <animate
                   attributeName="r"
-                  from="2"
-                  to="8"
+                  values="2;8;2"
+                  keyTimes="0;0.5;1"
                   dur="3s"
                   begin="0s"
                   repeatCount="indefinite"
                 />
                 <animate
                   attributeName="opacity"
-                  from="0.5"
-                  to="0"
+                  values="0.5;0;0.5"
+                  keyTimes="0;0.5;1"
                   dur="3s"
                   begin="0s"
                   repeatCount="indefinite"
@@ -213,16 +213,16 @@ export function WorldMap({
               >
                 <animate
                   attributeName="r"
-                  from="2"
-                  to="8"
+                  values="2;8;2"
+                  keyTimes="0;0.5;1"
                   dur="3s"
                   begin="0s"
                   repeatCount="indefinite"
                 />
                 <animate
                   attributeName="opacity"
-                  from="0.5"
-                  to="0"
+                  values="0.5;0;0.5"
+                  keyTimes="0;0.5;1"
                   dur="3s"
                   begin="0s"
                   repeatCount="indefinite"
