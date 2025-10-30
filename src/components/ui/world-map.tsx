@@ -157,14 +157,21 @@ export function WorldMap({
                 strokeWidth="1"
                 strokeLinecap="round"
                 strokeDasharray={dashed ? "4 6" : undefined}
-                strokeOpacity={connectsCaboNegro ? 0.95 : 0.45}
-                initial={{ pathLength: 0 }}
-                whileInView={connectsCaboNegro ? { pathLength: 1 } : { pathLength: [0, 1, 0] }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={connectsCaboNegro
-                  ? { duration: 1.1, delay: 0.7 * i, ease: "easeOut" }
-                  : { duration: 0.9, delay: 0.7 * i, ease: "easeInOut" }
-                }
+                initial={{ pathLength: 0, strokeOpacity: 0 }}
+                whileInView={{
+                  pathLength: [0, 1, 1, 0],
+                  strokeOpacity: [0, connectsCaboNegro ? 0.95 : 0.45, connectsCaboNegro ? 0.95 : 0.45, 0],
+                }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{
+                  duration: connectsCaboNegro ? 6 : 4,
+                  times: [0, 0.5, 0.8, 1],
+                  delay: 0.5 * i,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  repeatDelay: 0.6,
+                }}
                 key={`start-upper-${i}`}
               ></motion.path>
             </g>
