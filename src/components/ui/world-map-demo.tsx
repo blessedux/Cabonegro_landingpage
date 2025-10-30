@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { WorldMap } from "@/components/ui/world-map";
-import Typewriter from "@/components/ui/Typewriter";
 
 export function WorldMapDemo() {
   return (
@@ -58,13 +58,55 @@ export function WorldMapDemo() {
           { start: { lat: 35, lng: 180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: -40, controlOffsetY: -10 },
         ]}
       />
-      {/* Bottom-right typewriter caption */}
-      <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-[80%]">
-        <Typewriter
-          text="Strategic Cabo Negro maritime terminal: unlocking Pacific–Atlantic trade, competing with the Panama Canal."
-          speed={24}
-          className="text-xs sm:text-sm md:text-base lg:text-lg font-medium tracking-wide text-white/80 bg-black/30 backdrop-blur px-3 py-1.5 rounded-md border border-white/10"
-        />
+      <TerminalCaption />
+    </div>
+  );
+}
+
+function TerminalCaption() {
+  const baseText = "Strategic Cabo Negro maritime terminal: unlocking Pacific–Atlantic trade, competing with the Panama Canal";
+  const [display, setDisplay] = useState("");
+  const [dots, setDots] = useState(0);
+  const intervalRef = useRef<number | null>(null);
+  const dotsRef = useRef<number | null>(null);
+
+  // Simple scramble-in reveal similar to preloader
+  useEffect(() => {
+    const chars = "▪";
+    let iterations = 0;
+    const max = baseText.length * 2;
+    intervalRef.current = window.setInterval(() => {
+      const next = baseText
+        .split("")
+        .map((ch, idx) => (idx < iterations / 2 ? baseText[idx] : chars[Math.floor(Math.random() * chars.length)]))
+        .join("");
+      setDisplay(next);
+      iterations += 1;
+      if (iterations >= max) {
+        if (intervalRef.current) window.clearInterval(intervalRef.current);
+        setDisplay(baseText);
+      }
+    }, 40);
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  // Animated trailing dots like terminal progression
+  useEffect(() => {
+    dotsRef.current = window.setInterval(() => {
+      setDots((d) => (d + 1) % 4);
+    }, 600);
+    return () => {
+      if (dotsRef.current) window.clearInterval(dotsRef.current);
+    };
+  }, []);
+
+  return (
+    <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-[90%]">
+      <div className="inline-block text-[10px] sm:text-xs md:text-sm lg:text-base font-secondary uppercase tracking-widest text-white/80 bg-black/30 backdrop-blur px-3 py-1.5 rounded border border-white/10">
+        <span>{display}</span>
+        <span className="inline-block w-6 text-left">{".".repeat(dots)}</span>
       </div>
     </div>
   );
