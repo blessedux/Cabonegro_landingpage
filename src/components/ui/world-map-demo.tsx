@@ -14,6 +14,9 @@ export function WorldMapDemo() {
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: -85, lng: -70 }, color: '#22c55e', controlOffsetX: -40, controlOffsetY: 45 },
           // Atlantic side (moved start further up/right in Brazil) → CaboNegro bottom (right-tilted)
           { start: { lat: -23.5505, lng: -46.6333 }, end: { lat: -85, lng: -70 }, controlOffsetX: 60, controlOffsetY: 40 }, // São Paulo → CaboNegro bottom
+
+          // New route: Top of green vector (Valparaíso) → California coast (San Francisco)
+          { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: 37.7749, lng: -122.4194 }, controlOffsetX: 80, controlOffsetY: -10 },
           { start: { lat: -22.9519, lng: -43.2105 }, end: { lat: 25.7743, lng: -80.1937 } },   // Rio de Janeiro → Miami
           { start: { lat: 19.4326, lng: -99.1332 }, end: { lat: 34.0522, lng: -118.2437 } },  // Mexico City → Los Angeles
 
