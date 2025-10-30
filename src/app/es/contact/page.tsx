@@ -22,11 +22,13 @@ function AboutPage() {
             </h1>
             <div className="space-y-6 text-muted-foreground">
               <p>
-                Lyra is evolving to be more than just the models. It supports an entire ecosystem — from products to the APIs and platforms helping developers and businesses innovate.
+                ¿Interesado en arrendar o adquirir terrenos en Cabo Negro? Nuestro equipo
+                inmobiliario puede orientarte sobre lotes disponibles, parcelas industriales,
+                servicios y plazos de desarrollo. Escríbenos y te contactamos a la brevedad.
               </p>
               <Button asChild variant="secondary" size="sm" className="gap-1 pr-1.5">
-                <Link href="#">
-                  <span>Aprender más</span>
+                <Link href="mailto:realestate@cabonegro.com">
+                  <span>Contactar Inmobiliaria</span>
                   <ChevronRight className="size-4" />
                 </Link>
               </Button>

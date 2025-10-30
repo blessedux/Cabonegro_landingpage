@@ -42,12 +42,13 @@ function AboutPage({ achievements = defaultAchievements }: AboutPageProps) {
             </h1>
             <div className="space-y-6 text-muted-foreground">
               <p>
-                Lyra is evolving to be more than just the models. It supports an entire ecosystem — 
-                from products to the APIs and platforms helping developers and businesses innovate.
+                Interested in leasing or acquiring land at Cabo Negro? Our real estate team can
+                guide you on available lots, industrial parcels, utilities, and development timing.
+                Reach out and we’ll get back to you shortly.
               </p>
               <Button asChild variant="secondary" size="sm" className="gap-1 pr-1.5">
-                <Link href="#">
-                  <span>Learn More</span>
+                <Link href="mailto:realestate@cabonegro.com">
+                  <span>Contact Real Estate</span>
                   <ChevronRight className="size-4" />
                 </Link>
               </Button>

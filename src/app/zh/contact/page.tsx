@@ -22,11 +22,12 @@ function AboutPage() {
             </h1>
             <div className="space-y-6 text-muted-foreground">
               <p>
-                不止于模型，Lyra 支持从产品到 API 与平台的完整生态，助力开发者与企业创新。
+                想在 Cabo Negro 租赁或购买土地？我们的地产团队可为您提供可售地块、工业用地、配套
+                设施与开发时间表等资讯。欢迎来信，我们会尽快与您联系。
               </p>
               <Button asChild variant="secondary" size="sm" className="gap-1 pr-1.5">
-                <Link href="#">
-                  <span>了解更多</span>
+                <Link href="mailto:realestate@cabonegro.com">
+                  <span>联系地产团队</span>
                   <ChevronRight className="size-4" />
                 </Link>
               </Button>
