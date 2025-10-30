@@ -37,6 +37,12 @@ export function WorldMapDemo() {
           // Africa & Indian Ocean
           { start: { lat: -33.9249, lng: 18.4241 }, end: { lat: -12.4634, lng: 130.8456 } },  // Cape Town → Darwin
           { start: { lat: -26.2041, lng: 28.0473 }, end: { lat: -20.1667, lng: 57.5 } },      // Johannesburg → Port Louis
+
+          // CaboNegro bottom → far left border (exiting map)
+          { start: { lat: -85, lng: -70 }, end: { lat: -60, lng: -180 }, startColor: '#0ea5e9', controlOffsetX: -50, controlOffsetY: 20 },
+
+          // From far right border → China (Shanghai)
+          { start: { lat: 35, lng: 180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: -40, controlOffsetY: -10 },
         ]}
       />
     </div>
