@@ -36,6 +36,8 @@ export function WorldMapDemo() {
           // Americas
           // Single green from Valparaíso directly to bottom border (left-tilted)
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: -85, lng: -70 }, color: '#22c55e', controlOffsetX: -40, controlOffsetY: 45 },
+          // Atlantic side of Argentina → Brazil (tilted right)
+          { start: { lat: -34.6037, lng: -58.3816 }, end: { lat: -22.9519, lng: -43.2105 }, controlOffsetX: 80, controlOffsetY: 30 }, // Buenos Aires → Rio de Janeiro
           { start: { lat: -22.9519, lng: -43.2105 }, end: { lat: 25.7743, lng: -80.1937 } },   // Rio de Janeiro → Miami
           { start: { lat: 19.4326, lng: -99.1332 }, end: { lat: 34.0522, lng: -118.2437 } },  // Mexico City → Los Angeles
 
