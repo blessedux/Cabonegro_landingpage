@@ -64,49 +64,71 @@ export function WorldMapDemo() {
 }
 
 function TerminalCaption() {
-  const baseText = "Strategic Cabo Negro maritime terminal: unlocking Pacific–Atlantic trade, competing with the Panama Canal";
-  const [display, setDisplay] = useState("");
+  const lines = [
+    "Magellan linkage expands Pacific–Atlantic capacity",
+    "Selective routes: 10–15% transit time reduction",
+    "Adds redundancy to Panama-constrained trade flows"
+  ];
+  const [displayLines, setDisplayLines] = useState<string[]>(Array(lines.length).fill(""));
   const [dots, setDots] = useState(0);
-  const intervalRef = useRef<number | null>(null);
-  const dotsRef = useRef<number | null>(null);
 
-  // Simple scramble-in reveal similar to preloader
+  // Scramble-in per line, sequential
   useEffect(() => {
     const chars = "▪";
-    let iterations = 0;
-    const max = baseText.length * 2;
-    intervalRef.current = window.setInterval(() => {
-      const next = baseText
-        .split("")
-        .map((ch, idx) => (idx < iterations / 2 ? baseText[idx] : chars[Math.floor(Math.random() * chars.length)]))
-        .join("");
-      setDisplay(next);
-      iterations += 1;
-      if (iterations >= max) {
-        if (intervalRef.current) window.clearInterval(intervalRef.current);
-        setDisplay(baseText);
-      }
-    }, 40);
+    const timers: number[] = [];
+
+    lines.forEach((text, idx) => {
+      const startDelay = idx * 400; // stagger line starts
+      const timer = window.setTimeout(() => {
+        let iterations = 0;
+        const max = text.length * 2;
+        const interval = window.setInterval(() => {
+          const next = text
+            .split("")
+            .map((ch, i) => (i < iterations / 2 ? text[i] : chars[Math.floor(Math.random() * chars.length)]))
+            .join("");
+          setDisplayLines((prev) => {
+            const copy = [...prev];
+            copy[idx] = next;
+            return copy;
+          });
+          iterations += 1;
+          if (iterations >= max) {
+            window.clearInterval(interval);
+            setDisplayLines((prev) => {
+              const copy = [...prev];
+              copy[idx] = text;
+              return copy;
+            });
+          }
+        }, 35);
+        timers.push(interval);
+      }, startDelay);
+      timers.push(timer);
+    });
+
     return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      timers.forEach((t) => window.clearTimeout(t));
     };
   }, []);
 
-  // Animated trailing dots like terminal progression
+  // Trailing dots like terminal progression
   useEffect(() => {
-    dotsRef.current = window.setInterval(() => {
-      setDots((d) => (d + 1) % 4);
-    }, 600);
-    return () => {
-      if (dotsRef.current) window.clearInterval(dotsRef.current);
-    };
+    const id = window.setInterval(() => setDots((d) => (d + 1) % 4), 700);
+    return () => window.clearInterval(id);
   }, []);
 
   return (
-    <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-[90%]">
-      <div className="inline-block text-[10px] sm:text-xs md:text-sm lg:text-base font-secondary uppercase tracking-widest text-white/80 bg-black/30 backdrop-blur px-3 py-1.5 rounded border border-white/10">
-        <span>{display}</span>
-        <span className="inline-block w-6 text-left">{".".repeat(dots)}</span>
+    <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-[92%]">
+      <div className="inline-block text-[10px] sm:text-xs md:text-sm lg:text-base font-secondary uppercase tracking-widest text-white/80 bg-black/25 backdrop-blur px-3 py-2 rounded">
+        {displayLines.map((line, i) => (
+          <div key={i} className="leading-tight">
+            {line}
+            {i === displayLines.length - 1 && (
+              <span className="inline-block w-6 text-left">{".".repeat(dots)}</span>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
