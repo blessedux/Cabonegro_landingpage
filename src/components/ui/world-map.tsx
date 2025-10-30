@@ -12,6 +12,8 @@ interface RouteSpec {
   color?: string; // optional per-route color
   controlOffsetX?: number; // shift control point horizontally for tilt
   controlOffsetY?: number; // shift control point vertically for arc height
+  startColor?: string; // optional per-endpoint color override
+  endColor?: string;   // optional per-endpoint color override
 }
 
 interface MapProps {
@@ -22,7 +24,7 @@ interface MapProps {
 
 export function WorldMap({
   dots = [],
-  lineColor = "#0ea5e9",
+  lineColor = "#ffffff",
   dashed = true,
 }: MapProps) {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -117,13 +119,13 @@ export function WorldMap({
                 cx={projectPoint(dot.start.lat, dot.start.lng).x}
                 cy={projectPoint(dot.start.lat, dot.start.lng).y}
                 r="2"
-                fill={dot.color || lineColor}
+                fill={dot.startColor || dot.color || lineColor}
               />
               <circle
                 cx={projectPoint(dot.start.lat, dot.start.lng).x}
                 cy={projectPoint(dot.start.lat, dot.start.lng).y}
                 r="2"
-                fill={dot.color || lineColor}
+                fill={dot.startColor || dot.color || lineColor}
                 opacity="0.5"
               >
                 <animate
@@ -149,13 +151,13 @@ export function WorldMap({
                 cx={projectPoint(dot.end.lat, dot.end.lng).x}
                 cy={projectPoint(dot.end.lat, dot.end.lng).y}
                 r="2"
-                fill={dot.color || lineColor}
+                fill={dot.endColor || dot.color || lineColor}
               />
               <circle
                 cx={projectPoint(dot.end.lat, dot.end.lng).x}
                 cy={projectPoint(dot.end.lat, dot.end.lng).y}
                 r="2"
-                fill={dot.color || lineColor}
+                fill={dot.endColor || dot.color || lineColor}
                 opacity="0.5"
               >
                 <animate
