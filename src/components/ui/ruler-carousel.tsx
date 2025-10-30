@@ -177,7 +177,7 @@ export function RulerCarousel({
   const isNinthSlide = currentPage === 9;
 
   return (
-    <div className="w-full h-[60vh] flex flex-col items-center justify-between bg-background dark:bg-black py-8">
+    <div className="w-full h-[50vh] flex flex-col items-center justify-between bg-background dark:bg-black py-6">
       <div className="w-full h-[100px] flex flex-col justify-start relative mb-8">
         <div className="flex items-center justify-center">
           <RulerLines top />
@@ -296,63 +296,63 @@ export function RulerCarousel({
       </div>
 
       {/* Media area - first slide shows image, others show placeholder */}
-      <div className="w-full max-w-4xl px-4 mt-8">
+      <div className="w-full max-w-5xl px-4 mt-8">
         {isFirstSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/lots_model.png" alt="Cabo Negro lots model" fill className="object-cover" priority />
             </div>
           </div>
         ) : isSecondSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/stage2.png" alt="Stage 2 development render" fill className="object-cover" priority />
             </div>
           </div>
         ) : isThirdSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/h2v.png" alt="Green hydrogen hub illustration" fill className="object-cover" priority />
             </div>
           </div>
         ) : isFourthSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/wind_turbine.png" alt="Wind energy integration" fill className="object-cover" priority />
             </div>
           </div>
         ) : isFifthSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/maritime_terminal.png" alt="Maritime terminal expansion" fill className="object-cover" priority />
             </div>
           </div>
         ) : isSixthSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/logistics.png" alt="Logistics network development" fill className="object-cover" priority />
             </div>
           </div>
         ) : isSeventhSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/certification.png" alt="Regulatory compliance certification" fill className="object-cover" priority />
             </div>
           </div>
         ) : isEighthSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/opeartional_launch.png" alt="Operational launch" fill className="object-cover" priority />
             </div>
           </div>
         ) : isNinthSlide ? (
-          <div className="w-full aspect-video max-w-md mx-auto rounded-lg overflow-hidden">
+          <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden">
             <div className="relative w-full h-full">
               <Image src="/global_expansion.png" alt="Global expansion" fill className="object-cover" priority />
             </div>
           </div>
         ) : (
-          <div className="w-full aspect-video max-w-md mx-auto border-2 border-dashed border-gray-400 dark:border-gray-600 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+          <div className="w-full aspect-video max-w-3xl mx-auto border-2 border-dashed border-gray-400 dark:border-gray-600 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
             <div className="text-center text-gray-500 dark:text-gray-400">
               <div className="text-lg font-medium mb-2">Media Placeholder</div>
               <div className="text-sm">Image/Video will go here</div>
