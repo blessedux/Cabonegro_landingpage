@@ -5,39 +5,15 @@ import { motion } from "framer-motion";
 
 export function WorldMapDemo() {
   return (
-    <div className=" py-40 dark:bg-black bg-white w-full">
-      <div className="max-w-7xl mx-auto text-center">
-        <p className="font-bold text-xl md:text-4xl dark:text-white text-black">
-          Remote{" "}
-          <span className="text-neutral-400">
-            {"Connectivity".split("").map((word, idx) => (
-              <motion.span
-                key={idx}
-                className="inline-block"
-                initial={{ x: -10, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.5, delay: idx * 0.04 }}
-              >
-                {word}
-              </motion.span>
-            ))}
-          </span>
-        </p>
-        <p className="text-sm md:text-lg text-neutral-500 max-w-2xl mx-auto py-4 dark:text-neutral-400">
-          Break free from traditional boundaries. Work from anywhere, at the
-          comfort of your own studio apartment. Perfect for Nomads and
-          Travellers.
-        </p>
-      </div>
-
+    <div className="py-20 dark:bg-black bg-white w-full">
       <WorldMap
         dashed
         dots={[
           // Americas
           // Single green from Valparaíso directly to bottom border (left-tilted)
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: -85, lng: -70 }, color: '#22c55e', controlOffsetX: -40, controlOffsetY: 45 },
-          // Atlantic side of Argentina → Brazil (tilted right)
-          { start: { lat: -34.6037, lng: -58.3816 }, end: { lat: -22.9519, lng: -43.2105 }, controlOffsetX: 80, controlOffsetY: 30 }, // Buenos Aires → Rio de Janeiro
+          // Atlantic side of Argentina → CaboNegro bottom (right-tilted)
+          { start: { lat: -34.6037, lng: -58.3816 }, end: { lat: -85, lng: -70 }, controlOffsetX: 60, controlOffsetY: 40 }, // Buenos Aires → CaboNegro bottom
           { start: { lat: -22.9519, lng: -43.2105 }, end: { lat: 25.7743, lng: -80.1937 } },   // Rio de Janeiro → Miami
           { start: { lat: 19.4326, lng: -99.1332 }, end: { lat: 34.0522, lng: -118.2437 } },  // Mexico City → Los Angeles
 
