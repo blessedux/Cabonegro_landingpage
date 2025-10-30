@@ -11,6 +11,7 @@ import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
 import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 import Partners from '@/components/sections/Partners'
+import { WorldMapDemo } from '@/components/ui/world-map-demo'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
@@ -133,6 +134,7 @@ function HomeContent() {
             <Stats />
             <CaboNegroRulerCarousel />
             <Partners />
+            <WorldMapDemo />
             <FAQ />
           </main>
 

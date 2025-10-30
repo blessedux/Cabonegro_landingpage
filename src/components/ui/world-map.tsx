@@ -25,7 +25,7 @@ export function WorldMap({
 
   const svgMap = map.getSVG({
     radius: 0.22,
-    color: "#FFFFFF", // Always white dots
+    color: theme === "dark" ? "#FFFFFF40" : "#00000040",
     shape: "circle",
     backgroundColor: theme === "dark" ? "black" : "white",
   });
@@ -49,7 +49,7 @@ export function WorldMap({
     <div className="w-full aspect-[2/1] dark:bg-black bg-white rounded-lg  relative font-sans">
       <Image
         src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`}
-        className="h-full w-full pointer-events-none select-none"
+        className="h-full w-full [mask-image:linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)] pointer-events-none select-none"
         alt="world map"
         height="495"
         width="1056"
@@ -77,7 +77,7 @@ export function WorldMap({
                   pathLength: 1,
                 }}
                 transition={{
-                  duration: 3, // Slower animation (was 1)
+                  duration: 1,
                   delay: 0.5 * i,
                   ease: "easeOut",
                 }}
