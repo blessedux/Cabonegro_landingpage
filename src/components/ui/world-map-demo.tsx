@@ -17,6 +17,9 @@ export function WorldMapDemo() {
 
           // New route: Top of green vector (Valparaíso) → California coast (San Francisco)
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: 37.7749, lng: -122.4194 }, controlOffsetX: 80, controlOffsetY: -10 },
+
+          // CaboNegro bottom → Southern California (near-straight upward arc)
+          { start: { lat: -85, lng: -70 }, end: { lat: 32.7157, lng: -117.1611 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 60 }, // CaboNegro bottom → San Diego
           { start: { lat: -22.9519, lng: -43.2105 }, end: { lat: 25.7743, lng: -80.1937 } },   // Rio de Janeiro → Miami
           { start: { lat: 19.4326, lng: -99.1332 }, end: { lat: 34.0522, lng: -118.2437 } },  // Mexico City → Los Angeles
 
@@ -37,6 +40,11 @@ export function WorldMapDemo() {
           // Africa & Indian Ocean
           { start: { lat: -33.9249, lng: 18.4241 }, end: { lat: -12.4634, lng: 130.8456 } },  // Cape Town → Darwin
           { start: { lat: -26.2041, lng: 28.0473 }, end: { lat: -20.1667, lng: 57.5 } },      // Johannesburg → Port Louis
+
+          // CaboNegro bottom → West coast of Africa (Dakar)
+          { start: { lat: -85, lng: -70 }, end: { lat: 14.7167, lng: -17.4677 }, startColor: '#0ea5e9', controlOffsetX: -20, controlOffsetY: 30 },
+          // CaboNegro bottom → West coast of Africa (Abidjan)
+          { start: { lat: -85, lng: -70 }, end: { lat: 5.3453, lng: -4.0244 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 20 },
 
           // CaboNegro bottom → far left border (exiting map)
           { start: { lat: -85, lng: -70 }, end: { lat: -60, lng: -180 }, startColor: '#0ea5e9', controlOffsetX: -50, controlOffsetY: 20 },
