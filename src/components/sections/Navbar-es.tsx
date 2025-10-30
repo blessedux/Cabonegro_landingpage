@@ -28,8 +28,8 @@ export default function NavbarEs() {
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
-    // Check if we're on the deck or explore route - show navbar immediately and reset hidden state
-    if (pathname.includes('/deck') || pathname.includes('/explore')) {
+    // Check if we're on deck, explore, or contact routes - show navbar immediately and reset hidden state
+    if (pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact')) {
       // Reset navbar hidden state when navigating to explore/deck pages
       setIsNavbarHidden(false)
       const timer = setTimeout(() => {
