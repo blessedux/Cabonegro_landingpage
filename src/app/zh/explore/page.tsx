@@ -189,14 +189,21 @@ function ExploreContent() {
                           </div>
                         )}
                         
-                        {/* Loading overlay - Simple spinner, no PreloaderB */}
+                        {/* Loading overlay - Crane image with fade */}
                         {!isLoaded && !hasError && (
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center rounded-xl sm:rounded-2xl">
-                            <div className="text-center">
-                              <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-white mx-auto mb-3 sm:mb-4"></div>
-                              <p className="text-white/80 text-sm sm:text-base">加载3D体验中...</p>
-                            </div>
-                          </div>
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute inset-0 bg-black/30 flex items-center justify-center rounded-xl sm:rounded-2xl"
+                          >
+                            <img
+                              src="/BNWCRANE_preloaderB.png"
+                              alt="加载中"
+                              className="h-20 sm:h-24 w-auto opacity-80 animate-pulse"
+                            />
+                          </motion.div>
                         )}
 
                       </motion.div>
