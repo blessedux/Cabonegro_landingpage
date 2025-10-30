@@ -1,11 +1,11 @@
 "use client";
 
 import { WorldMap } from "@/components/ui/world-map";
-import { motion } from "framer-motion";
+import Typewriter from "@/components/ui/Typewriter";
 
 export function WorldMapDemo() {
   return (
-    <div className="py-20 dark:bg-black bg-white w-full">
+    <div className="py-20 dark:bg-black bg-white w-full relative">
       <WorldMap
         dashed
         dots={[
@@ -58,6 +58,14 @@ export function WorldMapDemo() {
           { start: { lat: 35, lng: 180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: -40, controlOffsetY: -10 },
         ]}
       />
+      {/* Bottom-right typewriter caption */}
+      <div className="pointer-events-none absolute bottom-4 right-4 z-10 max-w-[80%]">
+        <Typewriter
+          text="Strategic Cabo Negro maritime terminal: unlocking Pacific–Atlantic trade, competing with the Panama Canal."
+          speed={24}
+          className="text-xs sm:text-sm md:text-base lg:text-lg font-medium tracking-wide text-white/80 bg-black/30 backdrop-blur px-3 py-1.5 rounded-md border border-white/10"
+        />
+      </div>
     </div>
   );
 }
