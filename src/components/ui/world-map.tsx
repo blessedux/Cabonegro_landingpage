@@ -10,6 +10,8 @@ interface RouteSpec {
   start: { lat: number; lng: number; label?: string };
   end: { lat: number; lng: number; label?: string };
   color?: string; // optional per-route color
+  controlOffsetX?: number; // shift control point horizontally for tilt
+  controlOffsetY?: number; // shift control point vertically for arc height
 }
 
 interface MapProps {
@@ -66,9 +68,12 @@ export function WorldMap({
         className="w-full h-full absolute inset-0 pointer-events-none select-none"
       >
         {dots.map((dot, i) => {
-          const color = dot.color || lineColor
+          const color = dot.color || lineColor;
           const startPoint = projectPoint(dot.start.lat, dot.start.lng);
           const endPoint = projectPoint(dot.end.lat, dot.end.lng);
+          const midX = (startPoint.x + endPoint.x) / 2 + (dot.controlOffsetX || 0);
+          const midY = Math.min(startPoint.y, endPoint.y) - 50 + (dot.controlOffsetY || 0);
+          const pathD = `M ${startPoint.x} ${startPoint.y} Q ${midX} ${midY} ${endPoint.x} ${endPoint.y}`;
           return (
             <g key={`path-group-${i}`}>
               <defs>
@@ -80,7 +85,7 @@ export function WorldMap({
                 </linearGradient>
               </defs>
               <motion.path
-                d={createCurvedPath(startPoint, endPoint)}
+                d={pathD}
                 fill="none"
                 stroke={`url(#path-gradient-${i})`}
                 strokeWidth="1"
