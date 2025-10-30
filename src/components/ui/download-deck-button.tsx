@@ -8,12 +8,14 @@ interface DownloadDeckButtonProps {
   className?: string
   variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive'
   size?: 'default' | 'sm' | 'lg' | 'icon'
+  language?: 'en' | 'es' | 'zh'
 }
 
 export function DownloadDeckButton({ 
   className = '', 
   variant = 'outline',
-  size = 'default'
+  size = 'default',
+  language = 'en'
 }: DownloadDeckButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false)
 
@@ -21,8 +23,8 @@ export function DownloadDeckButton({
     try {
       setIsDownloading(true)
       
-      // Call the API route to download the zip file
-      const response = await fetch('/api/download-deck')
+      // Call the API route to download the zip file with language parameter
+      const response = await fetch(`/api/download-deck?lang=${language}`)
       
       if (!response.ok) {
         throw new Error('Failed to download file')
@@ -31,11 +33,16 @@ export function DownloadDeckButton({
       // Get the blob from the response
       const blob = await response.blob()
       
-      // Create a download link
+      // Create a download link with language-specific naming
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = 'Cabo_Negro_Investors_Deck.zip'
+      
+      // Set language-specific download filename
+      const downloadFileName = language === 'en' ? 'Cabo_Negro_Investors_Deck.zip' : 
+                              language === 'es' ? 'Cabo_Negro_Deck_Inversionistas.zip' :
+                              'Cabo_Negro_Investors_Deck_CN.zip'
+      link.download = downloadFileName
       
       // Trigger the download
       document.body.appendChild(link)

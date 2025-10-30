@@ -1,11 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
 import Navbar from '@/components/sections/Navbar'
 import Footer from '@/components/sections/Footer'
 import { DownloadDeckButton } from '@/components/ui/download-deck-button'
 
 function DeckPageContent() {
+  const params = useParams()
+  const locale = params.locale as string || 'en'
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -25,6 +28,7 @@ function DeckPageContent() {
           <div className="absolute top-24 right-4 z-10">
             <DownloadDeckButton 
               variant="outline"
+              language={locale as 'en' | 'es' | 'zh'}
               className="bg-black/80 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-black shadow-lg"
             />
           </div>

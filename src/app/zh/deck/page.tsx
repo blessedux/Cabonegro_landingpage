@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import NavbarZh from '@/components/sections/Navbar-zh'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
+import { DownloadDeckButton } from '@/components/ui/download-deck-button'
 
 const messages = {
   "deck": {
@@ -28,7 +29,16 @@ function DeckContent() {
       <NavbarZh />
       
       {isVisible && (
-        <main className="pt-0 h-screen">
+        <main className="pt-0 h-screen relative">
+          {/* Download Button Overlay */}
+          <div className="absolute top-24 right-4 z-10">
+            <DownloadDeckButton 
+              variant="outline"
+              language="zh"
+              className="bg-black/80 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-black shadow-lg"
+            />
+          </div>
+          
           <div className="h-full w-full">
             <iframe 
               src="https://gamma.app/embed/8uz4114rec81me0" 
