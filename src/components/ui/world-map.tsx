@@ -55,7 +55,7 @@ export function WorldMap({
   };
 
   return (
-    <div className="w-full aspect-[2/1] dark:bg-black bg-white rounded-lg  relative font-sans">
+    <div className="w-full aspect-[2/1] dark:bg-black bg-white rounded-lg  relative font-sans overflow-visible">
       <Image
         src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`}
         className="h-full w-full [mask-image:linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)] pointer-events-none select-none"
@@ -67,8 +67,64 @@ export function WorldMap({
       <svg
         ref={svgRef}
         viewBox="0 0 800 400"
-        className="w-full h-full absolute inset-0 pointer-events-none select-none"
+        className="w-full h-full absolute inset-0 pointer-events-none select-none overflow-visible"
+        overflow="visible"
       >
+        {/* Subtle continent tint pulses: alternating white/blue glows */}
+        <defs>
+          <radialGradient id="americas-mask" cx="20%" cy="55%" r="35%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="emea-mask" cx="55%" cy="45%" r="35%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="apac-mask" cx="80%" cy="55%" r="35%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* White pulse layers */}
+        <g>
+          <rect x="0" y="0" width="800" height="400" fill="url(#americas-mask)">
+            <animate attributeName="opacity" values="0.15;0.05;0.15" dur="6s" repeatCount="indefinite" />
+          </rect>
+          <rect x="0" y="0" width="800" height="400" fill="url(#emea-mask)">
+            <animate attributeName="opacity" values="0.12;0.04;0.12" dur="7s" begin="1s" repeatCount="indefinite" />
+          </rect>
+          <rect x="0" y="0" width="800" height="400" fill="url(#apac-mask)">
+            <animate attributeName="opacity" values="0.12;0.04;0.12" dur="8s" begin="2s" repeatCount="indefinite" />
+          </rect>
+        </g>
+
+        {/* Blue pulse layers (very subtle) */}
+        <defs>
+          <radialGradient id="americas-mask-blue" cx="20%" cy="55%" r="35%">
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="emea-mask-blue" cx="55%" cy="45%" r="35%">
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="apac-mask-blue" cx="80%" cy="55%" r="35%">
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.10" />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <g>
+          <rect x="0" y="0" width="800" height="400" fill="url(#americas-mask-blue)">
+            <animate attributeName="opacity" values="0.04;0;0.04" dur="10s" begin="0.5s" repeatCount="indefinite" />
+          </rect>
+          <rect x="0" y="0" width="800" height="400" fill="url(#emea-mask-blue)">
+            <animate attributeName="opacity" values="0.04;0;0.04" dur="11s" begin="2s" repeatCount="indefinite" />
+          </rect>
+          <rect x="0" y="0" width="800" height="400" fill="url(#apac-mask-blue)">
+            <animate attributeName="opacity" values="0.04;0;0.04" dur="12s" begin="3s" repeatCount="indefinite" />
+          </rect>
+        </g>
         {dots.map((dot, i) => {
           const color = dot.color || lineColor;
           const startPoint = projectPoint(dot.start.lat, dot.start.lng);
