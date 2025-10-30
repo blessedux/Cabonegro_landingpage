@@ -9,6 +9,6 @@ export default createMiddleware({
 });
 
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ['/', '/(es|en|zh)/:path*']
+  // Match internationalized pathnames and redirect non-prefixed paths to default locale
+  matcher: ['/', '/(es|en|zh)/:path*', '/explore', '/deck', '/contact', '/partners', '/gallery']
 };

@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { NextIntlClientProvider } from 'next-intl'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader'
 import Hero from '@/components/sections/Hero'
+import AboutUs from '@/components/sections/AboutUs'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
 import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
@@ -13,18 +15,17 @@ import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
 import CookieBanner from '@/components/sections/CookieBanner'
-import { NextIntlClientProvider } from 'next-intl'
-import { PreloaderProvider } from '@/contexts/PreloaderContext'
-import { AnimationProvider } from '@/contexts/AnimationContext'
-import { CookieBannerProvider } from '@/contexts/CookieBannerContext'
-import { ThemeProvider } from 'next-themes'
-import englishMessages from '../../../messages/en.json'
+
+// Import messages for English locale
+import enMessages from '../../../messages/en.json'
+
+const messages = enMessages as any
 
 function HomeContent() {
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
   const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete, isPreloaderBVisible } = usePreloader()
 
   // Preload critical assets
   useEffect(() => {
@@ -60,12 +61,43 @@ function HomeContent() {
     preloadAssets()
   }, [])
 
-  // If user has seen preloader before, skip it and show content immediately
+  // Handle preloader visibility logic
   useEffect(() => {
-    if (hasSeenPreloader) {
+    // If PreloaderB is active, don't show main preloader
+    if (isPreloaderBVisible) {
+      setPreloaderVisible(false)
+      setPreloaderFadeComplete(true)
+      return
+    }
+    
+    // If preloader is explicitly visible (e.g., language change), wait for it to complete
+    if (isPreloaderVisible) {
+      setPreloaderFadeComplete(false)
+      return
+    }
+    
+    // If user has seen preloader before and no preloader is active, show content immediately
+    if (hasSeenPreloader && !isPreloaderVisible) {
       setPreloaderFadeComplete(true)
     }
-  }, [hasSeenPreloader])
+  }, [hasSeenPreloader, isPreloaderBVisible, isPreloaderVisible, setPreloaderVisible])
+
+  // Handle hash navigation (e.g., #FAQ) after page content is loaded
+  useEffect(() => {
+    if (preloaderFadeComplete && typeof window !== 'undefined') {
+      const hash = window.location.hash
+      if (hash) {
+        // Wait a bit for the DOM to fully render
+        const timer = setTimeout(() => {
+          const element = document.getElementById(hash.substring(1))
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        }, 300)
+        return () => clearTimeout(timer)
+      }
+    }
+  }, [preloaderFadeComplete])
 
   const handlePreloaderComplete = () => {
     setPreloaderComplete(true)
@@ -79,8 +111,8 @@ function HomeContent() {
 
   return (
     <>
-      {/* Preloader - Always shows first */}
-      {isPreloaderVisible && (
+      {/* Preloader - Only show if PreloaderB is not active (don't show when navigating from explore/deck) */}
+      {isPreloaderVisible && !isPreloaderBVisible && (
         <Preloader 
           onComplete={handlePreloaderComplete}
           duration={6}
@@ -96,6 +128,7 @@ function HomeContent() {
           {/* Main Sections */}
           <main>
             <Hero />
+            <AboutUs />
             <Features />
             <Stats />
             <CaboNegroRulerCarousel />
@@ -116,25 +149,8 @@ function HomeContent() {
 
 export default function EnglishHome() {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <NextIntlClientProvider messages={englishMessages} locale="en">
-            <PreloaderProvider>
-              <AnimationProvider>
-                <CookieBannerProvider>
-                  <HomeContent />
-                </CookieBannerProvider>
-              </AnimationProvider>
-            </PreloaderProvider>
-          </NextIntlClientProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider messages={messages} locale="en">
+      <HomeContent />
+    </NextIntlClientProvider>
   )
 }

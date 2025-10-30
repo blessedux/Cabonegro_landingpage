@@ -18,6 +18,7 @@ export default function PreloaderB({ onComplete, duration = 1.5, className = '',
 
   // Reset state when component mounts or becomes visible again
   useEffect(() => {
+    console.log('🟡 PreloaderB mounted/remounted')
     setIsVisible(true)
     setIsFadingOut(false)
     mountTimeRef.current = Date.now()
@@ -58,38 +59,70 @@ export default function PreloaderB({ onComplete, duration = 1.5, className = '',
           animate={isFadingOut ? { opacity: 0 } : { opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ 
-            duration: isFadingOut ? 1.0 : 1.0, 
-            ease: [0.25, 0.46, 0.45, 0.94] // Custom easing for smooth fade
+            duration: isFadingOut ? 1.0 : 0.3, // Fast fade in (0.3s)
+            ease: [0.25, 0.46, 0.45, 0.94]
           }}
-          className={`${inline ? 'absolute' : 'fixed'} inset-0 ${inline ? 'z-50' : 'z-[9999]'} bg-black flex items-center justify-center ${className}`}
+          className={`${inline ? 'absolute' : 'fixed'} inset-0 ${inline ? 'z-50' : 'z-[99999]'} bg-black ${className}`}
           style={{ backgroundColor: '#000000' }}
         >
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isFadingOut ? { 
-              opacity: 0
-            } : { 
-              opacity: 1
-            }}
-            exit={{ 
-              opacity: 0
-            }}
-            transition={{ 
-              duration: isFadingOut ? 1.0 : 1.0,
-              ease: [0.25, 0.46, 0.45, 0.94] // Smooth cubic bezier easing
-            }}
-            className="relative"
-          >
-            <Image
-              src="/BNWCRANE_preloaderB.png"
-              alt="Cabo Negro Preloader"
-              width={400}
-              height={400}
-              className="w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 object-contain"
-              priority
-              quality={100}
-            />
-          </motion.div>
+          {/* Image on Right Side - Desktop Only - Absolute Positioned */}
+          <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 z-10 opacity-100">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={isFadingOut ? { 
+                opacity: 0
+              } : { 
+                opacity: 1
+              }}
+              exit={{ 
+                opacity: 0
+              }}
+              transition={{ 
+                duration: isFadingOut ? 1.0 : 0.3,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }}
+            >
+              <Image
+                src="/BNWCRANE_preloaderB.png"
+                alt="Cabo Negro Industrial Infrastructure"
+                width={400}
+                height={400}
+                className="max-h-[300px] w-auto object-contain"
+                priority
+                quality={100}
+              />
+            </motion.div>
+          </div>
+          
+          {/* Centered content for mobile */}
+          <div className="lg:hidden flex items-center justify-center h-full">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={isFadingOut ? { 
+                opacity: 0
+              } : { 
+                opacity: 1
+              }}
+              exit={{ 
+                opacity: 0
+              }}
+              transition={{ 
+                duration: isFadingOut ? 1.0 : 0.3,
+                ease: [0.25, 0.46, 0.45, 0.94]
+              }}
+              className="relative"
+            >
+              <Image
+                src="/BNWCRANE_preloaderB.png"
+                alt="Cabo Negro Preloader"
+                width={400}
+                height={400}
+                className="w-64 h-64 sm:w-80 sm:h-80 object-contain"
+                priority
+                quality={100}
+              />
+            </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

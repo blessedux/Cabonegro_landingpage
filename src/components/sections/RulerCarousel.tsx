@@ -16,8 +16,10 @@ export function CaboNegroRulerCarousel() {
   ];
   
   return (
-    <div className="min-h-screen overflow-hidden flex items-center justify-center bg-black">
-      <RulerCarousel originalItems={originalItems} />
+    <div className="min-h-screen overflow-hidden flex items-center justify-center bg-black border-4 border-red-500">
+      <div className="border-4 border-red-400 w-full">
+        <RulerCarousel originalItems={originalItems} />
+      </div>
     </div>
   );
 }

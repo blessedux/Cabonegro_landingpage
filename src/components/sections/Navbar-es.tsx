@@ -14,8 +14,8 @@ export default function NavbarEs() {
   const [isHidden, setIsHidden] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const { startFadeOut, isNavbarHidden } = useAnimation()
-  const { isPreloaderVisible, isPreloaderComplete } = usePreloader()
+  const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
+  const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete } = usePreloader()
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -28,11 +28,13 @@ export default function NavbarEs() {
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
-    // Check if we're on the deck route - show navbar immediately
-    if (pathname.includes('/deck')) {
+    // Check if we're on the deck or explore route - show navbar immediately and reset hidden state
+    if (pathname.includes('/deck') || pathname.includes('/explore')) {
+      // Reset navbar hidden state when navigating to explore/deck pages
+      setIsNavbarHidden(false)
       const timer = setTimeout(() => {
         setIsVisible(true)
-      }, 100) // Quick delay for deck route
+      }, 100) // Quick delay for deck/explore routes
       return () => clearTimeout(timer)
     }
     
@@ -44,10 +46,23 @@ export default function NavbarEs() {
 
       return () => clearTimeout(timer)
     }
-  }, [isPreloaderComplete, isPreloaderVisible, pathname])
+  }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden])
 
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
+    // Check if we're on a special page (explore, deck, contact)
+    const isOnSpecialPage = pathname.includes('/explore') || 
+                           pathname.includes('/deck') || 
+                           pathname.includes('/contact')
+    
+    // Check if we're on homepage (or root)
+    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh'
+    
+    // If switching language on special page, show PreloaderB
+    if (isOnSpecialPage) {
+      showPreloaderB()
+    }
+    
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
     if (pathname.startsWith('/es')) {
@@ -70,32 +85,84 @@ export default function NavbarEs() {
     
     // Navigate to the new locale with the same path
     // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
-    if (newLocale === 'en') {
-      const targetPath = '/en' + pathWithoutLocale
-      router.push(targetPath)
-    } else if (newLocale === 'es') {
-      const targetPath = '/es' + pathWithoutLocale
-      router.push(targetPath)
-    } else if (newLocale === 'zh') {
-      const targetPath = '/zh' + pathWithoutLocale
-      router.push(targetPath)
+    let delay = isOnSpecialPage ? 100 : 0
+    
+    // If switching language on homepage, show main preloader and delay navigation slightly
+    if (isOnHomePage && !isOnSpecialPage) {
+      setPreloaderVisible(true)
+      setPreloaderComplete(false)
+      delay = 50 // Small delay to ensure preloader state is set before navigation
     }
+    
+    setTimeout(() => {
+      if (newLocale === 'en') {
+        const targetPath = '/en' + pathWithoutLocale
+        router.push(targetPath)
+      } else if (newLocale === 'es') {
+        const targetPath = '/es' + pathWithoutLocale
+        router.push(targetPath)
+      } else if (newLocale === 'zh') {
+        const targetPath = '/zh' + pathWithoutLocale
+        router.push(targetPath)
+      }
+    }, delay)
   }
 
   // Handle Explore Terrain click
   const handleExploreTerrain = () => {
     startFadeOut()
+    showPreloaderB()
     
-    // Navigate to explore route after animations
+    // Navigate to explore route - let usePageTransition handle PreloaderB on route change
+    // Small delay to ensure PreloaderB state is set before navigation
     setTimeout(() => {
       router.push('/es/explore')
-    }, 1000)
+    }, 100)
+  }
+
+  // Handle Home navigation (logo click)
+  const handleHomeClick = (e: React.MouseEvent) => {
+    // If on explore page, show PreloaderB before navigating home
+    if (pathname.includes('/explore')) {
+      e.preventDefault()
+      showPreloaderB()
+      setTimeout(() => {
+        router.push('/es')
+      }, 100)
+    }
+  }
+
+  // Handle FAQ click
+  const handleFAQClick = (e: React.MouseEvent) => {
+    const isOnSpecialPage = pathname.includes('/explore') || 
+                           pathname.includes('/deck') || 
+                           pathname.includes('/contact')
+    
+    // If on homepage, just scroll to FAQ
+    if (!isOnSpecialPage && (pathname === '/es' || pathname === '/')) {
+      e.preventDefault()
+      const faqElement = document.getElementById('FAQ')
+      if (faqElement) {
+        faqElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      setMobileMenuOpen(false)
+      return
+    }
+    
+    // If on special page, navigate to homepage with FAQ hash
+    e.preventDefault()
+    showPreloaderB()
+    setMobileMenuOpen(false)
+    
+    setTimeout(() => {
+      router.push('/es#FAQ')
+    }, 100)
   }
 
   return (
     <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck route, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') 
+      // For deck and explore routes, only hide if navbar is explicitly hidden
+      pathname.includes('/deck') || pathname.includes('/explore')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
         : (isNavbarHidden || isPreloaderVisible
             ? '-translate-y-full opacity-0' 
@@ -107,7 +174,11 @@ export default function NavbarEs() {
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
-              <Link href="/es" className="cursor-pointer">
+              <Link 
+                href="/es" 
+                className="cursor-pointer"
+                onClick={handleHomeClick}
+              >
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
@@ -125,7 +196,12 @@ export default function NavbarEs() {
                 Explorar Terreno
               </button>
               <Link href="/es/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">Ver Deck</Link>
-              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
+              <button 
+                onClick={handleFAQClick}
+                className="text-sm hover:text-gray-300 transition-colors uppercase"
+              >
+                FAQ
+              </button>
               
               {/* Language Toggle */}
               <div className="flex items-center gap-2">

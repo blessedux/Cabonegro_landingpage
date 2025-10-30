@@ -11,7 +11,13 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
   const { isPreloaderBVisible, hidePreloaderB } = usePreloader()
   usePageTransition() // This hook will trigger PreloaderB on route changes
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🟢 PageTransitionWrapper - isPreloaderBVisible:', isPreloaderBVisible, 'pathname:', pathname)
+  }, [isPreloaderBVisible, pathname])
+
   const handlePreloaderBComplete = () => {
+    console.log('🟣 PreloaderB complete - hiding')
     hidePreloaderB()
   }
 

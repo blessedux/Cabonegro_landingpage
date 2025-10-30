@@ -24,13 +24,18 @@ export default function Hero() {
   }, [])
 
   const handleExploreTerrain = () => {
-    startFadeOut()
+    // Show PreloaderB first BEFORE any other actions
     showPreloaderB()
     
-    // Navigate to explore route after animations
-    setTimeout(() => {
-      router.push('/explore')
-    }, 1000)
+    // Use requestAnimationFrame to ensure state update is processed
+    requestAnimationFrame(() => {
+      startFadeOut()
+      
+      // Navigate after PreloaderB has time to display (2.5 seconds)
+      setTimeout(() => {
+        router.push('/explore')
+      }, 2500)
+    })
   }
 
   const handleDeckClick = () => {

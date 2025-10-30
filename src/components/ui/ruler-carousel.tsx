@@ -38,14 +38,14 @@ const RulerLines = ({
     const isFifth = i % 5 === 0;
     const isCenter = i === Math.floor(totalLines / 2);
 
-    let height = "h-3";
+    let height = "h-1.5";
     let color = "bg-gray-500 dark:bg-gray-400";
 
     if (isCenter) {
-      height = "h-8";
+      height = "h-4";
       color = "bg-primary dark:bg-white";
     } else if (isFifth) {
-      height = "h-4";
+      height = "h-2";
       color = "bg-primary dark:bg-white";
     }
 
@@ -60,7 +60,7 @@ const RulerLines = ({
     );
   }
 
-  return <div className="relative w-full h-8 px-4">{lines}</div>;
+      return <div className="relative w-full h-4 px-2 border-4 border-red-300">{lines}</div>;
 };
 
 export function RulerCarousel({
@@ -157,21 +157,21 @@ export function RulerCarousel({
 
   // Calculate target position - center the active item
   const centerPosition = 5; // We want item 5 (index 4) to be centered initially
-  const targetX = -500 + (centerPosition - (activeIndex % itemsPerSet)) * 500;
+  const targetX = -250 + (centerPosition - (activeIndex % itemsPerSet)) * 250;
 
   // Get current page info
   const currentPage = (activeIndex % itemsPerSet) + 1;
   const totalPages = itemsPerSet;
 
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-center bg-background dark:bg-black">
-      <div className="w-full h-[200px] flex flex-col justify-center relative">
-        <div className="flex items-center justify-center">
+    <div className="w-full h-[50vh] flex flex-col items-center justify-center bg-background dark:bg-black border-4 border-red-500">
+      <div className="w-full h-[100px] flex flex-col justify-center relative border-4 border-red-400">
+        <div className="flex items-center justify-center border-4 border-red-300">
           <RulerLines top />
         </div>
-        <div className="flex items-center justify-center w-full h-full relative overflow-hidden">
+        <div className="flex items-center justify-center w-full h-full relative overflow-hidden border-4 border-red-300">
           <motion.div
-            className="flex items-center gap-[100px]"
+            className="flex items-center gap-[50px] border-4 border-red-200"
             animate={{
               x: isResetting ? targetX : targetX,
             }}
@@ -193,7 +193,7 @@ export function RulerCarousel({
                 <motion.button
                   key={item.id}
                   onClick={() => handleItemClick(index)}
-                  className={`text-4xl md:text-6xl font-bold whitespace-nowrap cursor-pointer flex items-center justify-center ${
+                      className={`text-2xl md:text-3xl font-bold whitespace-nowrap cursor-pointer flex items-center justify-center border-2 border-red-300 ${
                     isActive
                       ? "text-primary dark:text-white"
                       : "text-muted-foreground dark:text-gray-500 hover:text-foreground dark:hover:text-gray-400"
@@ -212,7 +212,7 @@ export function RulerCarousel({
                         }
                   }
                   style={{
-                    width: "400px",
+                    width: "200px",
                   }}
                 >
                   {item.title}
@@ -222,22 +222,22 @@ export function RulerCarousel({
           </motion.div>
         </div>
 
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center border-4 border-red-300">
           <RulerLines top={false} />
         </div>
       </div>
       
-      <div className="flex items-center justify-center gap-4 mt-10">
+      <div className="flex items-center justify-center gap-4 mt-5 border-4 border-red-300">
         <button
           onClick={handlePrevious}
           disabled={isResetting}
-          className="flex items-center justify-center cursor-pointer"
+          className="flex items-center justify-center cursor-pointer border-2 border-red-300"
           aria-label="Previous item"
         >
           <Rewind className="w-5 h-5 text-primary/80" />
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 border-2 border-red-200">
           <span className="text-sm font-medium text-muted-foreground dark:text-gray-400">
             {currentPage}
           </span>
@@ -252,7 +252,7 @@ export function RulerCarousel({
         <button
           onClick={handleNext}
           disabled={isResetting}
-          className="flex items-center justify-center cursor-pointer"
+          className="flex items-center justify-center cursor-pointer border-2 border-red-300"
           aria-label="Next item"
         >
           <FastForward className="w-5 h-5 text-primary/80" />

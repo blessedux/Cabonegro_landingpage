@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import Link from 'next/link'
 import { useAnimation } from '@/contexts/AnimationContext'
+import { usePreloader } from '@/contexts/PreloaderContext'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -9,6 +10,7 @@ import { motion } from 'framer-motion'
 export default function HeroEs() {
   const router = useRouter()
   const { startFadeOut } = useAnimation()
+  const { showPreloaderB } = usePreloader()
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   
@@ -22,12 +24,18 @@ export default function HeroEs() {
   }, [])
 
   const handleExploreTerrain = () => {
-    startFadeOut()
+    // Show PreloaderB first BEFORE any other actions
+    showPreloaderB()
     
-    // Navigate to explore route after animations
-    setTimeout(() => {
-      router.push('/es/explore')
-    }, 1000)
+    // Use requestAnimationFrame to ensure state update is processed
+    requestAnimationFrame(() => {
+      startFadeOut()
+      
+      // Navigate after PreloaderB has time to display (2.5 seconds)
+      setTimeout(() => {
+        router.push('/es/explore')
+      }, 2500)
+    })
   }
 
   const handleClick = (event: React.MouseEvent) => {

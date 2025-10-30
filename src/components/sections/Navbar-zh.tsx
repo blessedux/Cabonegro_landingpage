@@ -14,8 +14,8 @@ export default function NavbarZh() {
   const [isHidden, setIsHidden] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const { startFadeOut, isNavbarHidden } = useAnimation()
-  const { isPreloaderVisible, isPreloaderComplete } = usePreloader()
+  const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
+  const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete } = usePreloader()
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -26,15 +26,42 @@ export default function NavbarZh() {
   // Determine current language from pathname
   const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/en') ? 'en' : 'zh'
 
-  // Show navbar immediately
+  // Dropdown animation only after preloader completes
   useEffect(() => {
-    setIsVisible(true)
-  }, [])
+    // Check if we're on the deck or explore route - show navbar immediately and reset hidden state
+    if (pathname.includes('/deck') || pathname.includes('/explore')) {
+      // Reset navbar hidden state when navigating to explore/deck pages
+      setIsNavbarHidden(false)
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+      }, 100) // Quick delay for deck/explore routes
+      return () => clearTimeout(timer)
+    }
+    
+    // Normal preloader logic for other routes
+    if (isPreloaderComplete && !isPreloaderVisible) {
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+      }, 500) // Delay for smooth entrance after preloader
+
+      return () => clearTimeout(timer)
+    }
+  }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden])
 
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
-    console.log('Language change requested:', newLocale)
-    console.log('Current pathname:', pathname)
+    // Check if we're on a special page (explore, deck, contact)
+    const isOnSpecialPage = pathname.includes('/explore') || 
+                           pathname.includes('/deck') || 
+                           pathname.includes('/contact')
+    
+    // Check if we're on homepage (or root)
+    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh'
+    
+    // If switching language on special page, show PreloaderB
+    if (isOnSpecialPage) {
+      showPreloaderB()
+    }
     
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
@@ -46,8 +73,6 @@ export default function NavbarZh() {
       pathWithoutLocale = pathname.substring(3) // Remove '/en'
     }
     
-    console.log('Path without locale:', pathWithoutLocale)
-    
     // Ensure path starts with '/'
     if (!pathWithoutLocale.startsWith('/')) {
       pathWithoutLocale = '/' + pathWithoutLocale
@@ -58,33 +83,80 @@ export default function NavbarZh() {
       pathWithoutLocale = ''
     }
     
-    // Navigate immediately without complex transitions
-    
     // Navigate to the new locale with the same path
     // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
-    if (newLocale === 'en') {
-      const targetPath = '/en' + pathWithoutLocale
-      console.log('Navigating to English:', targetPath)
-      router.push(targetPath)
-    } else if (newLocale === 'es') {
-      const targetPath = '/es' + pathWithoutLocale
-      console.log('Navigating to Spanish:', targetPath)
-      router.push(targetPath)
-    } else if (newLocale === 'zh') {
-      const targetPath = '/zh' + pathWithoutLocale
-      console.log('Navigating to Chinese:', targetPath)
-      router.push(targetPath)
+    let delay = isOnSpecialPage ? 100 : 0
+    
+    // If switching language on homepage, show main preloader and delay navigation slightly
+    if (isOnHomePage && !isOnSpecialPage) {
+      setPreloaderVisible(true)
+      setPreloaderComplete(false)
+      delay = 50 // Small delay to ensure preloader state is set before navigation
     }
+    
+    setTimeout(() => {
+      if (newLocale === 'en') {
+        const targetPath = '/en' + pathWithoutLocale
+        router.push(targetPath)
+      } else if (newLocale === 'es') {
+        const targetPath = '/es' + pathWithoutLocale
+        router.push(targetPath)
+      } else if (newLocale === 'zh') {
+        const targetPath = '/zh' + pathWithoutLocale
+        router.push(targetPath)
+      }
+    }, delay)
   }
 
   // Handle Explore Terrain click
   const handleExploreTerrain = () => {
     startFadeOut()
+    showPreloaderB()
     
-    // Navigate to explore route after animations
+    // Navigate to explore route - let usePageTransition handle PreloaderB on route change
+    // Small delay to ensure PreloaderB state is set before navigation
     setTimeout(() => {
       router.push('/zh/explore')
-    }, 1000)
+    }, 100)
+  }
+
+  // Handle Home navigation (logo click)
+  const handleHomeClick = (e: React.MouseEvent) => {
+    // If on explore page, show PreloaderB before navigating home
+    if (pathname.includes('/explore')) {
+      e.preventDefault()
+      showPreloaderB()
+      setTimeout(() => {
+        router.push('/zh')
+      }, 100)
+    }
+  }
+
+  // Handle FAQ click
+  const handleFAQClick = (e: React.MouseEvent) => {
+    const isOnSpecialPage = pathname.includes('/explore') || 
+                           pathname.includes('/deck') || 
+                           pathname.includes('/contact')
+    
+    // If on homepage, just scroll to FAQ
+    if (!isOnSpecialPage && (pathname === '/zh' || pathname === '/')) {
+      e.preventDefault()
+      const faqElement = document.getElementById('FAQ')
+      if (faqElement) {
+        faqElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      setMobileMenuOpen(false)
+      return
+    }
+    
+    // If on special page, navigate to homepage with FAQ hash
+    e.preventDefault()
+    showPreloaderB()
+    setMobileMenuOpen(false)
+    
+    setTimeout(() => {
+      router.push('/zh#FAQ')
+    }, 100)
   }
 
   return (
@@ -95,7 +167,11 @@ export default function NavbarZh() {
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
-              <Link href="/zh" className="cursor-pointer">
+              <Link 
+                href="/zh" 
+                className="cursor-pointer"
+                onClick={handleHomeClick}
+              >
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
@@ -113,7 +189,12 @@ export default function NavbarZh() {
                 探索地形
               </button>
               <Link href="/zh/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">查看甲板</Link>
-              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">常见问题</a>
+              <button 
+                onClick={handleFAQClick}
+                className="text-sm hover:text-gray-300 transition-colors uppercase"
+              >
+                常见问题
+              </button>
               
               {/* Language Toggle */}
               <div className="flex items-center gap-2">
@@ -177,13 +258,12 @@ export default function NavbarZh() {
                 >
                   查看甲板
                 </Link>
-                <a 
-                  href="#FAQ" 
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button 
+                  onClick={handleFAQClick}
+                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
                 >
                   常见问题
-                </a>
+                </button>
                 
                 {/* Mobile Language Toggle */}
                 <div className="flex items-center gap-2 py-2">

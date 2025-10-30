@@ -125,9 +125,15 @@ export default function Timeline() {
   // Update active phase based on scroll
   useEffect(() => {
     const unsubscribe = phaseProgress.on('change', (latest) => {
-      const newActivePhase = Math.round(latest)
-      setActivePhase(Math.max(0, Math.min(newActivePhase, timelineData.length - 1)))
-      setScrollProgress(latest)
+      // Ensure we handle the progress correctly with better bounds checking
+      const clampedProgress = Math.max(0, Math.min(latest, timelineData.length - 1))
+      const newActivePhase = Math.round(clampedProgress)
+      // Only update if phase actually changed to prevent unnecessary re-renders
+      setActivePhase(prev => {
+        const clamped = Math.max(0, Math.min(newActivePhase, timelineData.length - 1))
+        return prev !== clamped ? clamped : prev
+      })
+      setScrollProgress(clampedProgress)
     })
     
     return unsubscribe
@@ -138,35 +144,41 @@ export default function Timeline() {
     label: phase.title,
     caption: phase.year,
     active: index <= activePhase,
-    onClick: () => setActivePhase(index)
+    onClick: () => {
+      setActivePhase(index)
+      // Scroll to bring timeline into view when clicked
+      if (containerRef.current) {
+        containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }
   }))
 
   return (
     <section 
       ref={containerRef}
-      className="relative py-20 px-6 min-h-[150vh] overflow-hidden"
+      className="relative px-6 min-h-[150vh] overflow-hidden border-4 border-red-500"
       id="MaritimeTerminal"
     >
       {/* Background */}
-      <div className="absolute inset-0 bg-black" />
+      <div className="absolute inset-0 bg-black border-4 border-red-400" />
       
 
-      <div className="container mx-auto relative z-10">
+      <div className="container mx-auto relative z-10 border-4 border-red-600">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+        <div className="text-center border-4 border-red-300">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white border-4 border-red-200">
             The Port of the Southern Wind
           </h2>
-          <p className="text-gray-400 text-lg max-w-4xl mx-auto">
+          <p className="text-gray-400 text-lg max-w-4xl mx-auto border-4 border-red-200">
             Cabo Negro Terminal: A private port for public use — designed to serve Chile's hydrogen economy. 
             A protected port with minimal impact from tides, waves, or currents.
           </p>
         </div>
 
         {/* Timeline Content */}
-        <div className="relative min-h-[120vh] flex flex-col items-center justify-center">
+        <div className="relative min-h-[120vh] flex flex-col items-center justify-center border-4 border-red-400">
           {/* Main Timeline Rail */}
-          <div className="w-full max-w-6xl mb-16">
+          <div className="w-full max-w-6xl border-4 border-red-300">
             <TimelineRail
               items={timelineItems}
               size="md"
@@ -176,30 +188,30 @@ export default function Timeline() {
               lineThickness={4}
               dotClass="bg-gray-500"
               dotActiveClass="bg-cyan-400"
-              className="text-white"
+              className="text-white border-4 border-red-200"
               labelClassName="text-cyan-400 font-semibold"
               captionClassName="text-gray-300 font-medium"
             />
           </div>
 
           {/* Active Phase Content */}
-          <div className="w-full max-w-4xl">
+          <div className="w-full max-w-4xl border-4 border-red-300">
             {timelineData[activePhase] && (
-              <div className="text-center">
-                <div className="p-8 bg-white/5 rounded-xl border border-white/10">
-                  <div className="flex items-center justify-center gap-4 mb-6">
-                    <div className={`w-16 h-16 rounded-full border-2 flex items-center justify-center ${
+              <div className="text-center border-4 border-red-200">
+                <div className="p-8 bg-white/5 rounded-xl border border-white/10 border-4 border-red-200">
+                  <div className="flex items-center justify-center gap-4 mb-6 border-4 border-red-300">
+                    <div className={`w-16 h-16 rounded-full border-2 flex items-center justify-center border-4 border-red-200 ${
                       colorMap[timelineData[activePhase].color as keyof typeof colorMap].bg
                     } ${colorMap[timelineData[activePhase].color as keyof typeof colorMap].border}`}>
                       {React.createElement(timelineData[activePhase].icon, {
                         className: `w-8 h-8 ${colorMap[timelineData[activePhase].color as keyof typeof colorMap].text}`
                       })}
                     </div>
-                    <div>
-                      <h3 className="text-3xl font-bold text-white mb-2">
+                    <div className="border-4 border-red-200">
+                      <h3 className="text-3xl font-bold text-white mb-2 border-4 border-red-300">
                         {timelineData[activePhase].title}
                       </h3>
-                      <div className={`text-lg font-medium ${
+                      <div className={`text-lg font-medium border-4 border-red-300 ${
                         colorMap[timelineData[activePhase].color as keyof typeof colorMap].text
                       }`}>
                         {timelineData[activePhase].subtitle}
@@ -207,16 +219,16 @@ export default function Timeline() {
                     </div>
                   </div>
                   
-                  <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto">
+                  <p className="text-gray-300 text-lg mb-8 max-w-2xl mx-auto border-4 border-red-200">
                     {timelineData[activePhase].description}
                   </p>
                   
                   {/* Details grid */}
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 gap-4 border-4 border-red-300">
                     {timelineData[activePhase].details.map((detail, detailIndex) => (
                       <div
                         key={detailIndex}
-                        className="flex items-start gap-3 p-4 bg-white/5 rounded-lg"
+                        className="flex items-start gap-3 p-4 bg-white/5 rounded-lg border-4 border-red-200"
                       >
                         <span className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
                           colorMap[timelineData[activePhase].color as keyof typeof colorMap].text.replace('text-', 'bg-')

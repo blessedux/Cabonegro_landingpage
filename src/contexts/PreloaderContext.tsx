@@ -57,6 +57,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   }
 
   const showPreloaderB = () => {
+    console.log('🔵 showPreloaderB called - setting isPreloaderBVisible to true')
     setIsPreloaderBVisible(true)
   }
 

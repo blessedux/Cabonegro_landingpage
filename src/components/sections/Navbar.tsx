@@ -14,8 +14,8 @@ export default function Navbar() {
   const [isHidden, setIsHidden] = useState(false)
   const router = useRouter()
   const pathname = usePathname()
-  const { startFadeOut, isNavbarHidden } = useAnimation()
-  const { isPreloaderVisible, isPreloaderComplete, showPreloaderB } = usePreloader()
+  const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
+  const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete } = usePreloader()
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -28,8 +28,10 @@ export default function Navbar() {
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
-    // Check if we're on the deck or explore route - show navbar immediately
+    // Check if we're on the deck or explore route - show navbar immediately and reset hidden state
     if (pathname.includes('/deck') || pathname.includes('/explore')) {
+      // Reset navbar hidden state when navigating to explore/deck pages
+      setIsNavbarHidden(false)
       const timer = setTimeout(() => {
         setIsVisible(true)
       }, 100) // Quick delay for deck/explore routes
@@ -44,7 +46,7 @@ export default function Navbar() {
 
       return () => clearTimeout(timer)
     }
-  }, [isPreloaderComplete, isPreloaderVisible, pathname])
+  }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden])
 
   // Handle language change
   const handleLanguageChange = (newLocale: string) => {
@@ -52,6 +54,9 @@ export default function Navbar() {
     const isOnSpecialPage = pathname.includes('/explore') || 
                            pathname.includes('/deck') || 
                            pathname.includes('/contact')
+    
+    // Check if we're on homepage (or root)
+    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh'
     
     // If switching language on special page, show PreloaderB
     if (isOnSpecialPage) {
@@ -80,7 +85,14 @@ export default function Navbar() {
     
     // Navigate to the new locale with the same path
     // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
-    const delay = isOnSpecialPage ? 100 : 0
+    let delay = isOnSpecialPage ? 100 : 0
+    
+    // If switching language on homepage, show main preloader and delay navigation slightly
+    if (isOnHomePage && !isOnSpecialPage) {
+      setPreloaderVisible(true)
+      setPreloaderComplete(false)
+      delay = 50 // Small delay to ensure preloader state is set before navigation
+    }
     setTimeout(() => {
       if (newLocale === 'en') {
         const targetPath = '/en' + pathWithoutLocale
@@ -100,10 +112,50 @@ export default function Navbar() {
     startFadeOut()
     showPreloaderB()
     
-    // Navigate to explore route after animations
+    // Navigate to explore route - let usePageTransition handle PreloaderB on route change
+    // Small delay to ensure PreloaderB state is set before navigation
     setTimeout(() => {
       router.push('/en/explore')
-    }, 1000)
+    }, 100)
+  }
+
+  // Handle Home navigation (logo click)
+  const handleHomeClick = (e: React.MouseEvent) => {
+    // If on explore page, show PreloaderB before navigating home
+    if (pathname.includes('/explore')) {
+      e.preventDefault()
+      showPreloaderB()
+      setTimeout(() => {
+        router.push('/en')
+      }, 100)
+    }
+  }
+
+  // Handle FAQ click
+  const handleFAQClick = (e: React.MouseEvent) => {
+    const isOnSpecialPage = pathname.includes('/explore') || 
+                           pathname.includes('/deck') || 
+                           pathname.includes('/contact')
+    
+    // If on homepage, just scroll to FAQ
+    if (!isOnSpecialPage && (pathname === '/en' || pathname === '/')) {
+      e.preventDefault()
+      const faqElement = document.getElementById('FAQ')
+      if (faqElement) {
+        faqElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      setMobileMenuOpen(false)
+      return
+    }
+    
+    // If on special page, navigate to homepage with FAQ hash
+    e.preventDefault()
+    showPreloaderB()
+    setMobileMenuOpen(false)
+    
+    setTimeout(() => {
+      router.push('/en#FAQ')
+    }, 100)
   }
 
   return (
@@ -121,7 +173,11 @@ export default function Navbar() {
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
-              <Link href="/" className="cursor-pointer">
+              <Link 
+                href="/en" 
+                className="cursor-pointer"
+                onClick={handleHomeClick}
+              >
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
@@ -147,7 +203,12 @@ export default function Navbar() {
               >
                 View Deck
               </button>
-              <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">FAQ</a>
+              <button 
+                onClick={handleFAQClick}
+                className="text-sm hover:text-gray-300 transition-colors uppercase"
+              >
+                FAQ
+              </button>
               
               {/* Language Toggle */}
               <div className="flex items-center gap-2">
@@ -216,13 +277,12 @@ export default function Navbar() {
                 >
                   View Deck
                 </button>
-                <a 
-                  href="#FAQ" 
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button 
+                  onClick={handleFAQClick}
+                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
                 >
                   FAQ
-                </a>
+                </button>
                 
                 {/* Mobile Language Toggle */}
                 <div className="flex items-center gap-2 py-2">
@@ -242,21 +302,17 @@ export default function Navbar() {
                   ))}
                 </div>
 
-                <button
+                <Button
                   onClick={() => {
                     setMobileMenuOpen(false)
                     showPreloaderB()
                     setTimeout(() => router.push('/contact'), 100)
                   }}
-                  className="w-full mt-2"
+                  variant="outline"
+                  className="uppercase border-white text-white hover:bg-white hover:text-black w-full mt-2"
                 >
-                  <Button
-                    variant="outline"
-                    className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
-                  >
-                    Contact Us
-                  </Button>
-                </button>
+                  Contact Us
+                </Button>
               </div>
             </div>
           </div>

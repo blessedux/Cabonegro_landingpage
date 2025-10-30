@@ -16,6 +16,8 @@ const partnerLogos = [
   { name: "Patagon", id: 5, src: "/logos/patagon_white.png", alt: "Patagon Logo" },
   { name: "UMAG", id: 6, src: "/logos/umag_logo.png", alt: "UMAG Logo" },
   { name: "YLMV", id: 7, src: "/logos/ylmv_blanco.png", alt: "YLMV Logo" },
+  { name: "GTD", id: 8, src: "/gtd_white_logo.png", alt: "GTD Logo" },
+  { name: "Circular", id: 9, src: "/circular_white.png", alt: "Circular Logo" },
 ]
 
 export default function PartnersEs() {

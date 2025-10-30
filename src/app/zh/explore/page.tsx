@@ -18,7 +18,7 @@ const splineScenes = [
   },
   {
     id: 2,
-    url: 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/',
+    url: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/',
     title: '卡波内格罗3D场景2'
   },
   {
@@ -29,29 +29,57 @@ const splineScenes = [
 ]
 
 function ExploreContent() {
-  const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
+  const [contentVisible, setContentVisible] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [splineLoadedStates, setSplineLoadedStates] = useState<Record<number, boolean>>({})
   const [splineErrorStates, setSplineErrorStates] = useState<Record<number, boolean>>({})
   const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+  const { isPreloaderBVisible, setPreloaderComplete, setPreloaderVisible } = usePreloader()
 
-  // Immediately set preloader complete to ensure navbar shows on explore page
+  // Wait for PreloaderB to complete before showing content
   useEffect(() => {
-    setPreloaderComplete(true)
-    setPreloaderVisible(false)
-    setPreloaderFadeComplete(true)
-  }, [setPreloaderComplete, setPreloaderVisible])
-
-  const handlePreloaderComplete = () => {
+    // Set preloader complete immediately for navbar visibility
     setPreloaderComplete(true)
     setPreloaderVisible(false)
     
-    // Wait for preloader fade to complete before showing main content
-    setTimeout(() => {
-      setPreloaderFadeComplete(true)
-    }, 1000) // Match the preloader fade duration
-  }
+    // If PreloaderB is visible, hide content and wait for it to complete
+    if (isPreloaderBVisible) {
+      setContentVisible(false)
+      return
+    }
+    
+    // PreloaderB is not visible (completed or never shown) - show content
+    // Add a small delay for smooth transition after PreloaderB fades out
+    const timer = setTimeout(() => {
+      setContentVisible(true)
+    }, 200) // Slightly longer delay to ensure PreloaderB fade is complete
+    return () => clearTimeout(timer)
+  }, [isPreloaderBVisible, setPreloaderComplete, setPreloaderVisible])
+  
+  // Additional safety: if content isn't visible after PreloaderB completes, force show it
+  useEffect(() => {
+    if (!isPreloaderBVisible && !contentVisible) {
+      // PreloaderB just finished, wait a bit then show content
+      const safetyTimer = setTimeout(() => {
+        console.log('⚠️ Safety: showing explore content after PreloaderB completion')
+        setContentVisible(true)
+      }, 500) // Wait 500ms after PreloaderB hides to ensure fade is complete
+      
+      return () => clearTimeout(safetyTimer)
+    }
+  }, [isPreloaderBVisible, contentVisible])
+
+  // Fallback: Show content after maximum wait time (in case PreloaderB never shows or completes)
+  useEffect(() => {
+    const maxWaitTimer = setTimeout(() => {
+      if (!contentVisible) {
+        console.log('⚠️ Max wait timer: forcing explore content to show')
+        setContentVisible(true)
+      }
+    }, 3500) // Max 3.5 seconds (2s PreloaderB + 1s fade + 500ms buffer)
+    
+    return () => clearTimeout(maxWaitTimer)
+  }, [contentVisible])
 
   const nextSlide = useCallback(() => {
     const nextIndex = (currentSlide + 1) % splineScenes.length
@@ -88,8 +116,9 @@ function ExploreContent() {
 
   return (
     <>
-      {/* Simplified version - bypass preloader for reliability */}
-      <div className="min-h-screen bg-black text-white">
+      {/* Only show content after PreloaderB completes */}
+      {contentVisible && (
+        <div className="min-h-screen bg-black text-white">
         {/* Navigation */}
         <NavbarZh />
           
@@ -169,6 +198,7 @@ function ExploreContent() {
                             </div>
                           </div>
                         )}
+
                       </motion.div>
                     )
                   })}
@@ -222,6 +252,7 @@ function ExploreContent() {
           {/* Cookie Banner */}
           <CookieBanner />
         </div>
+      )}
     </>
   )
 }

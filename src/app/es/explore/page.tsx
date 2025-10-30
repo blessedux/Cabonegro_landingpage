@@ -14,44 +14,77 @@ const splineScenes = [
   {
     id: 1,
     url: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/',
-    title: 'Escena 3D Cabo Negro 1'
+    title: 'Escena 3D Cabo Negro 1',
+    description: 'Explora la terminal marítima de Cabo Negro y su ubicación estratégica en el extremo sur de Chile.'
   },
   {
     id: 2,
-    url: 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/',
-    title: 'Escena 3D Cabo Negro 2'
+    url: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/',
+    title: 'Escena 3D Cabo Negro 2',
+    description: 'Descubre la infraestructura portuaria diseñada para servir a la economía del hidrógeno verde de Chile.'
   },
   {
     id: 3,
     url: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/',
-    title: 'Escena 3D Cabo Negro 3'
+    title: 'Escena 3D Cabo Negro 3',
+    description: 'Conoce el parque industrial y terminal marítima que conecta los océanos Atlántico y Pacífico.'
   }
 ]
 
 function ExploreContent() {
-  const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
+  const [contentVisible, setContentVisible] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [splineLoadedStates, setSplineLoadedStates] = useState<Record<number, boolean>>({})
   const [splineErrorStates, setSplineErrorStates] = useState<Record<number, boolean>>({})
   const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+  const { isPreloaderBVisible, setPreloaderComplete, setPreloaderVisible } = usePreloader()
 
-  // Immediately set preloader complete to ensure navbar shows on explore page
+  // Set preloader complete immediately for navbar visibility
   useEffect(() => {
     setPreloaderComplete(true)
     setPreloaderVisible(false)
-    setPreloaderFadeComplete(true)
   }, [setPreloaderComplete, setPreloaderVisible])
 
-  const handlePreloaderComplete = () => {
-    setPreloaderComplete(true)
-    setPreloaderVisible(false)
+  // Wait for PreloaderB to complete before showing content
+  useEffect(() => {
+    // If PreloaderB is visible, hide content and wait for it to complete
+    if (isPreloaderBVisible) {
+      setContentVisible(false)
+      return
+    }
     
-    // Wait for preloader fade to complete before showing main content
-    setTimeout(() => {
-      setPreloaderFadeComplete(true)
-    }, 1000) // Match the preloader fade duration
-  }
+    // PreloaderB is not visible (completed or never shown) - show content
+    // Add a small delay for smooth transition after PreloaderB fades out
+    const timer = setTimeout(() => {
+      setContentVisible(true)
+    }, 200) // Slightly longer delay to ensure PreloaderB fade is complete
+    return () => clearTimeout(timer)
+  }, [isPreloaderBVisible])
+  
+  // Additional safety: if content isn't visible after PreloaderB completes, force show it
+  useEffect(() => {
+    if (!isPreloaderBVisible && !contentVisible) {
+      // PreloaderB just finished, wait a bit then show content
+      const safetyTimer = setTimeout(() => {
+        console.log('⚠️ Safety: showing explore content after PreloaderB completion')
+        setContentVisible(true)
+      }, 500) // Wait 500ms after PreloaderB hides to ensure fade is complete
+      
+      return () => clearTimeout(safetyTimer)
+    }
+  }, [isPreloaderBVisible, contentVisible])
+
+  // Fallback: Show content after maximum wait time (in case PreloaderB never shows or completes)
+  useEffect(() => {
+    const maxWaitTimer = setTimeout(() => {
+      if (!contentVisible) {
+        console.log('⚠️ Max wait timer: forcing explore content to show')
+        setContentVisible(true)
+      }
+    }, 3500) // Max 3.5 seconds (2s PreloaderB + 1s fade + 500ms buffer)
+    
+    return () => clearTimeout(maxWaitTimer)
+  }, [contentVisible])
 
   const nextSlide = useCallback(() => {
     const nextIndex = (currentSlide + 1) % splineScenes.length
@@ -88,8 +121,9 @@ function ExploreContent() {
 
   return (
     <>
-      {/* Simplified version - bypass preloader for reliability */}
-      <div className="min-h-screen bg-black text-white">
+      {/* Only show content after PreloaderB completes */}
+      {contentVisible && (
+        <div className="min-h-screen bg-black text-white">
         {/* Navigation */}
         <Navbar />
           
@@ -169,6 +203,21 @@ function ExploreContent() {
                             </div>
                           </div>
                         )}
+
+                        {/* Description overlay */}
+                        {isLoaded && !hasError && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            transition={{ duration: 0.5, delay: 0.3 }}
+                            className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/70 to-transparent rounded-b-xl sm:rounded-b-2xl"
+                          >
+                            <p className="text-white text-sm sm:text-base text-center max-w-2xl mx-auto">
+                              {scene.description}
+                            </p>
+                          </motion.div>
+                        )}
                       </motion.div>
                     )
                   })}
@@ -222,6 +271,7 @@ function ExploreContent() {
           {/* Cookie Banner */}
           <CookieBanner />
         </div>
+      )}
     </>
   )
 }

@@ -218,6 +218,15 @@ export default function PreloaderEs({ onComplete, duration = 6, className = '' }
       {/* Pure Black Background */}
       <div className="absolute inset-0 bg-black" />
 
+      {/* Image on Right Side - Desktop Only - Absolute Positioned */}
+      <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 z-10 opacity-100">
+        <img 
+          src="/BNWCRANE_preloaderB.png" 
+          alt="Cabo Negro Industrial Infrastructure" 
+          className="max-h-[300px] w-auto object-contain"
+        />
+      </div>
+
       {/* Terminal Preloader */}
       <div className="w-[95%] sm:w-[90%] max-w-4xl h-auto py-4 relative overflow-hidden block opacity-100">
         {/* Border Top */}
@@ -267,9 +276,9 @@ export default function PreloaderEs({ onComplete, duration = 6, className = '' }
                 <span 
                   className="text-white font-normal text-xs sm:text-sm uppercase tracking-widest font-primary" 
                   data-scramble="true" 
-                  data-original-text="Infraestructura H₂V"
+                  data-original-text="Infraestructura Cabo Negro"
                 >
-                  Infraestructura H₂V
+                  Infraestructura Cabo Negro
                 </span>
               </div>
             </div>

@@ -60,11 +60,11 @@ export function usePageTransition() {
                                         prevPageType === currentPageType // Same page type (explore/deck/contact)
 
       // Show PreloaderB if:
-      // 1. Navigating from home to any page OR from any page to home
+      // 1. Navigating from home to special page OR from special page to home
       // 2. Navigating between different special pages (e.g., explore to deck)
       // 3. Switching languages on special pages (e.g., /es/explore to /en/explore)
       const shouldShowPreloaderB = 
-        (!isLanguageSwitchOnHome && (wasOnHome || isOnHome)) || // Home navigation
+        (!isLanguageSwitchOnHome && ((wasOnHome && isOnSpecial) || (wasOnSpecial && isOnHome))) || // Home <-> Special page navigation
         (wasOnSpecial && isOnSpecial && !isLanguageSwitchOnSpecial && prevPageType !== currentPageType) || // Different special pages
         isLanguageSwitchOnSpecial // Language switch on same special page
 
