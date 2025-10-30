@@ -228,15 +228,15 @@ export default function PreloaderZh({ onComplete, duration = 6, className = '' }
       </div>
 
       {/* Terminal Preloader */}
-      <div className="w-[95%] sm:w-[90%] max-w-4xl h-auto py-4 relative overflow-hidden block opacity-100">
-        {/* Border Top */}
-        <div className="absolute top-0 left-0 w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider">
-          <span className="truncate">卡波内格罗工业区</span>
-          <span className="truncate">战略开发进行中</span>
+      <div className="w-[95%] sm:w-[90%] max-w-4xl relative overflow-hidden block opacity-100 flex flex-col">
+        {/* Border Top - Fixed height to prevent vertical movement */}
+        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider flex-shrink-0">
+          <span className="truncate max-w-[45%]">卡波内格罗工业区</span>
+          <span className="truncate max-w-[45%]">战略开发进行中</span>
         </div>
 
-        {/* Terminal Container */}
-        <div className="relative min-h-[400px] sm:min-h-[350px] mt-6 sm:mt-8 overflow-hidden p-2 sm:p-2.5">
+        {/* Terminal Container - Flex grow to fill space */}
+        <div className="relative min-h-[400px] sm:min-h-[350px] flex-grow overflow-hidden p-2 sm:p-2.5">
           <div className="space-y-2 sm:space-y-3">
             {TERMINAL_LINES_ZH.map((line, index) => (
               <div
@@ -285,10 +285,10 @@ export default function PreloaderZh({ onComplete, duration = 6, className = '' }
           </div>
         </div>
 
-        {/* Border Bottom */}
-        <div className="absolute bottom-0 left-0 w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider">
-          <span className="truncate">战略门户序列完成</span>
-          <span className="truncate">卡波内格罗工业区已激活</span>
+        {/* Border Bottom - Fixed height to prevent vertical movement */}
+        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider flex-shrink-0">
+          <span className="truncate max-w-[45%]">战略门户序列完成</span>
+          <span className="truncate max-w-[45%]">卡波内格罗工业区已激活</span>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Send } from 'lucide-react'
 import { motion } from 'framer-motion'
 import NavbarEs from '@/components/sections/Navbar-es'
 import Footer from '@/components/sections/Footer'
@@ -16,10 +16,20 @@ function AboutPage() {
         <div className="mx-auto max-w-6xl space-y-2 px-6">
           <Image className="rounded-xl object-cover w-full h-[240px] md:h-[460px]" src="https://pub-940ccf6255b54fa799a9b01050e6c227.r2.dev/ruixen_hero_gradient.jpg" alt="Hero section image" width={1200} height={600} priority />
           <div className="grid gap-6 md:grid-cols-2 md:gap-12">
-            <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white leading-snug">
-              Cabo Negro: <span className="text-primary">el futuro polo energético</span>{' '}
-              <span className="text-gray-500 dark:text-gray-400">del Sur Global.</span>
-            </h1>
+            <div className="w-fit">
+              <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white leading-snug mb-4">
+                Cabo Negro: <span className="text-primary">el futuro polo energético</span>{' '}
+                <span className="text-gray-500 dark:text-gray-400">del Sur Global.</span>
+              </h1>
+              <div className="mt-4">
+                <Button asChild className="bg-white text-black hover:bg-gray-200 font-semibold px-8 py-4 border-2 border-red-500">
+                  <a href="mailto:pyaconi@ylmv.cl" className="flex items-center gap-2">
+                    <Send className="w-4 h-4" />
+                    Contacto
+                  </a>
+                </Button>
+              </div>
+            </div>
             <div className="space-y-6 text-muted-foreground">
               <p>
                 ¿Interesado en arrendar o adquirir terrenos en Cabo Negro? Nuestro equipo
@@ -45,7 +55,7 @@ export default function SpanishContactPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <NavbarEs />
-      <main className="pt-20 md:pt-24 pb-16 px-6">
+      <main className="pt-12 pb-16 px-6">
         <AboutPage />
       </main>
       <Footer />

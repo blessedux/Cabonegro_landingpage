@@ -30,12 +30,10 @@ export default function Navbar() {
   useEffect(() => {
     // Check if we're on deck, explore, or contact routes - show navbar immediately and reset hidden state
     if (pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact')) {
-      // Reset navbar hidden state when navigating to explore/deck pages
+      // Reset navbar hidden state when navigating to explore/deck/contact pages
       setIsNavbarHidden(false)
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 100) // Quick delay for deck/explore routes
-      return () => clearTimeout(timer)
+      setIsVisible(true) // Show immediately for these routes
+      return
     }
     
     // Normal preloader logic for other routes
@@ -163,8 +161,8 @@ export default function Navbar() {
 
   return (
     <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck and explore routes, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') || pathname.includes('/explore')
+      // For deck, explore, and contact routes, only hide if navbar is explicitly hidden
+      pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
         : (isNavbarHidden || isPreloaderVisible
             ? '-translate-y-full opacity-0' 

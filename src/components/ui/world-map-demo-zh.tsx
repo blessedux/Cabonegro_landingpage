@@ -20,7 +20,7 @@ export function WorldMapDemoZh() {
           observer.unobserve(element);
         }
       },
-      { rootMargin: "0px 0px -70% 0px", threshold: 0.01 }
+      { rootMargin: "0px 0px 200px 0px", threshold: 0.01 }
     );
     observer.observe(element);
     return () => observer.disconnect();
@@ -28,6 +28,17 @@ export function WorldMapDemoZh() {
 
   return (
     <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative">
+      {/* Section Title and Description */}
+      <div className="container mx-auto px-6 mb-8 md:mb-12">
+        <div className="max-w-4xl mx-auto text-center md:text-left">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">
+            全球贸易与H₂V走廊
+          </h2>
+          <p className="text-lg text-white/70 mt-[30px] md:mt-4">
+            动画弧线展示了卡波内格罗的战略连接：南极物流、大西洋-太平洋门户以及通往欧洲和亚洲的氢气出口路线。
+          </p>
+        </div>
+      </div>
       <WorldMap
         dashed
         dots={[
@@ -49,9 +60,9 @@ export function WorldMapDemoZh() {
           { start: { lat: -26.2041, lng: 28.0473 }, end: { lat: -20.1667, lng: 57.5 } },
           { start: { lat: -85, lng: -70 }, end: { lat: 14.7167, lng: -17.4677 }, startColor: '#0ea5e9', controlOffsetX: -20, controlOffsetY: 30 },
           { start: { lat: -85, lng: -70 }, end: { lat: 5.3453, lng: -4.0244 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 20 },
-          { start: { lat: -85, lng: -70 }, end: { lat: 31.2304, lng: 121.4737 }, startColor: '#0ea5e9', controlOffsetX: 30, controlOffsetY: -10 },
-          { start: { lat: -85, lng: -70 }, end: { lat: 22.5431, lng: 114.0579 }, startColor: '#0ea5e9', controlOffsetX: 20, controlOffsetY: -5 },
-          { start: { lat: -85, lng: -70 }, end: { lat: 29.8683, lng: 121.5440 }, startColor: '#0ea5e9', controlOffsetX: 25, controlOffsetY: -8 },
+          // 移除从卡波内格罗直达中国的路径（避免右侧）
+          // 从地图左侧边界进入亚洲（例如上海）
+          { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
         ]}
       />
       <TerminalCaptionZh active={captionActive} />

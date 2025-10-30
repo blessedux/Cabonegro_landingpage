@@ -20,7 +20,7 @@ export function WorldMapDemo() {
           observer.unobserve(element);
         }
       },
-      { rootMargin: "0px 0px -70% 0px", threshold: 0.01 }
+      { rootMargin: "0px 0px 200px 0px", threshold: 0.01 }
     );
     observer.observe(element);
     return () => observer.disconnect();
@@ -28,6 +28,18 @@ export function WorldMapDemo() {
 
   return (
     <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative">
+      {/* Section Title and Description */}
+      <div className="container mx-auto px-6 mb-8 md:mb-12">
+        <div className="max-w-4xl mx-auto text-center md:text-left">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">
+            Global Trade & H₂V Corridors
+          </h2>
+          <p className="text-lg text-white/70 mt-[30px] md:mt-4">
+            Animated arcs illustrate Cabo Negro's strategic connections: Antarctic logistics, the
+            Atlantic–Pacific gateway, and hydrogen export routes to Europe and Asia.
+          </p>
+        </div>
+      </div>
       <WorldMap
         dashed
         dots={[
@@ -68,16 +80,13 @@ export function WorldMapDemo() {
           // CaboNegro bottom → West coast of Africa (Abidjan)
           { start: { lat: -85, lng: -70 }, end: { lat: 5.3453, lng: -4.0244 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 20 },
 
-          // CaboNegro bottom → China (multiple)
-          { start: { lat: -85, lng: -70 }, end: { lat: 31.2304, lng: 121.4737 }, startColor: '#0ea5e9', controlOffsetX: 30, controlOffsetY: -10 }, // Shanghai
-          { start: { lat: -85, lng: -70 }, end: { lat: 22.5431, lng: 114.0579 }, startColor: '#0ea5e9', controlOffsetX: 20, controlOffsetY: -5 },  // Shenzhen
-          { start: { lat: -85, lng: -70 }, end: { lat: 29.8683, lng: 121.5440 }, startColor: '#0ea5e9', controlOffsetX: 25, controlOffsetY: -8 },  // Ningbo
+          // CaboNegro bottom → China routes removed to avoid right-side vectors
 
           // CaboNegro bottom → far left border (exiting map)
           { start: { lat: -85, lng: -70 }, end: { lat: -60, lng: -180 }, startColor: '#0ea5e9', controlOffsetX: -50, controlOffsetY: 20 },
 
-          // From far right border → China (Shanghai)
-          { start: { lat: 35, lng: 180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: -40, controlOffsetY: -10 },
+          // From far left border → China (Shanghai) to route via left side of map
+          { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
         ]}
       />
       <TerminalCaption active={captionActive} />

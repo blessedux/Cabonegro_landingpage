@@ -114,13 +114,14 @@ function FeatureImageWithOverlay({ feature, index }: { feature: Feature, index: 
           
           {/* Text content at bottom */}
           <motion.div 
-            className="absolute bottom-0 left-0 right-0 p-4 z-30"
+            className="absolute bottom-0 left-0 right-0 p-4 pb-12 z-30"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <p className="text-sm text-white mb-2 font-bold drop-shadow-lg">{feature.description}</p>
+            <h4 className="text-base text-white mb-3 mt-4 font-bold drop-shadow-lg uppercase tracking-tight">{feature.title}</h4>
+            <p className="text-sm text-white mb-4 font-bold drop-shadow-lg">{feature.description}</p>
             <ul className="space-y-1">
               {(Array.isArray(feature.highlights) ? feature.highlights : []).slice(0, 2).map((highlight: string, highlightIndex: number) => (
                 <li key={highlightIndex} className="text-xs text-gray-100 flex items-start font-semibold drop-shadow-md">
@@ -242,17 +243,17 @@ export default function Features() {
             {/* Card with border and subtle background */}
             <div className="relative bg-black/20 backdrop-blur-sm border border-white/10 rounded-3xl p-0 sm:p-6 md:p-12 shadow-2xl overflow-visible">
               {/* Section Header */}
-              <div className="text-center mb-16 px-4 sm:px-0">
+              <div className="text-center mb-16 px-4 sm:px-0 pt-8 md:pt-0">
                 <motion.h2 
                   initial={{ x: -50, opacity: 0 }}
                   whileInView={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   viewport={{ margin: "-10% 0px -10% 0px" }}
-                  className="text-4xl md:text-5xl font-bold mb-4 text-white"
+                  className="text-4xl md:text-5xl font-bold mb-4 text-white mt-6 md:mt-0"
                 >
                   {t('title')}
                 </motion.h2>
-                <div className="max-w-3xl mx-auto">
+                <div className="max-w-3xl mx-auto mt-4 md:mt-0">
                   <MagicText 
                     text={t('subtitle')}
                     className="text-xl text-gray-300"
@@ -265,7 +266,7 @@ export default function Features() {
                 /* Mobile Layout: Full width background with titles */
                 <HoverSlider className="min-h-[80vh] place-content-center bg-transparent text-white">
                   <div className="px-0 sm:px-3 md:px-12 py-6">
-                    <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
+                    <h3 className="mb-6 ml-4 text-cyan-400 text-xs font-medium capitalize tracking-wide">
                       / strategic advantages
                     </h3>
                   </div>
@@ -353,7 +354,7 @@ export default function Features() {
               ) : (
                 /* Desktop Layout: Original gallery + titles */
                 <HoverSlider className="min-h-[80vh] place-content-center p-6 md:px-12 bg-transparent text-white">
-                  <h3 className="mb-6 text-cyan-400 text-xs font-medium capitalize tracking-wide">
+                  <h3 className="mb-6 ml-4 text-cyan-400 text-xs font-medium capitalize tracking-wide">
                     / strategic advantages
                   </h3>
                   {/* Desktop Layout: Original gallery + titles */}

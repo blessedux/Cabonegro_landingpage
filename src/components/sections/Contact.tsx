@@ -50,15 +50,22 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
-      <header className="pt-32 pb-20 px-6">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            Get in Touch
-          </h1>
-          <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-            Ready to be part of Chile's hydrogen revolution? Contact us to learn more about 
-            investment opportunities and joint venture partnerships at Cabo Negro.
-          </p>
+      <header className="pt-20 pb-20 px-6">
+        <div className="container mx-auto">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              Get in Touch
+            </h1>
+            <p className="text-gray-400 text-lg max-w-3xl mx-auto">
+              Ready to be part of Chile's hydrogen revolution? Contact us to learn more about 
+              investment opportunities and joint venture partnerships at Cabo Negro.
+            </p>
+          </div>
+          <div className="mt-6 flex justify-start px-6">
+            <Button asChild className="bg-white text-black hover:bg-gray-200 font-semibold px-8 py-4">
+              <a href="mailto:pyaconi@ylmv.cl">Mail us</a>
+            </Button>
+          </div>
         </div>
       </header>
 

@@ -20,7 +20,7 @@ export function WorldMapDemoEs() {
           observer.unobserve(element);
         }
       },
-      { rootMargin: "0px 0px -70% 0px", threshold: 0.01 }
+      { rootMargin: "0px 0px 200px 0px", threshold: 0.01 }
     );
     observer.observe(element);
     return () => observer.disconnect();
@@ -28,6 +28,18 @@ export function WorldMapDemoEs() {
 
   return (
     <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative">
+      {/* Section Title and Description */}
+      <div className="container mx-auto px-6 mb-8 md:mb-12">
+        <div className="max-w-4xl mx-auto text-center md:text-left">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">
+            Corredores Globales de Comercio e H₂V
+          </h2>
+          <p className="text-lg text-white/70 mt-[30px] md:mt-4">
+            Los arcos animados ilustran las conexiones estratégicas de Cabo Negro: logística antártica, la
+            puerta de entrada Atlántico-Pacífico y las rutas de exportación de hidrógeno a Europa y Asia.
+          </p>
+        </div>
+      </div>
       <WorldMap
         dashed
         dots={[
@@ -49,9 +61,9 @@ export function WorldMapDemoEs() {
           { start: { lat: -26.2041, lng: 28.0473 }, end: { lat: -20.1667, lng: 57.5 } },
           { start: { lat: -85, lng: -70 }, end: { lat: 14.7167, lng: -17.4677 }, startColor: '#0ea5e9', controlOffsetX: -20, controlOffsetY: 30 },
           { start: { lat: -85, lng: -70 }, end: { lat: 5.3453, lng: -4.0244 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 20 },
-          { start: { lat: -85, lng: -70 }, end: { lat: 31.2304, lng: 121.4737 }, startColor: '#0ea5e9', controlOffsetX: 30, controlOffsetY: -10 },
-          { start: { lat: -85, lng: -70 }, end: { lat: 22.5431, lng: 114.0579 }, startColor: '#0ea5e9', controlOffsetX: 20, controlOffsetY: -5 },
-          { start: { lat: -85, lng: -70 }, end: { lat: 29.8683, lng: 121.5440 }, startColor: '#0ea5e9', controlOffsetX: 25, controlOffsetY: -8 },
+          // Removed Cabo Negro → China routes (avoid right side)
+          // Add left-edge → China to route via left side of the map
+          { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
         ]}
       />
       <TerminalCaptionEs active={captionActive} />

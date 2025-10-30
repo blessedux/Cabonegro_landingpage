@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Send } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Navbar from '@/components/sections/Navbar'
 import Footer from '@/components/sections/Footer'
@@ -34,15 +34,25 @@ function AboutPage({ achievements = defaultAchievements }: AboutPageProps) {
             priority
           />
           <div className="grid gap-6 md:grid-cols-2 md:gap-12">
-            <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white leading-snug">
-              Cabo Negro: <span className="text-primary">the future energy hub</span>{' '}
-              <span className="text-gray-500 dark:text-gray-400">of the Global South.</span>
-            </h1>
+            <div className="relative w-fit">
+              <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white leading-snug mb-4 w-fit">
+                Cabo Negro: <span className="text-primary">the future energy hub</span>{' '}
+                <span className="text-gray-500 dark:text-gray-400">of the Global South.</span>
+              </h1>
+              <div className="mt-4 w-full" style={{ position: 'relative', display: 'flex', justifyContent: 'flex-end', marginRight: '60px' }}>
+                <Button asChild className="bg-white text-black hover:bg-gray-200 font-semibold px-8 py-4">
+                  <a href="mailto:pyaconi@ylmv.cl" className="flex items-center gap-2">
+                    <Send className="w-4 h-4" />
+                    Contact
+                  </a>
+                </Button>
+              </div>
+            </div>
             <div className="space-y-6 text-muted-foreground">
               <p>
                 Interested in leasing or acquiring land at Cabo Negro? Our real estate team can
                 guide you on available lots, industrial parcels, utilities, and development timing.
-                Reach out and we’ll get back to you shortly.
+                Reach out and we'll get back to you shortly.
               </p>
               <Button asChild variant="secondary" size="sm" className="gap-1 pr-1.5">
                 <Link href="https://wa.me/56993091951" target="_blank" rel="noopener noreferrer">
@@ -64,7 +74,7 @@ export default function EnglishContactPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
-      <main className="pt-20 md:pt-24 pb-16 px-6">
+      <main className="pt-12 pb-16 px-6">
         <AboutPage />
       </main>
       <Footer />
