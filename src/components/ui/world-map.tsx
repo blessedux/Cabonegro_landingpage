@@ -74,7 +74,9 @@ export function WorldMap({
           const startPoint = projectPoint(dot.start.lat, dot.start.lng);
           const endPoint = projectPoint(dot.end.lat, dot.end.lng);
           const midX = (startPoint.x + endPoint.x) / 2 + (dot.controlOffsetX || 0);
-          const midY = Math.min(startPoint.y, endPoint.y) - 50 + (dot.controlOffsetY || 0);
+          // Prefer curves facing downward (toward bottom) by default
+          const baseMidY = Math.max(startPoint.y, endPoint.y) + 40;
+          const midY = baseMidY + (dot.controlOffsetY || 0);
           const pathD = `M ${startPoint.x} ${startPoint.y} Q ${midX} ${midY} ${endPoint.x} ${endPoint.y}`;
           return (
             <g key={`path-group-${i}`}>
@@ -93,17 +95,10 @@ export function WorldMap({
                 strokeWidth="1"
                 strokeLinecap="round"
                 strokeDasharray={dashed ? "4 6" : undefined}
-                initial={{
-                  pathLength: 0,
-                }}
-                animate={{
-                  pathLength: 1,
-                }}
-                transition={{
-                  duration: 1,
-                  delay: 0.5 * i,
-                  ease: "easeOut",
-                }}
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 1.1, delay: 0.7 * i, ease: "easeOut" }}
                 key={`start-upper-${i}`}
               ></motion.path>
             </g>
