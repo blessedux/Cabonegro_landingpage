@@ -4,8 +4,30 @@ import { useEffect, useRef, useState } from "react";
 import { WorldMap } from "@/components/ui/world-map";
 
 export function WorldMapDemo() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [captionActive, setCaptionActive] = useState(false);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const element = containerRef.current;
+    let hasTriggered = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && !hasTriggered) {
+          hasTriggered = true;
+          setCaptionActive(true);
+          observer.unobserve(element);
+        }
+      },
+      { threshold: 0.25 }
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="py-20 dark:bg-black bg-white w-full relative">
+    <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative">
       <WorldMap
         dashed
         dots={[
@@ -58,12 +80,12 @@ export function WorldMapDemo() {
           { start: { lat: 35, lng: 180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: -40, controlOffsetY: -10 },
         ]}
       />
-      <TerminalCaption />
+      <TerminalCaption active={captionActive} />
     </div>
   );
 }
 
-function TerminalCaption() {
+function TerminalCaption({ active }: { active: boolean }) {
   const lines = [
     "Magellan linkage expands Pacific–Atlantic capacity",
     "Selective routes: 10–15% transit time reduction",
@@ -74,6 +96,7 @@ function TerminalCaption() {
 
   // Scramble-in per line, sequential
   useEffect(() => {
+    if (!active) return;
     const chars = "▪";
     const timers: number[] = [];
 
@@ -110,17 +133,18 @@ function TerminalCaption() {
     return () => {
       timers.forEach((t) => window.clearTimeout(t));
     };
-  }, []);
+  }, [active]);
 
   // Trailing dots like terminal progression
   useEffect(() => {
+    if (!active) return;
     const id = window.setInterval(() => setDots((d) => (d + 1) % 4), 700);
     return () => window.clearInterval(id);
-  }, []);
+  }, [active]);
 
   return (
-    <div className="pointer-events-none absolute bottom-4 right-4 md:right-6 lg:right-8 z-10 max-w-[92%]">
-      <div className="inline-block text-[10px] sm:text-xs md:text-sm lg:text-base font-secondary uppercase tracking-widest text-white/80 bg-black/25 backdrop-blur px-3 py-2 rounded">
+    <div className="pointer-events-none absolute bottom-1 sm:bottom-2 md:bottom-4 right-3 sm:right-4 md:right-6 lg:right-8 z-10 max-w-[92%]">
+      <div className="inline-block mt-2 text-xs sm:text-sm md:text-base lg:text-lg font-secondary uppercase tracking-widest text-white/80 bg-black/25 px-3 py-2 rounded">
         {displayLines.map((line, i) => (
           <div key={i} className="leading-tight">
             {line}

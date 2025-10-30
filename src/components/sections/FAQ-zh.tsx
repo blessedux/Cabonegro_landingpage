@@ -188,12 +188,6 @@ export default function FAQZh() {
   return (
     <div className="py-20 px-6 bg-black text-white">
       <div className="max-w-4xl mx-auto">
-        {/* Hero Section */}
-        <Hero 
-          title="常见问题"
-          subtitle="关于卡波内格罗工业开发项目的常见问题"
-          className="mb-16"
-        />
 
         {/* FAQ Items */}
         <div className="space-y-4">
@@ -243,28 +237,13 @@ export default function FAQZh() {
           ))}
         </div>
 
-        {/* Contact CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ margin: "-10% 0px -10% 0px" }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="text-center mt-16"
-        >
-          <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-white">
-              还有问题？
-            </h3>
-            <p className="text-gray-400 text-lg">
-              联系我们的团队获取更多信息
-            </p>
-            <Button asChild className="bg-white text-black hover:bg-gray-200 px-8 py-3 text-lg">
-              <Link href="/zh/contact">
-                联系我们
-              </Link>
-            </Button>
-          </div>
-        </motion.div>
+        {/* Lamp CTA moved to bottom */}
+        <Hero 
+          title="还有问题？"
+          subtitle="联系团队获取更多信息"
+          actions={[{ label: "联系我们", href: "/zh/contact" }]}
+          className="mt-16"
+        />
       </div>
     </div>
   )
