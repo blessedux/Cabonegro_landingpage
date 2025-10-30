@@ -209,6 +209,16 @@ function ExploreContent() {
                           </motion.div>
                         )}
 
+                        {/* Scroll overlay: allow page scroll over iframe */}
+                        <div
+                          className="absolute inset-0 z-[5]"
+                          aria-hidden="true"
+                          onWheel={(e) => {
+                            e.preventDefault()
+                            window.scrollBy({ top: e.deltaY, behavior: 'smooth' })
+                          }}
+                        />
+
                       </motion.div>
                     )
                   })}

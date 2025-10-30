@@ -206,6 +206,16 @@ function ExploreContent() {
                           </motion.div>
                         )}
 
+                        {/* 允许在 iframe 上方滚动的图层 */}
+                        <div
+                          className="absolute inset-0 z-[5]"
+                          aria-hidden="true"
+                          onWheel={(e) => {
+                            e.preventDefault()
+                            window.scrollBy({ top: e.deltaY, behavior: 'smooth' })
+                          }}
+                        />
+
                       </motion.div>
                     )
                   })}
