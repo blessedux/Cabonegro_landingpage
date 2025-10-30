@@ -2,6 +2,7 @@
 
 import { useRef } from 'react'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { MagicText } from '@/components/ui/magic-text'
 
 export default function AboutUs() {
@@ -44,44 +45,22 @@ export default function AboutUs() {
           </div>
         </motion.div>
         
-        {/* Stakeholder Signatures Placeholders */}
+        {/* Stakeholder signatures image */}
         <motion.div
-          className="mt-16"
+          className="mt-16 flex justify-center"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
         >
-          <h3 className="text-2xl sm:text-3xl font-bold mb-8 text-white text-center">
-            Project Stakeholders
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* J&P Placeholder */}
-            <div className="flex flex-col items-center text-center">
-              <h4 className="text-xl sm:text-2xl font-semibold text-white mb-4">
-                J&amp;P
-              </h4>
-              <div
-                className="w-full max-w-md aspect-[3/1] rounded-xl border-2 border-dashed border-gray-600 bg-gradient-to-b from-gray-900 to-black flex items-center justify-center"
-                aria-label="J&P signature placeholder"
-              >
-                <span className="text-gray-500">Signature/Image placeholder</span>
-              </div>
-            </div>
-
-            {/* PPG Placeholder */}
-            <div className="flex flex-col items-center text-center">
-              <h4 className="text-xl sm:text-2xl font-semibold text-white mb-4">
-                PPG
-              </h4>
-              <div
-                className="w-full max-w-md aspect-[3/1] rounded-xl border-2 border-dashed border-gray-600 bg-gradient-to-b from-gray-900 to-black flex items-center justify-center"
-                aria-label="PPG signature placeholder"
-              >
-                <span className="text-gray-500">Signature/Image placeholder</span>
-              </div>
-            </div>
-          </div>
+          <Image
+            src="/signatures.png"
+            alt="Stakeholder signatures"
+            width={820}
+            height={240}
+            className="w-full max-w-3xl h-auto object-contain"
+            priority={false}
+          />
         </motion.div>
       </div>
     </section>
