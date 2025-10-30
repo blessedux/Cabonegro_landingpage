@@ -54,8 +54,9 @@ export function WorldMap({
     return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
   };
 
-  return (
-    <div className="w-full aspect-[2/1] dark:bg-black bg-white rounded-lg  relative font-sans overflow-visible">
+  // Render map content (Image + SVG with all routes)
+  const renderMapContent = () => (
+    <>
       <Image
         src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`}
         className="h-full w-full [mask-image:linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)] pointer-events-none select-none"
@@ -178,8 +179,6 @@ export function WorldMap({
           );
         })}
 
-        
-
         {dots.map((dot, i) => (
           <g key={`points-group-${i}`}>
             <g key={`start-${i}`}>
@@ -249,6 +248,54 @@ export function WorldMap({
           </g>
         ))}
       </svg>
+    </>
+  );
+
+  return (
+    <div className="w-full aspect-[2/1] dark:bg-black bg-white rounded-lg relative font-sans overflow-hidden">
+      {/* Mobile: Duplicated maps for seamless infinite loop with scale */}
+      <motion.div
+        className="md:hidden flex w-[200%] h-full relative scale-[1.4]"
+        animate={{
+          x: [0, "-50%"],
+        }}
+        transition={{
+          duration: 50,
+          ease: "linear",
+          repeat: Infinity,
+        }}
+      >
+        {/* First map instance */}
+        <div className="w-1/2 h-full flex-shrink-0 relative">
+          {renderMapContent()}
+        </div>
+        {/* Second map instance for seamless loop */}
+        <div className="w-1/2 h-full flex-shrink-0 relative">
+          {renderMapContent()}
+        </div>
+      </motion.div>
+
+      {/* Desktop: Duplicated maps for seamless infinite loop */}
+      <motion.div
+        className="hidden md:flex w-[200%] h-full relative"
+        animate={{
+          x: [0, "-50%"],
+        }}
+        transition={{
+          duration: 60,
+          ease: "linear",
+          repeat: Infinity,
+        }}
+      >
+        {/* First map instance */}
+        <div className="w-1/2 h-full flex-shrink-0 relative">
+          {renderMapContent()}
+        </div>
+        {/* Second map instance for seamless loop */}
+        <div className="w-1/2 h-full flex-shrink-0 relative">
+          {renderMapContent()}
+        </div>
+      </motion.div>
     </div>
   );
 }

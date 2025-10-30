@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
-import { X } from 'lucide-react'
 
 interface AnimatedCounterProps {
   end: number
@@ -75,7 +74,6 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
 
 export default function Stats() {
   const statsRef = useRef(null)
-  const [expandedCard, setExpandedCard] = useState<number | null>(null)
   const { scrollYProgress } = useScroll({
     target: statsRef,
     offset: ["start end", "end start"]
@@ -84,50 +82,6 @@ export default function Stats() {
   // Animated background pattern based on scroll
   const backgroundOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 0.6, 0.4])
   const patternScale = useTransform(scrollYProgress, [0, 1], [1, 1.2])
-
-  const statCards = [
-    {
-      id: 0,
-      value: 13,
-      suffix: '%',
-      title: 'of world\'s green hydrogen',
-      subtitle: 'Magallanes production potential',
-      expandedContent: 'Magallanes region has the potential to produce 13% of the world\'s green hydrogen due to its exceptional wind resources and strategic location.'
-    },
-    {
-      id: 1,
-      value: 300,
-      suffix: '+',
-      title: 'hectares',
-      subtitle: 'Industrial park area',
-      expandedContent: 'Over 300 hectares of ready-to-build industrial infrastructure, connected to Route 9N and equipped with essential utilities.'
-    },
-    {
-      id: 2,
-      value: 200,
-      suffix: '+',
-      title: 'H₂V projects',
-      subtitle: 'Filed or under review at SEA',
-      expandedContent: 'More than 200 hydrogen projects are currently filed or under review at the Environmental Assessment Service, showcasing the region\'s potential.'
-    },
-    {
-      id: 3,
-      value: 13,
-      suffix: ' MW',
-      title: 'electrical capacity',
-      subtitle: 'Current infrastructure',
-      expandedContent: '13 MW of electrical capacity currently available, with plans for expansion to support the growing industrial demand.'
-    },
-    {
-      id: 4,
-      value: 2.1,
-      suffix: '×',
-      start: 0.6,
-      title: 'regional GDP',
-      subtitle: 'Expected growth from H₂V',
-      expandedContent: 'Hydrogen projects are expected to double the regional GDP, creating significant economic opportunities and employment.'
-    }
-  ]
 
   return (
     <section 
@@ -158,57 +112,108 @@ export default function Stats() {
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-            Cabo Negro by the Numbers
+            Land Development Structure
           </h2>
           <div className="max-w-3xl mx-auto">
             <MagicText 
-              text="Key statistics that define the scale and impact of Chile's premier industrial and maritime hub"
+              text="Comprehensive land development breakdown across Cabo Negro's strategic industrial and maritime zone"
               className="text-gray-400 text-lg"
             />
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
-            <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
-              <AnimatedCounter end={13} suffix="%" />
-            </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">of world's green hydrogen</p>
-            <p className="text-gray-500 text-xs">Magallanes production potential</p>
-          </div>
-          
-          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
-            <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
+        {/* Total Hectares - Featured */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="text-center p-8 bg-black/50 backdrop-blur-md rounded-xl border border-white/30 shadow-2xl">
+            <div className="text-6xl md:text-7xl font-bold mb-4 text-white">
               <AnimatedCounter end={300} suffix="+" />
             </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">hectares</p>
-            <p className="text-gray-500 text-xs">Industrial park area</p>
-          </div>
-          
-          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
-            <div className="text-5xl md:text-6xl font-bold mb-4 text-white">
-              <AnimatedCounter end={200} suffix="+" />
-            </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">H₂V projects</p>
-            <p className="text-gray-500 text-xs">Filed or under review at SEA</p>
+            <p className="text-gray-300 text-lg font-medium mb-2">Total Hectares</p>
+            <p className="text-gray-400 text-sm">Industrial & Maritime Development Zone</p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
-            <div className="text-4xl md:text-5xl font-bold mb-4 text-white">
-              <AnimatedCounter end={13} suffix=" MW" />
+        {/* Company/Area Breakdown */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* PPG */}
+          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+            <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
+            <p className="text-gray-400 text-xs mb-3">Inversiones PPG SpA</p>
+            <div className="space-y-2">
+              <p className="text-gray-300 text-sm">Maritime concession application in process</p>
+              <p className="text-blue-400 text-xs font-mono">CM61260</p>
+              <p className="text-gray-400 text-xs mt-3">Port zone development with J&P</p>
             </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">electrical capacity</p>
-            <p className="text-gray-500 text-xs">Current infrastructure</p>
           </div>
-          
-          <div className="text-center p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-2xl">
-            <div className="text-4xl md:text-5xl font-bold mb-4 text-white">
-              <AnimatedCounter end={2.1} start={0.6} suffix="×" />
+
+          {/* Patagon Valley */}
+          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+            <h3 className="text-white font-bold text-lg mb-3">Patagon Valley</h3>
+            <p className="text-gray-400 text-xs mb-3">Inmobiliaria Patagon Valley SpA</p>
+            <div className="mb-3">
+              <div className="text-3xl font-bold text-white mb-1">
+                <AnimatedCounter end={33} suffix=" ha" />
+              </div>
             </div>
-            <p className="text-gray-300 text-sm font-medium mb-2">regional GDP</p>
-            <p className="text-gray-500 text-xs">Expected growth from H₂V</p>
+            <div className="space-y-2">
+              <p className="text-gray-300 text-sm">Owned by private investment fund</p>
+              <p className="text-gray-300 text-sm">Installed: AWS and GTD</p>
+              <p className="text-gray-400 text-xs mt-2">Originally planned as tech park</p>
+            </div>
+          </div>
+
+          {/* A&J */}
+          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+            <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
+            <p className="text-gray-400 text-xs mb-3">Inversiones A&J Limitada</p>
+            <div className="space-y-2">
+              <p className="text-gray-300 text-sm">Subdivided lots available</p>
+              <p className="text-2xl font-bold text-white mb-2">5,000 m²+</p>
+              <p className="text-gray-400 text-xs">Minimum lot size</p>
+            </div>
+          </div>
+
+          {/* J&P */}
+          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+            <h3 className="text-white font-bold text-lg mb-3">J&P Port Zone</h3>
+            <p className="text-gray-400 text-xs mb-3">Inversiones J&P Limitada</p>
+            <div className="space-y-2">
+              <p className="text-gray-300 text-sm">Port zone development</p>
+              <p className="text-gray-300 text-sm">Linked to PPG port project</p>
+              <p className="text-gray-400 text-xs mt-3">Divided into separate companies:</p>
+              <p className="text-gray-300 text-xs">• J&P (continuadora) - Port development</p>
+              <p className="text-gray-300 text-xs">• J&P 2 & J&P 3 - Expansion options</p>
+            </div>
+          </div>
+
+          {/* CN2 */}
+          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+            <h3 className="text-white font-bold text-lg mb-3">Cabo Negro Dos</h3>
+            <p className="text-gray-400 text-xs mb-3">Inmobiliaria Cabo Negro Dos</p>
+            <div className="mb-3">
+              <div className="text-3xl font-bold text-white mb-1">
+                <AnimatedCounter end={173} suffix=" ha" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="text-gray-300 text-sm">Resulting from J&P subdivision</p>
+              <p className="text-gray-400 text-xs">Single unified area (no subdivision)</p>
+            </div>
+          </div>
+
+          {/* Summary Card */}
+          <div className="p-6 bg-gradient-to-br from-blue-500/20 to-green-500/20 backdrop-blur-md rounded-xl border border-white/30 shadow-xl">
+            <h3 className="text-white font-bold text-lg mb-3">Development Overview</h3>
+            <div className="space-y-3">
+              <div>
+                <p className="text-2xl font-bold text-white mb-1">5+</p>
+                <p className="text-gray-300 text-xs">Major development companies</p>
+              </div>
+              <div className="pt-2 border-t border-white/20">
+                <p className="text-gray-300 text-sm">Integrated industrial & maritime zone</p>
+                <p className="text-gray-400 text-xs mt-1">Strategic investment opportunities</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

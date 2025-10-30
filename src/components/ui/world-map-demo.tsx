@@ -28,21 +28,10 @@ export function WorldMapDemo() {
 
   return (
     <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative">
-      {/* Section Title and Description */}
-      <div className="container mx-auto px-6 mb-8 md:mb-12">
-        <div className="max-w-4xl mx-auto text-center md:text-left">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">
-            Global Trade & H₂V Corridors
-          </h2>
-          <p className="text-lg text-white/70 mt-[30px] md:mt-4">
-            Animated arcs illustrate Cabo Negro's strategic connections: Antarctic logistics, the
-            Atlantic–Pacific gateway, and hydrogen export routes to Europe and Asia.
-          </p>
-        </div>
-      </div>
-      <WorldMap
-        dashed
-        dots={[
+      <div className="relative">
+        <WorldMap
+          dashed
+          dots={[
           // Americas
           // Valparaíso directly to CaboNegro bottom (left-tilted) - white path, blue port dot
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: -85, lng: -70 }, endColor: '#0ea5e9', controlOffsetX: -40, controlOffsetY: 45 },
@@ -90,6 +79,7 @@ export function WorldMapDemo() {
         ]}
       />
       <TerminalCaption active={captionActive} />
+      </div>
     </div>
   );
 }
@@ -152,8 +142,8 @@ function TerminalCaption({ active }: { active: boolean }) {
   }, [active]);
 
   return (
-    <div className="pointer-events-none absolute bottom-1 sm:bottom-2 md:bottom-4 right-3 sm:right-4 md:right-6 lg:right-8 z-10 max-w-[92%]">
-      <div className="inline-block mt-2 text-xs sm:text-sm md:text-base lg:text-lg font-secondary uppercase tracking-widest text-white/80 bg-black/25 px-3 py-2 rounded">
+    <div className="pointer-events-none md:absolute bottom-0 md:bottom-1 lg:bottom-2 right-0 md:right-3 lg:right-4 xl:right-6 z-10 max-w-[92%] md:max-w-none w-full md:w-auto mt-12 md:mt-0">
+      <div className="inline-block text-xs sm:text-sm md:text-base lg:text-lg font-secondary uppercase tracking-widest text-white/80 bg-black/25 px-3 py-2 rounded">
         {displayLines.map((line, i) => (
           <div key={i} className="leading-tight">
             {line}

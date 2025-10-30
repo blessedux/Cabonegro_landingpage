@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
 import { NextIntlClientProvider } from 'next-intl'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useAnimation } from '@/contexts/AnimationContext'
@@ -25,6 +26,8 @@ const messages = enMessages as any
 function HomeContent() {
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
   const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
+  const [contentReady, setContentReady] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
   const { isFadingOut } = useAnimation()
   const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete, isPreloaderBVisible } = usePreloader()
 
@@ -100,14 +103,30 @@ function HomeContent() {
     }
   }, [preloaderFadeComplete])
 
+  // Handle content fade-in animation
+  useEffect(() => {
+    if (contentReady && contentRef.current) {
+      // Start content fade-in animation
+      gsap.fromTo(contentRef.current, 
+        { opacity: 0 },
+        { 
+          opacity: 1, 
+          duration: 1.2,
+          ease: 'power2.out'
+        }
+      )
+    }
+  }, [contentReady])
+
+  const handlePreloaderFadeOutStart = () => {
+    // Pre-render content when preloader starts fading out
+    setContentReady(true)
+    setPreloaderFadeComplete(true)
+  }
+
   const handlePreloaderComplete = () => {
     setPreloaderComplete(true)
     setPreloaderVisible(false)
-    
-    // Wait for preloader fade to complete before showing main content
-    setTimeout(() => {
-      setPreloaderFadeComplete(true)
-    }, 1000) // Match the preloader fade duration
   }
 
   return (
@@ -116,13 +135,18 @@ function HomeContent() {
       {isPreloaderVisible && !isPreloaderBVisible && (
         <Preloader 
           onComplete={handlePreloaderComplete}
+          onFadeOutStart={handlePreloaderFadeOutStart}
           duration={6}
         />
       )}
 
-      {/* Main Content - Only shows after preloader fade completes */}
+      {/* Main Content - Pre-render but hidden, fade in when ready */}
       {preloaderFadeComplete && (
-        <div className={`min-h-screen bg-black text-white transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+        <div 
+          ref={contentRef}
+          className={`min-h-screen bg-black text-white ${isFadingOut ? 'opacity-0' : ''}`}
+          style={{ opacity: 0 }} // Start invisible, GSAP handles animation
+        >
           {/* Navigation */}
           <Navbar />
           

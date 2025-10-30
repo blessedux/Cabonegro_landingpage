@@ -13,6 +13,7 @@ interface TerminalLine {
 
 interface PreloaderProps {
   onComplete?: () => void
+  onFadeOutStart?: () => void
   duration?: number
   className?: string
 }
@@ -69,7 +70,7 @@ const scrambleText = (element: HTMLElement, originalText: string, chars: string 
   return () => clearInterval(interval)
 }
 
-export default function PreloaderZh({ onComplete, duration = 6, className = '' }: PreloaderProps) {
+export default function PreloaderZh({ onComplete, onFadeOutStart, duration = 6, className = '' }: PreloaderProps) {
   const [progress, setProgress] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
   const [isFadingOut, setIsFadingOut] = useState(false)
@@ -101,6 +102,9 @@ export default function PreloaderZh({ onComplete, duration = 6, className = '' }
     const animatePreloader = () => {
       const tl = gsap.timeline({
         onComplete: () => {
+          // Notify that fade out is starting (for content to start fading in)
+          onFadeOutStart?.()
+          
           // Start fade out animation
           setIsFadingOut(true)
           
@@ -235,33 +239,35 @@ export default function PreloaderZh({ onComplete, duration = 6, className = '' }
           <span className="truncate max-w-[45%]">战略开发进行中</span>
         </div>
 
-        {/* Terminal Container - Flex grow to fill space */}
-        <div className="relative min-h-[400px] sm:min-h-[350px] flex-grow overflow-hidden p-2 sm:p-2.5">
-          <div className="space-y-2 sm:space-y-3">
-            {TERMINAL_LINES_ZH.map((line, index) => (
-              <div
-                key={line.id}
-                ref={(el) => {
-                  if (el) terminalLinesRef.current[index] = el
-                }}
-                className="text-xs sm:text-sm leading-relaxed sm:leading-tight tracking-wider font-light font-primary px-2 sm:px-2.5"
-              >
-                <span 
-                  className={`inline-block ${
-                    line.type === 'highlight' 
-                      ? 'text-white font-normal uppercase tracking-widest' 
-                      : 'opacity-50 uppercase tracking-widest'
-                  }`}
-                  data-scramble={line.scramble ? 'true' : undefined}
-                  data-original-text={line.text}
+        {/* Terminal Container - Fixed height to prevent vertical movement */}
+        <div className="relative h-[450px] sm:h-[400px] flex-grow overflow-hidden p-2 sm:p-2.5">
+          <div className="space-y-2 sm:space-y-3 h-full flex flex-col">
+            <div className="flex-grow overflow-hidden">
+              {TERMINAL_LINES_ZH.map((line, index) => (
+                <div
+                  key={line.id}
+                  ref={(el) => {
+                    if (el) terminalLinesRef.current[index] = el
+                  }}
+                  className="text-xs sm:text-sm leading-relaxed sm:leading-tight tracking-wider font-light font-primary px-2 sm:px-2.5"
                 >
-                  {line.text}
-                </span>
-              </div>
-            ))}
+                  <span 
+                    className={`inline-block ${
+                      line.type === 'highlight' 
+                        ? 'text-white font-normal uppercase tracking-widest' 
+                        : 'opacity-50 uppercase tracking-widest'
+                    }`}
+                    data-scramble={line.scramble ? 'true' : undefined}
+                    data-original-text={line.text}
+                  >
+                    {line.text}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-            {/* Progress Line */}
-            <div className="mt-4 sm:mt-6 px-2 sm:px-2.5">
+            {/* Progress Line - Fixed position at bottom */}
+            <div className="mt-auto px-2 sm:px-2.5 flex-shrink-0">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-0">
                 <span className="font-normal text-xs sm:text-sm text-white uppercase tracking-widest font-primary">
                   初始化中

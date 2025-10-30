@@ -28,21 +28,10 @@ export function WorldMapDemoEs() {
 
   return (
     <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative">
-      {/* Section Title and Description */}
-      <div className="container mx-auto px-6 mb-8 md:mb-12">
-        <div className="max-w-4xl mx-auto text-center md:text-left">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">
-            Corredores Globales de Comercio e H₂V
-          </h2>
-          <p className="text-lg text-white/70 mt-[30px] md:mt-4">
-            Los arcos animados ilustran las conexiones estratégicas de Cabo Negro: logística antártica, la
-            puerta de entrada Atlántico-Pacífico y las rutas de exportación de hidrógeno a Europa y Asia.
-          </p>
-        </div>
-      </div>
-      <WorldMap
-        dashed
-        dots={[
+      <div className="relative">
+        <WorldMap
+          dashed
+          dots={[
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: -85, lng: -70 }, endColor: '#0ea5e9', controlOffsetX: -40, controlOffsetY: 45 },
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: 37.7749, lng: -122.4194 }, controlOffsetX: 80, controlOffsetY: -10 },
           { start: { lat: -85, lng: -70 }, end: { lat: 32.7157, lng: -117.1611 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 60 },
@@ -67,6 +56,7 @@ export function WorldMapDemoEs() {
         ]}
       />
       <TerminalCaptionEs active={captionActive} />
+      </div>
     </div>
   );
 }
@@ -125,8 +115,8 @@ function TerminalCaptionEs({ active }: { active: boolean }) {
   }, [active]);
 
   return (
-    <div className="pointer-events-none absolute bottom-0 sm:bottom-1 md:bottom-3 right-3 sm:right-4 md:right-6 lg:right-8 z-10 max-w-[92%]">
-      <div className="inline-block mt-2 text-xs sm:text-sm md:text-base lg:text-lg font-secondary uppercase tracking-widest text-white/80 bg-black/25 px-3 py-2 rounded">
+    <div className="pointer-events-none md:absolute bottom-0 md:bottom-1 lg:bottom-2 right-0 md:right-3 lg:right-4 xl:right-6 z-10 max-w-[92%] md:max-w-none w-full md:w-auto mt-12 md:mt-0">
+      <div className="inline-block text-xs sm:text-sm md:text-base lg:text-lg font-secondary uppercase tracking-widest text-white/80 bg-black/25 px-3 py-2 rounded">
         {displayLines.map((line, i) => (
           <div key={i} className="leading-tight">
             {line}
