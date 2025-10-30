@@ -41,6 +41,9 @@ export default function GoogleMaps3DScene({
   const mapInstanceRef = useRef<any>(null)
   const animationRef = useRef<number | null>(null)
   const rotationIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const isDraggingRef = useRef<boolean>(false)
+  const dragStartXRef = useRef<number>(0)
+  const dragStartHeadingRef = useRef<number>(0)
 
   // Convert altitude to appropriate zoom level
   const getZoomFromAltitude = useCallback((altitude: number) => {
@@ -187,6 +190,36 @@ export default function GoogleMaps3DScene({
       rotationIntervalRef.current = null
     }
   }, [])
+
+  // Pointer drag to rotate heading
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!mapInstanceRef.current) return
+    isDraggingRef.current = true
+    dragStartXRef.current = e.clientX
+    dragStartHeadingRef.current = mapInstanceRef.current.getHeading?.() || 0
+    stopAutoRotation()
+    ;(e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId)
+  }, [stopAutoRotation])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current || !mapInstanceRef.current) return
+    const deltaX = e.clientX - dragStartXRef.current
+    // Sensitivity: pixels to degrees (smaller is more sensitive)
+    const degreesPerPixel = 0.3
+    const newHeading = (dragStartHeadingRef.current - deltaX * degreesPerPixel) % 360
+    mapInstanceRef.current.setHeading(newHeading < 0 ? newHeading + 360 : newHeading)
+  }, [])
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!mapInstanceRef.current) return
+    isDraggingRef.current = false
+    try {
+      ;(e.currentTarget as HTMLDivElement).releasePointerCapture(e.pointerId)
+    } catch {}
+    if (enableAutoRotation) {
+      startAutoRotation()
+    }
+  }, [enableAutoRotation, startAutoRotation])
 
   useEffect(() => {
     console.log('🚀 Creating 3D Scene with coordinates:', center)
@@ -438,6 +471,10 @@ export default function GoogleMaps3DScene({
         }}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       />
       
       {/* Loading overlay - only show when not loaded and no error */}

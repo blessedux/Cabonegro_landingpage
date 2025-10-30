@@ -5,6 +5,7 @@ import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function Hero() {
@@ -12,6 +13,7 @@ export default function Hero() {
   const { startFadeOut } = useAnimation()
   const { showPreloaderB } = usePreloader()
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
+  const [variantIndex, setVariantIndex] = useState<number>(0)
   const [isVisible, setIsVisible] = useState(false)
   
   // Trigger hero animations after preloader fade out
@@ -54,19 +56,45 @@ export default function Hero() {
     // Currently just tracks click coordinates for potential use
   }
 
+  const variants = [
+    {
+      key: 'A',
+      src: 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/',
+      title: 'Gateway to the South of the World',
+      subtitle: 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
+    },
+    {
+      key: 'B',
+      src: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/',
+      title: 'Cabo Negro: Future Energy Hub of the Global South',
+      subtitle: 'Positioned in Magallanes, Chile, Cabo Negro connects H2V, industry, and global trade.'
+    },
+    {
+      key: 'C',
+      src: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/',
+      title: 'Magellan Strait: Atlantic–Pacific Strategic Gateway',
+      subtitle: 'A strategic junction enabling trade routes, logistics and clean energy exports.'
+    }
+  ]
+
+  const current = variants[variantIndex]
+  const nextVariant = () => setVariantIndex((i) => (i + 1) % variants.length)
+  const prevVariant = () => setVariantIndex((i) => (i - 1 + variants.length) % variants.length)
+
   return (
     <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center overflow-hidden" style={{ touchAction: 'pan-y' }}>
-      {/* Background Spline Scene - Glowing Planet Particles */}
+      {/* Background Spline Scene - switchable variants */}
       <div 
         className="absolute inset-0 z-0 overflow-hidden"
         onClick={handleClick}
       >
         <iframe 
-          src='https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/' 
+          src={current.src}
           frameBorder='0' 
           width='100%' 
           height='100%'
           className="w-full h-full"
+          title={`Hero background scene ${current.key}`}
           onLoad={() => {
             setBackgroundLoaded(true)
           }}
@@ -84,6 +112,19 @@ export default function Hero() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40 z-2 pointer-events-none" />
       
 
+      {/* Chevron variant switcher (3 variants) */}
+      <div className="absolute top-24 right-6 z-20 pointer-events-auto">
+        <div className="flex items-center gap-2 bg-black/50 backdrop-blur px-2 py-1 rounded-full border border-white/10">
+          <button onClick={prevVariant} className="p-1.5 rounded-full hover:bg-white/10 text-white" aria-label="Previous background">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-xs text-white/80 px-2">{current.key}</span>
+          <button onClick={nextVariant} className="p-1.5 rounded-full hover:bg-white/10 text-white" aria-label="Next background">
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       <div className="container mx-auto relative z-10 flex justify-start pointer-events-none">
         <div className="max-w-4xl w-full px-6 lg:px-12 pointer-events-auto">
           <motion.h1 
@@ -98,7 +139,7 @@ export default function Hero() {
             }}
           >
             <BlurTextAnimation 
-              text="Gateway to the South of the World"
+              text={current.title}
               fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
               textColor="text-white"
               animationDelay={0} // Start immediately with the h1 fade-in
@@ -115,7 +156,7 @@ export default function Hero() {
               ease: "easeOut" 
             }}
           >
-            Cabo Negro is a Strategic Industrial & Maritime Hub <br></br>of the Southern Hemisphere.
+            {current.subtitle}
           </motion.p>
           <motion.div 
             className="flex flex-col sm:flex-row gap-4 justify-start items-start"

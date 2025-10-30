@@ -58,7 +58,7 @@ export default function AboutUs() {
             alt="Stakeholder signatures"
             width={820}
             height={240}
-            className="w-full max-w-3xl h-auto object-contain"
+            className="w-full max-w-2xl h-auto object-contain"
             priority={false}
           />
         </motion.div>

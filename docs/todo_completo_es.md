@@ -117,14 +117,14 @@
 
 ### 🌍 **Idiomas y Localización**
 
-- [ ] Completar traducción de contenido al chino
-- [ ] Revisar y mejorar todas las traducciones existentes
+- [x] Completar traducción de contenido al chino
+- [x] Revisar y mejorar todas las traducciones existentes
 - [ ] Asegurar consistencia en terminología técnica entre idiomas
 
 ### 🎨 **Diseño y UX**
 
+- [x] Arreglar logos en el componente Partners
 - [ ] Agregar botón toggle para alternar entre versiones del Hero
-- [ ] Arreglar logos en el componente Partners
 - [ ] Trabajar en la funcionalidad completa de Explore
 
 ### 🎬 **Animaciones**

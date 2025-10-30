@@ -209,15 +209,10 @@ function ExploreContent() {
                           </motion.div>
                         )}
 
-                        {/* Scroll overlay: allow page scroll over iframe */}
-                        <div
-                          className="absolute inset-0 z-[5]"
-                          aria-hidden="true"
-                          onWheel={(e) => {
-                            e.preventDefault()
-                            window.scrollBy({ top: e.deltaY, behavior: 'smooth' })
-                          }}
-                        />
+                        {/* Hint overlay for interaction */}
+                        <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 z-[5] px-3 py-1.5 rounded-full bg-black/50 backdrop-blur text-xs text-white/80">
+                          Drag to rotate • Scroll to zoom
+                        </div>
 
                       </motion.div>
                     )

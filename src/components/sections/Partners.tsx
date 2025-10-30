@@ -35,6 +35,41 @@ export default function Partners() {
 
   return (
     <section ref={partnersRef} className="py-20 px-3 md:px-6 relative overflow-hidden bg-black">
+      {/* Animated Edge Glows - brighter, whiter */}
+      <motion.div
+        className="absolute inset-0 z-0"
+        initial={{ x: 0, y: 0, opacity: 1 }}
+        animate={{ x: [0, 8, 0], y: [0, -6, 0] }}
+        transition={{ duration: 16, ease: "easeInOut", repeat: Infinity }}
+        style={{
+          backgroundImage: `radial-gradient(circle 700px at 18% 15%, rgba(255,255,255,0.40), transparent 62%)`,
+        }}
+      />
+      <motion.div
+        className="absolute inset-0 z-0"
+        initial={{ x: 0, y: 0, opacity: 1 }}
+        animate={{ x: [0, -10, 0], y: [0, 8, 0] }}
+        transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
+        style={{
+          backgroundImage: `radial-gradient(circle 800px at 82% 85%, rgba(255,255,255,0.32), transparent 68%)`,
+        }}
+      />
+
+      {/* Subtle textured wall behind lit areas */}
+      <div
+        className="absolute inset-0 z-0 opacity-35 mix-blend-screen"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 4px),
+            repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 2px, transparent 2px, transparent 4px)
+          `,
+          backgroundBlendMode: 'screen',
+        }}
+      />
+
+      {/* Cross-fade overlay to blend content smoothly */}
+      <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-black/60 via-black/20 to-black/70" />
+
       <div className="container mx-auto relative z-10">
         <div className="text-center mb-16">
           <motion.div

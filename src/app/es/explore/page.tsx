@@ -211,15 +211,10 @@ function ExploreContent() {
                           </motion.div>
                         )}
 
-                        {/* Capa para permitir scroll sobre el iframe */}
-                        <div
-                          className="absolute inset-0 z-[5]"
-                          aria-hidden="true"
-                          onWheel={(e) => {
-                            e.preventDefault()
-                            window.scrollBy({ top: e.deltaY, behavior: 'smooth' })
-                          }}
-                        />
+                        {/* Indicador de interacción */}
+                        <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 z-[5] px-3 py-1.5 rounded-full bg-black/50 backdrop-blur text-xs text-white/80">
+                          Arrastra para rotar • Desplaza para hacer zoom
+                        </div>
 
                       </motion.div>
                     )

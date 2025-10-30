@@ -6,12 +6,14 @@ import { usePreloader } from '@/contexts/PreloaderContext'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export default function HeroZh() {
   const router = useRouter()
   const { startFadeOut } = useAnimation()
   const { showPreloaderB } = usePreloader()
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
+  const [variantIndex, setVariantIndex] = useState<number>(0)
   const [isVisible, setIsVisible] = useState(false)
   
   // Trigger hero animations after preloader fade out
@@ -43,18 +45,27 @@ export default function HeroZh() {
     // Currently just tracks click coordinates for potential use
   }
 
+  const variants = [
+    { key: 'A', src: 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/', title: '卡波内格罗', subtitle: '智利南部的战略工业门户' },
+    { key: 'B', src: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/', title: '卡波内格罗：全球南方的未来能源枢纽', subtitle: '位于智利麦哲伦大区，连接H2V、工业与全球贸易' },
+    { key: 'C', src: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/', title: '麦哲伦海峡：大西洋—太平洋战略通道', subtitle: '战略枢纽，促进贸易航线、物流与清洁能源出口' }
+  ]
+  const current = variants[variantIndex]
+  const nextVariant = () => setVariantIndex((i) => (i + 1) % variants.length)
+  const prevVariant = () => setVariantIndex((i) => (i - 1 + variants.length) % variants.length)
+
   return (
     <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center overflow-hidden bg-black" style={{ touchAction: 'pan-y' }}>
       {/* Black background */}
       <div className="absolute inset-0 bg-black z-0" />
       
-      {/* Background Spline Scene - Glowing Planet Particles */}
+      {/* 背景 Spline 场景 - 可切换变体 */}
       <div 
         className="absolute inset-0 z-1 overflow-hidden"
         onClick={handleClick}
       >
         <iframe 
-          src='https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/' 
+          src={current.src}
           frameBorder='0' 
           width='100%' 
           height='100%'
@@ -76,6 +87,19 @@ export default function HeroZh() {
       {/* Subtle gradient overlay for better text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40 z-2 pointer-events-none" />
 
+      {/* 变体切换：左右箭头（3 个背景） */}
+      <div className="absolute top-24 right-6 z-20 pointer-events-auto">
+        <div className="flex items-center gap-2 bg-black/50 backdrop-blur px-2 py-1 rounded-full border border-white/10">
+          <button onClick={prevVariant} className="p-1.5 rounded-full hover:bg-white/10 text-white" aria-label="上一个背景">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <span className="text-xs text-white/80 px-2">{current.key}</span>
+          <button onClick={nextVariant} className="p-1.5 rounded-full hover:bg-white/10 text-white" aria-label="下一个背景">
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       {/* Content Container */}
       <div className="relative z-10 max-w-7xl mx-auto text-center">
         <motion.div
@@ -92,7 +116,7 @@ export default function HeroZh() {
               animate={{ opacity: isVisible ? 1 : 0, scale: isVisible ? 1 : 0.9 }}
               transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
             >
-              卡波内格罗
+              {current.title}
             </motion.h1>
             
             <motion.div
@@ -101,7 +125,7 @@ export default function HeroZh() {
               animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
               transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
             >
-              智利南部的战略工业门户
+              {current.subtitle}
             </motion.div>
           </div>
 
