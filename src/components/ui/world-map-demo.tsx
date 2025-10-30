@@ -20,7 +20,7 @@ export function WorldMapDemo() {
           observer.unobserve(element);
         }
       },
-      { threshold: 0.25 }
+      { rootMargin: "0px 0px -70% 0px", threshold: 0.01 }
     );
     observer.observe(element);
     return () => observer.disconnect();

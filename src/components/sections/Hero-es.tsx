@@ -55,14 +55,14 @@ export default function HeroEs() {
     {
       key: 'B',
       src: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/',
-      title: 'Cabo Negro: futuro polo energético del Sur Global',
-      subtitle: 'En Magallanes, Chile, Cabo Negro conecta H2V, industria y comercio global.'
+      title: 'Puerta de Entrada al Sur del Mundo',
+      subtitle: 'Cabo Negro es un Centro Industrial y Marítimo Estratégico del Hemisferio Sur.'
     },
     {
       key: 'C',
       src: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/',
-      title: 'Estrecho de Magallanes: Puente Atlántico–Pacífico',
-      subtitle: 'Enlace estratégico para rutas comerciales, logística y exportación de energía limpia.'
+      title: 'Puerta de Entrada al Sur del Mundo',
+      subtitle: 'Cabo Negro es un Centro Industrial y Marítimo Estratégico del Hemisferio Sur.'
     }
   ]
 

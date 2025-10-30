@@ -66,14 +66,14 @@ export default function Hero() {
     {
       key: 'B',
       src: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/',
-      title: 'Cabo Negro: Future Energy Hub of the Global South',
-      subtitle: 'Positioned in Magallanes, Chile, Cabo Negro connects H2V, industry, and global trade.'
+      title: 'Gateway to the South of the World',
+      subtitle: 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
     },
     {
       key: 'C',
       src: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/',
-      title: 'Magellan Strait: Atlantic–Pacific Strategic Gateway',
-      subtitle: 'A strategic junction enabling trade routes, logistics and clean energy exports.'
+      title: 'Gateway to the South of the World',
+      subtitle: 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
     }
   ]
 

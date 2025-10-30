@@ -47,8 +47,8 @@ export default function HeroZh() {
 
   const variants = [
     { key: 'A', src: 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/', title: '卡波内格罗', subtitle: '智利南部的战略工业门户' },
-    { key: 'B', src: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/', title: '卡波内格罗：全球南方的未来能源枢纽', subtitle: '位于智利麦哲伦大区，连接H2V、工业与全球贸易' },
-    { key: 'C', src: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/', title: '麦哲伦海峡：大西洋—太平洋战略通道', subtitle: '战略枢纽，促进贸易航线、物流与清洁能源出口' }
+    { key: 'B', src: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/', title: '卡波内格罗', subtitle: '智利南部的战略工业门户' },
+    { key: 'C', src: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/', title: '卡波内格罗', subtitle: '智利南部的战略工业门户' }
   ]
   const current = variants[variantIndex]
   const nextVariant = () => setVariantIndex((i) => (i + 1) % variants.length)

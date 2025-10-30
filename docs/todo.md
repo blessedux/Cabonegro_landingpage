@@ -54,14 +54,14 @@
 
 ### 🌍 Localization
 
-- [ ] Complete Chinese translation for all content
-- [ ] Review and improve all translations consistency
+- [x] Complete Chinese translation for all content
+- [x] Review and improve all translations consistency
 - [ ] Technical terminology consistency across languages
 
 ### 🎨 Design & UX
 
-- [ ] Hero alternative toggle button between versions
-- [ ] Fix logos on Partners component
+- [x] Hero alternative toggle button between versions
+- [x] Fix logos on Partners component
 - [ ] Complete Explore feature implementation
 
 ### 🎬 Animations
@@ -75,7 +75,7 @@
 - [ ] Implement "Regulatory Evolution" section (Plan Regulador 2024-2026)
 - [ ] Create "Investment & JV Strategy" section with timeline
 - [ ] Create "References & Validation" section with rotating logos cube
-- [ ] Enhance "Maritime Terminal Project" with 3D evolution animation
+- [x] Enhance "Maritime Terminal Project" with 3D evolution animation
 - [ ] Add bathymetry animation for port access areas
 - [ ] Complete 3D map with animated trade routes (Antarctica, Atlantic-Pacific, H₂V routes)
 
