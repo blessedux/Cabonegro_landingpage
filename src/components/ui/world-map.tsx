@@ -134,6 +134,12 @@ export function WorldMap({
           const baseMidY = Math.max(startPoint.y, endPoint.y) + 40;
           const midY = baseMidY + (dot.controlOffsetY || 0);
           const pathD = `M ${startPoint.x} ${startPoint.y} Q ${midX} ${midY} ${endPoint.x} ${endPoint.y}`;
+          // Identify connections involving CaboNegro bottom port (~ -85, -70)
+          const approxEqual = (a: number, b: number, eps: number = 0.5) => Math.abs(a - b) < eps;
+          const connectsCaboNegro = (
+            (approxEqual(dot.start.lat, -85) && approxEqual(dot.start.lng, -70)) ||
+            (approxEqual(dot.end.lat, -85) && approxEqual(dot.end.lng, -70))
+          );
           return (
             <g key={`path-group-${i}`}>
               <defs>
@@ -151,10 +157,14 @@ export function WorldMap({
                 strokeWidth="1"
                 strokeLinecap="round"
                 strokeDasharray={dashed ? "4 6" : undefined}
+                strokeOpacity={connectsCaboNegro ? 0.95 : 0.45}
                 initial={{ pathLength: 0 }}
-                whileInView={{ pathLength: 1 }}
+                whileInView={connectsCaboNegro ? { pathLength: 1 } : { pathLength: [0, 1, 0] }}
                 viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 1.1, delay: 0.7 * i, ease: "easeOut" }}
+                transition={connectsCaboNegro
+                  ? { duration: 1.1, delay: 0.7 * i, ease: "easeOut" }
+                  : { duration: 0.9, delay: 0.7 * i, ease: "easeInOut" }
+                }
                 key={`start-upper-${i}`}
               ></motion.path>
             </g>

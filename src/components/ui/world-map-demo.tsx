@@ -46,6 +46,11 @@ export function WorldMapDemo() {
           // CaboNegro bottom → West coast of Africa (Abidjan)
           { start: { lat: -85, lng: -70 }, end: { lat: 5.3453, lng: -4.0244 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 20 },
 
+          // CaboNegro bottom → China (multiple)
+          { start: { lat: -85, lng: -70 }, end: { lat: 31.2304, lng: 121.4737 }, startColor: '#0ea5e9', controlOffsetX: 30, controlOffsetY: -10 }, // Shanghai
+          { start: { lat: -85, lng: -70 }, end: { lat: 22.5431, lng: 114.0579 }, startColor: '#0ea5e9', controlOffsetX: 20, controlOffsetY: -5 },  // Shenzhen
+          { start: { lat: -85, lng: -70 }, end: { lat: 29.8683, lng: 121.5440 }, startColor: '#0ea5e9', controlOffsetX: 25, controlOffsetY: -8 },  // Ningbo
+
           // CaboNegro bottom → far left border (exiting map)
           { start: { lat: -85, lng: -70 }, end: { lat: -60, lng: -180 }, startColor: '#0ea5e9', controlOffsetX: -50, controlOffsetY: 20 },
 
