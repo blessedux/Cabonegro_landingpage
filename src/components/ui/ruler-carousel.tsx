@@ -7,6 +7,9 @@ import { Rewind, FastForward } from "lucide-react";
 export interface CarouselItem {
   id: string | number;
   title: string;
+  phaseTitle?: string;
+  description?: string;
+  date?: string;
 }
 
 // Create infinite items by triplicating the array
@@ -60,7 +63,7 @@ const RulerLines = ({
     );
   }
 
-      return <div className="relative w-full h-4 px-2 border-4 border-red-300">{lines}</div>;
+      return <div className="relative w-full h-4 px-2">{lines}</div>;
 };
 
 export function RulerCarousel({
@@ -164,14 +167,14 @@ export function RulerCarousel({
   const totalPages = itemsPerSet;
 
   return (
-    <div className="w-full h-[50vh] flex flex-col items-center justify-center bg-background dark:bg-black border-4 border-red-500">
-      <div className="w-full h-[100px] flex flex-col justify-center relative border-4 border-red-400">
-        <div className="flex items-center justify-center border-4 border-red-300">
+    <div className="w-full h-[60vh] flex flex-col items-center justify-between bg-background dark:bg-black py-8">
+      <div className="w-full h-[100px] flex flex-col justify-start relative mb-8">
+        <div className="flex items-center justify-center">
           <RulerLines top />
         </div>
-        <div className="flex items-center justify-center w-full h-full relative overflow-hidden border-4 border-red-300">
+        <div className="flex items-center justify-center w-full h-full relative overflow-hidden">
           <motion.div
-            className="flex items-center gap-[50px] border-4 border-red-200"
+            className="flex items-center gap-[50px]"
             animate={{
               x: isResetting ? targetX : targetX,
             }}
@@ -193,7 +196,7 @@ export function RulerCarousel({
                 <motion.button
                   key={item.id}
                   onClick={() => handleItemClick(index)}
-                      className={`text-2xl md:text-3xl font-bold whitespace-nowrap cursor-pointer flex items-center justify-center border-2 border-red-300 ${
+                      className={`text-lg md:text-xl font-bold whitespace-nowrap cursor-pointer flex items-center justify-center ${
                     isActive
                       ? "text-primary dark:text-white"
                       : "text-muted-foreground dark:text-gray-500 hover:text-foreground dark:hover:text-gray-400"
@@ -222,22 +225,45 @@ export function RulerCarousel({
           </motion.div>
         </div>
 
-        <div className="flex items-center justify-center border-4 border-red-300">
+        <div className="flex items-center justify-center">
           <RulerLines top={false} />
         </div>
       </div>
       
-      <div className="flex items-center justify-center gap-4 mt-5 border-4 border-red-300">
+      {/* Description Section */}
+      <div className="w-full max-w-4xl px-4">
+        <motion.div
+          key={activeIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
+          <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+            {infiniteItems[activeIndex]?.phaseTitle || infiniteItems[activeIndex]?.title}
+          </h3>
+          <p className="text-lg text-gray-300 leading-relaxed max-w-3xl mx-auto mb-4">
+            {infiniteItems[activeIndex]?.description}
+          </p>
+          {infiniteItems[activeIndex]?.date && (
+            <div className="text-xl font-semibold text-white">
+              {infiniteItems[activeIndex]?.date}
+            </div>
+          )}
+        </motion.div>
+      </div>
+      
+      <div className="flex items-center justify-center gap-4 mt-6">
         <button
           onClick={handlePrevious}
           disabled={isResetting}
-          className="flex items-center justify-center cursor-pointer border-2 border-red-300"
+          className="flex items-center justify-center cursor-pointer"
           aria-label="Previous item"
         >
           <Rewind className="w-5 h-5 text-primary/80" />
         </button>
 
-        <div className="flex items-center gap-2 border-2 border-red-200">
+        <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-muted-foreground dark:text-gray-400">
             {currentPage}
           </span>
@@ -252,11 +278,21 @@ export function RulerCarousel({
         <button
           onClick={handleNext}
           disabled={isResetting}
-          className="flex items-center justify-center cursor-pointer border-2 border-red-300"
+          className="flex items-center justify-center cursor-pointer"
           aria-label="Next item"
         >
           <FastForward className="w-5 h-5 text-primary/80" />
         </button>
+      </div>
+
+      {/* Square Wireframe Placeholder */}
+      <div className="w-full max-w-4xl px-4 mt-8">
+        <div className="w-full aspect-video max-w-md mx-auto border-2 border-dashed border-gray-400 dark:border-gray-600 rounded-lg flex items-center justify-center bg-gray-50 dark:bg-gray-900/50">
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            <div className="text-lg font-medium mb-2">Media Placeholder</div>
+            <div className="text-sm">Image/Video will go here</div>
+          </div>
+        </div>
       </div>
     </div>
   );

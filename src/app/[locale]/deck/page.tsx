@@ -35,10 +35,10 @@ function DeckPageContent() {
           
           <div className="h-full">
             <iframe 
-              src="https://gamma.app/embed/8uz4114rec81me0" 
+              src={locale === 'es' ? "https://gamma.app/embed/zm41xbb61dhw009" : "https://gamma.app/embed/8uz4114rec81me0"}
               style={{ width: '100%', height: '100%' }} 
               allow="fullscreen" 
-              title="Cabo Negro: Strategic Investment in Green Hydrogen & Global Trade"
+              title={locale === 'es' ? "Cabo Negro: Pitchdeck ES" : "Cabo Negro: Strategic Investment in Green Hydrogen & Global Trade"}
               className="border-0"
             />
           </div>

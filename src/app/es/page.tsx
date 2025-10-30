@@ -10,6 +10,7 @@ import { usePreloader } from '@/contexts/PreloaderContext'
 import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader-es'
 import Hero from '@/components/sections/Hero-es'
+import AboutUs from '@/components/sections/AboutUs'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats-es'
 import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
@@ -129,6 +130,7 @@ function HomeContent() {
         {/* Main Sections */}
         <main>
           <Hero />
+          <AboutUs />
           <Features />
           <Stats />
           <Partners />

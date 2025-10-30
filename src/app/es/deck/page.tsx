@@ -32,10 +32,10 @@ function DeckPageContentEs() {
           
           <div className="h-full">
             <iframe 
-              src="https://gamma.app/embed/8uz4114rec81me0" 
+              src="https://gamma.app/embed/zm41xbb61dhw009" 
               style={{ width: '100%', height: '100%' }} 
               allow="fullscreen" 
-              title="Cabo Negro: Inversión Estratégica en Hidrógeno Verde y Comercio Global"
+              title="Cabo Negro: Pitchdeck ES"
               className="border-0"
             />
           </div>
