@@ -6,11 +6,14 @@ import DottedMap from "dotted-map";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 
+interface RouteSpec {
+  start: { lat: number; lng: number; label?: string };
+  end: { lat: number; lng: number; label?: string };
+  color?: string; // optional per-route color
+}
+
 interface MapProps {
-  dots?: Array<{
-    start: { lat: number; lng: number; label?: string };
-    end: { lat: number; lng: number; label?: string };
-  }>;
+  dots?: Array<RouteSpec>;
   lineColor?: string;
   dashed?: boolean;
 }
@@ -63,14 +66,23 @@ export function WorldMap({
         className="w-full h-full absolute inset-0 pointer-events-none select-none"
       >
         {dots.map((dot, i) => {
+          const color = dot.color || lineColor
           const startPoint = projectPoint(dot.start.lat, dot.start.lng);
           const endPoint = projectPoint(dot.end.lat, dot.end.lng);
           return (
             <g key={`path-group-${i}`}>
+              <defs>
+                <linearGradient id={`path-gradient-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="white" stopOpacity="0" />
+                  <stop offset="5%" stopColor={color} stopOpacity="1" />
+                  <stop offset="95%" stopColor={color} stopOpacity="1" />
+                  <stop offset="100%" stopColor="white" stopOpacity="0" />
+                </linearGradient>
+              </defs>
               <motion.path
                 d={createCurvedPath(startPoint, endPoint)}
                 fill="none"
-                stroke="url(#path-gradient)"
+                stroke={`url(#path-gradient-${i})`}
                 strokeWidth="1"
                 strokeLinecap="round"
                 strokeDasharray={dashed ? "4 6" : undefined}
@@ -91,14 +103,7 @@ export function WorldMap({
           );
         })}
 
-        <defs>
-          <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="white" stopOpacity="0" />
-            <stop offset="5%" stopColor={lineColor} stopOpacity="1" />
-            <stop offset="95%" stopColor={lineColor} stopOpacity="1" />
-            <stop offset="100%" stopColor="white" stopOpacity="0" />
-          </linearGradient>
-        </defs>
+        
 
         {dots.map((dot, i) => (
           <g key={`points-group-${i}`}>
@@ -107,13 +112,13 @@ export function WorldMap({
                 cx={projectPoint(dot.start.lat, dot.start.lng).x}
                 cy={projectPoint(dot.start.lat, dot.start.lng).y}
                 r="2"
-                fill={lineColor}
+                fill={dot.color || lineColor}
               />
               <circle
                 cx={projectPoint(dot.start.lat, dot.start.lng).x}
                 cy={projectPoint(dot.start.lat, dot.start.lng).y}
                 r="2"
-                fill={lineColor}
+                fill={dot.color || lineColor}
                 opacity="0.5"
               >
                 <animate
@@ -139,13 +144,13 @@ export function WorldMap({
                 cx={projectPoint(dot.end.lat, dot.end.lng).x}
                 cy={projectPoint(dot.end.lat, dot.end.lng).y}
                 r="2"
-                fill={lineColor}
+                fill={dot.color || lineColor}
               />
               <circle
                 cx={projectPoint(dot.end.lat, dot.end.lng).x}
                 cy={projectPoint(dot.end.lat, dot.end.lng).y}
                 r="2"
-                fill={lineColor}
+                fill={dot.color || lineColor}
                 opacity="0.5"
               >
                 <animate
