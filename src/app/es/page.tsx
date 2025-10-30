@@ -134,9 +134,9 @@ function HomeContent() {
           <AboutUs />
           <Features />
           <Stats />
+          <CaboNegroRulerCarousel />
           <Partners />
           <WorldMapDemoEs />
-          <CaboNegroRulerCarousel />
           <FAQ />
         </main>
 

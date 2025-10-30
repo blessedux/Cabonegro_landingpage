@@ -17,7 +17,6 @@ import Stats from '@/components/sections/Stats'
 import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 import Partners from '@/components/sections/Partners'
 import { WorldMapDemoZh } from '@/components/ui/world-map-demo-zh'
-import { WorldMapDemo } from '@/components/ui/world-map-demo'
 import FAQZh from '@/components/sections/FAQ-zh'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
@@ -232,7 +231,6 @@ function HomeContent() {
             <CaboNegroRulerCarousel />
             <Partners />
             <WorldMapDemoZh />
-            <WorldMapDemo />
             <FAQZh />
           </main>
 
