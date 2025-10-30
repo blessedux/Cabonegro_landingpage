@@ -35,10 +35,8 @@ function AboutPage({ achievements = defaultAchievements }: AboutPageProps) {
           />
           <div className="grid gap-6 md:grid-cols-2 md:gap-12">
             <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white leading-snug">
-              The Lyra <span className="text-primary">ecosystem</span>{' '}
-              <span className="text-gray-500 dark:text-gray-400">
-                brings together our models, products, and platforms.
-              </span>
+              Cabo Negro: <span className="text-primary">the future energy hub</span>{' '}
+              <span className="text-gray-500 dark:text-gray-400">of the Global South.</span>
             </h1>
             <div className="space-y-6 text-muted-foreground">
               <p>
@@ -47,8 +45,8 @@ function AboutPage({ achievements = defaultAchievements }: AboutPageProps) {
                 Reach out and we’ll get back to you shortly.
               </p>
               <Button asChild variant="secondary" size="sm" className="gap-1 pr-1.5">
-                <Link href="mailto:realestate@cabonegro.com">
-                  <span>Contact Real Estate</span>
+                <Link href="https://wa.me/56993091951" target="_blank" rel="noopener noreferrer">
+                  <span>Chat on WhatsApp</span>
                   <ChevronRight className="size-4" />
                 </Link>
               </Button>

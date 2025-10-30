@@ -17,8 +17,8 @@ function AboutPage() {
           <Image className="rounded-xl object-cover w-full h-[240px] md:h-[460px]" src="https://pub-940ccf6255b54fa799a9b01050e6c227.r2.dev/ruixen_hero_gradient.jpg" alt="Hero section image" width={1200} height={600} priority />
           <div className="grid gap-6 md:grid-cols-2 md:gap-12">
             <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 dark:text-white leading-snug">
-              The Lyra <span className="text-primary">ecosystem</span>{' '}
-              <span className="text-gray-500 dark:text-gray-400">brings together our models, products, and platforms.</span>
+              Cabo Negro: <span className="text-primary">el futuro polo energético</span>{' '}
+              <span className="text-gray-500 dark:text-gray-400">del Sur Global.</span>
             </h1>
             <div className="space-y-6 text-muted-foreground">
               <p>
@@ -27,8 +27,8 @@ function AboutPage() {
                 servicios y plazos de desarrollo. Escríbenos y te contactamos a la brevedad.
               </p>
               <Button asChild variant="secondary" size="sm" className="gap-1 pr-1.5">
-                <Link href="mailto:realestate@cabonegro.com">
-                  <span>Contactar Inmobiliaria</span>
+                <Link href="https://wa.me/56993091951" target="_blank" rel="noopener noreferrer">
+                  <span>Chatear por WhatsApp</span>
                   <ChevronRight className="size-4" />
                 </Link>
               </Button>
