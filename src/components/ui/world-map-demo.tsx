@@ -34,15 +34,15 @@ export function WorldMapDemo() {
           dots={[
           // Americas
           // Valparaíso directly to CaboNegro bottom (left-tilted) - white path, blue port dot
-          { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: -85, lng: -70 }, endColor: '#0ea5e9', controlOffsetX: -40, controlOffsetY: 45 },
+          { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: -70.0, lng: -70.83 }, endColor: '#0ea5e9', controlOffsetX: -40, controlOffsetY: 45 },
           // Atlantic side (moved start further up/right in Brazil) → CaboNegro bottom (right-tilted) - white path, blue port dot
-          { start: { lat: -23.5505, lng: -46.6333 }, end: { lat: -85, lng: -70 }, endColor: '#0ea5e9', controlOffsetX: 60, controlOffsetY: 40 }, // São Paulo → CaboNegro bottom
+          { start: { lat: -23.5505, lng: -46.6333 }, end: { lat: -70.0, lng: -70.83 }, endColor: '#0ea5e9', controlOffsetX: 60, controlOffsetY: 40 }, // São Paulo → CaboNegro bottom
 
           // New route: Top of green vector (Valparaíso) → California coast (San Francisco)
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: 37.7749, lng: -122.4194 }, controlOffsetX: 80, controlOffsetY: -10 },
 
           // CaboNegro bottom → Southern California (near-straight upward arc)
-          { start: { lat: -85, lng: -70 }, end: { lat: 32.7157, lng: -117.1611 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 60 }, // CaboNegro bottom → San Diego
+          { start: { lat: -70.0, lng: -70.83 }, end: { lat: 32.7157, lng: -117.1611 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 60 }, // CaboNegro bottom → San Diego
           { start: { lat: -22.9519, lng: -43.2105 }, end: { lat: 25.7743, lng: -80.1937 } },   // Rio de Janeiro → Miami
           { start: { lat: 19.4326, lng: -99.1332 }, end: { lat: 34.0522, lng: -118.2437 } },  // Mexico City → Los Angeles
 
@@ -65,14 +65,18 @@ export function WorldMapDemo() {
           { start: { lat: -26.2041, lng: 28.0473 }, end: { lat: -20.1667, lng: 57.5 } },      // Johannesburg → Port Louis
 
           // CaboNegro bottom → West coast of Africa (Dakar)
-          { start: { lat: -85, lng: -70 }, end: { lat: 14.7167, lng: -17.4677 }, startColor: '#0ea5e9', controlOffsetX: -20, controlOffsetY: 30 },
+          { start: { lat: -70.0, lng: -70.83 }, end: { lat: 14.7167, lng: -17.4677 }, startColor: '#0ea5e9', controlOffsetX: -20, controlOffsetY: 30 },
           // CaboNegro bottom → West coast of Africa (Abidjan)
-          { start: { lat: -85, lng: -70 }, end: { lat: 5.3453, lng: -4.0244 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 20 },
+          { start: { lat: -70.0, lng: -70.83 }, end: { lat: 5.3453, lng: -4.0244 }, startColor: '#0ea5e9', controlOffsetX: -10, controlOffsetY: 20 },
+          // CaboNegro bottom → Center of Africa (Nigeria/Cameroon region)
+          { start: { lat: -70.0, lng: -70.83 }, end: { lat: 7.3697, lng: 9.1244 }, startColor: '#0ea5e9', controlOffsetX: -15, controlOffsetY: 25 },
+          // CaboNegro bottom → Center of Europe (Central Europe - Germany/Switzerland region)
+          { start: { lat: -70.0, lng: -70.83 }, end: { lat: 50.1109, lng: 8.6821 }, startColor: '#0ea5e9', controlOffsetX: -5, controlOffsetY: 35 },
 
           // CaboNegro bottom → China routes removed to avoid right-side vectors
 
           // CaboNegro bottom → far left border (exiting map)
-          { start: { lat: -85, lng: -70 }, end: { lat: -60, lng: -180 }, startColor: '#0ea5e9', controlOffsetX: -50, controlOffsetY: 20 },
+          { start: { lat: -70.0, lng: -70.83 }, end: { lat: -60, lng: -180 }, startColor: '#0ea5e9', controlOffsetX: -50, controlOffsetY: 20 },
 
           // From far left border → China (Shanghai) to route via left side of map
           { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },

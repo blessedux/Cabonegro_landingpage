@@ -201,20 +201,6 @@ export default function Stats() {
             </div>
           </div>
 
-          {/* Summary Card */}
-          <div className="p-6 bg-gradient-to-br from-blue-500/20 to-green-500/20 backdrop-blur-md rounded-xl border border-white/30 shadow-xl">
-            <h3 className="text-white font-bold text-lg mb-3">Development Overview</h3>
-            <div className="space-y-3">
-              <div>
-                <p className="text-2xl font-bold text-white mb-1">5+</p>
-                <p className="text-gray-300 text-xs">Major development companies</p>
-              </div>
-              <div className="pt-2 border-t border-white/20">
-                <p className="text-gray-300 text-sm">Integrated industrial & maritime zone</p>
-                <p className="text-gray-400 text-xs mt-1">Strategic investment opportunities</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>
