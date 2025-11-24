@@ -3,22 +3,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { NextIntlClientProvider } from 'next-intl'
-import { PreloaderProvider } from '@/contexts/PreloaderContext'
-import { AnimationProvider } from '@/contexts/AnimationContext'
-import { CookieBannerProvider } from '@/contexts/CookieBannerContext'
-import { ThemeProvider } from 'next-themes'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader-es'
 import Hero from '@/components/sections/Hero-es'
 import AboutUs from '@/components/sections/AboutUs'
-import Features from '@/components/sections/Features'
-import Stats from '@/components/sections/Stats-es'
-import Projects from '@/components/sections/Projects-es'
+import Stats from '@/components/sections/Stats'
 import Partners from '@/components/sections/Partners-es'
 import { WorldMapDemoEs } from '@/components/ui/world-map-demo-es'
+import Press from '@/components/sections/Press'
 import FAQ from '@/components/sections/FAQ-es'
-import Footer from '@/components/sections/Footer-es'
+import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar-es'
 import CookieBanner from '@/components/sections/CookieBanner'
 
@@ -178,21 +173,21 @@ function HomeContent() {
         <div 
           ref={contentRef}
           className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : ''}`}
-          style={{ opacity: 0 }} // Start invisible, GSAP handles animation
+          style={{ opacity: 0, pointerEvents: 'auto' }} // Start invisible, GSAP handles animation
         >
-        {/* Navigation */}
-        <Navbar />
+          {/* Navigation */}
+          <Navbar />
         
-        {/* Main Sections */}
-        <main>
-          <Hero />
-          <AboutUs />
-          <Stats />
-          <Features />
-          <Partners />
-          <WorldMapDemoEs />
-          <FAQ />
-        </main>
+          {/* Main Sections */}
+          <main style={{ pointerEvents: 'auto' }}>
+            <Hero />
+            <AboutUs />
+            <Stats />
+            <Partners />
+            <WorldMapDemoEs />
+            <Press />
+            <FAQ />
+          </main>
 
         {/* Footer */}
         <Footer />

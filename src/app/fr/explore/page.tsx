@@ -4,19 +4,19 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 
-export default function ChineseExplore() {
+export default function ExplorePage() {
   const router = useRouter()
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center relative">
       {/* Back Button - Top Left */}
       <button
-        onClick={() => router.push('/zh')}
+        onClick={() => router.push('/fr')}
         className="absolute top-6 left-6 flex items-center gap-2 text-black hover:text-gray-700 transition-colors z-10"
-        aria-label="返回首页"
+        aria-label="Retour à l'accueil"
       >
         <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">返回</span>
+        <span className="text-sm font-medium">Retour</span>
       </button>
 
       {/* Centered Content */}
@@ -35,9 +35,10 @@ export default function ChineseExplore() {
 
         {/* Under Construction Text */}
         <h2 className="text-2xl md:text-3xl font-semibold text-black">
-          建设中
+          En Construction
         </h2>
       </div>
     </div>
   )
 }
+

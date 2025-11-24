@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ChevronDown } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 
@@ -13,7 +13,9 @@ export default function NavbarEs() {
   const [isVisible, setIsVisible] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
   const [isOverWhiteBackground, setIsOverWhiteBackground] = useState(false)
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const navbarRef = useRef<HTMLElement>(null)
+  const languageDropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
   const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
@@ -52,14 +54,34 @@ export default function NavbarEs() {
     }
   }, [])
 
+  // Close language dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
+        setLanguageDropdownOpen(false)
+      }
+    }
+
+    if (languageDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [languageDropdownOpen])
+
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Español', flag: '🇨🇱' },
-    { code: 'zh', name: '中文', flag: '🇨🇳' }
+    { code: 'zh', name: '中文', flag: '🇨🇳' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' }
   ]
 
   // Determine current language from pathname
-  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/en') ? 'en' : 'es'
+  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : pathname.startsWith('/en') ? 'en' : 'es'
+  
+  const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
@@ -91,7 +113,7 @@ export default function NavbarEs() {
                            pathname.includes('/contact')
     
     // Check if we're on homepage (or root)
-    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh'
+    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
     
     // If switching language on special page, show PreloaderB
     if (isOnSpecialPage) {
@@ -104,6 +126,8 @@ export default function NavbarEs() {
       pathWithoutLocale = pathname.substring(3) // Remove '/es'
     } else if (pathname.startsWith('/zh')) {
       pathWithoutLocale = pathname.substring(3) // Remove '/zh'
+    } else if (pathname.startsWith('/fr')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/fr'
     } else if (pathname.startsWith('/en')) {
       pathWithoutLocale = pathname.substring(3) // Remove '/en'
     }
@@ -138,6 +162,9 @@ export default function NavbarEs() {
         router.push(targetPath)
       } else if (newLocale === 'zh') {
         const targetPath = '/zh' + pathWithoutLocale
+        router.push(targetPath)
+      } else if (newLocale === 'fr') {
+        const targetPath = '/fr' + pathWithoutLocale
         router.push(targetPath)
       }
     }, delay)
@@ -251,40 +278,69 @@ export default function NavbarEs() {
                 FAQ
               </button>
               
-              {/* Language Toggle */}
-              <div className="flex items-center gap-2">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => handleLanguageChange(lang.code)}
-                    className={`text-xs px-2 py-1 rounded transition-colors ${
-                      currentLocale === lang.code
-                        ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-white/20 border border-white/30'}`
-                        : `${textColor} ${hoverColor}`
-                    }`}
-                  >
-                    {lang.code.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-
-              <Link href="/es/contact">
-                <Button 
-                  variant="outline" 
-                  className={`uppercase transition-all duration-300 ${
+              {/* Language Dropdown */}
+              <div className="relative" ref={languageDropdownRef}>
+                <button
+                  onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                  className={`flex items-center gap-2 text-xs px-3 py-2 rounded transition-colors ${
                     isOverWhiteBackground 
-                      ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
-                      : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
+                      ? 'text-black bg-white/80 border border-black/20 hover:bg-white' 
+                      : 'text-white bg-white/5 border border-white/20 hover:bg-white/10'
                   }`}
                 >
-                  Contacto
-                </Button>
-              </Link>
+                  <span>{currentLanguage.code.toUpperCase()}</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${languageDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {languageDropdownOpen && (
+                  <div className={`absolute top-full right-0 mt-2 min-w-[120px] rounded-lg shadow-lg z-50 ${
+                    isOverWhiteBackground 
+                      ? 'bg-white border border-black/20' 
+                      : 'bg-black/90 border border-white/20'
+                  }`}>
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          handleLanguageChange(lang.code)
+                          setLanguageDropdownOpen(false)
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
+                          currentLocale === lang.code
+                            ? isOverWhiteBackground 
+                              ? 'bg-accent text-black' 
+                              : 'bg-accent text-white'
+                            : isOverWhiteBackground
+                              ? 'text-black hover:bg-gray-100'
+                              : 'text-white hover:bg-white/10'
+                        } ${lang.code === languages[0]?.code ? 'rounded-t-lg' : ''} ${lang.code === languages[languages.length - 1]?.code ? 'rounded-b-lg' : ''}`}
+                      >
+                        <span>{lang.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Button 
+                variant="outline" 
+                className={`uppercase transition-all duration-300 ${
+                  isOverWhiteBackground 
+                    ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
+                    : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
+                }`}
+                onClick={() => {
+                  showPreloaderB()
+                  setTimeout(() => router.push('/es/contact'), 100)
+                }}
+              >
+                Contacto
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className={`md:hidden p-2 rounded-lg transition-colors ${textColor} ${isOverWhiteBackground ? 'hover:bg-black/10' : 'hover:bg-white/10'}`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -299,7 +355,7 @@ export default function NavbarEs() {
           <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
           }`}>
-            <div className="px-6 pb-6 border-t border-white/10">
+            <div className="px-6 pb-6 border-t border-white/20">
               <div className="flex flex-col gap-4 pt-4">
                 <button 
                   onClick={() => {
@@ -334,7 +390,7 @@ export default function NavbarEs() {
                       onClick={() => handleLanguageChange(lang.code)}
                       className={`text-xs px-2 py-1 rounded transition-colors ${
                         currentLocale === lang.code
-                          ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-white/20 border border-white/30'}`
+                          ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-accent border border-accent'}`
                           : `${textColor} ${hoverColor}`
                       }`}
                     >
@@ -343,19 +399,21 @@ export default function NavbarEs() {
                   ))}
                 </div>
 
-                <Link href="/es/contact" className="w-full mt-2">
-                  <Button
-                    variant="outline"
-                    className={`uppercase transition-all duration-300 w-full ${
-                      isOverWhiteBackground 
-                        ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
-                        : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Contáctanos
-                  </Button>
-                </Link>
+                <Button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    showPreloaderB()
+                    setTimeout(() => router.push('/es/contact'), 100)
+                  }}
+                  variant="outline"
+                  className={`uppercase transition-all duration-300 w-full mt-2 ${
+                    isOverWhiteBackground 
+                      ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
+                      : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
+                  }`}
+                >
+                  Contáctanos
+                </Button>
               </div>
             </div>
           </div>

@@ -23,37 +23,105 @@ const partnerLogos = [
 export default function PartnersEs() {
   const t = useTranslations('partners')
   const partnersRef = useRef(null)
+  const triggerRef = useRef<HTMLDivElement>(null)
+  
+  // Track scroll progress - Partners starts later, after Stats
   const { scrollYProgress } = useScroll({
-    target: partnersRef,
+    target: triggerRef,
     offset: ["start end", "end start"]
   })
 
-  const titleY = useTransform(scrollYProgress, [0, 1], [50, -50])
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0])
-  const descriptionY = useTransform(scrollYProgress, [0, 1], [30, -30])
-  const descriptionOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+  // Delay the start of animations - only start when scroll progress reaches 0.6
+  // This makes Partners start later in the scroll, allowing more Stats content to be visible
+  const adjustedProgress = useTransform(scrollYProgress, [0.6, 1], [0, 1])
+  
+  const titleY = useTransform(adjustedProgress, [0, 1], [50, -50])
+  const titleOpacity = useTransform(adjustedProgress, [0, 0.3, 1], [0, 1, 1])
+  const descriptionY = useTransform(adjustedProgress, [0, 1], [30, -30])
+  const descriptionOpacity = useTransform(adjustedProgress, [0, 0.2, 1], [0, 1, 1])
+  
+  // Shadow intensity - static, no parallax movement
+  const shadowOpacity = useTransform(adjustedProgress, [0, 0.3, 0.7, 1], [0.3, 0.6, 0.8, 0.5])
 
   return (
-    <section ref={partnersRef} className="py-20 px-3 md:px-6 relative overflow-hidden bg-black">
-      <div className="container mx-auto relative z-10">
-        <div className="text-center mb-16">
-          <motion.div
-            style={{ y: titleY, opacity: titleOpacity }}
-            className="mb-4"
-          >
-            <GradientHeading variant="secondary" size="lg">
+    <>
+      {/* Trigger element for scroll tracking - positioned before section */}
+      <div ref={triggerRef} className="h-0" />
+      <motion.section 
+        ref={partnersRef} 
+        data-partners-section="true"
+        data-white-background="true"
+        className="pt-20 pb-20 px-3 md:px-6 relative overflow-visible bg-white rounded-t-[3rem] md:rounded-t-[4rem] -mt-8 relative z-10"
+      >
+      {/* Enhanced shadow that moves with parallax - creates depth as it slides */}
+      <motion.div
+        className="absolute -top-12 left-0 right-0 h-16 z-0 pointer-events-none"
+        style={{ 
+          opacity: shadowOpacity,
+          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1), transparent)',
+          filter: 'blur(20px)',
+          transform: 'translateY(-50%)'
+        }}
+      />
+      {/* Additional shadow layer for more depth */}
+      <motion.div
+        className="absolute -top-8 left-0 right-0 h-12 z-0 pointer-events-none"
+        style={{ 
+          opacity: shadowOpacity,
+          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.15), transparent)',
+          filter: 'blur(15px)'
+        }}
+      />
+      
+      {/* Parallax background layer */}
+      <div className="absolute inset-0 z-0 overflow-hidden rounded-t-[3rem] md:rounded-t-[4rem]">
+        {/* Animated Edge Glows - light mode with accent blue */}
+        <motion.div
+          className="absolute inset-0 z-0"
+          initial={{ x: 0, y: 0, opacity: 1 }}
+          animate={{ x: [0, 8, 0], y: [0, -6, 0] }}
+          transition={{ duration: 16, ease: "easeInOut", repeat: Infinity }}
+          style={{
+            backgroundImage: `radial-gradient(circle 700px at 18% 15%, rgba(54, 95, 148, 0.08), transparent 62%)`,
+          }}
+        />
+        <motion.div
+          className="absolute inset-0 z-0"
+          initial={{ x: 0, y: 0, opacity: 1 }}
+          animate={{ x: [0, -10, 0], y: [0, 8, 0] }}
+          transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
+          style={{
+            backgroundImage: `radial-gradient(circle 800px at 82% 85%, rgba(54, 95, 148, 0.06), transparent 68%)`,
+          }}
+        />
+
+        {/* Subtle textured wall behind lit areas */}
+        <div
+          className="absolute inset-0 z-0 opacity-20"
+          style={{
+            backgroundImage: `
+              repeating-linear-gradient(0deg, rgba(54, 95, 148, 0.02) 0px, rgba(54, 95, 148, 0.02) 2px, transparent 2px, transparent 4px),
+              repeating-linear-gradient(90deg, rgba(54, 95, 148, 0.015) 0px, rgba(54, 95, 148, 0.015) 2px, transparent 2px, transparent 4px)
+            `,
+          }}
+        />
+      </div>
+
+      <div 
+        className="container mx-auto relative z-10"
+      >
+        <div className="text-center mb-8">
+          <div className="mb-2">
+            <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black tracking-tight pb-2">
               {t('title')}
-            </GradientHeading>
-          </motion.div>
+            </h3>
+          </div>
           
-          <motion.div
-            style={{ y: titleY, opacity: titleOpacity }}
-            className="mb-8"
-          >
-            <GradientHeading size="xl">
+          <div className="mb-4">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black tracking-tight pb-2">
               {t('subtitle')}
-            </GradientHeading>
-          </motion.div>
+            </h2>
+          </div>
           
           <motion.div
             style={{ y: descriptionY, opacity: descriptionOpacity }}
@@ -61,15 +129,16 @@ export default function PartnersEs() {
           >
             <MagicText 
               text={t('description')}
-              className="text-gray-400 text-lg"
+              className="text-gray-600 text-lg"
             />
           </motion.div>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-0">
           <LogoCarousel columnCount={3} logos={partnerLogos} />
         </div>
       </div>
-    </section>
+    </motion.section>
+    </>
   )
 }
