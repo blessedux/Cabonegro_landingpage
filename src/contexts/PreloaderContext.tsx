@@ -24,15 +24,32 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const [hasSeenPreloader, setHasSeenPreloader] = useState(false)
   const [isPreloaderBVisible, setIsPreloaderBVisible] = useState(false)
 
-  // Check if user has seen preloader before on mount
+  // Check if user has seen preloader before and if assets are cached
   useEffect(() => {
     const hasSeenBefore = localStorage.getItem('cabonegro-preloader-seen')
-    if (hasSeenBefore === 'true') {
+    const assetsCached = localStorage.getItem('cabonegro-assets-cached')
+    
+    // Check if critical assets are likely cached by checking if fonts are loaded
+    const checkAssetsCached = () => {
+      if (typeof window !== 'undefined' && document.fonts && document.fonts.ready) {
+        return document.fonts.check('1em Inter') || assetsCached === 'true'
+      }
+      return assetsCached === 'true'
+    }
+
+    if (hasSeenBefore === 'true' && checkAssetsCached()) {
+      // User has seen preloader and assets are cached - skip preloader
       setHasSeenPreloader(true)
       setIsPreloaderVisible(false)
       setIsPreloaderComplete(true)
-    } else {
+    } else if (!hasSeenBefore) {
+      // First visit - show preloader to load assets
       setIsPreloaderVisible(true)
+    } else {
+      // Has seen before but assets might not be cached - show briefly or skip
+      setHasSeenPreloader(true)
+      setIsPreloaderVisible(false)
+      setIsPreloaderComplete(true)
     }
   }, [])
 
@@ -48,8 +65,9 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const completePreloader = () => {
     setIsPreloaderComplete(true)
     setHasSeenPreloader(true)
-    // Store in localStorage that user has seen preloader
+    // Store in localStorage that user has seen preloader and assets are cached
     localStorage.setItem('cabonegro-preloader-seen', 'true')
+    localStorage.setItem('cabonegro-assets-cached', 'true')
     // Auto-hide after completion
     setTimeout(() => {
       setIsPreloaderVisible(false)

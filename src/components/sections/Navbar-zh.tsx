@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -12,10 +12,45 @@ export default function NavbarZh() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
+  const [isOverWhiteBackground, setIsOverWhiteBackground] = useState(false)
+  const navbarRef = useRef<HTMLElement>(null)
   const router = useRouter()
   const pathname = usePathname()
   const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
   const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+
+  // Detect when navbar is over white background sections
+  useEffect(() => {
+    const checkBackground = () => {
+      if (!navbarRef.current) return
+      
+      const navbarRect = navbarRef.current.getBoundingClientRect()
+      const navbarCenterY = navbarRect.top + navbarRect.height / 2
+      
+      // Check if navbar center is over white background sections
+      const whiteSections = document.querySelectorAll('[data-white-background="true"]')
+      let isOverWhite = false
+      
+      whiteSections.forEach((section) => {
+        const rect = section.getBoundingClientRect()
+        if (navbarCenterY >= rect.top && navbarCenterY <= rect.bottom) {
+          isOverWhite = true
+        }
+      })
+      
+      setIsOverWhiteBackground(isOverWhite)
+    }
+    
+    // Check on scroll and resize
+    window.addEventListener('scroll', checkBackground)
+    window.addEventListener('resize', checkBackground)
+    checkBackground() // Initial check
+    
+    return () => {
+      window.removeEventListener('scroll', checkBackground)
+      window.removeEventListener('resize', checkBackground)
+    }
+  }, [])
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -160,12 +195,25 @@ export default function NavbarZh() {
     }, 100)
   }
 
+  const textColor = isOverWhiteBackground ? 'text-black' : 'text-white'
+  const hoverColor = isOverWhiteBackground ? 'hover:text-gray-700' : 'hover:text-gray-300'
+  const borderColor = isOverWhiteBackground ? 'border-black/20' : 'border-white/20'
+  const bgColor = isOverWhiteBackground ? 'bg-white/80' : 'bg-white/5'
+
   return (
-    <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100'
-    }`}>
+    <header 
+      ref={navbarRef}
+      className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
+        pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact')
+          ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
+          : (isNavbarHidden || isPreloaderVisible
+              ? '-translate-y-full opacity-0' 
+              : isVisible 
+                ? 'top-0 translate-y-0 opacity-100' 
+                : '-translate-y-full opacity-0')
+      }`}>
       <nav className="container mx-auto">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg">
+        <div className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
               <Link 
@@ -176,7 +224,11 @@ export default function NavbarZh() {
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-11 w-auto hover:opacity-80 transition-opacity"
+                  className="h-11 w-auto hover:opacity-80 transition-all duration-300"
+                  style={{
+                    filter: isOverWhiteBackground ? 'brightness(0)' : 'brightness(1)',
+                    transition: 'filter 0.3s ease-in-out'
+                  }}
                 />
               </Link>
             </div>
@@ -185,14 +237,14 @@ export default function NavbarZh() {
             <div className="hidden md:flex items-center gap-8">
               <button 
                 onClick={handleExploreTerrain}
-                className="text-sm hover:text-gray-300 transition-colors uppercase"
+                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
                 探索地形
               </button>
-              <Link href="/zh/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">查看甲板</Link>
+              <Link href="/zh/deck" className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}>查看甲板</Link>
               <button 
                 onClick={handleFAQClick}
-                className="text-sm hover:text-gray-300 transition-colors uppercase"
+                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
                 常见问题
               </button>
@@ -208,8 +260,8 @@ export default function NavbarZh() {
                     }}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
                       currentLocale === lang.code
-                        ? 'text-white bg-white/20 border border-white/30'
-                        : 'text-white hover:text-gray-300'
+                        ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-white/20 border border-white/30'}`
+                        : `${textColor} ${hoverColor}`
                     }`}
                   >
                     {lang.code.toUpperCase()}
@@ -218,7 +270,14 @@ export default function NavbarZh() {
               </div>
 
               <Link href="/zh/contact">
-                <Button variant="outline" className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300">
+                <Button 
+                  variant="outline" 
+                  className={`uppercase transition-all duration-300 ${
+                    isOverWhiteBackground 
+                      ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
+                      : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
+                  }`}
+                >
                   联系我们
                 </Button>
               </Link>
@@ -248,27 +307,27 @@ export default function NavbarZh() {
                     setMobileMenuOpen(false)
                     handleExploreTerrain()
                   }}
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
                   探索地形
                 </button>
                 <Link 
                   href="/zh/deck" 
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 ${textColor}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   查看甲板
                 </Link>
                 <button 
                   onClick={handleFAQClick}
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
                   常见问题
                 </button>
                 
                 {/* Mobile Language Toggle */}
                 <div className="flex items-center gap-2 py-2">
-                  <span className="text-sm text-gray-400 uppercase">语言:</span>
+                  <span className={`text-sm uppercase ${isOverWhiteBackground ? 'text-black/80' : 'text-white/80'}`}>语言:</span>
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
@@ -278,8 +337,8 @@ export default function NavbarZh() {
                       }}
                       className={`text-xs px-2 py-1 rounded transition-colors ${
                         currentLocale === lang.code
-                          ? 'text-white bg-white/20 border border-white/30'
-                          : 'text-white hover:text-gray-300'
+                          ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-white/20 border border-white/30'}`
+                          : `${textColor} ${hoverColor}`
                       }`}
                     >
                       {lang.code.toUpperCase()}
@@ -290,7 +349,11 @@ export default function NavbarZh() {
                 <Link href="/zh/contact" className="w-full mt-2">
                   <Button
                     variant="outline"
-                    className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300 w-full"
+                    className={`uppercase transition-all duration-300 w-full ${
+                      isOverWhiteBackground 
+                        ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
+                        : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     联系我们

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -12,10 +12,45 @@ export default function NavbarEs() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [isHidden, setIsHidden] = useState(false)
+  const [isOverWhiteBackground, setIsOverWhiteBackground] = useState(false)
+  const navbarRef = useRef<HTMLElement>(null)
   const router = useRouter()
   const pathname = usePathname()
   const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
   const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+
+  // Detect when navbar is over white background sections
+  useEffect(() => {
+    const checkBackground = () => {
+      if (!navbarRef.current) return
+      
+      const navbarRect = navbarRef.current.getBoundingClientRect()
+      const navbarCenterY = navbarRect.top + navbarRect.height / 2
+      
+      // Check if navbar center is over white background sections
+      const whiteSections = document.querySelectorAll('[data-white-background="true"]')
+      let isOverWhite = false
+      
+      whiteSections.forEach((section) => {
+        const rect = section.getBoundingClientRect()
+        if (navbarCenterY >= rect.top && navbarCenterY <= rect.bottom) {
+          isOverWhite = true
+        }
+      })
+      
+      setIsOverWhiteBackground(isOverWhite)
+    }
+    
+    // Check on scroll and resize
+    window.addEventListener('scroll', checkBackground)
+    window.addEventListener('resize', checkBackground)
+    checkBackground() // Initial check
+    
+    return () => {
+      window.removeEventListener('scroll', checkBackground)
+      window.removeEventListener('resize', checkBackground)
+    }
+  }, [])
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -161,8 +196,15 @@ export default function NavbarEs() {
     }, 100)
   }
 
+  const textColor = isOverWhiteBackground ? 'text-black' : 'text-white'
+  const hoverColor = isOverWhiteBackground ? 'hover:text-gray-700' : 'hover:text-gray-300'
+  const borderColor = isOverWhiteBackground ? 'border-black/20' : 'border-white/20'
+  const bgColor = isOverWhiteBackground ? 'bg-white/80' : 'bg-white/5'
+
   return (
-    <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
+    <header 
+      ref={navbarRef}
+      className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
       // For deck and explore routes, only hide if navbar is explicitly hidden
       pathname.includes('/deck') || pathname.includes('/explore')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
@@ -173,7 +215,7 @@ export default function NavbarEs() {
               : '-translate-y-full opacity-0')
     }`}>
       <nav className="container mx-auto">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg">
+        <div className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
               <Link 
@@ -184,7 +226,11 @@ export default function NavbarEs() {
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-12 w-auto hover:opacity-80 transition-opacity"
+                  className="h-12 w-auto hover:opacity-80 transition-all duration-300"
+                  style={{
+                    filter: isOverWhiteBackground ? 'brightness(0)' : 'brightness(1)',
+                    transition: 'filter 0.3s ease-in-out'
+                  }}
                 />
               </Link>
             </div>
@@ -193,14 +239,14 @@ export default function NavbarEs() {
             <div className="hidden md:flex items-center gap-8">
               <button 
                 onClick={handleExploreTerrain}
-                className="text-sm hover:text-gray-300 transition-colors uppercase"
+                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
                 Explorar Terreno
               </button>
-              <Link href="/es/deck" className="text-sm hover:text-gray-300 transition-colors uppercase">Ver Deck</Link>
+              <Link href="/es/deck" className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}>Ver Deck</Link>
               <button 
                 onClick={handleFAQClick}
-                className="text-sm hover:text-gray-300 transition-colors uppercase"
+                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
                 FAQ
               </button>
@@ -213,8 +259,8 @@ export default function NavbarEs() {
                     onClick={() => handleLanguageChange(lang.code)}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
                       currentLocale === lang.code
-                        ? 'text-white bg-white/20 border border-white/30'
-                        : 'text-white hover:text-gray-300'
+                        ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-white/20 border border-white/30'}`
+                        : `${textColor} ${hoverColor}`
                     }`}
                   >
                     {lang.code.toUpperCase()}
@@ -223,7 +269,14 @@ export default function NavbarEs() {
               </div>
 
               <Link href="/es/contact">
-                <Button variant="outline" className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300">
+                <Button 
+                  variant="outline" 
+                  className={`uppercase transition-all duration-300 ${
+                    isOverWhiteBackground 
+                      ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
+                      : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
+                  }`}
+                >
                   Contacto
                 </Button>
               </Link>
@@ -253,20 +306,20 @@ export default function NavbarEs() {
                     setMobileMenuOpen(false)
                     handleExploreTerrain()
                   }}
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2 text-left"
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
                   Explorar Terreno
                 </button>
                 <Link 
                   href="/es/deck" 
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 ${textColor}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Ver Deck
                 </Link>
                 <a 
                   href="#FAQ" 
-                  className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 ${textColor}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   FAQ
@@ -274,15 +327,15 @@ export default function NavbarEs() {
                 
                 {/* Mobile Language Toggle */}
                 <div className="flex items-center gap-2 py-2">
-                  <span className="text-sm text-gray-400 uppercase">Idioma:</span>
+                  <span className={`text-sm uppercase ${isOverWhiteBackground ? 'text-black/80' : 'text-white/80'}`}>Idioma:</span>
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
                       onClick={() => handleLanguageChange(lang.code)}
                       className={`text-xs px-2 py-1 rounded transition-colors ${
                         currentLocale === lang.code
-                          ? 'text-white bg-white/20 border border-white/30'
-                          : 'text-white hover:text-gray-300'
+                          ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-white/20 border border-white/30'}`
+                          : `${textColor} ${hoverColor}`
                       }`}
                     >
                       {lang.code.toUpperCase()}
@@ -293,7 +346,11 @@ export default function NavbarEs() {
                 <Link href="/es/contact" className="w-full mt-2">
                   <Button
                     variant="outline"
-                    className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300 w-full"
+                    className={`uppercase transition-all duration-300 w-full ${
+                      isOverWhiteBackground 
+                        ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
+                        : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Contáctanos

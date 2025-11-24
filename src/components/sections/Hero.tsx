@@ -5,7 +5,7 @@ import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 
 export default function Hero() {
   const router = useRouter()
@@ -16,15 +16,22 @@ export default function Hero() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   
-  // Track scroll progress from the start of the page
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  })
+  // Track overall page scroll progress (not section-specific)
+  // This ensures fade-out happens at the correct overall page scroll percentage
+  const { scrollYProgress } = useScroll()
 
-  // Hero content fades out as user scrolls (starts fading at 0.2, fully faded at 0.6)
-  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.2, 0.6], [1, 1, 0])
-  const heroContentY = useTransform(scrollYProgress, [0, 0.2, 0.6], [0, 0, -30])
+  // Hero content stays visible until 2% of overall page scroll, then fades out smoothly from 2% to 4%
+  // Smooth fade window of 2% for gradual transition
+  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.02, 0.04], [1, 1, 0])
+  const heroContentY = useTransform(scrollYProgress, [0, 0.02, 0.04], [0, 0, -20])
+  
+  // Track opacity to conditionally enable pointer events
+  const [shouldBlockPointer, setShouldBlockPointer] = useState(true)
+  
+  useMotionValueEvent(heroContentOpacity, "change", (latest) => {
+    // Only enable pointer events when opacity is above 0.1 (visible enough)
+    setShouldBlockPointer(latest > 0.1)
+  })
   
   // Video stays visible - no fade out. Stats background will cover it as it fades in
   
@@ -80,11 +87,14 @@ export default function Hero() {
       className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[5]"
       style={{
         backgroundColor: 'transparent',
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        height: '100vh',
+        maxHeight: '100vh',
+        width: '100vw'
       }}
     >
       {/* Background Video - stays visible until Stats background covers it */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
         <video
           ref={videoRef}
           autoPlay
@@ -94,8 +104,10 @@ export default function Hero() {
           className="absolute inset-0 w-full h-full object-cover object-center"
           style={{
             opacity: 1,
-            filter: 'brightness(1) contrast(1)',
-            mixBlendMode: 'normal'
+            filter: 'brightness(1) contrast(1) saturate(1)',
+            mixBlendMode: 'normal',
+            zIndex: 0,
+            willChange: 'auto'
           }}
         >
           <source 
@@ -112,14 +124,29 @@ export default function Hero() {
         style={{ 
           opacity: heroContentOpacity,
           y: heroContentY,
-          pointerEvents: 'auto',
+          pointerEvents: shouldBlockPointer ? 'auto' : 'none',
           willChange: 'opacity, transform'
         }}
       >
-        <div className="max-w-4xl w-full px-6 lg:px-12 relative z-[30]" style={{ pointerEvents: 'auto' }}>
+        <div 
+          className="max-w-4xl w-full px-6 lg:px-12 relative z-[30] text-white" 
+          style={{ 
+            pointerEvents: 'auto',
+            filter: 'brightness(1)',
+            color: '#ffffff',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}
+        >
           <motion.h1 
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none"
-            style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none text-white"
+            style={{ 
+              userSelect: 'none', 
+              WebkitUserSelect: 'none', 
+              MozUserSelect: 'none', 
+              msUserSelect: 'none',
+              color: '#ffffff',
+              textShadow: '0 0 0 rgba(255,255,255,1)'
+            }}
             initial={{ opacity: 0, y: 30 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ 
@@ -132,12 +159,19 @@ export default function Hero() {
               text={title}
               fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
               textColor="text-white"
-              animationDelay={0} // Start immediately with the h1 fade-in
+              animationDelay={0}
             />
           </motion.h1>
           <motion.p 
             className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none"
-            style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+            style={{ 
+              userSelect: 'none', 
+              WebkitUserSelect: 'none', 
+              MozUserSelect: 'none', 
+              msUserSelect: 'none',
+              color: '#ffffff',
+              textShadow: '0 0 0 rgba(255,255,255,1)'
+            }}
             initial={{ opacity: 0, y: 20 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ 
@@ -162,7 +196,7 @@ export default function Hero() {
             <Button 
               size="lg" 
               variant="outline" 
-              className="uppercase border-accent text-accent hover:bg-accent hover:text-white select-none relative z-[50] cursor-pointer"
+              className="uppercase border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white select-none relative z-[50] cursor-pointer"
               onClick={handleExploreTerrain}
               style={{ 
                 userSelect: 'none', 
@@ -180,7 +214,7 @@ export default function Hero() {
             <Button 
               size="lg" 
               variant="outline" 
-              className="uppercase border-accent text-accent hover:bg-accent hover:text-white select-none relative z-[50] cursor-pointer"
+              className="uppercase border-cyan-500 text-cyan-500 hover:bg-cyan-500 hover:text-white select-none relative z-[50] cursor-pointer"
               onClick={handleDeckClick}
               style={{ 
                 userSelect: 'none', 

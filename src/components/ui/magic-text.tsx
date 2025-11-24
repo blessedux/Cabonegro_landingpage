@@ -38,11 +38,11 @@ export const MagicText: React.FC<MagicTextProps> = ({ text, className = "" }) =>
   const words = text.split(" ");
  
   return (
-    <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`}>
+    <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`} style={{ color: '#ffffff' }}>
       {words.map((word, i) => {
         const start = i / words.length;
         const end = start + 1 / words.length;
- 
+
         return (
           <Word key={i} progress={scrollYProgress} range={[start, end]}>
             {word}

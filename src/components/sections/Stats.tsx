@@ -1,8 +1,41 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
+import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
+import { Button } from '@/components/ui/button'
+import { useRouter, usePathname } from 'next/navigation'
+import { usePreloader } from '@/contexts/PreloaderContext'
+
+// Custom MagicText wrapper that animates earlier (when element enters from bottom of viewport)
+function EarlyMagicText({ text, className = "" }: { text: string; className?: string }) {
+  const container = useRef<HTMLParagraphElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: container,
+    offset: ["start 1.5", "start 0.8"], // Start as soon as possible (1.5 viewport heights away), complete early (0.8 viewport heights)
+  });
+  
+  const words = text.split(" ");
+
+  return (
+    <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`} style={{ color: '#ffffff' }}>
+      {words.map((word, i) => {
+        const start = i / words.length;
+        const end = start + 1 / words.length;
+        const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
+
+        return (
+          <span key={i} className="relative mr-1">
+            <span className="absolute opacity-20">{word}</span>
+            <motion.span style={{ opacity: opacity }}>{word}</motion.span>
+          </span>
+        );
+      })}
+    </p>
+  );
+}
 
 interface AnimatedCounterProps {
   end: number
@@ -25,7 +58,7 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
           setIsVisible(true)
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.1 }
     )
 
     if (ref.current) {
@@ -74,12 +107,52 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
 
 export default function Stats() {
   const statsRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const pathname = usePathname()
+  const { showPreloaderB } = usePreloader()
   
-  // Track scroll progress - Stats trigger starts when AboutUs section ends
-  const { scrollYProgress } = useScroll({
-    target: triggerRef,
+  // Determine locale from pathname for button text
+  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
+  const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : 'Explore Terrain'
+  
+  // Find AboutUs section to use its bottom as trigger point and track its scroll progress
+  const aboutUsSectionRef = useRef<HTMLElement | null>(null)
+  
+  useEffect(() => {
+    aboutUsSectionRef.current = document.querySelector('[data-aboutus-section="true"]') as HTMLElement
+  }, [])
+  
+  // Track AboutUs section scroll progress to sync duplicate content opacity
+  const { scrollYProgress: aboutUsScrollProgress } = useScroll({
+    target: aboutUsSectionRef,
     offset: ["start end", "end start"]
+  })
+  
+  // AboutUs content opacity - matches the original AboutUs component
+  const aboutUsOpacity = useTransform(aboutUsScrollProgress, [0, 0.01, 0.05, 0.7, 1], [0, 0, 1, 1, 0], { clamp: true })
+  const rawAboutUsY = useTransform(aboutUsScrollProgress, [0, 0.01, 0.05, 0.5, 0.7, 1], [80, 80, 0, 0, 0, -50])
+  const aboutUsY = useSpring(rawAboutUsY, { 
+    stiffness: 80, 
+    damping: 25,
+    mass: 0.6
+  })
+  
+  // Title opacity for duplicate
+  const duplicateTitleOpacity = useTransform(aboutUsScrollProgress, [0, 0.01, 0.04], [0, 0, 1], { clamp: true })
+  const rawDuplicateTitleY = useTransform(aboutUsScrollProgress, [0, 0.01, 0.04, 0.5], [60, 60, 0, 0])
+  const duplicateTitleY = useSpring(rawDuplicateTitleY, { 
+    stiffness: 100, 
+    damping: 20,
+    mass: 0.5
+  })
+  
+  // Track scroll progress - Stats trigger starts when bottom of AboutUs section is reached
+  // Offset: ["end end", "end start"] means:
+  // - Start (0): when bottom of AboutUs reaches bottom of viewport
+  // - End (1): when bottom of AboutUs reaches top of viewport
+  const { scrollYProgress } = useScroll({
+    target: aboutUsSectionRef,
+    offset: ["end end", "end start"]
   })
 
   // Track when Partners section reaches 50% of viewport (center line)
@@ -95,19 +168,36 @@ export default function Stats() {
     offset: ["start center", "start start"]
   })
 
-  // Background fade in - fixed to viewport
-  const backgroundOpacity = useTransform(scrollYProgress, [0, 0.4], [0, 1])
+  // Background fade in - starts at 11% scroll, completes at 20% scroll (9% fade window for smoother blend)
+  const backgroundOpacity = useTransform(scrollYProgress, [0.11, 0.20], [0, 1])
   
-  // Black overlay opacity - increases as we scroll
-  const blackOverlayOpacity = useTransform(scrollYProgress, [0, 0.4], [0.5, 1])
+  // Background zoom effect - scales from 1 to 1.1 (10% zoom) as we scroll from top to bottom
+  const backgroundScale = useTransform(scrollYProgress, [0, 1], [1, 1.1], { clamp: true })
   
-  // Title fade in - starts as soon as background starts fading in
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.1, 0.3], [0, 0, 1])
-  const titleY = useTransform(scrollYProgress, [0, 0.1, 0.3], [150, 150, 0])
+  // Black overlay opacity - only appears when Stats background is visible (starts at 11%, completes at 20%)
+  // This ensures it doesn't darken Hero/AboutUs sections
+  const blackOverlayOpacity = useTransform(scrollYProgress, [0.11, 0.20], [0, 1])
   
-  // Content fade in - starts right after title begins, aligned with background
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.15, 0.35], [0, 0, 1])
-  const contentY = useTransform(scrollYProgress, [0, 0.15, 1], [200, 200, -100])
+  // Title fade in - starts when background starts fading in (11%)
+  // Content should be visible as soon as background appears
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 1])
+  const titleY = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 0])
+  
+  // Content fade in - smooth fade from 11% to 15% (when background appears)
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 1])
+  const contentY = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 0])
+  
+  // Vision text fade in - starts when background appears (11%)
+  // Title and subtitle fade in together
+  const visionTitleOpacity = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 1])
+  const visionSubtitleOpacity = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 1])
+  
+  // Position orange container at the very top, close to AboutUs component
+  // At 0%: container at top (top: 0, y: 0)
+  // At 11%: container positioned at very top (top: 0%, y: -50%) - at the very top
+  // After 11%: stays in position
+  const containerTop = useTransform(scrollYProgress, [0, 0.11, 0.20], ['0%', '0%', '0%'], { clamp: true })
+  const containerY = useTransform(scrollYProgress, [0, 0.11, 0.20], ['0%', '-50%', '-50%'], { clamp: true })
   
   // Fade to white when Partners reaches above 50% of viewport (center line)
   // Partners scroll progress: 0 = Partners at center, 1 = Partners at top
@@ -123,61 +213,61 @@ export default function Stats() {
 
   return (
     <>
-      {/* Trigger element for scroll tracking */}
-      <div ref={triggerRef} className="h-screen" />
-      
-      {/* Stats section - fixed to viewport, background fades in */}
+      {/* Stats section - sticky positioning to allow scrolling */}
       <section 
         ref={statsRef} 
-        className="fixed top-0 left-0 right-0 h-screen py-20 px-6 overflow-hidden z-[10] pointer-events-none"
+        className="sticky top-0 left-0 right-0 h-[100vh] z-[10] pointer-events-none"
       >
-        {/* Background image layer - fades in based on scroll */}
+        {/* Content container - positioned at top, centers in viewport when background fades in (11% scroll) */}
         <motion.div
-          className="absolute inset-0 z-[1]"
+          className="absolute left-0 right-0 z-[11] w-full flex flex-col justify-start"
           style={{
-            backgroundImage: 'url(/cabonegro_wirefram2.webp)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            opacity: backgroundOpacity
-          }}
-        />
-        
-        {/* Black overlay that increases as we scroll */}
-        <motion.div 
-          className="absolute inset-0 z-[2]"
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            opacity: blackOverlayOpacity
-          }}
-        />
-        
-        {/* White overlay - fades in when Partners starts reaching top */}
-        <motion.div 
-          className="absolute inset-0 z-[4]"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 1)',
-            opacity: whiteOverlayOpacity
-          }}
-        />
-        
-        {/* Content container */}
-        <div
-          className="container mx-auto relative z-[5] h-full flex flex-col justify-center"
-          style={{
-            pointerEvents: shouldBlockPointer ? 'auto' : 'none'
+            pointerEvents: shouldBlockPointer ? 'auto' : 'none',
+            top: containerTop,
+            y: containerY
           }}
         >
-            {/* Content section - appears after title */}
+          
+          {/* Content wrapper - no margins, matches section positioning, content at top */}
+          <div className="w-full max-w-7xl mx-auto px-6 pt-0">
+            {/* Our Vision - only visible in Stats section, fades in when background appears */}
             <motion.div
+              className="w-full mb-[30vh]"
+            >
+              <div className="text-center">
+                <motion.h3 
+                  className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6 text-white" 
+                  style={{ 
+                    opacity: visionTitleOpacity,
+                    color: '#ffffff', 
+                    textShadow: '0 0 0 rgba(255,255,255,1)' 
+                  }}
+                >
+                  Our Vision
+                </motion.h3>
+                <motion.div
+                  style={{ opacity: visionSubtitleOpacity }}
+                  className="max-w-5xl mx-auto"
+                >
+                  <EarlyMagicText 
+                    text="To establish Cabo Negro as the premier industrial and maritime hub of the Southern Hemisphere, serving as the primary gateway to Antarctica and an essential node in global trade routes while supporting Chile's transition to a green hydrogen economy."
+                    className="text-white leading-relaxed text-lg lg:text-xl"
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+            
+            {/* Content section - fades in when background appears (11%) */}
+            <motion.div
+              className="relative"
               style={{
                 opacity: contentOpacity,
                 y: contentY
               }}
             >
-              {/* Title section - appears first, positioned right above the 300 card */}
+              {/* Title section - fades in when background appears (11%) */}
               <motion.div 
-                className="text-center mb-2"
+                className="text-center mb-2 relative"
                 style={{
                   opacity: titleOpacity,
                   y: titleY
@@ -195,7 +285,7 @@ export default function Stats() {
               </motion.div>
 
               {/* Total Hectares - Featured */}
-              <div className="max-w-4xl mx-auto mb-16">
+              <div className="max-w-4xl mx-auto mb-8">
                 <div className="text-center p-8 bg-black/50 backdrop-blur-md rounded-xl border border-white/30 shadow-2xl">
                   <div className="text-6xl md:text-7xl font-bold mb-4 text-white">
                     <AnimatedCounter end={300} suffix="+" />
@@ -274,11 +364,40 @@ export default function Stats() {
               </div>
             </div>
             </motion.div>
-        </div>
+          </div>
+        </motion.div>
+        
+        {/* Background image layer - fades in based on scroll with zoom effect */}
+        <motion.div
+          className="fixed inset-0 z-[8]"
+          style={{
+            backgroundImage: 'url(/cabonegro_wirefram2.webp)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            opacity: backgroundOpacity,
+            scale: backgroundScale
+          }}
+        />
+        
+        {/* Black overlay that increases as we scroll - only visible when Stats section is active */}
+        <motion.div 
+          className="fixed inset-0 z-[8] pointer-events-none"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            opacity: blackOverlayOpacity
+          }}
+        />
+        
+        {/* White overlay - fades in when Partners starts reaching top */}
+        <motion.div 
+          className="fixed inset-0 z-[9]"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 1)',
+            opacity: whiteOverlayOpacity
+          }}
+        />
       </section>
-      
-      {/* Spacer to push next section */}
-      <div className="h-[200vh]" />
     </>
   )
 }

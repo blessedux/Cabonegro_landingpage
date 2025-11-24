@@ -59,8 +59,9 @@ export function WorldMapDemoEs() {
           { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
         ]}
       />
-      <TerminalCaptionEs active={captionActive} />
       </div>
+      {/* Text below the map frame */}
+      <TerminalCaptionEs active={captionActive} />
     </div>
   );
 }
@@ -119,10 +120,10 @@ function TerminalCaptionEs({ active }: { active: boolean }) {
   }, [active]);
 
   return (
-    <div className="pointer-events-none md:absolute bottom-0 md:bottom-1 lg:bottom-2 right-0 md:right-3 lg:right-4 xl:right-6 z-10 max-w-[92%] md:max-w-none w-full md:w-auto mt-12 md:mt-0">
-      <div className="inline-block text-xs sm:text-sm md:text-base lg:text-lg font-secondary uppercase tracking-widest text-white/80 bg-black/25 px-3 py-2 rounded">
+    <div className="px-4 md:px-8 lg:px-12 pt-8 pb-12 text-center">
+      <div className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed">
         {displayLines.map((line, i) => (
-          <div key={i} className="leading-tight">
+          <div key={i} className={i < displayLines.length - 1 ? "mb-2" : ""}>
             {line}
             {i === displayLines.length - 1 && (
               <span className="inline-block w-6 text-left">{".".repeat(dots)}</span>

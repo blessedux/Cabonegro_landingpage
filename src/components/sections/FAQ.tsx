@@ -88,7 +88,7 @@ export default function FAQ() {
             asChild
             variant="default"
             size="lg"
-            className="bg-primary text-primary-foreground group-hover:bg-white group-hover:text-black transition-colors"
+            className="bg-cyan-500 hover:bg-cyan-400 text-white font-semibold shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/70 transition-all"
           >
             <Link href="/deck">Download Investment Proposal</Link>
           </Button>
@@ -98,7 +98,7 @@ export default function FAQ() {
             size="lg"
             className="hover:bg-white hover:text-black transition-colors"
           >
-            <Link href="/contact">Schedule Investor Meeting</Link>
+            <Link href="https://calendly.com/" target="_blank" rel="noopener noreferrer">Schedule Investor Meeting</Link>
           </Button>
         </div>
       </div>

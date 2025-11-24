@@ -68,14 +68,26 @@ function HomeContent() {
 
   // Handle preloader visibility logic
   useEffect(() => {
+    // Check if assets are cached
+    const assetsCached = localStorage.getItem('cabonegro-assets-cached') === 'true'
+    
     // If PreloaderB is active, don't show main preloader
     if (isPreloaderBVisible) {
       setPreloaderVisible(false)
       setPreloaderFadeComplete(true)
+      setContentReady(true)
       return
     }
     
-    // If preloader is explicitly visible (e.g., language change), wait for it to complete
+    // If assets are cached and user has seen preloader, skip preloader entirely
+    if (assetsCached && hasSeenPreloader) {
+      setPreloaderVisible(false)
+      setPreloaderFadeComplete(true)
+      setContentReady(true)
+      return
+    }
+    
+    // If preloader is explicitly visible (first visit), wait for it to complete
     if (isPreloaderVisible) {
       setPreloaderFadeComplete(false)
       return
@@ -84,6 +96,7 @@ function HomeContent() {
     // If user has seen preloader before and no preloader is active, show content immediately
     if (hasSeenPreloader && !isPreloaderVisible) {
       setPreloaderFadeComplete(true)
+      setContentReady(true)
     }
   }, [hasSeenPreloader, isPreloaderBVisible, isPreloaderVisible, setPreloaderVisible])
 
@@ -107,17 +120,33 @@ function HomeContent() {
   // Handle content fade-in animation
   useEffect(() => {
     if (contentReady && contentRef.current) {
-      // Start content fade-in animation
+      // Start content fade-in animation - faster and smoother
       gsap.fromTo(contentRef.current, 
         { opacity: 0 },
         { 
           opacity: 1, 
-          duration: 1.2,
-          ease: 'power2.out'
+          duration: 0.8, // Faster fade-in to match preloader fade-out
+          ease: 'power2.out',
+          delay: 0.1 // Small delay to ensure smooth overlap
         }
       )
     }
   }, [contentReady])
+
+  // Safety fallback: ensure content shows after preloader duration + buffer
+  useEffect(() => {
+    if (isPreloaderVisible && !isPreloaderBVisible) {
+      const safetyTimeout = setTimeout(() => {
+        // If preloader is still visible after duration + buffer, force show content
+        setPreloaderFadeComplete(true)
+        setContentReady(true)
+        setPreloaderVisible(false)
+        setPreloaderComplete(true)
+      }, 7000) // 6s duration + 1s buffer
+
+      return () => clearTimeout(safetyTimeout)
+    }
+  }, [isPreloaderVisible, isPreloaderBVisible, setPreloaderVisible, setPreloaderComplete])
 
   const handlePreloaderFadeOutStart = () => {
     // Pre-render content when preloader starts fading out
@@ -128,6 +157,9 @@ function HomeContent() {
   const handlePreloaderComplete = () => {
     setPreloaderComplete(true)
     setPreloaderVisible(false)
+    // Ensure content is shown when preloader completes
+    setPreloaderFadeComplete(true)
+    setContentReady(true)
   }
 
   return (

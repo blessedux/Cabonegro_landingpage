@@ -111,23 +111,17 @@ export default function Partners() {
         className="container mx-auto relative z-10"
       >
         <div className="text-center mb-8">
-          <motion.div
-            style={{ y: titleY, opacity: titleOpacity }}
-            className="mb-2"
-          >
+          <div className="mb-2">
             <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black tracking-tight pb-2">
               {t('title')}
             </h3>
-          </motion.div>
+          </div>
           
-          <motion.div
-            style={{ y: titleY, opacity: titleOpacity }}
-            className="mb-4"
-          >
+          <div className="mb-4">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black tracking-tight pb-2">
               {t('subtitle')}
             </h2>
-          </motion.div>
+          </div>
           
           <motion.div
             style={{ y: descriptionY, opacity: descriptionOpacity }}

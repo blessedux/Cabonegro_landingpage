@@ -80,6 +80,7 @@ export default function PreloaderEn({ onComplete, onFadeOutStart, duration = 6, 
   const preloaderRef = useRef<HTMLDivElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   const terminalLinesRef = useRef<HTMLDivElement[]>([])
+  const progressAnimationRef = useRef<ReturnType<typeof gsap.to> | null>(null)
   
   const specialChars = '▪'
 
@@ -101,21 +102,7 @@ export default function PreloaderEn({ onComplete, onFadeOutStart, duration = 6, 
     if (!preloaderRef.current) return
 
     const animatePreloader = () => {
-      const tl = gsap.timeline({
-        onComplete: () => {
-          // Notify that fade out is starting (for content to start fading in)
-          onFadeOutStart?.()
-          
-          // Start fade out animation
-          setIsFadingOut(true)
-          
-          // After fade out completes, hide preloader and call onComplete
-          setTimeout(() => {
-            setIsVisible(false)
-            onComplete?.()
-          }, 1000) // 1 second fade out duration
-        }
-      })
+      const tl = gsap.timeline()
 
       // Set initial states
       gsap.set(terminalLinesRef.current, { opacity: 0 })
@@ -190,16 +177,38 @@ export default function PreloaderEn({ onComplete, onFadeOutStart, duration = 6, 
 
       tl.add(disappearTl, duration - 1)
 
-      // Progress bar animation
-      tl.eventCallback('onUpdate', () => {
-        const progressPercent = Math.min(99, tl.progress() * 100)
-        setProgress(progressPercent)
-      })
+      // Smooth, independent progress bar animation using GSAP
+      // This ensures fluid animation that doesn't pause or get stuck
+      if (progressBarRef.current) {
+        progressAnimationRef.current = gsap.fromTo(progressBarRef.current, 
+          { width: '0%' },
+          {
+            width: '100%',
+            duration: duration,
+            ease: 'none', // Linear progression for smooth, consistent animation
+            onUpdate: () => {
+              // Update React state for display purposes, but animation is handled by GSAP
+              if (progressBarRef.current) {
+                const currentWidth = progressBarRef.current.style.width
+                const percent = parseFloat(currentWidth) || 0
+                setProgress(percent)
+              }
+            },
+            onComplete: () => {
+              setProgress(100)
+              // Start fade out immediately when progress reaches 100%
+              onFadeOutStart?.()
+              setIsFadingOut(true)
+            }
+          }
+        )
+      }
 
-      // Force final progress update
+      // Complete and hide immediately after fade transition
       tl.call(() => {
-        setProgress(100)
-      }, [], duration - 0.5)
+        setIsVisible(false)
+        onComplete?.()
+      }, [], duration - 0.3)
 
       return tl
     }
@@ -209,6 +218,11 @@ export default function PreloaderEn({ onComplete, onFadeOutStart, duration = 6, 
 
     return () => {
       mainTl.kill()
+      // Clean up progress bar animation
+      if (progressAnimationRef.current) {
+        progressAnimationRef.current.kill()
+        progressAnimationRef.current = null
+      }
     }
   }, [duration, onComplete])
 
@@ -219,7 +233,7 @@ export default function PreloaderEn({ onComplete, onFadeOutStart, duration = 6, 
   return (
     <div 
       ref={preloaderRef}
-      className={`fixed inset-0 z-50 bg-white flex items-center justify-center transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${className}`}
+      className={`fixed inset-0 z-50 bg-white flex items-center justify-center transition-opacity duration-300 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${className}`}
       style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' }}
     >
       {/* Video Background */}
@@ -294,8 +308,8 @@ export default function PreloaderEn({ onComplete, onFadeOutStart, duration = 6, 
                 <div className="w-full sm:w-48 h-px bg-black/20 relative overflow-hidden">
                   <div 
                     ref={progressBarRef}
-                    className="h-full bg-black transition-none"
-                    style={{ width: `${progress}%` }}
+                    className="h-full bg-black"
+                    style={{ width: '0%' }}
                   />
                 </div>
                 <span 
@@ -319,4 +333,3 @@ export default function PreloaderEn({ onComplete, onFadeOutStart, duration = 6, 
     </div>
   )
 }
-

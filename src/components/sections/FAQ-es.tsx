@@ -256,7 +256,7 @@ export default function FAQEs() {
               },
               {
                 label: "Programar Reunión de Inversionistas",
-                href: "/es/contact",
+                href: "https://calendly.com/",
                 variant: "outline"
               }
             ]}

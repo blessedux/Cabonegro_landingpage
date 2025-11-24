@@ -74,8 +74,8 @@ export default function BlurTextAnimation({
   }, []);
 
   return (
-    <div className={`${className}`}>
-      <p className={`${textColor} ${fontSize} ${fontFamily} font-light leading-relaxed tracking-wide`}>
+    <div className={`${className}`} style={{ color: '#ffffff' }}>
+      <p className={`${textColor} ${fontSize} ${fontFamily} font-light leading-relaxed tracking-wide`} style={{ color: '#ffffff' }}>
         {textWords.map((word, index) => (
           <span
             key={index}
@@ -85,7 +85,7 @@ export default function BlurTextAnimation({
               transitionDelay: `${word.delay}s`,
               transitionTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
               filter: isAnimating 
-                ? 'blur(0px) brightness(1)' 
+                ? 'blur(0px) brightness(1) contrast(1)' 
                 : `blur(${word.blur}px) brightness(0.6)`,
               transform: isAnimating 
                 ? 'translateY(0) scale(1) rotateX(0deg)' 
