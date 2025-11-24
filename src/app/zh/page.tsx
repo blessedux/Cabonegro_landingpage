@@ -2,21 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
-import { motion } from 'framer-motion'
 import { NextIntlClientProvider } from 'next-intl'
-import { PreloaderProvider } from '@/contexts/PreloaderContext'
-import { AnimationProvider } from '@/contexts/AnimationContext'
-import { CookieBannerProvider } from '@/contexts/CookieBannerContext'
-import { ThemeProvider } from 'next-themes'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader-zh'
 import NavbarZh from '@/components/sections/Navbar-zh'
 import HeroZh from '@/components/sections/Hero-zh'
-import Features from '@/components/sections/Features'
+import AboutUs from '@/components/sections/AboutUs'
 import Stats from '@/components/sections/Stats'
 import Partners from '@/components/sections/Partners'
 import { WorldMapDemoZh } from '@/components/ui/world-map-demo-zh'
+import Press from '@/components/sections/Press'
 import FAQZh from '@/components/sections/FAQ-zh'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
@@ -273,18 +269,19 @@ function HomeContent() {
         <div 
           ref={contentRef}
           className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : ''}`}
-          style={{ opacity: 0 }} // Start invisible, GSAP handles animation
+          style={{ opacity: 0, pointerEvents: 'auto' }} // Start invisible, GSAP handles animation
         >
           {/* Navigation */}
           <NavbarZh />
           
           {/* Main Sections */}
-          <main>
+          <main style={{ pointerEvents: 'auto' }}>
             <HeroZh />
-            <Features />
+            <AboutUs />
             <Stats />
             <Partners />
             <WorldMapDemoZh />
+            <Press />
             <FAQZh />
           </main>
 

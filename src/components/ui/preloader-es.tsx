@@ -230,7 +230,7 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
   return (
     <div 
       ref={preloaderRef}
-      className={`fixed inset-0 z-50 bg-black flex items-center justify-center transition-opacity duration-300 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${className}`}
+      className={`fixed inset-0 z-50 bg-white flex items-center justify-center transition-opacity duration-300 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${className}`}
       style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' }}
     >
       {/* Video Background */}
@@ -246,8 +246,8 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
           <source src="/cabonegro_preloader.webp" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/40" />
+        {/* Light overlay for better text readability */}
+        <div className="absolute inset-0 bg-white/60" />
       </div>
 
       {/* Image on Right Side - Desktop Only - Absolute Positioned */}
@@ -262,7 +262,7 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
       {/* Terminal Preloader */}
       <div className="w-[95%] sm:w-[90%] max-w-4xl relative overflow-hidden block opacity-100 flex flex-col">
         {/* Border Top - Fixed height to prevent vertical movement */}
-        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider flex-shrink-0">
+        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-black font-secondary uppercase tracking-wider flex-shrink-0">
           <span className="truncate max-w-[45%]">Zona Industrial Cabo Negro</span>
           <span className="truncate max-w-[45%]">Desarrollo Estratégico Activo</span>
         </div>
@@ -282,8 +282,8 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
                   <span 
                     className={`inline-block ${
                       line.type === 'highlight' 
-                        ? 'text-white font-normal uppercase tracking-widest' 
-                        : 'opacity-50 uppercase tracking-widest'
+                        ? 'text-black font-normal uppercase tracking-widest' 
+                        : 'opacity-50 uppercase tracking-widest text-black'
                     }`}
                     data-scramble={line.scramble ? 'true' : undefined}
                     data-original-text={line.text}
@@ -297,18 +297,18 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
             {/* Progress Line - Fixed position at bottom */}
             <div className="mt-auto px-2 sm:px-2.5 flex-shrink-0">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-0">
-                <span className="font-normal text-xs sm:text-sm text-white uppercase tracking-widest font-primary">
+                <span className="font-normal text-xs sm:text-sm text-black uppercase tracking-widest font-primary">
                   Inicializando
                 </span>
-                <div className="w-full sm:w-48 h-px bg-white/20 relative overflow-hidden">
+                <div className="w-full sm:w-48 h-px bg-black/20 relative overflow-hidden">
                   <div 
                     ref={progressBarRef}
-                    className="h-full bg-white"
+                    className="h-full bg-black"
                     style={{ width: '0%' }}
                   />
                 </div>
                 <span 
-                  className="text-white font-normal text-xs sm:text-sm uppercase tracking-widest font-primary" 
+                  className="text-black font-normal text-xs sm:text-sm uppercase tracking-widest font-primary" 
                   data-scramble="true" 
                   data-original-text="Infraestructura Cabo Negro"
                 >
@@ -320,7 +320,7 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
         </div>
 
         {/* Border Bottom - Fixed height to prevent vertical movement */}
-        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider flex-shrink-0">
+        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-black font-secondary uppercase tracking-wider flex-shrink-0">
           <span className="truncate max-w-[45%]">Secuencia de Puerta de Entrada Estratégica Completa</span>
           <span className="truncate max-w-[45%]">Zona Industrial Cabo Negro Activa</span>
         </div>
