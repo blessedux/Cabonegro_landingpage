@@ -219,8 +219,22 @@ export default function PreloaderZh({ onComplete, onFadeOutStart, duration = 6, 
       className={`fixed inset-0 z-50 bg-black flex items-center justify-center transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${className}`}
       style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' }}
     >
-      {/* Pure Black Background */}
-      <div className="absolute inset-0 bg-black" />
+      {/* Video Background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/cabonegro_preloader.webp" type="video/webm" />
+          <source src="/cabonegro_preloader.webp" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
 
       {/* Image on Right Side - Desktop Only - Absolute Positioned */}
       <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 z-10 opacity-100">

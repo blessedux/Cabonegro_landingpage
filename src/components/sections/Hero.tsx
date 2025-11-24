@@ -4,17 +4,32 @@ import Link from 'next/link'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 export default function Hero() {
   const router = useRouter()
   const { startFadeOut } = useAnimation()
   const { showPreloaderB } = usePreloader()
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
-  const [variantIndex, setVariantIndex] = useState<number>(0)
   const [isVisible, setIsVisible] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const heroRef = useRef<HTMLDivElement>(null)
+  
+  // Track scroll progress from the start of the page
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  })
+
+  // Hero content fades out as user scrolls (starts fading at 0.2, fully faded at 0.6)
+  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.2, 0.6], [1, 1, 0])
+  const heroContentY = useTransform(scrollYProgress, [0, 0.2, 0.6], [0, 0, -30])
+  
+  // Video stays visible - no fade out. Stats background will cover it as it fades in
+  
+  // Export scroll progress for use in other components (via context or prop)
+  // For now, we'll use a shared scroll tracking approach
   
   // Trigger hero animations after preloader fade out
   useEffect(() => {
@@ -23,6 +38,15 @@ export default function Hero() {
     }, 200) // Small delay to ensure smooth transition from preloader
     
     return () => clearTimeout(timer)
+  }, [])
+
+  // Handle video loading
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.addEventListener('loadeddata', () => {
+        setBackgroundLoaded(true)
+      })
+    }
   }, [])
 
   const handleExploreTerrain = () => {
@@ -47,86 +71,52 @@ export default function Hero() {
     }, 100)
   }
 
-  // Removed performance monitoring and console logging
-
-  // Removed hover handlers - keeping only click interactions for Spline scenes
-
-  const handleClick = (event: React.MouseEvent) => {
-    // Click handler for future interactive features
-    // Currently just tracks click coordinates for potential use
-  }
-
-  const variants = [
-    {
-      key: 'A',
-      src: 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/',
-      title: 'Gateway to the South of the World',
-      subtitle: 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
-    },
-    {
-      key: 'B',
-      src: 'https://my.spline.design/untitled-xQaQrL119lWxxAC25cYW2IRM/',
-      title: 'Gateway to the South of the World',
-      subtitle: 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
-    },
-    {
-      key: 'C',
-      src: 'https://my.spline.design/untitledcopy-hgQ9E6T0cuMuR3COTVFVso6a/',
-      title: 'Gateway to the South of the World',
-      subtitle: 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
-    }
-  ]
-
-  const current = variants[variantIndex]
-  const nextVariant = () => setVariantIndex((i) => (i + 1) % variants.length)
-  const prevVariant = () => setVariantIndex((i) => (i - 1 + variants.length) % variants.length)
+  const title = 'Gateway to the South of the World'
+  const subtitle = 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
 
   return (
-    <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center overflow-hidden" style={{ touchAction: 'pan-y' }}>
-      {/* Background Spline Scene - switchable variants */}
-      <div 
-        className="absolute inset-0 z-0 overflow-hidden"
-        onClick={handleClick}
+    <section 
+      ref={heroRef}
+      className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[5]"
+      style={{
+        backgroundColor: 'transparent',
+        pointerEvents: 'auto'
+      }}
+    >
+      {/* Background Video - stays visible until Stats background covers it */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          style={{
+            opacity: 1,
+            filter: 'brightness(1) contrast(1)',
+            mixBlendMode: 'normal'
+          }}
+        >
+          <source 
+            src="https://res.cloudinary.com/dezm9avsj/video/upload/v1763931613/cabonegro_pjk8im.mp4" 
+            type="video/mp4" 
+          />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      {/* Hero Content - fades out on scroll */}
+      <motion.div 
+        className="container mx-auto relative z-[30] flex justify-start"
+        style={{ 
+          opacity: heroContentOpacity,
+          y: heroContentY,
+          pointerEvents: 'auto',
+          willChange: 'opacity, transform'
+        }}
       >
-        <iframe 
-          src={current.src}
-          frameBorder='0' 
-          width='100%' 
-          height='100%'
-          className="w-full h-full"
-          title={`Hero background scene ${current.key}`}
-          onLoad={() => {
-            setBackgroundLoaded(true)
-          }}
-          style={{ 
-            border: 'none',
-            background: 'transparent',
-            transform: 'scale(1.3)',
-            transformOrigin: 'center center',
-            pointerEvents: 'auto' // Enable pointer events for interaction
-          }}
-        />
-      </div>
-
-      {/* Subtle gradient overlay for better text readability - positioned to not block interactions */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40 z-2 pointer-events-none" />
-      
-
-      {/* Chevron variant switcher (3 variants) */}
-      <div className="absolute top-24 right-6 z-20 pointer-events-auto">
-        <div className="flex items-center gap-2 bg-black/50 backdrop-blur px-2 py-1 rounded-full border border-white/10">
-          <button onClick={prevVariant} className="p-1.5 rounded-full hover:bg-white/10 text-white" aria-label="Previous background">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-xs text-white/80 px-2">{current.key}</span>
-          <button onClick={nextVariant} className="p-1.5 rounded-full hover:bg-white/10 text-white" aria-label="Next background">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="container mx-auto relative z-10 flex justify-start pointer-events-none">
-        <div className="max-w-4xl w-full px-6 lg:px-12 pointer-events-auto">
+        <div className="max-w-4xl w-full px-6 lg:px-12 relative z-[30]" style={{ pointerEvents: 'auto' }}>
           <motion.h1 
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none"
             style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
@@ -139,14 +129,14 @@ export default function Hero() {
             }}
           >
             <BlurTextAnimation 
-              text={current.title}
+              text={title}
               fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
               textColor="text-white"
               animationDelay={0} // Start immediately with the h1 fade-in
             />
           </motion.h1>
           <motion.p 
-            className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-12 max-w-2xl leading-relaxed text-left select-none"
+            className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none"
             style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
             initial={{ opacity: 0, y: 20 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -156,10 +146,10 @@ export default function Hero() {
               ease: "easeOut" 
             }}
           >
-            {current.subtitle}
+            {subtitle}
           </motion.p>
           <motion.div 
-            className="flex flex-col sm:flex-row gap-4 justify-start items-start"
+            className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[40]"
             initial={{ opacity: 0, y: 20 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ 
@@ -167,28 +157,47 @@ export default function Hero() {
               delay: 1.0, // Same delay as subtitle - they appear together
               ease: "easeOut" 
             }}
+            style={{ pointerEvents: 'auto' }}
           >
             <Button 
               size="lg" 
               variant="outline" 
-              className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
+              className="uppercase border-accent text-accent hover:bg-accent hover:text-white select-none relative z-[50] cursor-pointer"
               onClick={handleExploreTerrain}
-              style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+              style={{ 
+                userSelect: 'none', 
+                WebkitUserSelect: 'none', 
+                MozUserSelect: 'none', 
+                msUserSelect: 'none',
+                pointerEvents: 'auto',
+                opacity: 1,
+                position: 'relative',
+                zIndex: 50
+              }}
             >
               Explore Terrain
             </Button>
             <Button 
               size="lg" 
               variant="outline" 
-              className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
+              className="uppercase border-accent text-accent hover:bg-accent hover:text-white select-none relative z-[50] cursor-pointer"
               onClick={handleDeckClick}
-              style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
+              style={{ 
+                userSelect: 'none', 
+                WebkitUserSelect: 'none', 
+                MozUserSelect: 'none', 
+                msUserSelect: 'none',
+                pointerEvents: 'auto',
+                opacity: 1,
+                position: 'relative',
+                zIndex: 50
+              }}
             >
               View Deck
             </Button>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

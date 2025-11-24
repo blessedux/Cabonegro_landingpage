@@ -9,6 +9,7 @@ import Preloader from '@/components/ui/preloader'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar'
 import CookieBanner from '@/components/sections/CookieBanner'
+import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 
 // Spline scenes data
 const splineScenes = [
@@ -260,6 +261,9 @@ function ExploreContent() {
               </div>
             </div>
           </main>
+
+          {/* Ruler Carousel */}
+          <CaboNegroRulerCarousel />
 
           {/* Footer */}
           <Footer />

@@ -11,7 +11,6 @@ import {
   TextStaggerHover,
   useHoverSliderContext
 } from '@/components/ui/animated-slideshow'
-import { DarkGradientBg } from '@/components/ui/elegant-dark-pattern'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 
@@ -76,14 +75,14 @@ function FeatureImageWithOverlay({ feature, index }: { feature: Feature, index: 
       {/* Overlay with feature info - only visible when image is active */}
       {isActive && (
         <motion.div 
-          className="absolute inset-0 text-white z-20"
+          className="absolute inset-0 text-foreground z-20"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
           {/* Full-width gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/90" />
           {/* Progressive blur effect with smooth gradient layers */}
           <div className="absolute bottom-0 left-0 right-0 h-1/2">
             {/* Layer 1: Light blur with gradient mask */}
@@ -120,12 +119,12 @@ function FeatureImageWithOverlay({ feature, index }: { feature: Feature, index: 
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3, delay: 0.1 }}
           >
-            <h4 className="text-base text-white mb-3 mt-4 font-bold drop-shadow-lg uppercase tracking-tight">{feature.title}</h4>
-            <p className="text-sm text-white mb-4 font-bold drop-shadow-lg">{feature.description}</p>
+            <h4 className="text-base text-foreground mb-3 mt-4 font-bold drop-shadow-lg uppercase tracking-tight">{feature.title}</h4>
+            <p className="text-sm text-gray-700 mb-4 font-bold drop-shadow-lg">{feature.description}</p>
             <ul className="space-y-1">
               {(Array.isArray(feature.highlights) ? feature.highlights : []).slice(0, 2).map((highlight: string, highlightIndex: number) => (
-                <li key={highlightIndex} className="text-xs text-gray-100 flex items-start font-semibold drop-shadow-md">
-                  <span className="text-cyan-400 mr-2 font-bold drop-shadow-lg">•</span>
+                <li key={highlightIndex} className="text-xs text-gray-700 flex items-start font-semibold drop-shadow-md">
+                  <span className="text-accent mr-2 font-bold drop-shadow-lg">•</span>
                   {highlight}
                 </li>
               ))}
@@ -235,13 +234,12 @@ export default function Features() {
   }
 
   return (
-    <DarkGradientBg className="min-h-screen">
-      <section ref={featuresRef} className="py-20 px-3 md:px-6 overflow-visible">
+    <section ref={featuresRef} className="py-20 px-3 md:px-6 overflow-visible bg-white relative z-10">
         <div className="container mx-auto overflow-visible">
           {/* Rounded Card Container */}
           <div className="relative overflow-visible">
             {/* Card with border and subtle background */}
-            <div className="relative bg-black/20 backdrop-blur-sm border border-white/10 rounded-3xl p-0 sm:p-6 md:p-12 shadow-2xl overflow-visible">
+            <div className="relative bg-white/90 backdrop-blur-sm border border-gray-200 rounded-3xl p-0 sm:p-6 md:p-12 shadow-xl overflow-visible">
               {/* Section Header */}
               <div className="text-center mb-16 px-4 sm:px-0 pt-8 md:pt-0">
                 <motion.h2 
@@ -249,14 +247,14 @@ export default function Features() {
                   whileInView={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.8, ease: "easeOut" }}
                   viewport={{ margin: "-10% 0px -10% 0px" }}
-                  className="text-4xl md:text-5xl font-bold mb-4 text-white mt-6 md:mt-0"
+                  className="text-4xl md:text-5xl font-bold mb-4 text-foreground mt-6 md:mt-0"
                 >
                   {t('title')}
                 </motion.h2>
                 <div className="max-w-3xl mx-auto mt-4 md:mt-0">
                   <MagicText 
                     text={t('subtitle')}
-                    className="text-xl text-gray-300"
+                    className="text-xl text-gray-600"
                   />
                 </div>
               </div>
@@ -264,9 +262,9 @@ export default function Features() {
               {/* Animated Slideshow */}
               {isMobile ? (
                 /* Mobile Layout: Full width background with titles */
-                <HoverSlider className="min-h-[80vh] place-content-center bg-transparent text-white">
+                <HoverSlider className="min-h-[80vh] place-content-center bg-transparent text-foreground">
                   <div className="px-0 sm:px-3 md:px-12 py-6">
-                    <h3 className="mb-6 ml-4 text-cyan-400 text-xs font-medium capitalize tracking-wide">
+                    <h3 className="mb-6 ml-4 text-accent text-xs font-medium capitalize tracking-wide">
                       / strategic advantages
                     </h3>
                   </div>
@@ -338,12 +336,12 @@ export default function Features() {
                         >
                           <TextStaggerHover
                             index={index}
-                            className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-white hover:text-cyan-400 transition-colors duration-300"
+                            className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-foreground hover:text-accent transition-colors duration-300"
                             text={feature.titleLine1}
                           />
                           <TextStaggerHover
                             index={index}
-                            className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-white hover:text-cyan-400 transition-colors duration-300"
+                            className="cursor-pointer text-2xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight text-left text-foreground hover:text-accent transition-colors duration-300"
                             text={feature.titleLine2}
                           />
                         </div>
@@ -353,8 +351,8 @@ export default function Features() {
                 </HoverSlider>
               ) : (
                 /* Desktop Layout: Original gallery + titles */
-                <HoverSlider className="min-h-[80vh] place-content-center p-6 md:px-12 bg-transparent text-white">
-                  <h3 className="mb-6 ml-4 text-cyan-400 text-xs font-medium capitalize tracking-wide">
+                <HoverSlider className="min-h-[80vh] place-content-center p-6 md:px-12 bg-transparent text-foreground">
+                  <h3 className="mb-6 ml-4 text-accent text-xs font-medium capitalize tracking-wide">
                     / strategic advantages
                   </h3>
                   {/* Desktop Layout: Original gallery + titles */}
@@ -387,12 +385,12 @@ export default function Features() {
                          <div key={feature.id} className="flex flex-col min-w-0 text-left">
                            <TextStaggerHover
                              index={index}
-                             className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left text-white"
+                             className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left text-foreground hover:text-accent transition-colors"
                              text={feature.titleLine1}
                            />
                            <TextStaggerHover
                              index={index}
-                             className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left text-white"
+                             className="cursor-pointer text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-tighter break-words hyphens-none leading-tight whitespace-nowrap text-left text-foreground hover:text-accent transition-colors"
                              text={feature.titleLine2}
                            />
                          </div>
@@ -405,6 +403,5 @@ export default function Features() {
           </div>
         </div>
       </section>
-    </DarkGradientBg>
   )
 }

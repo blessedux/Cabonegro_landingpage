@@ -165,7 +165,7 @@ export default function NavbarZh() {
       isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100'
     }`}>
       <nav className="container mx-auto">
-        <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
               <Link 
@@ -218,7 +218,7 @@ export default function NavbarZh() {
               </div>
 
               <Link href="/zh/contact">
-                <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
+                <Button variant="outline" className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300">
                   联系我们
                 </Button>
               </Link>
@@ -290,7 +290,7 @@ export default function NavbarZh() {
                 <Link href="/zh/contact" className="w-full mt-2">
                   <Button
                     variant="outline"
-                    className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
+                    className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300 w-full"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     联系我们

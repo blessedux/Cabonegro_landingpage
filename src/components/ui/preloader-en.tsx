@@ -18,30 +18,31 @@ interface PreloaderProps {
   className?: string
 }
 
-const TERMINAL_LINES_ES: TerminalLine[] = [
-  // Main lines - Cabo Negro specific in Spanish
-  { id: 'line-1', top: 0, text: 'Zona Industrial Cabo Negro: Región de Magallanes', type: 'faded', scramble: true },
-  { id: 'line-2', top: 0, text: 'Puerta de Entrada Estratégica a la Antártida Asegurada', type: 'highlight', scramble: true },
-  { id: 'line-3', top: 30, text: 'Analizando Potencial de Hidrógeno Verde H₂V', type: 'faded', scramble: true },
-  { id: 'line-4', top: 30, text: '13% de Producción Mundial de Hidrógeno Verde Detectada', type: 'highlight', scramble: true },
-  { id: 'line-5', top: 60, text: 'Inicializando Construcción de Terminal Marítimo', type: 'highlight', scramble: true },
-  { id: 'line-6', top: 90, text: 'Ruta Alternativa al Canal de Panamá Activada', type: 'highlight', scramble: true },
-  { id: 'line-7', top: 165, text: '300+ Hectáreas de Infraestructura Industrial Lista', type: 'highlight', scramble: true },
-  { id: 'line-8', top: 195, text: 'Corredor Principal Ruta 9N Conectado', type: 'highlight', scramble: true },
-  { id: 'line-9', top: 225, text: 'Corredor Marítimo Atlántico-Pacífico Abriendo', type: 'highlight', scramble: true },
-  { id: 'line-10', top: 255, text: 'Canal de Inversión EDF Estabilizando', type: 'highlight', scramble: true },
-  { id: 'line-11', top: 285, text: 'Proyección de Duplicación del PIB Regional Confirmada', type: 'highlight', scramble: true },
+const TERMINAL_LINES: TerminalLine[] = [
+  // Main lines - Cabo Negro specific
+  { id: 'line-1', top: 0, text: 'Cabo Negro Industrial Zone: Magallanes Region', type: 'faded', scramble: true },
+  { id: 'line-2', top: 0, text: 'Strategic Gateway to Antarctica Secured', type: 'highlight', scramble: true },
+  { id: 'line-3', top: 30, text: 'Analyzing H₂V Green Hydrogen Potential', type: 'faded', scramble: true },
+  { id: 'line-4', top: 30, text: '13% Global Green Hydrogen Production Detected', type: 'highlight', scramble: true },
+  { id: 'line-5', top: 60, text: 'Initializing Maritime Terminal Construction', type: 'highlight', scramble: true },
+  { id: 'line-6', top: 90, text: 'Panama Canal Alternative Route Activated', type: 'highlight', scramble: true },
+  { id: 'line-7', top: 165, text: '300+ Hectares Industrial Infrastructure Ready', type: 'highlight', scramble: true },
+  { id: 'line-8', top: 195, text: 'Route 9N Main Corridor Connected', type: 'highlight', scramble: true },
+  { id: 'line-9', top: 225, text: 'Atlantic-Pacific Maritime Corridor Opening', type: 'highlight', scramble: true },
+  { id: 'line-10', top: 255, text: 'EDF Investment Pipeline Stabilizing', type: 'highlight', scramble: true },
+  { id: 'line-11', top: 285, text: 'Regional GDP Doubling Projection Confirmed', type: 'highlight', scramble: true },
   
-  // Background faded lines - Technical details in Spanish
-  { id: 'bg-1', top: 15, text: 'Potencial Eólico: 7× Capacidad Actual de Chile', type: 'faded', scramble: true },
-  { id: 'bg-2', top: 45, text: 'Procesando 200+ Proyectos H₂V Presentados', type: 'faded', scramble: true },
-  { id: 'bg-3', top: 75, text: 'Escaneando 3,258 Hectáreas de Expansión Urbana', type: 'faded', scramble: true },
-  { id: 'bg-4', top: 105, text: 'Analizando Capacidad Eléctrica de 13 MW', type: 'faded', scramble: true },
-  { id: 'bg-5', top: 180, text: 'Procesando Fase 1: Plataforma de 350m + Rampa', type: 'faded', scramble: true },
-  { id: 'bg-6', top: 210, text: 'Calibrando Fase 2: Puente de 350m + Muelle de 300m', type: 'faded', scramble: true },
-  { id: 'bg-7', top: 240, text: 'Evaluando Evaluación de Riesgo Geopolítico', type: 'faded', scramble: true },
-  { id: 'bg-8', top: 270, text: 'Estabilizando Marco de Zonificación Industrial', type: 'faded', scramble: true },
+  // Background faded lines - Technical details
+  { id: 'bg-1', top: 15, text: 'Wind Power Potential: 7× Chile Current Capacity', type: 'faded', scramble: true },
+  { id: 'bg-2', top: 45, text: 'Processing 200+ Filed H₂V Projects', type: 'faded', scramble: true },
+  { id: 'bg-3', top: 75, text: 'Scanning 3,258 Hectares Urban Expansion', type: 'faded', scramble: true },
+  { id: 'bg-4', top: 105, text: 'Analyzing 13 MW Electrical Capacity', type: 'faded', scramble: true },
+  { id: 'bg-5', top: 180, text: 'Processing Phase 1: 350m Platform + Ramp', type: 'faded', scramble: true },
+  { id: 'bg-6', top: 210, text: 'Calibrating Phase 2: 350m Bridge + 300m Pier', type: 'faded', scramble: true },
+  { id: 'bg-7', top: 240, text: 'Evaluating Geopolitical Risk Assessment', type: 'faded', scramble: true },
+  { id: 'bg-8', top: 270, text: 'Stabilizing Industrial Zoning Framework', type: 'faded', scramble: true },
 ]
+
 
 // Custom scramble effect function
 const scrambleText = (element: HTMLElement, originalText: string, chars: string = '▪', speed: number = 0.1) => {
@@ -70,7 +71,7 @@ const scrambleText = (element: HTMLElement, originalText: string, chars: string 
   return () => clearInterval(interval)
 }
 
-export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, className = '' }: PreloaderProps) {
+export default function PreloaderEn({ onComplete, onFadeOutStart, duration = 6, className = '' }: PreloaderProps) {
   const [progress, setProgress] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
   const [isFadingOut, setIsFadingOut] = useState(false)
@@ -213,51 +214,55 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
 
   if (!isVisible) return null
 
+  const videoRef = useRef<HTMLVideoElement>(null)
+
   return (
     <div 
       ref={preloaderRef}
-      className={`fixed inset-0 z-50 bg-black flex items-center justify-center transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${className}`}
+      className={`fixed inset-0 z-50 bg-white flex items-center justify-center transition-opacity duration-1000 ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${className}`}
       style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)' }}
     >
       {/* Video Background */}
       <div className="absolute inset-0 overflow-hidden">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
         >
-          <source src="/cabonegro_preloader.webp" type="video/webm" />
-          <source src="/cabonegro_preloader.webp" type="video/mp4" />
+          <source src="/cabonegro_smooth_sobel.webp" type="video/webm" />
+          <source src="/cabonegro_smooth_sobel.webp" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/40" />
+        {/* Light overlay for better text readability on white background */}
+        <div className="absolute inset-0 bg-white/60" />
       </div>
 
-      {/* Image on Right Side - Desktop Only - Absolute Positioned */}
+      {/* Image on Right Side - Desktop Only - Absolute Positioned - Inverted to black */}
       <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 z-10 opacity-100">
         <img 
           src="/BNWCRANE_preloaderB.png" 
           alt="Cabo Negro Industrial Infrastructure" 
           className="max-h-[300px] w-auto object-contain"
+          style={{ filter: 'invert(1)' }}
         />
       </div>
 
       {/* Terminal Preloader */}
       <div className="w-[95%] sm:w-[90%] max-w-4xl relative overflow-hidden block opacity-100 flex flex-col">
         {/* Border Top - Fixed height to prevent vertical movement */}
-        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider flex-shrink-0">
-          <span className="truncate max-w-[45%]">Zona Industrial Cabo Negro</span>
-          <span className="truncate max-w-[45%]">Desarrollo Estratégico Activo</span>
+        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-black font-secondary uppercase tracking-wider flex-shrink-0">
+          <span className="truncate max-w-[45%]">Cabo Negro Industrial Zone</span>
+          <span className="truncate max-w-[45%]">Strategic Development Active</span>
         </div>
 
         {/* Terminal Container - Fixed height to prevent vertical movement */}
-        <div className="relative h-[500px] sm:h-[450px] flex-grow overflow-hidden p-2 sm:p-2.5">
+        <div className="relative h-[450px] sm:h-[400px] flex-grow overflow-hidden p-2 sm:p-2.5">
           <div className="space-y-2 sm:space-y-3 h-full flex flex-col">
             <div className="flex-grow overflow-hidden">
-              {TERMINAL_LINES_ES.map((line, index) => (
+              {TERMINAL_LINES.map((line, index) => (
                 <div
                   key={line.id}
                   ref={(el) => {
@@ -268,8 +273,8 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
                   <span 
                     className={`inline-block ${
                       line.type === 'highlight' 
-                        ? 'text-white font-normal uppercase tracking-widest' 
-                        : 'opacity-50 uppercase tracking-widest'
+                        ? 'text-black font-normal uppercase tracking-widest' 
+                        : 'opacity-50 uppercase tracking-widest text-black'
                     }`}
                     data-scramble={line.scramble ? 'true' : undefined}
                     data-original-text={line.text}
@@ -283,22 +288,22 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
             {/* Progress Line - Fixed position at bottom */}
             <div className="mt-auto px-2 sm:px-2.5 flex-shrink-0">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-0">
-                <span className="font-normal text-xs sm:text-sm text-white uppercase tracking-widest font-primary">
-                  Inicializando
+                <span className="font-normal text-xs sm:text-sm text-black uppercase tracking-widest font-primary">
+                  Initializing
                 </span>
-                <div className="w-full sm:w-48 h-px bg-white/20 relative overflow-hidden">
+                <div className="w-full sm:w-48 h-px bg-black/20 relative overflow-hidden">
                   <div 
                     ref={progressBarRef}
-                    className="h-full bg-white transition-none"
+                    className="h-full bg-black transition-none"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
                 <span 
-                  className="text-white font-normal text-xs sm:text-sm uppercase tracking-widest font-primary" 
+                  className="text-black font-normal text-xs sm:text-sm uppercase tracking-widest font-primary" 
                   data-scramble="true" 
-                  data-original-text="Infraestructura Cabo Negro"
+                  data-original-text="Cabo Negro Infrastructure"
                 >
-                  Infraestructura Cabo Negro
+                  Cabo Negro Infrastructure
                 </span>
               </div>
             </div>
@@ -306,11 +311,12 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
         </div>
 
         {/* Border Bottom - Fixed height to prevent vertical movement */}
-        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-white font-secondary uppercase tracking-wider flex-shrink-0">
-          <span className="truncate max-w-[45%]">Secuencia de Puerta de Entrada Estratégica Completa</span>
-          <span className="truncate max-w-[45%]">Zona Industrial Cabo Negro Activa</span>
+        <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-black font-secondary uppercase tracking-wider flex-shrink-0">
+          <span className="truncate max-w-[45%]">Strategic Gateway Sequence Complete</span>
+          <span className="truncate max-w-[45%]">Cabo Negro Industrial Zone Active</span>
         </div>
       </div>
     </div>
   )
 }
+

@@ -1,35 +1,90 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { WorldMap } from "@/components/ui/world-map";
+import { MagicText } from "@/components/ui/magic-text";
+
+// Custom wrapper for MagicText with earlier scroll trigger - stays visible once animated
+function MagicTextWrapper({ text, className }: { text: string; className?: string }) {
+  const container = useRef<HTMLParagraphElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: container,
+    offset: ["start 1.2", "start 0.4"], // Start earlier, finish earlier
+  });
+  
+  const words = text.split(" ");
+
+  return (
+    <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`}>
+      {words.map((word, i) => {
+        const start = i / words.length;
+        const end = Math.min(start + 1 / words.length, 0.99);
+        // Once opacity reaches 1, it stays at 1 (no fade out) - use clamp and ensure it never goes below the max reached value
+        const opacity = useTransform(
+          scrollYProgress, 
+          [start, end, 1], 
+          [0, 1, 1], // Third value ensures it stays at 1
+          { clamp: true }
+        );
+
+        return (
+          <span key={i} className="relative mr-1">
+            <span className="absolute opacity-20">{word}</span>
+            <motion.span style={{ opacity: opacity }}>{word}</motion.span>
+          </span>
+        );
+      })}
+    </p>
+  );
+}
 
 export function WorldMapDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [captionActive, setCaptionActive] = useState(false);
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const element = containerRef.current;
-    let hasTriggered = false;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && !hasTriggered) {
-          hasTriggered = true;
-          setCaptionActive(true);
-          observer.unobserve(element);
-        }
-      },
-      { rootMargin: "0px 0px 200px 0px", threshold: 0.01 }
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
+  // Track scroll progress through the map section
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+
+  // Map slides down from top to bottom of container as user scrolls
+  // Calculate the distance to slide: container height (100vh) allows minimal slide
+  // Starts at top (0vh) and slides down slightly
+  const mapY = useTransform(scrollYProgress, [0, 1], ['0vh', '20vh']);
+
+  // Map slides horizontally from left to right as user scrolls
+  // Creates a side-to-side animation effect
+  const mapX = useTransform(scrollYProgress, [0, 1], [-50, 50]);
+
+  // Side margins increase (map width decreases) as user scrolls
+  // Start with larger margins (smaller width), increase to even larger margins (even smaller width)
+  const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]); // 48px to 120px (3rem to 7.5rem)
 
   return (
-    <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative">
-      <div className="relative">
-        <WorldMap
+    <div 
+      ref={containerRef} 
+      className="pt-0 pb-0 bg-white w-full relative overflow-hidden z-20 min-h-[100vh]"
+      data-white-background="true"
+    >
+      {/* Sticky wrapper - map slides from top to bottom as user scrolls */}
+      <motion.div 
+        ref={mapWrapperRef}
+        className="sticky top-0 flex items-start justify-center pt-0"
+        style={{
+          paddingLeft: sideMargin,
+          paddingRight: sideMargin,
+        }}
+      >
+        <motion.div
+          className="relative w-full max-w-full overflow-hidden bg-white"
+          style={{
+            y: mapY,
+            x: mapX,
+          }}
+        >
+          <WorldMap
           dashed
           dots={[
           // Americas
@@ -81,84 +136,26 @@ export function WorldMapDemo() {
           // From far left border → China (Shanghai) to route via left side of map
           { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
         ]}
-      />
-      <TerminalCaption active={captionActive} />
-      </div>
+          />
+        </motion.div>
+      </motion.div>
+      
+      {/* Animated text below the map */}
+      <motion.div
+        className="px-4 md:px-8 lg:px-12 pt-8 pb-4 text-center"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ margin: "-50% 0px -10% 0px", once: true }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <MagicTextWrapper 
+          text="Magellan linkage expands Pacific–Atlantic capacity. Selective routes: 10–15% transit time reduction. Adds redundancy to Panama-constrained trade flows."
+          className="text-white text-base md:text-lg max-w-4xl mx-auto"
+        />
+      </motion.div>
     </div>
   );
 }
 
-function TerminalCaption({ active }: { active: boolean }) {
-  const lines = [
-    "Magellan linkage expands Pacific–Atlantic capacity",
-    "Selective routes: 10–15% transit time reduction",
-    "Adds redundancy to Panama-constrained trade flows"
-  ];
-  const [displayLines, setDisplayLines] = useState<string[]>(Array(lines.length).fill(""));
-  const [dots, setDots] = useState(0);
-
-  // Scramble-in per line, sequential
-  useEffect(() => {
-    if (!active) return;
-    const chars = "▪";
-    const timers: number[] = [];
-
-    lines.forEach((text, idx) => {
-      const startDelay = idx * 400; // stagger line starts
-      const timer = window.setTimeout(() => {
-        let iterations = 0;
-        const max = text.length * 2;
-        const interval = window.setInterval(() => {
-          const next = text
-            .split("")
-            .map((ch, i) => (i < iterations / 2 ? text[i] : chars[Math.floor(Math.random() * chars.length)]))
-            .join("");
-          setDisplayLines((prev) => {
-            const copy = [...prev];
-            copy[idx] = next;
-            return copy;
-          });
-          iterations += 1;
-          if (iterations >= max) {
-            window.clearInterval(interval);
-            setDisplayLines((prev) => {
-              const copy = [...prev];
-              copy[idx] = text;
-              return copy;
-            });
-          }
-        }, 35);
-        timers.push(interval);
-      }, startDelay);
-      timers.push(timer);
-    });
-
-    return () => {
-      timers.forEach((t) => window.clearTimeout(t));
-    };
-  }, [active]);
-
-  // Trailing dots like terminal progression
-  useEffect(() => {
-    if (!active) return;
-    const id = window.setInterval(() => setDots((d) => (d + 1) % 4), 700);
-    return () => window.clearInterval(id);
-  }, [active]);
-
-  return (
-    <div className="pointer-events-none md:absolute bottom-0 md:bottom-1 lg:bottom-2 right-0 md:right-3 lg:right-4 xl:right-6 z-10 max-w-[92%] md:max-w-none w-full md:w-auto mt-12 md:mt-0">
-      <div className="inline-block text-xs sm:text-sm md:text-base lg:text-lg font-secondary uppercase tracking-widest text-white/80 bg-black/25 px-3 py-2 rounded">
-        {displayLines.map((line, i) => (
-          <div key={i} className="leading-tight">
-            {line}
-            {i === displayLines.length - 1 && (
-              <span className="inline-block w-6 text-left">{".".repeat(dots)}</span>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 

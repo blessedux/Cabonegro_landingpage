@@ -15,7 +15,6 @@ import NavbarZh from '@/components/sections/Navbar-zh'
 import HeroZh from '@/components/sections/Hero-zh'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
-import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 import Partners from '@/components/sections/Partners'
 import { WorldMapDemoZh } from '@/components/ui/world-map-demo-zh'
 import FAQZh from '@/components/sections/FAQ-zh'
@@ -241,7 +240,7 @@ function HomeContent() {
       {preloaderFadeComplete && (
         <div 
           ref={contentRef}
-          className={`min-h-screen bg-black text-white ${isFadingOut ? 'opacity-0' : ''}`}
+          className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : ''}`}
           style={{ opacity: 0 }} // Start invisible, GSAP handles animation
         >
           {/* Navigation */}
@@ -252,7 +251,6 @@ function HomeContent() {
             <HeroZh />
             <Features />
             <Stats />
-            <CaboNegroRulerCarousel />
             <Partners />
             <WorldMapDemoZh />
             <FAQZh />

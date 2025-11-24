@@ -55,7 +55,7 @@ export default function HeroZh() {
   const prevVariant = () => setVariantIndex((i) => (i - 1 + variants.length) % variants.length)
 
   return (
-    <section className="relative pt-32 pb-20 px-6 min-h-screen flex items-center justify-center overflow-hidden bg-black" style={{ touchAction: 'pan-y' }}>
+    <section className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden bg-black z-0" style={{ touchAction: 'pan-y' }}>
       {/* Black background */}
       <div className="absolute inset-0 bg-black z-0" />
       
@@ -86,6 +86,9 @@ export default function HeroZh() {
 
       {/* Subtle gradient overlay for better text readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40 z-2 pointer-events-none" />
+      
+      {/* Bottom fade-to-white gradient for seamless transition to next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent z-[1] pointer-events-none" />
 
       {/* 变体切换：左右箭头（3 个背景） */}
       <div className="absolute top-24 right-6 z-20 pointer-events-auto">

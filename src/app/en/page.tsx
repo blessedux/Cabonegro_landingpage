@@ -5,12 +5,10 @@ import { gsap } from 'gsap'
 import { NextIntlClientProvider } from 'next-intl'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { useAnimation } from '@/contexts/AnimationContext'
-import Preloader from '@/components/ui/preloader'
+import Preloader from '@/components/ui/preloader-en'
 import Hero from '@/components/sections/Hero'
 import AboutUs from '@/components/sections/AboutUs'
-import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats'
-import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 import Partners from '@/components/sections/Partners'
 import { WorldMapDemo } from '@/components/ui/world-map-demo'
 import FAQ from '@/components/sections/FAQ'
@@ -144,19 +142,17 @@ function HomeContent() {
       {preloaderFadeComplete && (
         <div 
           ref={contentRef}
-          className={`min-h-screen bg-black text-white ${isFadingOut ? 'opacity-0' : ''}`}
-          style={{ opacity: 0 }} // Start invisible, GSAP handles animation
+          className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : ''}`}
+          style={{ opacity: 0, pointerEvents: 'auto' }} // Start invisible, GSAP handles animation
         >
           {/* Navigation */}
           <Navbar />
           
           {/* Main Sections */}
-          <main>
+          <main style={{ pointerEvents: 'auto' }}>
             <Hero />
             <AboutUs />
-            <Features />
             <Stats />
-            <CaboNegroRulerCarousel />
             <Partners />
             <WorldMapDemo />
             <FAQ />

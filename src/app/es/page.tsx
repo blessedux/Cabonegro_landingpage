@@ -14,7 +14,6 @@ import Hero from '@/components/sections/Hero-es'
 import AboutUs from '@/components/sections/AboutUs'
 import Features from '@/components/sections/Features'
 import Stats from '@/components/sections/Stats-es'
-import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 import Projects from '@/components/sections/Projects-es'
 import Partners from '@/components/sections/Partners-es'
 import { WorldMapDemoEs } from '@/components/ui/world-map-demo-es'
@@ -146,7 +145,7 @@ function HomeContent() {
       {preloaderFadeComplete && (
         <div 
           ref={contentRef}
-          className={`min-h-screen bg-black text-white ${isFadingOut ? 'opacity-0' : ''}`}
+          className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : ''}`}
           style={{ opacity: 0 }} // Start invisible, GSAP handles animation
         >
         {/* Navigation */}
@@ -156,9 +155,8 @@ function HomeContent() {
         <main>
           <Hero />
           <AboutUs />
-          <Features />
           <Stats />
-          <CaboNegroRulerCarousel />
+          <Features />
           <Partners />
           <WorldMapDemoEs />
           <FAQ />

@@ -281,7 +281,7 @@ export function WorldMap({
   );
 
   return (
-    <div className="w-full aspect-[2/1] dark:bg-black bg-white rounded-lg relative font-sans overflow-visible">
+    <div className="w-full max-w-full aspect-[2/1] dark:bg-black bg-white rounded-lg relative font-sans overflow-hidden">
       {/* Mobile: Duplicated maps for seamless infinite loop with scale */}
       <motion.div
         className="md:hidden flex w-[200%] h-full relative scale-[1.4] overflow-visible"

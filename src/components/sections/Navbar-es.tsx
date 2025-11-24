@@ -173,7 +173,7 @@ export default function NavbarEs() {
               : '-translate-y-full opacity-0')
     }`}>
       <nav className="container mx-auto">
-        <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/20 rounded-2xl shadow-lg">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
               <Link 
@@ -223,7 +223,7 @@ export default function NavbarEs() {
               </div>
 
               <Link href="/es/contact">
-                <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
+                <Button variant="outline" className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300">
                   Contacto
                 </Button>
               </Link>
@@ -293,7 +293,7 @@ export default function NavbarEs() {
                 <Link href="/es/contact" className="w-full mt-2">
                   <Button
                     variant="outline"
-                    className="uppercase border-white text-white hover:bg-white hover:text-black w-full"
+                    className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-300 w-full"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Contáctanos

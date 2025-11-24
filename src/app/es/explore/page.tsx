@@ -8,6 +8,7 @@ import { useAnimation } from '@/contexts/AnimationContext'
 import Footer from '@/components/sections/Footer-es'
 import Navbar from '@/components/sections/Navbar-es'
 import CookieBanner from '@/components/sections/CookieBanner'
+import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 
 // Spline scenes data
 const splineScenes = [
@@ -262,6 +263,9 @@ function ExploreContent() {
               </div>
             </div>
           </main>
+
+          {/* Ruler Carousel */}
+          <CaboNegroRulerCarousel />
 
           {/* Footer */}
           <Footer />

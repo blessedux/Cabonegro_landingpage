@@ -27,8 +27,8 @@ export function WorldMapDemoEs() {
   }, []);
 
   return (
-    <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative">
-      <div className="relative">
+    <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative overflow-hidden">
+      <div className="relative w-full max-w-full overflow-hidden">
         <WorldMap
           dashed
           dots={[
