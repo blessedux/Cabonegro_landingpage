@@ -11,56 +11,70 @@ interface ParallaxFooterProps {
 
 export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
   const parallaxRef = useRef<HTMLElement>(null)
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null)
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger)
+    // Register ScrollTrigger plugin
+    if (typeof window !== 'undefined') {
+      gsap.registerPlugin(ScrollTrigger)
+    }
 
     const triggerElement = parallaxRef.current?.querySelector('[data-parallax-layers]')
-    let scrollTriggerInstance: ScrollTrigger | null = null
+    
+    if (!triggerElement || typeof window === 'undefined') return
 
-    if (triggerElement) {
+    // Wait for next frame to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
       const layers = [
-        { layer: "1", yPercent: 80 },
-        { layer: "2", yPercent: 60 },
+        { layer: "1", yPercent: 70 },
+        { layer: "2", yPercent: 55 },
         { layer: "3", yPercent: 40 },
         { layer: "4", yPercent: 20 }
       ]
 
+      // Create timeline with ScrollTrigger
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: triggerElement,
           start: "top bottom",
           end: "bottom top",
-          scrub: 1,
-          onRefresh: () => {
-            ScrollTrigger.refresh()
-          }
+          scrub: 0.5, // Smooth scrubbing
+          invalidateOnRefresh: true, // Recalculate on resize
+          markers: false, // Set to true for debugging
         }
       })
 
-      scrollTriggerInstance = tl.scrollTrigger || null
+      scrollTriggerRef.current = tl.scrollTrigger || null
 
+      // Animate each layer
       layers.forEach((layerObj, idx) => {
-        tl.to(
-          triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
-          {
-            yPercent: layerObj.yPercent,
-            ease: "none"
-          },
-          idx === 0 ? undefined : "<"
-        )
+        const layerElements = triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`)
+        if (layerElements.length > 0) {
+          tl.to(
+            layerElements,
+            {
+              yPercent: layerObj.yPercent,
+              ease: "none"
+            },
+            idx === 0 ? undefined : "<"
+          )
+        }
       })
 
-      // Refresh ScrollTrigger after setup to ensure proper calculations
+      // Refresh once after setup
       ScrollTrigger.refresh()
-    }
+    }, 100)
 
     return () => {
-      if (scrollTriggerInstance) {
-        scrollTriggerInstance.kill()
+      clearTimeout(timeoutId)
+      // Clean up ScrollTrigger instance
+      if (scrollTriggerRef.current) {
+        scrollTriggerRef.current.kill()
+        scrollTriggerRef.current = null
       }
+      // Kill any remaining tweens on the trigger element
       if (triggerElement) {
-        gsap.killTweensOf(triggerElement)
+        gsap.killTweensOf(triggerElement.querySelectorAll('[data-parallax-layer]'))
       }
     }
   }, [])
@@ -108,18 +122,38 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
   const content = footerContent[locale]
 
   return (
-    <footer className="parallax-footer" ref={parallaxRef}>
-      <section className="parallax-footer__header min-h-[120vh] relative overflow-hidden">
-        <div className="parallax-footer__visuals absolute inset-0">
+    <footer 
+      className="parallax-footer relative w-full" 
+      ref={parallaxRef}
+      style={{ 
+        willChange: 'auto',
+        transform: 'translateZ(0)' // Force GPU acceleration
+      }}
+    >
+      {/* Parallax Header Section - tall section with parallax effect */}
+      <section 
+        className="parallax-footer__header min-h-[100vh] relative overflow-hidden"
+        style={{ 
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
+        <div className="parallax-footer__visuals absolute inset-0 w-full h-full">
+          {/* Top black border */}
           <div className="parallax-footer__black-line-overflow absolute top-0 left-0 right-0 h-1 bg-black z-50"></div>
-          <div data-parallax-layers className="parallax-footer__layers absolute inset-0">
-            {/* Layer 1 - Background gradient */}
+          
+          {/* Parallax layers container */}
+          <div 
+            data-parallax-layers 
+            className="parallax-footer__layers absolute inset-0 w-full h-full"
+          >
+            {/* Layer 1 - Background gradient (moves slowest) */}
             <div 
               data-parallax-layer="1" 
               className="parallax-footer__layer absolute inset-0 bg-gradient-to-b from-gray-900 via-black to-black"
             />
             
-            {/* Layer 2 - Pattern overlay */}
+            {/* Layer 2 - Pattern overlay (moves medium) */}
             <div 
               data-parallax-layer="2" 
               className="parallax-footer__layer absolute inset-0 opacity-30"
@@ -129,7 +163,7 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
               }}
             />
             
-            {/* Layer 3 - Title */}
+            {/* Layer 3 - Title (moves faster) */}
             <div 
               data-parallax-layer="3" 
               className="parallax-footer__layer-title absolute inset-0 flex items-center justify-center z-10"
@@ -139,7 +173,7 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
               </h2>
             </div>
             
-            {/* Layer 4 - Accent elements */}
+            {/* Layer 4 - Accent elements (moves fastest) */}
             <div 
               data-parallax-layer="4" 
               className="parallax-footer__layer absolute inset-0"
@@ -148,11 +182,20 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
               <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
             </div>
           </div>
-          <div className="parallax-footer__fade absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-20"></div>
+          
+          {/* Bottom fade gradient */}
+          <div className="parallax-footer__fade absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-20 pointer-events-none"></div>
         </div>
       </section>
       
-      <section className="parallax-footer__content bg-black border-t-2 border-black shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1),0_-2px_4px_-1px_rgba(0,0,0,0.06)] rounded-t-lg relative z-30">
+      {/* Footer Content Section - normal flow, no parallax */}
+      <section 
+        className="parallax-footer__content bg-black border-t-2 border-black shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1),0_-2px_4px_-1px_rgba(0,0,0,0.06)] rounded-t-lg relative"
+        style={{ 
+          position: 'relative',
+          zIndex: 2
+        }}
+      >
         <div className="container mx-auto py-16 px-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
             <div>
