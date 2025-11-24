@@ -7,7 +7,7 @@ import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
 import { ThemeProvider } from 'next-themes';
 import { PageTransitionWrapper } from '@/components/ui/PageTransitionWrapper';
 
-const locales = ['en', 'es', 'zh'];
+const locales = ['en', 'es', 'zh', 'fr'];
 
 export default async function LocaleLayout({
   children,

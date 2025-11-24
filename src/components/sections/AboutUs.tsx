@@ -17,9 +17,9 @@ export default function AboutUs() {
   const { showPreloaderB } = usePreloader()
   
   // Determine locale from pathname for button text
-  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
-  const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : 'Explore Terrain'
-  const aboutTitle = locale === 'es' ? 'Terminal Maritimo Cabo Negro' : locale === 'zh' ? '卡波内格罗海事码头' : 'Cabo Negro Maritime Terminal'
+  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
+  const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : locale === 'fr' ? 'Explorer le Terrain' : 'Explore Terrain'
+  const aboutTitle = locale === 'es' ? 'Terminal Maritimo Cabo Negro' : locale === 'zh' ? '卡波内格罗海事码头' : locale === 'fr' ? 'Terminal Maritime Cabo Negro' : 'Cabo Negro Maritime Terminal'
   
   // Track scroll progress based on section entering/exiting viewport
   // Fade in when top enters viewport, fade out when bottom enters viewport
@@ -67,7 +67,7 @@ export default function AboutUs() {
   const handleViewTerrain = () => {
     showPreloaderB()
     // Determine locale from pathname
-    const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
+    const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
     const explorePath = locale === 'en' ? '/explore' : `/${locale}/explore`
     setTimeout(() => {
       router.push(explorePath)
@@ -124,7 +124,13 @@ export default function AboutUs() {
             {/* Main content - centered */}
             <div className="mb-12 w-full max-w-3xl mx-auto text-center text-white" style={{ color: '#ffffff' }}>
               <MagicText 
-                text="Cabo Negro represents a visionary industrial and maritime development at the southernmost tip of Chile, designed to serve as the strategic gateway for Chile's green hydrogen economy and international trade routes."
+                text={locale === 'es' 
+                  ? 'Cabo Negro representa un desarrollo industrial y marítimo visionario en el extremo sur de Chile, diseñado para servir como puerta de entrada estratégica para la economía del hidrógeno verde de Chile y las rutas comerciales internacionales.'
+                  : locale === 'zh'
+                  ? '卡波内格罗代表了智利最南端的远见性工业和海事发展，旨在作为智利绿色氢经济和国际贸易路线的战略门户。'
+                  : locale === 'fr'
+                  ? 'Cabo Negro représente un développement industriel et maritime visionnaire à la pointe sud du Chili, conçu pour servir de porte d\'entrée stratégique pour l\'économie de l\'hydrogène vert du Chili et les routes commerciales internationales.'
+                  : 'Cabo Negro represents a visionary industrial and maritime development at the southernmost tip of Chile, designed to serve as the strategic gateway for Chile\'s green hydrogen economy and international trade routes.'}
                 className="text-lg sm:text-xl text-white text-center leading-relaxed"
               />
             </div>
@@ -145,13 +151,15 @@ export default function AboutUs() {
                     className="w-full h-48 object-cover rounded-lg mb-4"
                   />
                   <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white">
-                    {locale === 'es' ? 'El Puerto' : locale === 'zh' ? '港口' : 'The Port'}
+                    {locale === 'es' ? 'El Puerto' : locale === 'zh' ? '港口' : locale === 'fr' ? 'Le Port' : 'The Port'}
                   </h3>
                   <p className="text-gray-300 text-sm md:text-base mb-4 leading-relaxed">
                     {locale === 'es' 
                       ? 'Terminal marítimo estratégico con maqueta digital interactiva y cartografía detallada del desarrollo portuario y sus capacidades logísticas.'
                       : locale === 'zh'
                       ? '战略海事码头，配有交互式数字模型和详细的港口开发及物流能力制图。'
+                      : locale === 'fr'
+                      ? 'Terminal maritime stratégique avec maquette numérique interactive et cartographie détaillée du développement portuaire et de ses capacités logistiques.'
                       : 'Strategic maritime terminal featuring an interactive digital mockup and detailed cartography of port development and logistics capabilities.'}
                   </p>
                 </div>
@@ -186,6 +194,8 @@ export default function AboutUs() {
                       ? 'Desarrollo inmobiliario estratégico con infraestructura tecnológica avanzada, incluyendo instalaciones de AWS y GTD.'
                       : locale === 'zh'
                       ? '战略性房地产开发，配备先进的技术基础设施，包括AWS和GTD设施。'
+                      : locale === 'fr'
+                      ? 'Développement immobilier stratégique avec infrastructure technologique avancée, incluant les installations AWS et GTD.'
                       : 'Strategic real estate development with advanced technological infrastructure, including AWS and GTD facilities.'}
                   </p>
                 </div>
@@ -201,7 +211,7 @@ export default function AboutUs() {
                     }, 100)
                   }}
                 >
-                  {locale === 'es' ? 'Explorar' : locale === 'zh' ? '探索' : 'Explore'}
+                  {locale === 'es' ? 'Explorar' : locale === 'zh' ? '探索' : locale === 'fr' ? 'Explorer' : 'Explore'}
                 </Button>
               </motion.div>
 
@@ -219,13 +229,15 @@ export default function AboutUs() {
                     className="w-full h-48 object-cover rounded-lg mb-4"
                   />
                   <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white">
-                    {locale === 'es' ? 'Parque Industrial Cabonegro' : locale === 'zh' ? '卡波内格罗工业园' : 'Cabo Negro Industrial Park'}
+                    {locale === 'es' ? 'Parque Industrial Cabonegro' : locale === 'zh' ? '卡波内格罗工业园' : locale === 'fr' ? 'Parc Industriel Cabo Negro' : 'Cabo Negro Industrial Park'}
                   </h3>
                   <p className="text-gray-300 text-sm md:text-base mb-4 leading-relaxed">
                     {locale === 'es'
                       ? 'Zona industrial integral diseñada para soportar la economía del hidrógeno verde y facilitar el comercio internacional en el extremo sur de Chile.'
                       : locale === 'zh'
                       ? '综合性工业区，旨在支持绿色氢经济并促进智利最南端的国际贸易。'
+                      : locale === 'fr'
+                      ? 'Zone industrielle complète conçue pour soutenir l\'économie de l\'hydrogène vert et faciliter le commerce international à la pointe sud du Chili.'
                       : 'Comprehensive industrial zone designed to support the green hydrogen economy and facilitate international trade at Chile\'s southernmost tip.'}
                   </p>
                 </div>
@@ -241,7 +253,7 @@ export default function AboutUs() {
                     }, 100)
                   }}
                 >
-                  {locale === 'es' ? 'Explorar' : locale === 'zh' ? '探索' : 'Explore'}
+                  {locale === 'es' ? 'Explorar' : locale === 'zh' ? '探索' : locale === 'fr' ? 'Explorer' : 'Explore'}
                 </Button>
               </motion.div>
             </div>

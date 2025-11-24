@@ -6,6 +6,7 @@ import { VerticalCutReveal } from '@/components/ui/vertical-cut-reveal'
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
+import { usePathname } from 'next/navigation'
 
 interface PressArticle {
   id: number
@@ -17,50 +18,179 @@ interface PressArticle {
   date: string
 }
 
-const pressArticles: PressArticle[] = [
-  {
-    id: 1,
-    title: 'Cabo Negro: Strategic Gateway to the South',
-    description: 'New industrial complex set to transform maritime logistics in Patagonia',
-    image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
-    link: 'https://example.com/article1',
-    source: 'Maritime News',
-    date: '2024-01-15'
-  },
-  {
-    id: 2,
-    title: 'Hydrogen Economy Infrastructure Development',
-    description: 'Cabo Negro positioned as key hub for green hydrogen export operations',
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-    link: 'https://example.com/article2',
-    source: 'Energy Today',
-    date: '2024-02-20'
-  },
-  {
-    id: 3,
-    title: 'Industrial Park Expansion in Patagonia',
-    description: 'Major investment in sustainable industrial infrastructure for Southern Chile',
-    image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-    link: 'https://example.com/article3',
-    source: 'Industrial Weekly',
-    date: '2024-03-10'
-  },
-  {
-    id: 4,
-    title: 'Environmental Compliance and Sustainability',
-    description: 'Cabo Negro sets new standards for eco-friendly port operations',
-    image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-    link: 'https://example.com/article4',
-    source: 'Green Business',
-    date: '2024-04-05'
+const getPressArticles = (locale: string): PressArticle[] => {
+  const articles = {
+    en: [
+      {
+        id: 1,
+        title: 'Cabo Negro: Strategic Gateway to the South',
+        description: 'New industrial complex set to transform maritime logistics in Patagonia',
+        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article1',
+        source: 'Maritime News',
+        date: '2024-01-15'
+      },
+      {
+        id: 2,
+        title: 'Hydrogen Economy Infrastructure Development',
+        description: 'Cabo Negro positioned as key hub for green hydrogen export operations',
+        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article2',
+        source: 'Energy Today',
+        date: '2024-02-20'
+      },
+      {
+        id: 3,
+        title: 'Industrial Park Expansion in Patagonia',
+        description: 'Major investment in sustainable industrial infrastructure for Southern Chile',
+        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article3',
+        source: 'Industrial Weekly',
+        date: '2024-03-10'
+      },
+      {
+        id: 4,
+        title: 'Environmental Compliance and Sustainability',
+        description: 'Cabo Negro sets new standards for eco-friendly port operations',
+        image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article4',
+        source: 'Green Business',
+        date: '2024-04-05'
+      }
+    ],
+    es: [
+      {
+        id: 1,
+        title: 'Cabo Negro: Puerta de Entrada Estratégica al Sur',
+        description: 'Nuevo complejo industrial transformará la logística marítima en Patagonia',
+        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article1',
+        source: 'Noticias Marítimas',
+        date: '2024-01-15'
+      },
+      {
+        id: 2,
+        title: 'Desarrollo de Infraestructura de Economía del Hidrógeno',
+        description: 'Cabo Negro posicionado como centro clave para operaciones de exportación de hidrógeno verde',
+        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article2',
+        source: 'Energía Hoy',
+        date: '2024-02-20'
+      },
+      {
+        id: 3,
+        title: 'Expansión del Parque Industrial en Patagonia',
+        description: 'Gran inversión en infraestructura industrial sostenible para el sur de Chile',
+        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article3',
+        source: 'Industrial Semanal',
+        date: '2024-03-10'
+      },
+      {
+        id: 4,
+        title: 'Cumplimiento Ambiental y Sostenibilidad',
+        description: 'Cabo Negro establece nuevos estándares para operaciones portuarias ecológicas',
+        image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article4',
+        source: 'Negocios Verdes',
+        date: '2024-04-05'
+      }
+    ],
+    zh: [
+      {
+        id: 1,
+        title: '卡波内格罗：通往南方的战略门户',
+        description: '新工业综合体将改变巴塔哥尼亚的海事物流',
+        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article1',
+        source: '海事新闻',
+        date: '2024-01-15'
+      },
+      {
+        id: 2,
+        title: '氢经济基础设施发展',
+        description: '卡波内格罗定位为绿色氢出口运营的关键枢纽',
+        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article2',
+        source: '今日能源',
+        date: '2024-02-20'
+      },
+      {
+        id: 3,
+        title: '巴塔哥尼亚工业园扩张',
+        description: '对智利南部可持续工业基础设施的重大投资',
+        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article3',
+        source: '工业周刊',
+        date: '2024-03-10'
+      },
+      {
+        id: 4,
+        title: '环境合规与可持续性',
+        description: '卡波内格罗为生态友好型港口运营设定新标准',
+        image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article4',
+        source: '绿色商业',
+        date: '2024-04-05'
+      }
+    ],
+    fr: [
+      {
+        id: 1,
+        title: 'Cabo Negro : Porte d\'Entrée Stratégique vers le Sud',
+        description: 'Nouveau complexe industriel destiné à transformer la logistique maritime en Patagonie',
+        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article1',
+        source: 'Actualités Maritimes',
+        date: '2024-01-15'
+      },
+      {
+        id: 2,
+        title: 'Développement d\'Infrastructure pour l\'Économie de l\'Hydrogène',
+        description: 'Cabo Negro positionné comme centre clé pour les opérations d\'exportation d\'hydrogène vert',
+        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article2',
+        source: 'Énergie Aujourd\'hui',
+        date: '2024-02-20'
+      },
+      {
+        id: 3,
+        title: 'Expansion du Parc Industriel en Patagonie',
+        description: 'Investissement majeur dans l\'infrastructure industrielle durable pour le sud du Chili',
+        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article3',
+        source: 'Industrie Hebdo',
+        date: '2024-03-10'
+      },
+      {
+        id: 4,
+        title: 'Conformité Environnementale et Durabilité',
+        description: 'Cabo Negro établit de nouvelles normes pour les opérations portuaires écologiques',
+        image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
+        link: 'https://example.com/article4',
+        source: 'Business Vert',
+        date: '2024-04-05'
+      }
+    ]
   }
-]
+  
+  return articles[locale as keyof typeof articles] || articles.en
+}
 
 export default function Press() {
   const heroRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
+  const pressArticles = getPressArticles(locale)
   const [currentArticle, setCurrentArticle] = useState(0)
   const [touchStart, setTouchStart] = useState<number | null>(null)
   const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  
+  // Get localized text
+  const pressLabel = locale === 'es' ? 'PRENSA Y MEDIOS' : locale === 'zh' ? '新闻与媒体' : locale === 'fr' ? 'PRESSE & MÉDIAS' : 'PRESS & MEDIA'
+  const pressCoverage = locale === 'es' ? 'Cobertura de Prensa y Medios' : locale === 'zh' ? '新闻与媒体报道' : locale === 'fr' ? 'Couverture Presse et Médias' : 'Press & Media Coverage'
+  const readFullArticle = locale === 'es' ? 'Lea el artículo completo para más detalles' : locale === 'zh' ? '阅读完整文章了解更多详情' : locale === 'fr' ? 'Lisez l\'article complet pour plus de détails' : 'Read the full article for more details'
+  const readArticle = locale === 'es' ? 'LEER ARTÍCULO' : locale === 'zh' ? '阅读文章' : locale === 'fr' ? 'LIRE L\'ARTICLE' : 'READ ARTICLE'
 
   const revealVariants = {
     visible: (i: number) => ({
@@ -147,7 +277,7 @@ export default function Press() {
                 customVariants={revealVariants}
                 className="text-sm font-medium text-gray-600"
               >
-                PRESS & MEDIA
+                {pressLabel}
               </TimelineContent>
             </div>
           </div>
@@ -311,7 +441,7 @@ export default function Press() {
                 customVariants={revealVariants}
                 className="text-gray-600 text-sm mb-8"
               >
-                Press & Media Coverage
+                {pressCoverage}
               </TimelineContent>
 
               <TimelineContent
@@ -322,7 +452,7 @@ export default function Press() {
                 className="mb-6"
               >
                 <p className="text-gray-900 font-medium mb-4">
-                  Read the full article for more details
+                  {readFullArticle}
                 </p>
               </TimelineContent>
 
@@ -336,7 +466,7 @@ export default function Press() {
                 rel="noopener noreferrer"
                 className="bg-neutral-900 hover:bg-neutral-950 shadow-lg shadow-neutral-900 border border-neutral-700 flex w-fit ml-auto gap-2 hover:gap-4 transition-all duration-300 ease-in-out text-white px-5 py-3 rounded-lg cursor-pointer font-semibold"
               >
-                READ ARTICLE <ArrowRight className="" />
+                {readArticle} <ArrowRight className="" />
               </TimelineContent>
             </div>
           </div>

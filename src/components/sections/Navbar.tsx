@@ -100,6 +100,43 @@ export default function Navbar() {
   
   const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
 
+  // Get localized text based on current locale
+  const getLocalizedText = () => {
+    const texts = {
+      en: {
+        exploreTerrain: 'Explore Terrain',
+        viewDeck: 'View Deck',
+        faq: 'FAQ',
+        contactUs: 'Contact Us',
+        language: 'Language:'
+      },
+      es: {
+        exploreTerrain: 'Explorar Terreno',
+        viewDeck: 'Ver Deck',
+        faq: 'Preguntas Frecuentes',
+        contactUs: 'Contáctanos',
+        language: 'Idioma:'
+      },
+      zh: {
+        exploreTerrain: '探索地形',
+        viewDeck: '查看甲板',
+        faq: '常见问题',
+        contactUs: '联系我们',
+        language: '语言:'
+      },
+      fr: {
+        exploreTerrain: 'Explorer le Terrain',
+        viewDeck: 'Voir le Deck',
+        faq: 'FAQ',
+        contactUs: 'Nous Contacter',
+        language: 'Langue:'
+      }
+    }
+    return texts[currentLocale] || texts.en
+  }
+
+  const localizedText = getLocalizedText()
+
   // Dropdown animation only after preloader completes
   useEffect(() => {
     // Check if we're on deck, explore, or contact routes - show navbar immediately and reset hidden state
@@ -196,7 +233,11 @@ export default function Navbar() {
     showPreloaderB()
     // Navigate to explore route - let usePageTransition handle PreloaderB on route change
     setTimeout(() => {
-      router.push('/en/explore')
+      const explorePath = currentLocale === 'en' ? '/en/explore' : 
+                         currentLocale === 'es' ? '/es/explore' :
+                         currentLocale === 'zh' ? '/zh/explore' :
+                         currentLocale === 'fr' ? '/fr/explore' : '/en/explore'
+      router.push(explorePath)
     }, 100)
   }
 
@@ -207,7 +248,11 @@ export default function Navbar() {
       e.preventDefault()
       showPreloaderB()
       setTimeout(() => {
-        router.push('/en')
+        const homePath = currentLocale === 'en' ? '/en' : 
+                        currentLocale === 'es' ? '/es' :
+                        currentLocale === 'zh' ? '/zh' :
+                        currentLocale === 'fr' ? '/fr' : '/en'
+        router.push(homePath)
       }, 100)
     }
   }
@@ -219,7 +264,8 @@ export default function Navbar() {
                            pathname.includes('/contact')
     
     // If on homepage, just scroll to FAQ
-    if (!isOnSpecialPage && (pathname === '/en' || pathname === '/')) {
+    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
+    if (!isOnSpecialPage && isOnHomePage) {
       e.preventDefault()
       const faqElement = document.getElementById('FAQ')
       if (faqElement) {
@@ -235,7 +281,11 @@ export default function Navbar() {
     setMobileMenuOpen(false)
     
     setTimeout(() => {
-      router.push('/en#FAQ')
+      const homePath = currentLocale === 'en' ? '/en#FAQ' : 
+                      currentLocale === 'es' ? '/es#FAQ' :
+                      currentLocale === 'zh' ? '/zh#FAQ' :
+                      currentLocale === 'fr' ? '/fr#FAQ' : '/en#FAQ'
+      router.push(homePath)
     }, 100)
   }
 
@@ -262,7 +312,10 @@ export default function Navbar() {
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
               <Link 
-                href="/en" 
+                href={currentLocale === 'en' ? '/en' : 
+                      currentLocale === 'es' ? '/es' :
+                      currentLocale === 'zh' ? '/zh' :
+                      currentLocale === 'fr' ? '/fr' : '/en'} 
                 className="cursor-pointer"
                 onClick={handleHomeClick}
               >
@@ -284,22 +337,26 @@ export default function Navbar() {
                 onClick={handleExploreTerrain}
                 className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
-                Explore Terrain
+                {localizedText.exploreTerrain}
               </button>
               <button 
                 onClick={() => {
                   showPreloaderB()
-                  setTimeout(() => router.push('/deck'), 100)
+                  const deckPath = currentLocale === 'en' ? '/en/deck' : 
+                                  currentLocale === 'es' ? '/es/deck' :
+                                  currentLocale === 'zh' ? '/zh/deck' :
+                                  currentLocale === 'fr' ? '/fr/deck' : '/en/deck'
+                  setTimeout(() => router.push(deckPath), 100)
                 }}
                 className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
-                View Deck
+                {localizedText.viewDeck}
               </button>
               <button 
                 onClick={handleFAQClick}
                 className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
-                FAQ
+                {localizedText.faq}
               </button>
               
               {/* Language Dropdown */}
@@ -355,10 +412,14 @@ export default function Navbar() {
                 }`}
                 onClick={() => {
                   showPreloaderB()
-                  setTimeout(() => router.push('/contact'), 100)
+                  const contactPath = currentLocale === 'en' ? '/en/contact' : 
+                                     currentLocale === 'es' ? '/es/contact' :
+                                     currentLocale === 'zh' ? '/zh/contact' :
+                                     currentLocale === 'fr' ? '/fr/contact' : '/en/contact'
+                  setTimeout(() => router.push(contactPath), 100)
                 }}
               >
-                Contact Us
+                {localizedText.contactUs}
               </Button>
             </div>
 
@@ -388,28 +449,32 @@ export default function Navbar() {
                   }}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  Explore Terrain
+                  {localizedText.exploreTerrain}
                 </button>
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false)
                     showPreloaderB()
-                    setTimeout(() => router.push('/deck'), 100)
+                    const deckPath = currentLocale === 'en' ? '/en/deck' : 
+                                    currentLocale === 'es' ? '/es/deck' :
+                                    currentLocale === 'zh' ? '/zh/deck' :
+                                    currentLocale === 'fr' ? '/fr/deck' : '/en/deck'
+                    setTimeout(() => router.push(deckPath), 100)
                   }}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  View Deck
+                  {localizedText.viewDeck}
                 </button>
                 <button 
                   onClick={handleFAQClick}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  FAQ
+                  {localizedText.faq}
                 </button>
                 
                 {/* Mobile Language Toggle */}
                 <div className="flex items-center gap-2 py-2">
-                  <span className={`text-sm uppercase ${isOverWhiteBackground ? 'text-black/80' : 'text-white/80'}`}>Language:</span>
+                  <span className={`text-sm uppercase ${isOverWhiteBackground ? 'text-black/80' : 'text-white/80'}`}>{localizedText.language}</span>
                   {languages.map((lang) => (
                     <button
                       key={lang.code}
@@ -429,7 +494,11 @@ export default function Navbar() {
                   onClick={() => {
                     setMobileMenuOpen(false)
                     showPreloaderB()
-                    setTimeout(() => router.push('/contact'), 100)
+                    const contactPath = currentLocale === 'en' ? '/en/contact' : 
+                                       currentLocale === 'es' ? '/es/contact' :
+                                       currentLocale === 'zh' ? '/zh/contact' :
+                                       currentLocale === 'fr' ? '/fr/contact' : '/en/contact'
+                    setTimeout(() => router.push(contactPath), 100)
                   }}
                   variant="outline"
                   className={`uppercase transition-all duration-300 w-full mt-2 ${
@@ -438,7 +507,7 @@ export default function Navbar() {
                       : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
                   }`}
                 >
-                  Contact Us
+                  {localizedText.contactUs}
                 </Button>
               </div>
             </div>

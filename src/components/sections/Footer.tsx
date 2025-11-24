@@ -1,65 +1,20 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { useEffect, useState, useRef } from 'react'
+import { SimpleFooter } from '@/components/sections/SimpleFooter'
+import { usePathname } from 'next/navigation'
 
 export default function Footer() {
-  const [scrollProgress, setScrollProgress] = useState(0)
-  const footerRef = useRef<HTMLElement>(null)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const windowHeight = window.innerHeight
-      const documentHeight = document.documentElement.scrollHeight
-      const scrollTop = window.scrollY || document.documentElement.scrollTop
-      const scrollBottom = scrollTop + windowHeight
-      
-      // Calculate how close we are to the bottom
-      // Start animating when within 300px of the bottom
-      const triggerDistance = 300
-      const distanceFromBottom = documentHeight - scrollBottom
-      
-      if (distanceFromBottom <= triggerDistance) {
-        // Calculate progress from 0 to 1 (0 = 300px from bottom, 1 = at bottom)
-        const progress = 1 - (distanceFromBottom / triggerDistance)
-        setScrollProgress(Math.min(1, Math.max(0, progress)))
-      } else {
-        setScrollProgress(0)
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    handleScroll() // Check initial state
-
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  // Calculate translateY based on scroll progress (slides up more as you scroll down)
-  // Max slide up is -12px when at bottom
-  const translateY = scrollProgress * -12
-
-  return (
-    <footer 
-      ref={footerRef}
-      // eslint-disable-next-line react/forbid-dom-props
-      style={{ transform: `translateY(${translateY}px)` }}
-      className="pt-0 pb-16 px-6 bg-white relative z-30 w-full flex flex-col justify-center border-t-2 border-black shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1),0_-2px_4px_-1px_rgba(0,0,0,0.06)] rounded-t-lg transition-transform duration-300 ease-out"
-    >
-      <div className="container mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div>
-            <div className="text-2xl font-bold mb-2 text-foreground">CABO NEGRO</div>
-            <p className="text-sm text-gray-600">© 2025 Cabo Negro Industrial Park</p>
-          </div>
-
-          <div className="flex flex-wrap gap-8">
-            <Link href="/explore" className="text-sm text-gray-600 hover:text-accent uppercase">Explore Terrain</Link>
-            <Link href="/deck" className="text-sm text-gray-600 hover:text-accent uppercase">View Deck</Link>
-            <Link href="/#FAQ" className="text-sm text-gray-600 hover:text-accent uppercase">FAQ</Link>
-          </div>
-        </div>
-      </div>
-    </footer>
-  )
+  const pathname = usePathname()
+  
+  // Detect locale from pathname
+  let locale: 'en' | 'es' | 'zh' | 'fr' = 'en'
+  if (pathname.startsWith('/es')) {
+    locale = 'es'
+  } else if (pathname.startsWith('/zh')) {
+    locale = 'zh'
+  } else if (pathname.startsWith('/fr')) {
+    locale = 'fr'
+  }
+  
+  return <SimpleFooter locale={locale} />
 }

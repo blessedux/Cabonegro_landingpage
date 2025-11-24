@@ -151,7 +151,9 @@ export default function HeroZh() {
           >
             <Button 
               onClick={handleExploreTerrain}
-              className="bg-white text-black hover:bg-gray-200 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300 transform hover:scale-105"
+              variant="outline"
+              size="lg"
+              className="uppercase border-black text-black hover:bg-cyan-500 hover:text-white px-8 py-4 text-lg font-semibold transition-all duration-300"
             >
               探索地形
             </Button>

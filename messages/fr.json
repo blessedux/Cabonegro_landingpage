@@ -1,0 +1,110 @@
+{
+  "navigation": {
+    "home": "Accueil",
+    "about": "À propos",
+    "projects": "Projets",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Cabo Negro",
+    "subtitle": "Développement Industriel Stratégique",
+    "description": "Opportunités d'investissement transformatrices dans la zone industrielle la plus stratégique du Chili",
+    "cta": "Explorer les Opportunités"
+  },
+  "features": {
+    "title": "Opportunité d'Investissement Stratégique",
+    "subtitle": "Cabo Negro représente une convergence unique d'emplacement stratégique, de potentiel d'énergie renouvelable et d'infrastructure prête à construire",
+    "strategicGateway": {
+      "title": "Porte d'Entrée Stratégique",
+      "description": "Alternative au Canal de Panama reliant les océans Atlantique et Pacifique",
+      "highlights": [
+        "Porte d'entrée principale vers l'Antarctique",
+        "Sans péages et emplacement géopolitiquement stable",
+        "Corridor maritime Atlantique-Pacifique"
+      ]
+    },
+    "h2vOpportunity": {
+      "title": "Opportunité H₂V",
+      "description": "Région de Magallanes explorant un potentiel significatif d'hydrogène vert",
+      "highlights": [
+        "200+ projets déposés ou en examen",
+        "Secteur régional de l'hydrogène en croissance",
+        "EDF entrant d'ici fin 2025"
+      ]
+    },
+    "industrialReady": {
+      "title": "Prêt pour l'Industrie",
+      "description": "300+ hectares d'infrastructure industrielle prête à construire",
+      "highlights": [
+        "Connecté au corridor principal Route 9N",
+        "6 routes internes (33% construites)",
+        "Capacité électrique de 13 MW"
+      ]
+    },
+    "maritimeTerminal": {
+      "title": "Terminal Maritime",
+      "description": "Construction portuaire en deux phases prête à construire d'ici 2026",
+      "highlights": [
+        "Emplacement portuaire protégé",
+        "Phase 1 : Plateforme de 350m + rampe",
+        "Phase 2 : Pont de 350m + quai de 300m"
+      ]
+    },
+    "regulatoryAdvantage": {
+      "title": "Avantage Réglementaire",
+      "description": "Nouveau plan urbain incluant Cabo Negro comme noyau industriel",
+      "highlights": [
+        "3 258 hectares ajoutés aux limites urbaines",
+        "Zonage industriel approuvé",
+        "Cadre de croissance ordonnée"
+      ]
+    },
+    "windPotential": {
+      "title": "Potentiel Éolien",
+      "description": "7× la capacité actuelle de génération d'énergie du Chili",
+      "highlights": [
+        "Potentiel éolien massif dans la région",
+        "Faibles coûts d'hébergement et de maintenance",
+        "Infrastructure énergétique durable"
+      ]
+    }
+  },
+  "preloader": {
+    "terminal": {
+      "title": "Porte d'Entrée Industrielle",
+      "subtitle": "Développement Initié",
+      "lines": {
+        "coordinates": "Développement Industriel : Zone Cabo Negro",
+        "coordinatesLocked": "Emplacement Stratégique Sécurisé",
+        "calibration": "Démarrage de l'Analyse d'Infrastructure",
+        "singularity": "Opportunité d'Investissement Principale Détectée",
+        "tesseract": "Démarrage du Développement du Parc Industriel",
+        "matrices": "Matrices de Croissance Économique Alignées",
+        "entanglement": "Portefeuille d'Investissement Stabilisé",
+        "strings": "Forces du Marché Fonctionnant en Harmonie",
+        "aperture": "Écosystème Commercial en Expansion",
+        "gateway": "Porte d'Entrée Industrielle Stabilisée",
+        "parameters": "Paramètres Économiques Optimisés"
+      },
+      "progress": "Traitement de l'Analyse de Marché",
+      "complete": "Séquence de Développement Terminée",
+      "open": "Porte d'Entrée Industrielle Ouverte"
+    },
+    "layout": {
+      "brand": "CABO NEGRO",
+      "tagline": "Développement Industriel",
+      "loading": "Chargement",
+      "status": "Initialisation de la Porte d'Entrée Industrielle"
+    }
+  },
+  "partners": {
+    "title": "Partenaires de Confiance",
+    "subtitle": "Alliances Stratégiques",
+    "description": "Travailler avec les leaders de l'industrie pour construire le principal centre industriel et maritime du Chili"
+  },
+  "footer": {
+    "copyright": "© 2025 Développement Industriel Cabo Negro. Tous droits réservés.",
+    "coordinates": "51.5074° N, 0.1278° W"
+  }
+}
+

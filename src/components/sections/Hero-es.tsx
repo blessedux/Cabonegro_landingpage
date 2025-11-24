@@ -162,7 +162,7 @@ export default function HeroEs() {
             <Button 
               size="lg" 
               variant="outline" 
-              className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
+              className="uppercase border-black text-black hover:bg-cyan-500 hover:text-white select-none"
               onClick={handleExploreTerrain}
               style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
             >
@@ -172,7 +172,7 @@ export default function HeroEs() {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="uppercase border-white text-white hover:bg-white hover:text-black select-none"
+                className="uppercase border-black text-black hover:bg-cyan-500 hover:text-white select-none"
                 style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}
               >
                 Ver Deck

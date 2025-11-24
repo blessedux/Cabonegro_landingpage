@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 
-export default function Hero() {
+export default function HeroFr() {
   const router = useRouter()
   const { startFadeOut } = useAnimation()
   const { showPreloaderB } = usePreloader()
@@ -66,7 +66,7 @@ export default function Hero() {
       
       // Navigate after PreloaderB has time to display (2.5 seconds)
       setTimeout(() => {
-        router.push('/explore')
+        router.push('/fr/explore')
       }, 2500)
     })
   }
@@ -74,12 +74,12 @@ export default function Hero() {
   const handleDeckClick = () => {
     showPreloaderB()
     setTimeout(() => {
-      router.push('/deck')
+      router.push('/fr/deck')
     }, 100)
   }
 
-  const title = 'Gateway to the South of the World'
-  const subtitle = 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
+  const title = 'Porte d\'Entrée vers le Sud du Monde'
+  const subtitle = 'Cabo Negro est un Centre Industriel et Maritime Stratégique de l\'Hémisphère Sud.'
 
   return (
     <section 
@@ -209,7 +209,7 @@ export default function Hero() {
                 zIndex: 50
               }}
             >
-              Explore Terrain
+              Explorer le Terrain
             </Button>
             <Button 
               size="lg" 
@@ -227,7 +227,7 @@ export default function Hero() {
                 zIndex: 50
               }}
             >
-              View Deck
+              Voir le Deck
             </Button>
           </motion.div>
         </div>
@@ -235,3 +235,4 @@ export default function Hero() {
     </section>
   )
 }
+

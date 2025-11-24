@@ -112,8 +112,8 @@ export default function Stats() {
   const { showPreloaderB } = usePreloader()
   
   // Determine locale from pathname for button text
-  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
-  const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : 'Explore Terrain'
+  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
+  const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : locale === 'fr' ? 'Explorer le Terrain' : 'Explore Terrain'
   
   // Find AboutUs section to use its bottom as trigger point and track its scroll progress
   const aboutUsSectionRef = useRef<HTMLElement | null>(null)
@@ -243,14 +243,20 @@ export default function Stats() {
                     textShadow: '0 0 0 rgba(255,255,255,1)' 
                   }}
                 >
-                  Our Vision
+                  {locale === 'es' ? 'Nuestra Visión' : locale === 'zh' ? '我们的愿景' : locale === 'fr' ? 'Notre Vision' : 'Our Vision'}
                 </motion.h3>
                 <motion.div
                   style={{ opacity: visionSubtitleOpacity }}
                   className="max-w-5xl mx-auto"
                 >
                   <EarlyMagicText 
-                    text="To establish Cabo Negro as the premier industrial and maritime hub of the Southern Hemisphere, serving as the primary gateway to Antarctica and an essential node in global trade routes while supporting Chile's transition to a green hydrogen economy."
+                    text={locale === 'es'
+                      ? 'Establecer Cabo Negro como el principal centro industrial y marítimo del Hemisferio Sur, sirviendo como puerta de entrada principal a la Antártida y un nodo esencial en las rutas comerciales globales mientras se apoya la transición de Chile hacia una economía de hidrógeno verde.'
+                      : locale === 'zh'
+                      ? '将卡波内格罗确立为南半球首屈一指的工业和海事中心，作为通往南极洲的主要门户和全球贸易路线的重要节点，同时支持智利向绿色氢经济的转型。'
+                      : locale === 'fr'
+                      ? 'Établir Cabo Negro comme le principal centre industriel et maritime de l\'Hémisphère Sud, servant de porte d\'entrée principale vers l\'Antarctique et de nœud essentiel dans les routes commerciales mondiales tout en soutenant la transition du Chili vers une économie de l\'hydrogène vert.'
+                      : 'To establish Cabo Negro as the premier industrial and maritime hub of the Southern Hemisphere, serving as the primary gateway to Antarctica and an essential node in global trade routes while supporting Chile\'s transition to a green hydrogen economy.'}
                     className="text-white leading-relaxed text-lg lg:text-xl"
                   />
                 </motion.div>
@@ -274,11 +280,17 @@ export default function Stats() {
                 }}
               >
                 <h2 className="text-4xl md:text-5xl font-bold mb-2 text-white">
-                  Land Development Structure
+                  {locale === 'es' ? 'Estructura de Desarrollo de Tierras' : locale === 'zh' ? '土地开发结构' : locale === 'fr' ? 'Structure de Développement des Terres' : 'Land Development Structure'}
                 </h2>
                 <div className="max-w-3xl mx-auto mb-2">
                   <MagicText 
-                    text="Comprehensive land development breakdown across Cabo Negro's strategic industrial and maritime zone"
+                    text={locale === 'es'
+                      ? 'Desglose completo del desarrollo de tierras en la zona industrial y marítima estratégica de Cabo Negro'
+                      : locale === 'zh'
+                      ? '卡波内格罗战略工业和海事区土地开发的全面细分'
+                      : locale === 'fr'
+                      ? 'Répartition complète du développement des terres dans la zone industrielle et maritime stratégique de Cabo Negro'
+                      : 'Comprehensive land development breakdown across Cabo Negro\'s strategic industrial and maritime zone'}
                     className="text-gray-300 text-lg"
                   />
                 </div>
@@ -290,8 +302,12 @@ export default function Stats() {
                   <div className="text-6xl md:text-7xl font-bold mb-4 text-white">
                     <AnimatedCounter end={300} suffix="+" />
                   </div>
-                  <p className="text-gray-300 text-lg font-medium mb-2">Total Hectares</p>
-                  <p className="text-gray-400 text-sm">Industrial & Maritime Development Zone</p>
+                  <p className="text-gray-300 text-lg font-medium mb-2">
+                    {locale === 'es' ? 'Hectáreas Totales' : locale === 'zh' ? '总公顷数' : locale === 'fr' ? 'Hectares Totaux' : 'Total Hectares'}
+                  </p>
+                  <p className="text-gray-400 text-sm">
+                    {locale === 'es' ? 'Zona de Desarrollo Industrial y Marítimo' : locale === 'zh' ? '工业和海事开发区' : locale === 'fr' ? 'Zone de Développement Industriel et Maritime' : 'Industrial & Maritime Development Zone'}
+                  </p>
                 </div>
               </div>
 
@@ -300,66 +316,106 @@ export default function Stats() {
               {/* PPG */}
               <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
                 <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
-                <p className="text-gray-400 text-xs mb-3">Inversiones PPG SpA</p>
+                <p className="text-gray-400 text-xs mb-3">
+                  {locale === 'es' ? 'Inversiones PPG SpA' : locale === 'zh' ? 'PPG投资公司' : locale === 'fr' ? 'Investissements PPG SpA' : 'Inversiones PPG SpA'}
+                </p>
                 <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">Maritime concession application in process</p>
+                  <p className="text-gray-300 text-sm">
+                    {locale === 'es' ? 'Solicitud de concesión marítima en trámite' : locale === 'zh' ? '海事特许申请处理中' : locale === 'fr' ? 'Demande de concession maritime en cours' : 'Maritime concession application in process'}
+                  </p>
                   <p className="text-blue-400 text-xs font-mono">CM61260</p>
-                  <p className="text-gray-400 text-xs mt-3">Port zone development with J&P</p>
+                  <p className="text-gray-400 text-xs mt-3">
+                    {locale === 'es' ? 'Desarrollo de zona portuaria con J&P' : locale === 'zh' ? '与J&P合作开发港口区' : locale === 'fr' ? 'Développement de zone portuaire avec J&P' : 'Port zone development with J&P'}
+                  </p>
                 </div>
               </div>
 
               {/* Patagon Valley */}
               <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
                 <h3 className="text-white font-bold text-lg mb-3">Patagon Valley</h3>
-                <p className="text-gray-400 text-xs mb-3">Inmobiliaria Patagon Valley SpA</p>
+                <p className="text-gray-400 text-xs mb-3">
+                  {locale === 'es' ? 'Inmobiliaria Patagon Valley SpA' : locale === 'zh' ? '巴塔哥尼亚谷房地产公司' : locale === 'fr' ? 'Immobilier Patagon Valley SpA' : 'Inmobiliaria Patagon Valley SpA'}
+                </p>
                 <div className="mb-3">
                   <div className="text-3xl font-bold text-white mb-1">
                     <AnimatedCounter end={33} suffix=" ha" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">Owned by private investment fund</p>
-                  <p className="text-gray-300 text-sm">Installed: AWS and GTD</p>
-                  <p className="text-gray-400 text-xs mt-2">Originally planned as tech park</p>
+                  <p className="text-gray-300 text-sm">
+                    {locale === 'es' ? 'Propiedad de fondo de inversión privado' : locale === 'zh' ? '由私人投资基金拥有' : locale === 'fr' ? 'Propriété d\'un fonds d\'investissement privé' : 'Owned by private investment fund'}
+                  </p>
+                  <p className="text-gray-300 text-sm">
+                    {locale === 'es' ? 'Instalado: AWS y GTD' : locale === 'zh' ? '已安装：AWS和GTD' : locale === 'fr' ? 'Installé : AWS et GTD' : 'Installed: AWS and GTD'}
+                  </p>
+                  <p className="text-gray-400 text-xs mt-2">
+                    {locale === 'es' ? 'Originalmente planificado como parque tecnológico' : locale === 'zh' ? '最初规划为科技园' : locale === 'fr' ? 'Initialement prévu comme parc technologique' : 'Originally planned as tech park'}
+                  </p>
                 </div>
               </div>
 
               {/* A&J */}
               <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
                 <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
-                <p className="text-gray-400 text-xs mb-3">Inversiones A&J Limitada</p>
+                <p className="text-gray-400 text-xs mb-3">
+                  {locale === 'es' ? 'Inversiones A&J Limitada' : locale === 'zh' ? 'A&J投资有限公司' : locale === 'fr' ? 'Investissements A&J Limitée' : 'Inversiones A&J Limitada'}
+                </p>
                 <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">Subdivided lots available</p>
+                  <p className="text-gray-300 text-sm">
+                    {locale === 'es' ? 'Lotes subdivididos disponibles' : locale === 'zh' ? '可用的细分地块' : locale === 'fr' ? 'Lots subdivisés disponibles' : 'Subdivided lots available'}
+                  </p>
                   <p className="text-2xl font-bold text-white mb-2">5,000 m²+</p>
-                  <p className="text-gray-400 text-xs">Minimum lot size</p>
+                  <p className="text-gray-400 text-xs">
+                    {locale === 'es' ? 'Tamaño mínimo de lote' : locale === 'zh' ? '最小地块面积' : locale === 'fr' ? 'Taille minimale du lot' : 'Minimum lot size'}
+                  </p>
                 </div>
               </div>
 
               {/* J&P */}
               <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-                <h3 className="text-white font-bold text-lg mb-3">J&P Port Zone</h3>
-                <p className="text-gray-400 text-xs mb-3">Inversiones J&P Limitada</p>
+                <h3 className="text-white font-bold text-lg mb-3">
+                  {locale === 'es' ? 'Zona Portuaria J&P' : locale === 'zh' ? 'J&P港口区' : locale === 'fr' ? 'Zone Portuaire J&P' : 'J&P Port Zone'}
+                </h3>
+                <p className="text-gray-400 text-xs mb-3">
+                  {locale === 'es' ? 'Inversiones J&P Limitada' : locale === 'zh' ? 'J&P投资有限公司' : locale === 'fr' ? 'Investissements J&P Limitée' : 'Inversiones J&P Limitada'}
+                </p>
                 <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">Port zone development</p>
-                  <p className="text-gray-300 text-sm">Linked to PPG port project</p>
-                  <p className="text-gray-400 text-xs mt-3">Divided into separate companies:</p>
-                  <p className="text-gray-300 text-xs">• J&P (continuadora) - Port development</p>
-                  <p className="text-gray-300 text-xs">• J&P 2 & J&P 3 - Expansion options</p>
+                  <p className="text-gray-300 text-sm">
+                    {locale === 'es' ? 'Desarrollo de zona portuaria' : locale === 'zh' ? '港口区开发' : locale === 'fr' ? 'Développement de zone portuaire' : 'Port zone development'}
+                  </p>
+                  <p className="text-gray-300 text-sm">
+                    {locale === 'es' ? 'Vinculado al proyecto portuario PPG' : locale === 'zh' ? '与PPG港口项目相关' : locale === 'fr' ? 'Lié au projet portuaire PPG' : 'Linked to PPG port project'}
+                  </p>
+                  <p className="text-gray-400 text-xs mt-3">
+                    {locale === 'es' ? 'Dividido en sociedades separadas:' : locale === 'zh' ? '分为独立公司：' : locale === 'fr' ? 'Divisé en sociétés séparées :' : 'Divided into separate companies:'}
+                  </p>
+                  <p className="text-gray-300 text-xs">
+                    {locale === 'es' ? '• J&P (continuadora) - Desarrollo portuario' : locale === 'zh' ? '• J&P（继续者）- 港口开发' : locale === 'fr' ? '• J&P (continuatrice) - Développement portuaire' : '• J&P (continuadora) - Port development'}
+                  </p>
+                  <p className="text-gray-300 text-xs">
+                    {locale === 'es' ? '• J&P 2 y J&P 3 - Opciones de ampliación' : locale === 'zh' ? '• J&P 2和J&P 3 - 扩展选项' : locale === 'fr' ? '• J&P 2 et J&P 3 - Options d\'expansion' : '• J&P 2 & J&P 3 - Expansion options'}
+                  </p>
                 </div>
               </div>
 
               {/* CN2 */}
               <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
                 <h3 className="text-white font-bold text-lg mb-3">Cabo Negro Dos</h3>
-                <p className="text-gray-400 text-xs mb-3">Inmobiliaria Cabo Negro Dos</p>
+                <p className="text-gray-400 text-xs mb-3">
+                  {locale === 'es' ? 'Inmobiliaria Cabo Negro Dos' : locale === 'zh' ? '卡波内格罗二号房地产公司' : locale === 'fr' ? 'Immobilier Cabo Negro Dos' : 'Inmobiliaria Cabo Negro Dos'}
+                </p>
                 <div className="mb-3">
                   <div className="text-3xl font-bold text-white mb-1">
                     <AnimatedCounter end={173} suffix=" ha" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">Resulting from J&P subdivision</p>
-                  <p className="text-gray-400 text-xs">Single unified area (no subdivision)</p>
+                  <p className="text-gray-300 text-sm">
+                    {locale === 'es' ? 'Resultante de la subdivisión de J&P' : locale === 'zh' ? '来自J&P细分' : locale === 'fr' ? 'Résultant de la subdivision de J&P' : 'Resulting from J&P subdivision'}
+                  </p>
+                  <p className="text-gray-400 text-xs">
+                    {locale === 'es' ? 'Área única unificada (sin subdivisión)' : locale === 'zh' ? '单一统一区域（无细分）' : locale === 'fr' ? 'Zone unique unifiée (sans subdivision)' : 'Single unified area (no subdivision)'}
+                  </p>
                 </div>
               </div>
             </div>
