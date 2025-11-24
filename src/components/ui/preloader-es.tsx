@@ -246,16 +246,17 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
           <source src="/cabonegro_preloader.webp" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        {/* Light overlay for better text readability */}
+        {/* Light overlay for better text readability on white background */}
         <div className="absolute inset-0 bg-white/60" />
       </div>
 
-      {/* Image on Right Side - Desktop Only - Absolute Positioned */}
+      {/* Image on Right Side - Desktop Only - Absolute Positioned - Inverted to black */}
       <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 z-10 opacity-100">
         <img 
           src="/BNWCRANE_preloaderB.png" 
           alt="Cabo Negro Industrial Infrastructure" 
           className="max-h-[300px] w-auto object-contain"
+          style={{ filter: 'invert(1)' }}
         />
       </div>
 

@@ -8,7 +8,7 @@ import { useAnimation } from '@/contexts/AnimationContext'
 import Preloader from '@/components/ui/preloader-es'
 import Hero from '@/components/sections/Hero-es'
 import AboutUs from '@/components/sections/AboutUs'
-import Stats from '@/components/sections/Stats-es'
+import Stats from '@/components/sections/Stats'
 import Partners from '@/components/sections/Partners-es'
 import { WorldMapDemoEs } from '@/components/ui/world-map-demo-es'
 import Press from '@/components/sections/Press'
@@ -177,7 +177,7 @@ function HomeContent() {
         >
           {/* Navigation */}
           <Navbar />
-          
+        
           {/* Main Sections */}
           <main style={{ pointerEvents: 'auto' }}>
             <Hero />
