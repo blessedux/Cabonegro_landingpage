@@ -80,6 +80,7 @@ export default function Preloader({ onComplete, onFadeOutStart, duration = 6, cl
   const preloaderRef = useRef<HTMLDivElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   const terminalLinesRef = useRef<HTMLDivElement[]>([])
+  const videoRef = useRef<HTMLVideoElement>(null)
   
   const specialChars = '▪'
 
@@ -210,11 +211,9 @@ export default function Preloader({ onComplete, onFadeOutStart, duration = 6, cl
     return () => {
       mainTl.kill()
     }
-  }, [duration, onComplete])
+  }, [duration, onComplete, onFadeOutStart])
 
   if (!isVisible) return null
-
-  const videoRef = useRef<HTMLVideoElement>(null)
 
   return (
     <div 

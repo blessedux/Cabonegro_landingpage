@@ -95,6 +95,9 @@ export function PixelErasureImage({
 
       // Get current image data
       const data = currentImageDataRef.current
+      if (!data) return
+      const originalData = originalImageDataRef.current
+      if (!originalData) return
       const pixels = data.data
       const scaledRadius = radius * Math.max(scaleX, scaleY)
 
@@ -125,7 +128,7 @@ export function PixelErasureImage({
             : fadeFactor
           
           // Create erasure effect by making pixels transparent
-          const originalAlpha = originalImageDataRef.current.data[index + 3]
+          const originalAlpha = originalData.data[index + 3]
           const newAlpha = Math.max(0, originalAlpha * (1 - eraseAmount))
           pixels[index + 3] = newAlpha
         }

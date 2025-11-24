@@ -31,8 +31,12 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
     
     // Check if critical assets are likely cached by checking if fonts are loaded
     const checkAssetsCached = () => {
-      if (typeof window !== 'undefined' && document.fonts && document.fonts.ready) {
-        return document.fonts.check('1em Inter') || assetsCached === 'true'
+      if (typeof window !== 'undefined' && document.fonts) {
+        try {
+          return document.fonts.check('1em Inter') || assetsCached === 'true'
+        } catch {
+          return assetsCached === 'true'
+        }
       }
       return assetsCached === 'true'
     }

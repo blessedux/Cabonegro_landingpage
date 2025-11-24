@@ -80,6 +80,7 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
   const progressBarRef = useRef<HTMLDivElement>(null)
   const terminalLinesRef = useRef<HTMLDivElement[]>([])
   const progressAnimationRef = useRef<ReturnType<typeof gsap.to> | null>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   
   const specialChars = '▪'
 
@@ -223,11 +224,9 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
         progressAnimationRef.current = null
       }
     }
-  }, [duration, onComplete])
+  }, [duration, onComplete, onFadeOutStart])
 
   if (!isVisible) return null
-
-  const videoRef = useRef<HTMLVideoElement>(null)
 
   return (
     <div 

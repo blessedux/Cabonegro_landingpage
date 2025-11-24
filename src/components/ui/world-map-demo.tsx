@@ -6,6 +6,36 @@ import { WorldMap } from "@/components/ui/world-map";
 import { MagicText } from "@/components/ui/magic-text";
 import { usePathname } from "next/navigation";
 
+// Word component that uses useTransform hook
+function AnimatedWord({ 
+  word, 
+  index, 
+  totalWords, 
+  scrollYProgress 
+}: { 
+  word: string
+  index: number
+  totalWords: number
+  scrollYProgress: any
+}) {
+  const start = index / totalWords;
+  const end = Math.min(start + 1 / totalWords, 0.99);
+  // Once opacity reaches 1, it stays at 1 (no fade out) - use clamp and ensure it never goes below the max reached value
+  const opacity = useTransform(
+    scrollYProgress, 
+    [start, end, 1], 
+    [0, 1, 1], // Third value ensures it stays at 1
+    { clamp: true }
+  );
+
+  return (
+    <span className="relative mr-1">
+      <span className="absolute opacity-20">{word}</span>
+      <motion.span style={{ opacity: opacity }}>{word}</motion.span>
+    </span>
+  );
+}
+
 // Custom wrapper for MagicText with earlier scroll trigger - stays visible once animated
 function MagicTextWrapper({ text, className }: { text: string; className?: string }) {
   const container = useRef<HTMLParagraphElement>(null);
@@ -18,24 +48,15 @@ function MagicTextWrapper({ text, className }: { text: string; className?: strin
 
   return (
     <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`}>
-      {words.map((word, i) => {
-        const start = i / words.length;
-        const end = Math.min(start + 1 / words.length, 0.99);
-        // Once opacity reaches 1, it stays at 1 (no fade out) - use clamp and ensure it never goes below the max reached value
-        const opacity = useTransform(
-          scrollYProgress, 
-          [start, end, 1], 
-          [0, 1, 1], // Third value ensures it stays at 1
-          { clamp: true }
-        );
-
-        return (
-          <span key={i} className="relative mr-1">
-            <span className="absolute opacity-20">{word}</span>
-            <motion.span style={{ opacity: opacity }}>{word}</motion.span>
-          </span>
-        );
-      })}
+      {words.map((word, i) => (
+        <AnimatedWord 
+          key={i}
+          word={word}
+          index={i}
+          totalWords={words.length}
+          scrollYProgress={scrollYProgress}
+        />
+      ))}
     </p>
   );
 }

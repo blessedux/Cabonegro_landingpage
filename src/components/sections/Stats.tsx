@@ -8,6 +8,30 @@ import { Button } from '@/components/ui/button'
 import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
 
+// Word component that uses useTransform hook
+function AnimatedWord({ 
+  word, 
+  index, 
+  totalWords, 
+  scrollYProgress 
+}: { 
+  word: string
+  index: number
+  totalWords: number
+  scrollYProgress: any
+}) {
+  const start = index / totalWords;
+  const end = start + 1 / totalWords;
+  const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
+
+  return (
+    <span className="relative mr-1">
+      <span className="absolute opacity-20">{word}</span>
+      <motion.span style={{ opacity: opacity }}>{word}</motion.span>
+    </span>
+  );
+}
+
 // Custom MagicText wrapper that animates earlier (when element enters from bottom of viewport)
 function EarlyMagicText({ text, className = "" }: { text: string; className?: string }) {
   const container = useRef<HTMLParagraphElement>(null);
@@ -21,18 +45,15 @@ function EarlyMagicText({ text, className = "" }: { text: string; className?: st
 
   return (
     <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`} style={{ color: '#ffffff' }}>
-      {words.map((word, i) => {
-        const start = i / words.length;
-        const end = start + 1 / words.length;
-        const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
-
-        return (
-          <span key={i} className="relative mr-1">
-            <span className="absolute opacity-20">{word}</span>
-            <motion.span style={{ opacity: opacity }}>{word}</motion.span>
-          </span>
-        );
-      })}
+      {words.map((word, i) => (
+        <AnimatedWord 
+          key={i}
+          word={word}
+          index={i}
+          totalWords={words.length}
+          scrollYProgress={scrollYProgress}
+        />
+      ))}
     </p>
   );
 }
