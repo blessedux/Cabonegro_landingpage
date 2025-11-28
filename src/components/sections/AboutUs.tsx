@@ -4,56 +4,56 @@ import { useRef, useState } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
-import { Button } from '@/components/ui/button'
-import { useRouter, usePathname } from 'next/navigation'
-import { useAnimation } from '@/contexts/AnimationContext'
-import { usePreloader } from '@/contexts/PreloaderContext'
+import { usePathname } from 'next/navigation'
 
 export default function AboutUs() {
   const sectionRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
   const pathname = usePathname()
-  const { startFadeOut } = useAnimation()
-  const { showPreloaderB } = usePreloader()
   
-  // Determine locale from pathname for button text
+  // Determine locale from pathname
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
-  const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : locale === 'fr' ? 'Explorer le Terrain' : 'Explore Terrain'
-  const aboutTitle = locale === 'es' ? 'Terminal Maritimo Cabo Negro' : locale === 'zh' ? '卡波内格罗海事码头' : locale === 'fr' ? 'Terminal Maritime Cabo Negro' : 'Cabo Negro Maritime Terminal'
+  const aboutTitle = locale === 'es' ? 'Cabo Negro: Una localización estratégica' : locale === 'zh' ? '卡波内格罗海事码头' : locale === 'fr' ? 'Terminal Maritime Cabo Negro' : 'Cabo Negro Maritime Terminal'
   
   // Track scroll progress based on section entering/exiting viewport
-  // Fade in when top enters viewport, fade out when bottom enters viewport
+  // Start later to avoid covering Hero section
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start end", "end start"] // Start when top enters bottom of viewport, end when bottom enters top of viewport
+    offset: ["start 0.5", "end start"] // Start when top is 50% down viewport (later), end when bottom enters top of viewport
   })
   
-  // AboutUs content fades in smoothly starting at 1% (overlapping with Hero fade-out)
-  // Smooth crossfade: Hero fades out 2%-4%, AboutUs fades in 1%-5%
-  // Stays visible (5% to 0.7)
-  // Fades out as bottom enters viewport (0.7 to 1)
-  // Use clamp to ensure it never goes below 0
-  const aboutUsOpacity = useTransform(scrollYProgress, [0, 0.01, 0.05, 0.7, 1], [0, 0, 1, 1, 0], { clamp: true })
+  // Multi-stage animation sequence:
+  // Stage 1 (0-20%): Content stack slides up, everything visible
+  // Stage 2 (20-40%): Text on left fades out, map stays constant
+  // Stage 3 (40-60%): Icons fade in on left (where text was)
+  // Stage 4 (60-80%): Everything fades out as vision title slides up
   
-  // Create a magnetic snap effect - content snaps to center with spring physics
-  // Calculate center position based on scroll progress - smoother entry
-  const rawAboutUsY = useTransform(scrollYProgress, [0, 0.01, 0.05, 0.5, 0.7, 1], [80, 80, 0, 0, 0, -50])
-  // Apply spring physics for magnetic snap feel - smoother with less damping
-  const aboutUsY = useSpring(rawAboutUsY, { 
-    stiffness: 80, 
-    damping: 25,
-    mass: 0.6
-  })
-
-  // Title starts fading in slightly before main content for smoother transition
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.01, 0.04], [0, 0, 1], { clamp: true })
-  const rawTitleY = useTransform(scrollYProgress, [0, 0.01, 0.04, 0.5], [60, 60, 0, 0])
-  // Apply spring physics to title as well - smoother
-  const titleY = useSpring(rawTitleY, { 
-    stiffness: 100, 
-    damping: 20,
-    mass: 0.5
-  })
+  // Stage 1: Content stack slides up
+  const contentStackY = useTransform(scrollYProgress, [0, 0.20], [100, 0], { clamp: true })
+  const contentStackOpacity = useTransform(scrollYProgress, [0, 0.10, 0.20], [0, 0, 1], { clamp: true })
+  
+  // Stage 2: Text on left fades out (20-40%) - smooth fade
+  const textOpacity = useTransform(scrollYProgress, [0.20, 0.30, 0.40], [1, 0.5, 0], { clamp: true })
+  const textY = useTransform(scrollYProgress, [0.20, 0.30, 0.40], [0, -10, -20], { clamp: true })
+  
+  // Stage 3: Icons fade in on left (40-60%) - one by one from top to bottom
+  // Icon 1 (top) - fades in first
+  const icon1Opacity = useTransform(scrollYProgress, [0.40, 0.45, 0.50], [0, 0, 1], { clamp: true })
+  const icon1Y = useTransform(scrollYProgress, [0.40, 0.45, 0.50], [30, 30, 0], { clamp: true })
+  
+  // Icon 2 (middle) - fades in second
+  const icon2Opacity = useTransform(scrollYProgress, [0.45, 0.50, 0.55], [0, 0, 1], { clamp: true })
+  const icon2Y = useTransform(scrollYProgress, [0.45, 0.50, 0.55], [30, 30, 0], { clamp: true })
+  
+  // Icon 3 (bottom) - fades in last
+  const icon3Opacity = useTransform(scrollYProgress, [0.50, 0.55, 0.60], [0, 0, 1], { clamp: true })
+  const icon3Y = useTransform(scrollYProgress, [0.50, 0.55, 0.60], [30, 30, 0], { clamp: true })
+  
+  // Stage 4: Everything fades out (60-80%) as vision title slides up
+  const aboutUsOpacity = useTransform(scrollYProgress, [0.60, 0.70, 0.80], [1, 1, 0], { clamp: true })
+  
+  // Title fades in early, stays visible until stage 4
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.05, 0.15, 0.60, 0.70], [0, 0, 1, 1, 0], { clamp: true })
+  const titleY = useTransform(scrollYProgress, [0, 0.05, 0.15], [60, 60, 0], { clamp: true })
 
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(false)
@@ -63,17 +63,6 @@ export default function AboutUs() {
     setShouldBlockPointer(latest > 0.1)
   })
   
-  // Handle View Terrain click
-  const handleViewTerrain = () => {
-    showPreloaderB()
-    // Determine locale from pathname
-    const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
-    const explorePath = locale === 'en' ? '/explore' : `/${locale}/explore`
-    setTimeout(() => {
-      router.push(explorePath)
-    }, 100)
-  }
-
   return (
     <>
       {/* Spacer to ensure scroll before AboutUs section */}
@@ -83,27 +72,29 @@ export default function AboutUs() {
       <section 
         ref={sectionRef}
         data-aboutus-section="true"
-        className="sticky top-0 left-0 right-0 min-h-[200vh] pt-48 md:pt-16 pb-8 md:pb-20 px-6 flex items-start justify-center z-[9] pointer-events-none overflow-y-auto"
+        className="sticky top-0 left-0 right-0 min-h-[200vh] pt-48 md:pt-16 pb-8 md:pb-20 px-6 flex items-start justify-center z-[4] pointer-events-none overflow-y-auto"
         style={{
-          backgroundColor: 'transparent'
+          backgroundColor: 'transparent',
+          zIndex: 4 // Higher than Stats section (z-[3]) so AboutUs content can layer properly
         }}
       >
-        {/* Content container - fades in as Hero fades out */}
+        {/* Content container - multi-stage animation */}
         <motion.div 
-          className="container mx-auto max-w-7xl relative z-10 w-full py-8 md:py-20 flex flex-col justify-center text-white"
+          className="container mx-auto max-w-7xl relative w-full py-8 md:py-20 flex flex-col justify-center text-white"
           initial={{ opacity: 0 }}
           style={{
             opacity: aboutUsOpacity,
-            y: aboutUsY,
             pointerEvents: shouldBlockPointer ? 'auto' : 'none',
             minHeight: 'calc(200vh - 4rem)',
             filter: 'brightness(1)',
             color: '#ffffff',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            zIndex: 6, // Above Stats background (z-[2]) but below Stats content (z-[7])
+            isolation: 'isolate' // Create new stacking context to ensure proper layering
           }}
         >
           <div className="w-full flex flex-col items-center">
-            {/* Title - centered - fades in */}
+            {/* Title - centered - fades in early, stays until stage 4 */}
             <motion.div
               className="mb-12 w-full text-center"
               style={{
@@ -121,142 +112,154 @@ export default function AboutUs() {
               </h2>
             </motion.div>
 
-            {/* Main content - centered */}
-            <div className="mb-12 w-full max-w-3xl mx-auto text-center text-white" style={{ color: '#ffffff' }}>
+            {/* Main content - two column layout: text/icons left, map right */}
+            <motion.div 
+              className="mb-12 w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start"
+              style={{
+                y: contentStackY,
+                opacity: contentStackOpacity
+              }}
+            >
+              {/* Left column - contains both text and icons (overlapping) */}
+              <div className="w-full text-left text-white relative" style={{ color: '#ffffff' }}>
+                {/* Text content - fades out in stage 2 */}
+                <motion.div
+                  style={{
+                    opacity: textOpacity,
+                    y: textY,
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0
+                  }}
+                >
+                {locale === 'es' ? (
+                  <div className="text-lg sm:text-xl text-white text-left leading-loose space-y-4">
+                    <MagicText 
+                      text="Chile es el país más austral del mundo."
+                      className="block mb-4"
+                    />
+                    <MagicText 
+                      text="En su extremo sur, la ciudad de Punta Arenas se ubica directamente sobre el Estrecho de Magallanes, uno de los corredores marítimos más relevantes y estratégicos del hemisferio sur."
+                      className="block mb-4"
+                    />
+                    <MagicText 
+                      text="El sector de Cabo Negro, a minutos de la ciudad, reúne condiciones únicas para el desarrollo portuario, logístico y tecnológico, consolidándose como nodo clave para el crecimiento industrial de Magallanes."
+                      className="block"
+                    />
+                  </div>
+                ) : (
               <MagicText 
-                text={locale === 'es' 
-                  ? 'Cabo Negro representa un desarrollo industrial y marítimo visionario en el extremo sur de Chile, diseñado para servir como puerta de entrada estratégica para la economía del hidrógeno verde de Chile y las rutas comerciales internacionales.'
-                  : locale === 'zh'
+                    text={locale === 'zh'
                   ? '卡波内格罗代表了智利最南端的远见性工业和海事发展，旨在作为智利绿色氢经济和国际贸易路线的战略门户。'
                   : locale === 'fr'
                   ? 'Cabo Negro représente un développement industriel et maritime visionnaire à la pointe sud du Chili, conçu pour servir de porte d\'entrée stratégique pour l\'économie de l\'hydrogène vert du Chili et les routes commerciales internationales.'
                   : 'Cabo Negro represents a visionary industrial and maritime development at the southernmost tip of Chile, designed to serve as the strategic gateway for Chile\'s green hydrogen economy and international trade routes.'}
-                className="text-lg sm:text-xl text-white text-center leading-relaxed"
-              />
-            </div>
-            
-            {/* Three Business Cards */}
-            <div className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12">
-              {/* El Puerto Card */}
-              <motion.div
-                className="bg-black/50 backdrop-blur-md rounded-xl border border-white/30 p-6 md:p-8 flex flex-col"
-                style={{
-                  opacity: aboutUsOpacity,
-                }}
-              >
-                <div className="mb-4">
-                  <img 
-                    src="/maritime_terminal.png" 
-                    alt="El Puerto" 
-                    className="w-full h-48 object-cover rounded-lg mb-4"
+                    className="text-lg sm:text-xl text-white text-left leading-loose"
                   />
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white">
-                    {locale === 'es' ? 'El Puerto' : locale === 'zh' ? '港口' : locale === 'fr' ? 'Le Port' : 'The Port'}
-                  </h3>
-                  <p className="text-gray-300 text-sm md:text-base mb-4 leading-relaxed">
-                    {locale === 'es' 
-                      ? 'Terminal marítimo estratégico con maqueta digital interactiva y cartografía detallada del desarrollo portuario y sus capacidades logísticas.'
-                      : locale === 'zh'
-                      ? '战略海事码头，配有交互式数字模型和详细的港口开发及物流能力制图。'
-                      : locale === 'fr'
-                      ? 'Terminal maritime stratégique avec maquette numérique interactive et cartographie détaillée du développement portuaire et de ses capacités logistiques.'
-                      : 'Strategic maritime terminal featuring an interactive digital mockup and detailed cartography of port development and logistics capabilities.'}
+                )}
+                </motion.div>
+                
+                {/* Icons - fade in in stage 3 (same position as text), one by one from top to bottom */}
+                <div className="space-y-16 md:space-y-20 relative">
+                  {/* Green Hydrogen - Icon 1 (top) - fades in first */}
+              <motion.div
+                    className="flex items-start gap-4"
+                style={{
+                      opacity: icon1Opacity,
+                      y: icon1Y
+                    }}
+                  >
+                    <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
+                      <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C9 2 7 4 7 7c0 3 3 6 5 8 2-2 5-5 5-8 0-3-2-5-5-5z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v3M10 21h4" />
+                        <circle cx="12" cy="12" r="9" strokeWidth={1} strokeDasharray="1.5 2" opacity="0.5" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold mb-2 text-lg">Hidrógeno Verde</h3>
+                      <p className="text-white/90 text-sm leading-relaxed">
+                        Magallanes posee uno de los mayores potenciales eólicos del planeta
                   </p>
                 </div>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="uppercase border-accent text-accent hover:bg-accent hover:text-white transition-colors duration-300 mt-auto"
-                  onClick={handleViewTerrain}
-                >
-                  {buttonText}
-                </Button>
               </motion.div>
 
-              {/* Patagon Valley Card */}
+                  {/* Alternative Shipping Route - Icon 2 (middle) - fades in second */}
               <motion.div
-                className="bg-black/50 backdrop-blur-md rounded-xl border border-white/30 p-6 md:p-8 flex flex-col"
+                    className="flex items-start gap-4"
                 style={{
-                  opacity: aboutUsOpacity,
-                }}
-              >
-                <div className="mb-4">
-                  <img 
-                    src="/lots_model.png" 
-                    alt="Patagon Valley" 
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                  />
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white">
-                    Patagon Valley
-                  </h3>
-                  <p className="text-gray-300 text-sm md:text-base mb-4 leading-relaxed">
-                    {locale === 'es'
-                      ? 'Desarrollo inmobiliario estratégico con infraestructura tecnológica avanzada, incluyendo instalaciones de AWS y GTD.'
-                      : locale === 'zh'
-                      ? '战略性房地产开发，配备先进的技术基础设施，包括AWS和GTD设施。'
-                      : locale === 'fr'
-                      ? 'Développement immobilier stratégique avec infrastructure technologique avancée, incluant les installations AWS et GTD.'
-                      : 'Strategic real estate development with advanced technological infrastructure, including AWS and GTD facilities.'}
+                      opacity: icon2Opacity,
+                      y: icon2Y
+                    }}
+                  >
+                    <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
+                      <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 18h18M4 18v-5c0-1 1-2 2-2h12c1 0 2 1 2 2v5" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 13h12M7 10h10" />
+                        <circle cx="9" cy="14" r="0.8" fill="currentColor" />
+                        <circle cx="12" cy="14" r="0.8" fill="currentColor" />
+                        <circle cx="15" cy="14" r="0.8" fill="currentColor" />
+                        <line x1="17" y1="10" x2="17" y2="7" strokeLinecap="round" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 7l2-1" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold mb-2 text-lg">Ruta alternativa al Canal de Panamá</h3>
+                      <p className="text-white/90 text-sm leading-relaxed">
+                        Paso natural libre de peajes y confiable ante restricciones globales.
                   </p>
                 </div>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="uppercase border-accent text-accent hover:bg-accent hover:text-white transition-colors duration-300 mt-auto"
-                  onClick={() => {
-                    showPreloaderB()
-                    const patagonPath = locale === 'en' ? '/patagon-valley' : `/${locale}/patagon-valley`
-                    setTimeout(() => {
-                      router.push(patagonPath)
-                    }, 100)
-                  }}
-                >
-                  {locale === 'es' ? 'Explorar' : locale === 'zh' ? '探索' : locale === 'fr' ? 'Explorer' : 'Explore'}
-                </Button>
-              </motion.div>
+                  </motion.div>
 
-              {/* Parque Industrial Cabonegro Card */}
-              <motion.div
-                className="bg-black/50 backdrop-blur-md rounded-xl border border-white/30 p-6 md:p-8 flex flex-col"
-                style={{
-                  opacity: aboutUsOpacity,
-                }}
-              >
-                <div className="mb-4">
-                  <img 
-                    src="/cabonegro_wirefram2.webp" 
-                    alt="Parque Industrial Cabonegro" 
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                  />
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3 text-white">
-                    {locale === 'es' ? 'Parque Industrial Cabonegro' : locale === 'zh' ? '卡波内格罗工业园' : locale === 'fr' ? 'Parc Industriel Cabo Negro' : 'Cabo Negro Industrial Park'}
-                  </h3>
-                  <p className="text-gray-300 text-sm md:text-base mb-4 leading-relaxed">
-                    {locale === 'es'
-                      ? 'Zona industrial integral diseñada para soportar la economía del hidrógeno verde y facilitar el comercio internacional en el extremo sur de Chile.'
-                      : locale === 'zh'
-                      ? '综合性工业区，旨在支持绿色氢经济并促进智利最南端的国际贸易。'
-                      : locale === 'fr'
-                      ? 'Zone industrielle complète conçue pour soutenir l\'économie de l\'hydrogène vert et faciliter le commerce international à la pointe sud du Chili.'
-                      : 'Comprehensive industrial zone designed to support the green hydrogen economy and facilitate international trade at Chile\'s southernmost tip.'}
-                  </p>
-                </div>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="uppercase border-accent text-accent hover:bg-accent hover:text-white transition-colors duration-300 mt-auto"
-                  onClick={() => {
-                    showPreloaderB()
-                    const industrialPath = locale === 'en' ? '/industrial-park' : `/${locale}/industrial-park`
-                    setTimeout(() => {
-                      router.push(industrialPath)
-                    }, 100)
-                  }}
-                >
-                  {locale === 'es' ? 'Explorar' : locale === 'zh' ? '探索' : locale === 'fr' ? 'Explorer' : 'Explore'}
-                </Button>
+                  {/* Satellite and Technology Ecosystem - Icon 3 (bottom) - fades in last */}
+                  <motion.div 
+                    className="flex items-start gap-4"
+                    style={{
+                      opacity: icon3Opacity,
+                      y: icon3Y
+                    }}
+                  >
+                    <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
+                      <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-4 0-6 2-6 6 0 2 1 4 3 5M18 9c0-4-2-6-6-6M12 14c2-1 3-3 3-5" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l2-2 2 2M12 17v2" />
+                        <path strokeLinecap="round" d="M5 7c-1 0-1.5 0.5-1.5 1M19 7c1 0 1.5 0.5 1.5 1" opacity="0.5" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold mb-2 text-lg">Ecosistema satelital y tecnológico</h3>
+                      <p className="text-white/90 text-sm leading-relaxed">
+                        Condiciones ideales para estaciones de telecomunicaciones globales y data centers.
+                      </p>
+                    </div>
               </motion.div>
-            </div>
+                </div>
+              </div>
+              
+              {/* Map placeholder - simple static container on the right */}
+              <div 
+                className="w-full h-[400px] lg:h-[500px] bg-gray-800/50 backdrop-blur-sm rounded-lg flex items-center justify-center"
+              >
+                <div className="text-center text-gray-400">
+                  <svg 
+                    className="w-24 h-24 mx-auto mb-4 opacity-50" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" 
+                    />
+                  </svg>
+                  <p className="text-sm font-medium">Mapa Interactivo</p>
+                  <p className="text-xs mt-2 opacity-75">Próximamente</p>
+                </div>
+              </div>
+              </motion.div>
           </div>
         </motion.div>
       </section>

@@ -143,7 +143,8 @@ export default function Stats() {
     aboutUsSectionRef.current = document.querySelector('[data-aboutus-section="true"]') as HTMLElement
   }, [])
   
-  // Track AboutUs section scroll progress to sync duplicate content opacity
+  // Track AboutUs section scroll progress - using same offset as AboutUs component
+  // This tracks from when AboutUs top enters viewport to when AboutUs bottom exits viewport
   const { scrollYProgress: aboutUsScrollProgress } = useScroll({
     target: aboutUsSectionRef,
     offset: ["start end", "end start"]
@@ -167,14 +168,9 @@ export default function Stats() {
     mass: 0.5
   })
   
-  // Track scroll progress - Stats trigger starts when bottom of AboutUs section is reached
-  // Offset: ["end end", "end start"] means:
-  // - Start (0): when bottom of AboutUs reaches bottom of viewport
-  // - End (1): when bottom of AboutUs reaches top of viewport
-  const { scrollYProgress } = useScroll({
-    target: aboutUsSectionRef,
-    offset: ["end end", "end start"]
-  })
+  // Use AboutUs scroll progress for Stats background fade-in
+  // This triggers much earlier - during the AboutUs section itself
+  const scrollYProgress = aboutUsScrollProgress
 
   // Track when Partners section reaches 50% of viewport (center line)
   // Use useEffect to find Partners section by data attribute
@@ -189,36 +185,102 @@ export default function Stats() {
     offset: ["start center", "start start"]
   })
 
-  // Background fade in - starts at 11% scroll, completes at 20% scroll (9% fade window for smoother blend)
-  const backgroundOpacity = useTransform(scrollYProgress, [0.11, 0.20], [0, 1])
+  // Background fade in - starts later at 0.40 (40% of AboutUs scroll), completes at 0.60 (60%)
+  // This gives users time to see Hero and AboutUs before transitioning to Stats
+  // IMPORTANT: Only show when AboutUs is actually in view (scrollYProgress > 0)
+  const backgroundOpacity = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.60], 
+    [0, 0, 1],
+    { clamp: true }
+  )
   
   // Background zoom effect - scales from 1 to 1.1 (10% zoom) as we scroll from top to bottom
-  const backgroundScale = useTransform(scrollYProgress, [0, 1], [1, 1.1], { clamp: true })
+  // Only apply zoom when background starts appearing
+  const backgroundScale = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 1], 
+    [1, 1, 1.1], 
+    { clamp: true }
+  )
   
-  // Black overlay opacity - only appears when Stats background is visible (starts at 11%, completes at 20%)
-  // This ensures it doesn't darken Hero/AboutUs sections
-  const blackOverlayOpacity = useTransform(scrollYProgress, [0.11, 0.20], [0, 1])
+  // Black overlay opacity - starts when background starts fading in (40% to 60%)
+  const blackOverlayOpacity = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.60], 
+    [0, 0, 1],
+    { clamp: true }
+  )
   
-  // Title fade in - starts when background starts fading in (11%)
+  // Title fade in - starts when background starts fading in (40%)
   // Content should be visible as soon as background appears
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 1])
-  const titleY = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 0])
+  const titleOpacity = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.50], 
+    [0, 0, 1],
+    { clamp: true }
+  )
+  const titleY = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.50], 
+    [0, 0, 0],
+    { clamp: true }
+  )
   
-  // Content fade in - smooth fade from 11% to 15% (when background appears)
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 1])
-  const contentY = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 0])
+  // Content fade in - smooth fade from 40% to 50% (when background appears)
+  const contentOpacity = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.50], 
+    [0, 0, 1],
+    { clamp: true }
+  )
+  const contentY = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.50], 
+    [0, 0, 0],
+    { clamp: true }
+  )
   
-  // Vision text fade in - starts when background appears (11%)
+  // Vision text fade in - starts when background appears (40%)
   // Title and subtitle fade in together
-  const visionTitleOpacity = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 1])
-  const visionSubtitleOpacity = useTransform(scrollYProgress, [0, 0.11, 0.15], [0, 0, 1])
+  const visionTitleOpacity = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.50], 
+    [0, 0, 1],
+    { clamp: true }
+  )
+  const visionSubtitleOpacity = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.50], 
+    [0, 0, 1],
+    { clamp: true }
+  )
   
   // Position orange container at the very top, close to AboutUs component
   // At 0%: container at top (top: 0, y: 0)
-  // At 11%: container positioned at very top (top: 0%, y: -50%) - at the very top
-  // After 11%: stays in position
-  const containerTop = useTransform(scrollYProgress, [0, 0.11, 0.20], ['0%', '0%', '0%'], { clamp: true })
-  const containerY = useTransform(scrollYProgress, [0, 0.11, 0.20], ['0%', '-50%', '-50%'], { clamp: true })
+  // At 40%: container positioned at very top (top: 0%, y: -50%) - at the very top
+  // After 40%: stays in position
+  const containerTop = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.60], 
+    ['0%', '0%', '0%'], 
+    { clamp: true }
+  )
+  const containerY = useTransform(
+    scrollYProgress, 
+    [0, 0.40, 0.60], 
+    ['0%', '-50%', '-50%'], 
+    { clamp: true }
+  )
+  
+  // Overall Stats section visibility - hide completely until AboutUs is in view
+  // This ensures Stats doesn't show before AboutUs section is reached
+  const statsSectionOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.01],
+    [0, 1],
+    { clamp: true }
+  )
   
   // Fade to white when Partners reaches above 50% of viewport (center line)
   // Partners scroll progress: 0 = Partners at center, 1 = Partners at top
@@ -226,26 +288,39 @@ export default function Stats() {
 
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(false)
+  const [shouldShowStats, setShouldShowStats] = useState(false)
   
   useMotionValueEvent(contentOpacity, "change", (latest) => {
     // Only block pointer events when opacity is above 0.1 (visible enough)
     setShouldBlockPointer(latest > 0.1)
   })
+  
+  useMotionValueEvent(statsSectionOpacity, "change", (latest) => {
+    // Only show Stats section when AboutUs is in view
+    setShouldShowStats(latest > 0.1)
+  })
 
   return (
     <>
       {/* Stats section - sticky positioning to allow scrolling */}
-      <section 
+      <motion.section 
         ref={statsRef} 
-        className="sticky top-0 left-0 right-0 h-[100vh] z-[10] pointer-events-none"
+        className="sticky top-0 left-0 right-0 h-[100vh] z-[3] pointer-events-none"
+        style={{
+          zIndex: 3,
+          opacity: statsSectionOpacity,
+          pointerEvents: shouldShowStats ? 'auto' : 'none'
+        }}
       >
-        {/* Content container - positioned at top, centers in viewport when background fades in (11% scroll) */}
+        {/* Content container - positioned at top, centers in viewport when background fades in (40% scroll) */}
+        {/* This should be above AboutUs content when Stats is fully visible */}
         <motion.div
-          className="absolute left-0 right-0 z-[11] w-full flex flex-col justify-start"
+          className="absolute left-0 right-0 w-full flex flex-col justify-start"
           style={{
             pointerEvents: shouldBlockPointer ? 'auto' : 'none',
             top: containerTop,
-            y: containerY
+            y: containerY,
+            zIndex: 7 // Above AboutUs content (z-[6]) so Stats content appears on top when visible
           }}
         >
           
@@ -445,36 +520,40 @@ export default function Stats() {
         </motion.div>
         
         {/* Background image layer - fades in based on scroll with zoom effect */}
+        {/* This should be below AboutUs content but above Hero */}
         <motion.div
-          className="fixed inset-0 z-[8]"
+          className="fixed inset-0"
           style={{
             backgroundImage: 'url(/cabonegro_wirefram2.webp)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
             opacity: backgroundOpacity,
-            scale: backgroundScale
+            scale: backgroundScale,
+            zIndex: 2 // Below AboutUs content (z-4) but above Hero (z-1)
           }}
         />
         
         {/* Black overlay that increases as we scroll - only visible when Stats section is active */}
         <motion.div 
-          className="fixed inset-0 z-[8] pointer-events-none"
+          className="fixed inset-0 pointer-events-none"
           style={{
             backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            opacity: blackOverlayOpacity
+            opacity: blackOverlayOpacity,
+            zIndex: 2 // Same as background
           }}
         />
         
         {/* White overlay - fades in when Partners starts reaching top */}
         <motion.div 
-          className="fixed inset-0 z-[9]"
+          className="fixed inset-0 z-[8]"
           style={{
             backgroundColor: 'rgba(255, 255, 255, 1)',
-            opacity: whiteOverlayOpacity
+            opacity: whiteOverlayOpacity,
+            zIndex: 8
           }}
         />
-      </section>
+      </motion.section>
     </>
   )
 }

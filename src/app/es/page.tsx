@@ -116,17 +116,31 @@ function HomeContent() {
   useEffect(() => {
     if (contentReady && contentRef.current) {
       // Start content fade-in animation - faster and smoother
-      gsap.fromTo(contentRef.current, 
-        { opacity: 0 },
-        { 
-          opacity: 1, 
-          duration: 0.8, // Faster fade-in to match preloader fade-out
-          ease: 'power2.out',
-          delay: 0.1 // Small delay to ensure smooth overlap
-        }
-      )
+      // Only animate if opacity is not already 1 (to avoid conflicts)
+      const currentOpacity = window.getComputedStyle(contentRef.current).opacity
+      if (parseFloat(currentOpacity) < 1) {
+        gsap.fromTo(contentRef.current, 
+          { opacity: 0 },
+          { 
+            opacity: 1, 
+            duration: 0.8, // Faster fade-in to match preloader fade-out
+            ease: 'power2.out',
+            delay: 0.1 // Small delay to ensure smooth overlap
+          }
+        )
+      } else {
+        // If already visible, just ensure it stays visible
+        gsap.set(contentRef.current, { opacity: 1 })
+      }
     }
   }, [contentReady])
+  
+  // Ensure contentReady is set when preloaderFadeComplete is true
+  useEffect(() => {
+    if (preloaderFadeComplete && !contentReady) {
+      setContentReady(true)
+    }
+  }, [preloaderFadeComplete, contentReady])
 
   // Safety fallback: ensure content shows after preloader duration + buffer
   useEffect(() => {
@@ -168,19 +182,25 @@ function HomeContent() {
         />
       )}
 
+      {/* Hero - Render outside opacity-controlled container so it's always visible */}
+      {preloaderFadeComplete && <Hero />}
+
       {/* Main Content - Pre-render but hidden, fade in when ready */}
       {preloaderFadeComplete && (
         <div 
           ref={contentRef}
-          className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : ''}`}
-          style={{ opacity: 0, pointerEvents: 'auto' }} // Start invisible, GSAP handles animation
+          className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
+          style={{ 
+            opacity: isFadingOut ? 0 : (contentReady ? 1 : 0.99), // Show when ready, GSAP will smooth it
+            pointerEvents: 'auto',
+            transition: contentReady ? 'none' : 'opacity 0.8s ease-out' // Fallback transition if GSAP doesn't run
+          }}
         >
           {/* Navigation */}
           <Navbar />
         
           {/* Main Sections */}
           <main style={{ pointerEvents: 'auto' }}>
-            <Hero />
             <AboutUs />
             <Stats />
             <Partners />

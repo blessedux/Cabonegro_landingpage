@@ -1,16 +1,8 @@
-import { Button } from '@/components/ui/button'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
-import Link from 'next/link'
-import { useAnimation } from '@/contexts/AnimationContext'
-import { usePreloader } from '@/contexts/PreloaderContext'
-import { useRouter } from 'next/navigation'
 import { useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 
 export default function HeroEs() {
-  const router = useRouter()
-  const { startFadeOut } = useAnimation()
-  const { showPreloaderB } = usePreloader()
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -20,10 +12,12 @@ export default function HeroEs() {
   // This ensures fade-out happens at the correct overall page scroll percentage
   const { scrollYProgress } = useScroll()
 
-  // Hero content stays visible until 2% of overall page scroll, then fades out smoothly from 2% to 4%
-  // Smooth fade window of 2% for gradual transition
-  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.02, 0.04], [1, 1, 0])
-  const heroContentY = useTransform(scrollYProgress, [0, 0.02, 0.04], [0, 0, -20])
+  // Hero content stays visible until AboutUs starts appearing
+  // Fade out smoothly as user scrolls - starts fading earlier for smoother transition
+  // Fades out from 2% to 12% of overall page scroll to align with AboutUs appearance
+  // Ensure it starts at opacity 1 (visible) on initial load
+  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.02, 0.12], [1, 1, 0], { clamp: true })
+  const heroContentY = useTransform(scrollYProgress, [0, 0.02, 0.12], [0, 0, -30], { clamp: true })
   
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(true)
@@ -38,13 +32,9 @@ export default function HeroEs() {
   // Export scroll progress for use in other components (via context or prop)
   // For now, we'll use a shared scroll tracking approach
   
-  // Trigger hero animations after preloader fade out
+  // Trigger hero animations immediately - no delay needed
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, 200) // Small delay to ensure smooth transition from preloader
-    
-    return () => clearTimeout(timer)
+    setIsVisible(true)
   }, [])
 
   // Handle video loading
@@ -56,41 +46,24 @@ export default function HeroEs() {
     }
   }, [])
 
-  const handleExploreTerrain = () => {
-    // Show PreloaderB first BEFORE any other actions
-    showPreloaderB()
-    
-    // Use requestAnimationFrame to ensure state update is processed
-    requestAnimationFrame(() => {
-      startFadeOut()
-      
-      // Navigate after PreloaderB has time to display (2.5 seconds)
-      setTimeout(() => {
-        router.push('/es/explore')
-      }, 2500)
-    })
-  }
-
-  const handleDeckClick = () => {
-    showPreloaderB()
-    setTimeout(() => {
-      router.push('/es/deck')
-    }, 100)
-  }
-
-  const title = 'Puerta de Entrada al Sur del Mundo'
-  const subtitle = 'Cabo Negro es un Centro Industrial y Marítimo Estratégico del Hemisferio Sur.'
+  const title = 'Plataforma portuaria, Tecnológica y logística del sur del mundo'
+  const subtitle = 'infraestructura integrada en el estrecho de magallanes para la nueva economía energética y tecnológica'
 
   return (
+    <>
     <section 
       ref={heroRef}
-      className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[5]"
+      className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[1]"
       style={{
         backgroundColor: 'transparent',
         pointerEvents: 'auto',
         height: '100vh',
         maxHeight: '100vh',
-        width: '100vw'
+        width: '100vw',
+        zIndex: 1,
+        opacity: 1, // Ensure section itself is always visible
+        visibility: 'visible', // Force visibility
+        display: 'flex' // Ensure it's displayed
       }}
     >
       {/* Background Video - stays visible until Stats background covers it */}
@@ -121,6 +94,7 @@ export default function HeroEs() {
       {/* Hero Content - fades out on scroll */}
       <motion.div 
         className="container mx-auto relative z-[30] flex justify-start"
+        initial={{ opacity: 1 }}
         style={{ 
           opacity: heroContentOpacity,
           y: heroContentY,
@@ -163,7 +137,7 @@ export default function HeroEs() {
             />
           </motion.h1>
           <motion.p 
-            className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none"
+            className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none italic"
             style={{ 
               userSelect: 'none', 
               WebkitUserSelect: 'none', 
@@ -182,56 +156,9 @@ export default function HeroEs() {
           >
             {subtitle}
           </motion.p>
-          <motion.div 
-            className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[40]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ 
-              duration: 0.8, 
-              delay: 1.0, // Same delay as subtitle - they appear together
-              ease: "easeOut" 
-            }}
-            style={{ pointerEvents: 'auto' }}
-          >
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="uppercase border-black text-black hover:bg-cyan-500 hover:text-white select-none relative z-[50] cursor-pointer"
-              onClick={handleExploreTerrain}
-              style={{ 
-                userSelect: 'none', 
-                WebkitUserSelect: 'none', 
-                MozUserSelect: 'none', 
-                msUserSelect: 'none',
-                pointerEvents: 'auto',
-                opacity: 1,
-                position: 'relative',
-                zIndex: 50
-              }}
-            >
-              Explorar Terreno
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="uppercase border-black text-black hover:bg-cyan-500 hover:text-white select-none relative z-[50] cursor-pointer"
-              onClick={handleDeckClick}
-              style={{ 
-                userSelect: 'none', 
-                WebkitUserSelect: 'none', 
-                MozUserSelect: 'none', 
-                msUserSelect: 'none',
-                pointerEvents: 'auto',
-                opacity: 1,
-                position: 'relative',
-                zIndex: 50
-              }}
-            >
-              Ver Deck
-            </Button>
-          </motion.div>
         </div>
       </motion.div>
     </section>
+    </>
   )
 }
