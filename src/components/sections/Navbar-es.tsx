@@ -26,14 +26,53 @@ export default function NavbarEs() {
     const checkBackground = () => {
       if (!navbarRef.current) return
       
+      const scrollY = window.scrollY || window.pageYOffset
       const navbarRect = navbarRef.current.getBoundingClientRect()
+      const navbarTop = navbarRect.top
+      const navbarBottom = navbarRect.bottom
       const navbarCenterY = navbarRect.top + navbarRect.height / 2
       
+      // Check if navbar is over sections that should keep navbar black
+      // Check if any part of navbar overlaps with keep-black sections
+      const keepBlackSections = document.querySelectorAll('[data-keep-navbar-black="true"]')
+      let isOverKeepBlack = false
+      
+      keepBlackSections.forEach((section) => {
+        const rect = section.getBoundingClientRect()
+        const sectionTop = scrollY + rect.top
+        const sectionBottom = scrollY + rect.bottom
+        
+        // Check if navbar overlaps with section (any part of navbar is within section bounds)
+        // Also check if navbar is close to the section (within 200px above or below)
+        const isOverlapping = (
+          (navbarTop >= rect.top - 200 && navbarTop <= rect.bottom + 200) ||
+          (navbarBottom >= rect.top - 200 && navbarBottom <= rect.bottom + 200) ||
+          (navbarTop <= rect.top && navbarBottom >= rect.bottom) ||
+          (navbarCenterY >= rect.top - 200 && navbarCenterY <= rect.bottom + 200) ||
+          // Also check scroll position relative to section
+          (scrollY >= sectionTop - 200 && scrollY <= sectionBottom + 200)
+        )
+        if (isOverlapping) {
+          isOverKeepBlack = true
+        }
+      })
+      
+      // If over a section that should keep navbar black, don't turn white
+      if (isOverKeepBlack) {
+        setIsOverWhiteBackground(false)
+        return
+      }
+      
       // Check if navbar center is over white background sections
+      // But exclude keep-black sections from this check
       const whiteSections = document.querySelectorAll('[data-white-background="true"]')
       let isOverWhite = false
       
       whiteSections.forEach((section) => {
+        // Skip if this section also has keep-navbar-black attribute
+        if (section.hasAttribute('data-keep-navbar-black')) {
+          return
+        }
         const rect = section.getBoundingClientRect()
         if (navbarCenterY >= rect.top && navbarCenterY <= rect.bottom) {
           isOverWhite = true
@@ -43,14 +82,30 @@ export default function NavbarEs() {
       setIsOverWhiteBackground(isOverWhite)
     }
     
-    // Check on scroll and resize
-    window.addEventListener('scroll', checkBackground)
+    // Check on scroll and resize with requestAnimationFrame for better performance
+    let rafId: number | null = null
+    const handleScroll = () => {
+      if (rafId !== null) return
+      rafId = requestAnimationFrame(() => {
+        checkBackground()
+        rafId = null
+      })
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', checkBackground)
     checkBackground() // Initial check
     
+    // Also check periodically to catch any missed updates
+    const intervalId = setInterval(checkBackground, 50)
+    
     return () => {
-      window.removeEventListener('scroll', checkBackground)
+      window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', checkBackground)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
+      clearInterval(intervalId)
     }
   }, [])
 
@@ -170,17 +225,11 @@ export default function NavbarEs() {
     }, delay)
   }
 
-  // Handle Explore Terrain click
-  const handleExploreTerrain = () => {
-    // If already on explore, keep navbar and do nothing
-    if (pathname.includes('/explore')) {
-      setIsNavbarHidden(false)
-      return
-    }
-    startFadeOut()
+  // Handle project navigation
+  const handleProjectNavigation = (route: string) => {
     showPreloaderB()
     setTimeout(() => {
-      router.push('/es/explore')
+      router.push(`/es${route}`)
     }, 100)
   }
 
@@ -262,23 +311,9 @@ export default function NavbarEs() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              <button 
-                onClick={handleExploreTerrain}
-                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
-              >
-                Explorar Terreno
-              </button>
-              <Link href="/es/deck" className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}>Ver Deck</Link>
-              <button 
-                onClick={handleFAQClick}
-                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
-              >
-                FAQ
-              </button>
-              
-              {/* Language Dropdown */}
+            {/* Right side: Language Dropdown + Hamburger Button */}
+            <div className="flex items-center gap-3">
+              {/* Language Dropdown - Always visible, to the left of hamburger */}
               <div className="relative" ref={languageDropdownRef}>
                 <button
                   onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
@@ -322,82 +357,59 @@ export default function NavbarEs() {
                 )}
               </div>
 
-              <Button 
-                variant="outline" 
-                className={`uppercase transition-all duration-300 ${
-                  isOverWhiteBackground 
-                    ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
-                    : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
-                }`}
-                onClick={() => {
-                  showPreloaderB()
-                  setTimeout(() => router.push('/es/contact'), 100)
-                }}
+              {/* Menu Button - Desktop and Mobile */}
+              <button
+                className={`p-2 rounded-lg transition-colors ${textColor} ${isOverWhiteBackground ? 'hover:bg-black/10' : 'hover:bg-white/10'}`}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
-                Contacto
-              </Button>
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
+              </button>
             </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              className={`md:hidden p-2 rounded-lg transition-colors ${textColor} ${isOverWhiteBackground ? 'hover:bg-black/10' : 'hover:bg-white/10'}`}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
           </div>
 
-          {/* Mobile Navigation with Animation */}
-          <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          {/* Navigation Menu with Animation - Desktop and Mobile */}
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}>
             <div className="px-6 pb-6 border-t border-white/20">
               <div className="flex flex-col gap-4 pt-4">
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false)
-                    handleExploreTerrain()
+                    handleProjectNavigation('/terminal-maritimo')
                   }}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  Explorar Terreno
+                  Terminal Marítimo
                 </button>
-                <Link 
-                  href="/es/deck" 
-                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 ${textColor}`}
-                  onClick={() => setMobileMenuOpen(false)}
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleProjectNavigation('/parque-tecnologico')
+                  }}
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  Ver Deck
-                </Link>
-                <a 
-                  href="#FAQ" 
-                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 ${textColor}`}
-                  onClick={() => setMobileMenuOpen(false)}
+                  Parque Tecnológico
+                </button>
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleProjectNavigation('/parque-logistico')
+                  }}
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
+                >
+                  Parque Logístico
+                </button>
+                <button 
+                  onClick={handleFAQClick}
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
                   FAQ
-                </a>
-                
-                {/* Mobile Language Toggle */}
-                <div className="flex items-center gap-2 py-2">
-                  <span className={`text-sm uppercase ${isOverWhiteBackground ? 'text-black/80' : 'text-white/80'}`}>Idioma:</span>
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
-                      className={`text-xs px-2 py-1 rounded transition-colors ${
-                        currentLocale === lang.code
-                          ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-accent border border-accent'}`
-                          : `${textColor} ${hoverColor}`
-                      }`}
-                    >
-                      {lang.code.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
+                </button>
 
                 <Button
                   onClick={() => {

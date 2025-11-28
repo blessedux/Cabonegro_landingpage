@@ -1,12 +1,19 @@
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { usePreloader } from '@/contexts/PreloaderContext'
 
 export default function HeroEs() {
   const [backgroundLoaded, setBackgroundLoaded] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [showProjectOptions, setShowProjectOptions] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const { showPreloaderB } = usePreloader()
   
   // Track overall page scroll progress (not section-specific)
   // This ensures fade-out happens at the correct overall page scroll percentage
@@ -14,10 +21,10 @@ export default function HeroEs() {
 
   // Hero content stays visible until AboutUs starts appearing
   // Fade out smoothly as user scrolls - starts fading earlier for smoother transition
-  // Fades out from 2% to 12% of overall page scroll to align with AboutUs appearance
+  // Fades out from 0% to 5% of overall page scroll to fade out earlier
   // Ensure it starts at opacity 1 (visible) on initial load
-  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.02, 0.12], [1, 1, 0], { clamp: true })
-  const heroContentY = useTransform(scrollYProgress, [0, 0.02, 0.12], [0, 0, -30], { clamp: true })
+  const heroContentOpacity = useTransform(scrollYProgress, [0, 0, 0.05], [1, 1, 0], { clamp: true })
+  const heroContentY = useTransform(scrollYProgress, [0, 0, 0.05], [0, 0, -30], { clamp: true })
   
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(true)
@@ -48,6 +55,24 @@ export default function HeroEs() {
 
   const title = 'Plataforma portuaria, Tecnológica y logística del sur del mundo'
   const subtitle = 'infraestructura integrada en el estrecho de magallanes para la nueva economía energética y tecnológica'
+
+  // Handle "Explorar Proyecto" button click
+  const handleExploreProject = () => {
+    setShowProjectOptions(true)
+  }
+
+  // Handle back button click
+  const handleBack = () => {
+    setShowProjectOptions(false)
+  }
+
+  // Handle project navigation
+  const handleProjectNavigation = (route: string) => {
+    showPreloaderB()
+    setTimeout(() => {
+      router.push(`/es${route}`)
+    }, 100)
+  }
 
   return (
     <>
@@ -111,6 +136,7 @@ export default function HeroEs() {
             textShadow: '0 2px 4px rgba(0,0,0,0.3)'
           }}
         >
+          {/* Title and Subtitle - always visible */}
           <motion.h1 
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none text-white"
             style={{ 
@@ -125,7 +151,7 @@ export default function HeroEs() {
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             transition={{ 
               duration: 0.8, 
-              delay: 0.2, // Start immediately after preloader fade
+              delay: 0.2,
               ease: "easeOut" 
             }}
           >
@@ -150,12 +176,137 @@ export default function HeroEs() {
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ 
               duration: 0.8, 
-              delay: 1.0, // Start after h1 completes (0.2s + 0.8s)
+              delay: 1.0,
               ease: "easeOut" 
             }}
           >
             {subtitle}
           </motion.p>
+
+          {/* Button Section - switches between single CTA and three project buttons */}
+          <AnimatePresence mode="wait">
+            {!showProjectOptions ? (
+              <motion.div 
+                key="cta-button"
+                className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[40]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ 
+                  duration: 0.5,
+                  delay: 1.8,
+                  ease: "easeOut" 
+                }}
+                style={{ pointerEvents: 'auto' }}
+              >
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                  onClick={handleExploreProject}
+                  style={{ 
+                    userSelect: 'none', 
+                    WebkitUserSelect: 'none', 
+                    MozUserSelect: 'none', 
+                    msUserSelect: 'none',
+                    pointerEvents: 'auto',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 50
+                  }}
+                >
+                  Explorar Proyecto
+                </Button>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="project-buttons"
+                className="flex flex-row gap-4 justify-start items-center relative z-[40]"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                style={{ pointerEvents: 'auto' }}
+              >
+                {/* Back Button */}
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                  onClick={handleBack}
+                  style={{ 
+                    userSelect: 'none', 
+                    WebkitUserSelect: 'none', 
+                    MozUserSelect: 'none', 
+                    msUserSelect: 'none',
+                    pointerEvents: 'auto',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 50,
+                    minWidth: 'auto',
+                    padding: '0.5rem 1rem'
+                  }}
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+                {/* Three Project Buttons */}
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                  onClick={() => handleProjectNavigation('/terminal-maritimo')}
+                  style={{ 
+                    userSelect: 'none', 
+                    WebkitUserSelect: 'none', 
+                    MozUserSelect: 'none', 
+                    msUserSelect: 'none',
+                    pointerEvents: 'auto',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 50
+                  }}
+                >
+                  Terminal Marítimo
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                  onClick={() => handleProjectNavigation('/parque-tecnologico')}
+                  style={{ 
+                    userSelect: 'none', 
+                    WebkitUserSelect: 'none', 
+                    MozUserSelect: 'none', 
+                    msUserSelect: 'none',
+                    pointerEvents: 'auto',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 50
+                  }}
+                >
+                  Parque Tecnológico
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                  onClick={() => handleProjectNavigation('/parque-logistico')}
+                  style={{ 
+                    userSelect: 'none', 
+                    WebkitUserSelect: 'none', 
+                    MozUserSelect: 'none', 
+                    msUserSelect: 'none',
+                    pointerEvents: 'auto',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 50
+                  }}
+                >
+                  Parque Logístico
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     </section>
