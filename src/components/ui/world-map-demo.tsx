@@ -84,7 +84,6 @@ function MagicTextWrapper({ text, className }: { text: string; className?: strin
 
 export function WorldMapDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapWrapperRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   
   // Determine locale from pathname
@@ -121,31 +120,21 @@ export function WorldMapDemo() {
   return (
     <div 
       ref={containerRef} 
-      className="pt-0 pb-0 bg-white w-full relative z-20 min-h-[100vh] md:mt-0"
+      className="pt-0 pb-0 bg-white w-full relative z-20 md:min-h-[100vh] md:mt-0"
       data-white-background="true"
+      style={{ position: 'relative' }}
     >
-      {/* Mobile sticky wrapper - full width, no side margins */}
-      <motion.div 
-        ref={mapWrapperRef}
-        className="md:hidden sticky top-0 flex items-start justify-center pt-0 w-full mt-16"
+      {/* Mobile map - simple flow, no sticky, no wrapper */}
+      <motion.div
+        className="md:hidden relative w-full bg-white mt-24"
         style={{
-          paddingLeft: 0,
-          paddingRight: 0,
-          zIndex: 1,
-          height: '100vh'
+          y: mapY,
+          x: 0,
+          height: '50vh'
         }}
       >
-        {/* Mobile wrapper - full width, no side margins */}
-        <motion.div
-          className="relative w-full bg-white"
-          style={{
-            y: mapY,
-            x: 0, // No horizontal movement on mobile
-            height: '100vh'
-          }}
-        >
-          <div className="scale-[2] origin-center h-full w-full" style={{ overflow: 'hidden' }}>
-            <WorldMap
+        <div className="scale-[2] origin-center h-full w-full" style={{ overflow: 'hidden' }}>
+          <WorldMap
             dashed
             dots={[
             // Americas
@@ -197,9 +186,8 @@ export function WorldMapDemo() {
             // From far left border → China (Shanghai) to route via left side of map
             { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
           ]}
-          />
-          </div>
-        </motion.div>
+        />
+        </div>
       </motion.div>
       
       {/* Desktop sticky wrapper - with side margins and horizontal movement */}
