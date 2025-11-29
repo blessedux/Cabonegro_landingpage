@@ -1,8 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
-import { MagicText } from '@/components/ui/magic-text'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { usePathname } from 'next/navigation'
 import RotatingEarth from '@/components/ui/rotating-earth'
@@ -11,6 +9,59 @@ interface TextSection {
   label: string
   title: string
   description: string
+}
+
+// AnimatedWord component for word-by-word fill-in animation
+function AnimatedWord({ 
+  word, 
+  index, 
+  totalWords, 
+  scrollProgress 
+}: { 
+  word: string
+  index: number
+  totalWords: number
+  scrollProgress: number
+}) {
+  // Each word animates quickly - complete by 0.08 of scroll progress (well before icon transition at 0.167)
+  // Words spread over first 8% of section scroll
+  const animationRange = 0.08;
+  const start = (index / totalWords) * animationRange;
+  const end = start + (1 / totalWords) * animationRange;
+  
+  // Calculate opacity based on scroll progress
+  let opacity = 0;
+  if (scrollProgress >= end) {
+    opacity = 1;
+  } else if (scrollProgress >= start) {
+    opacity = (scrollProgress - start) / (end - start);
+  }
+
+  return (
+    <span className="relative mr-1 inline-block">
+      <span className="absolute opacity-20">{word}</span>
+      <span style={{ opacity: Math.max(0, Math.min(1, opacity)) }}>{word}</span>
+    </span>
+  );
+}
+
+// Paragraph wrapper with scroll-based word animation
+function AnimatedParagraph({ text, scrollProgress, className = "" }: { text: string; scrollProgress: number; className?: string }) {
+  const words = text.split(" ");
+
+  return (
+    <p className={`flex flex-wrap leading-[2] text-lg sm:text-xl ${className}`} style={{ color: '#ffffff' }}>
+      {words.map((word, i) => (
+        <AnimatedWord 
+          key={i}
+          word={word}
+          index={i}
+          totalWords={words.length}
+          scrollProgress={scrollProgress}
+        />
+      ))}
+    </p>
+  );
 }
 
 export default function AboutUs() {
@@ -116,75 +167,109 @@ export default function AboutUs() {
     }
   ]
 
-  const sectionRef = useRef<HTMLElement>(null)
+  const containerRef = useRef<HTMLElement>(null)
+  const stickyContainerRef = useRef<HTMLDivElement>(null)
+  const [scrollProgress, setScrollProgress] = useState(0)
   
-  // Track scroll progress relative to section
-  // When section top hits viewport top (progress = 0), content becomes sticky
-  // We need enough scroll distance for the crossfade transition
-  // Progress 0 = section top at viewport top (sticky starts)
-  // Progress 0.5 = halfway through section (crossfade complete)
-  // Progress 1 = section bottom at viewport top (sticky ends, can scroll to stats)
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"] // Start when section top hits viewport top, end when section bottom hits viewport top
-  })
+  // Remap value from one range to another (similar to reference code)
+  const remapValue = (value: number, start1: number, end1: number, start2: number, end2: number): number => {
+    const remapped = (value - start1) * (end2 - start2) / (end1 - start1) + start2
+    return remapped > 0 ? remapped : 0
+  }
   
+  // Handle scroll - similar to reference code pattern
+  const handleScroll = useCallback(() => {
+    if (!containerRef.current) return
+    
+    const viewportTop = window.scrollY
+    const container = containerRef.current
+    const containerHeight = container.clientHeight
+    const containerTop = container.offsetTop
+    const containerBottom = containerTop + containerHeight
+    
+    let scrollValue = 0
+    
+    if (containerBottom <= viewportTop) {
+      // Container bottom is above viewport
+      scrollValue = 1
+    } else if (containerTop >= viewportTop) {
+      // Container top is below viewport
+      scrollValue = 0
+    } else {
+      // Container intersects with viewport - remap scroll position to 0-1
+      scrollValue = remapValue(viewportTop, containerTop, containerBottom, 0, 1)
+    }
+    
+    setScrollProgress(scrollValue)
+  }, [])
   
-  // Content becomes sticky when section top reaches viewport (scrollYProgress = 0)
-  // As we continue scrolling, fade out title and paragraph, fade in icons
-  // Progress: 0 = section top at viewport top, 1 = section bottom at viewport top
+  // Set up scroll listener
+  useEffect(() => {
+    // Initial scroll calculation
+    handleScroll()
+    
+    // Add scroll listener with requestAnimationFrame for better performance
+    let ticking = false
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+    
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', handleScroll)
+    }
+  }, [handleScroll])
   
-  // Title fades out as we scroll (0 to 0.3 of scroll progress)
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0], { clamp: true })
-  const titleY = useTransform(scrollYProgress, [0, 0.3], [0, -20], { clamp: true })
-  
-  // Paragraph fades out slightly after title (0.1 to 0.4)
-  const paragraphOpacity = useTransform(scrollYProgress, [0.1, 0.4], [1, 0], { clamp: true })
-  const paragraphY = useTransform(scrollYProgress, [0.1, 0.4], [0, -20], { clamp: true })
-  
-  // Icons fade in as title/paragraph fade out (0.2 to 0.5)
-  const iconsOpacity = useTransform(scrollYProgress, [0.2, 0.5], [0, 1], { clamp: true })
-  const iconsY = useTransform(scrollYProgress, [0.2, 0.5], [20, 0], { clamp: true })
+  // Motion values for animations
+  const paragraphOpacity = Math.max(0, Math.min(1, scrollProgress >= 0.167 ? 0 : 1 - (scrollProgress / 0.167)))
+  const iconsOpacity = Math.max(0, Math.min(1, scrollProgress >= 0.167 ? 1 : scrollProgress / 0.167))
+  const paragraphY = scrollProgress >= 0.167 ? -20 : -20 * (scrollProgress / 0.167)
+  const iconsY = scrollProgress >= 0.167 ? 0 : 20 * (1 - scrollProgress / 0.167)
   
   
   return (
     <>
-      {/* Spacer to ensure scroll before AboutUs section - increased to push it below fold */}
-      <div className="h-[100vh] md:h-[120vh]" />
+      {/* Spacer to push AboutUs below the fold */}
+      <div className="h-[100vh]" />
       
-      {/* AboutUs section */}
+      {/* AboutUs section - container for sticky scroll */}
+      {/* This section must be tall enough (120vh) to allow sticky element to stick during scroll */}
       <section 
-        ref={sectionRef}
+        ref={containerRef}
         data-aboutus-section="true"
-        className="relative flex flex-col justify-center bg-transparent overflow-hidden supports-[overflow:clip]:overflow-clip z-[4]"
+        className="relative bg-transparent z-[4]"
         style={{
           backgroundColor: 'transparent',
           zIndex: 4,
-          minHeight: '200vh' // Increased to allow sticky scroll - needs enough space for crossfade transition
+          height: '120vh', // 100vh for sticky viewport + 20vh for scroll transition
+          position: 'relative'
         }}
       >
-        {/* Sticky container - becomes sticky when section top hits viewport */}
-        {/* This container stays in place during the crossfade transition */}
+        {/* Sticky container - stays fixed in viewport during scroll transition */}
+        {/* This container remains in the same viewport position while scrolling through 20vh */}
         <div 
+          ref={stickyContainerRef}
           data-sticky-container="true"
-          className="sticky top-0 left-0 right-0 w-full max-w-7xl mx-auto px-4 md:px-6 py-24"
+          className="sticky top-0 w-full max-w-7xl mx-auto px-4 md:px-6 py-24"
           style={{ 
-            minHeight: '100vh',
+            height: '100vh',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
-            willChange: 'transform', // Optimize for sticky positioning
-            zIndex: 5 // Ensure it's above other content
+            zIndex: 5
           }}
         >
-          {/* Title - fades out as scrolling continues */}
-          <motion.div 
-            className="mb-12 w-full text-center" 
-            style={{ 
-              opacity: titleOpacity,
-              y: titleY
-            }}
-          >
+          {/* Title - stays visible throughout scroll */}
+          <div className="mb-12 w-full text-center">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-center text-white whitespace-nowrap" style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
                 <BlurTextAnimation 
                   text={aboutTitle}
@@ -193,7 +278,7 @@ export default function AboutUs() {
                   animationDelay={0}
                 />
               </h2>
-          </motion.div>
+          </div>
 
           {/* Content Container - Reorganized layout */}
           <div 
@@ -207,24 +292,25 @@ export default function AboutUs() {
                 className="flex-1 w-full lg:w-auto lg:h-[500px] lg:relative"
               >
                 {/* Intro Paragraph - fades out as scrolling continues */}
-                <motion.div 
-                  className="mb-8 lg:mb-0 lg:absolute lg:inset-0 lg:flex lg:items-center"
+                <div 
+                  className="mb-8 lg:mb-0 lg:absolute lg:inset-0 lg:flex lg:items-center transition-opacity duration-0"
                   style={{
                     opacity: paragraphOpacity,
-                    y: paragraphY
+                    transform: `translateY(${paragraphY}px)`
                   }}
                 >
-                  <p className="text-lg sm:text-xl text-white leading-[2]">
-                    {introParagraph}
-                  </p>
-                </motion.div>
+                  <AnimatedParagraph 
+                    text={introParagraph}
+                    scrollProgress={scrollProgress}
+                  />
+                </div>
                 
                 {/* Icons Grid - fades in as paragraph fades out, aligned with globe */}
-                <motion.div 
-                  className="space-y-6 lg:space-y-8 mt-8 lg:mt-0 lg:absolute lg:inset-0 lg:flex lg:flex-col lg:justify-center"
+                <div 
+                  className="space-y-6 lg:space-y-8 mt-8 lg:mt-0 lg:absolute lg:inset-0 lg:flex lg:flex-col lg:justify-center transition-opacity duration-0"
                   style={{
                     opacity: iconsOpacity,
-                    y: iconsY
+                    transform: `translateY(${iconsY}px)`
                   }}
                 >
                   {textSections.map((section, index) => (
@@ -271,7 +357,7 @@ export default function AboutUs() {
                         </div>
                       </div>
                     ))}
-                </motion.div>
+                </div>
               </div>
               
               {/* Right column - Interactive Globe - stays in place */}
@@ -289,8 +375,8 @@ export default function AboutUs() {
         </div>
       </section>
       
-      {/* Spacer to push next section - reduced since section is more compact */}
-      <div className="h-[40vh] md:h-[50vh]" />
+      {/* Spacer to push next section - reduced spacing */}
+      <div className="h-[20vh]" />
     </>
   )
 }
