@@ -11,11 +11,17 @@ interface ScrollToTopButtonProps {
 export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [scrollProgress, setScrollProgress] = useState(0)
+  const [opacity, setOpacity] = useState(0)
   const [isScrolling, setIsScrolling] = useState(false)
+  const isScrollingRef = useRef(false)
+  const scrollProgressRef = useRef(0)
   const animationFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
     const checkScrollPosition = () => {
+      // Don't update UI during programmatic scroll
+      if (isScrollingRef.current) return
+
       const faqElement = document.getElementById('FAQ')
       if (!faqElement) return
 
@@ -24,19 +30,33 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
       const windowHeight = window.innerHeight
       const documentHeight = document.documentElement.scrollHeight
 
-      // Show button when we're below the FAQ section
-      const isBelowFAQ = faqRect.bottom < 0
-      setIsVisible(isBelowFAQ)
+      // Calculate when we've scrolled past the FAQ section (entering footer)
+      // faqRect.bottom < 0 means the FAQ bottom is above the viewport top
+      const faqBottom = faqElement.offsetTop + faqElement.offsetHeight
+      const distancePastFAQ = Math.max(0, scrollY - faqBottom)
+      
+      // Show button as soon as we start scrolling past FAQ
+      const isPastFAQ = distancePastFAQ > 0
+      setIsVisible(isPastFAQ)
 
-      if (isBelowFAQ && !isScrolling) {
-        // Calculate scroll progress from FAQ bottom to page bottom
-        const faqBottom = faqElement.offsetTop + faqElement.offsetHeight
+      if (isPastFAQ) {
+        // Calculate scroll progress from FAQ bottom to page bottom (for circular progress)
         const scrollableDistance = documentHeight - windowHeight - faqBottom
-        const currentScroll = Math.max(0, scrollY - faqBottom)
         const progress = scrollableDistance > 0 
-          ? Math.min(Math.max(currentScroll / scrollableDistance, 0), 1)
+          ? Math.min(Math.max(distancePastFAQ / scrollableDistance, 0), 1)
           : 0
+        scrollProgressRef.current = progress
         setScrollProgress(progress)
+
+        // Calculate opacity: fade in immediately as we pass FAQ, fade out when scrolling back up
+        // Use a smooth fade over 200px past the FAQ section
+        const fadeDistance = 200
+        const calculatedOpacity = Math.min(distancePastFAQ / fadeDistance, 1)
+        
+        setOpacity(calculatedOpacity)
+      } else {
+        // Fade out when scrolling back up past FAQ
+        setOpacity(0)
       }
     }
 
@@ -49,14 +69,34 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isScrolling])
+  }, [])
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    // Prevent multiple clicks during animation
+    if (isScrollingRef.current) {
+      console.log('[ScrollToTop] Click ignored - already scrolling')
+      return
+    }
+
+    console.log('[ScrollToTop] Button clicked, starting scroll animation')
+    isScrollingRef.current = true
     setIsScrolling(true)
-    const startPosition = window.pageYOffset
+
+    // Cancel any existing animation
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+    }
+
+    const startPosition = window.pageYOffset || window.scrollY || document.documentElement.scrollTop
     const targetPosition = 0
     const startTime = performance.now()
-    const duration = 1000 // 1000ms scroll duration
+    const duration = 800 // 800ms scroll duration
+    const initialProgress = scrollProgressRef.current
+
+    console.log('[ScrollToTop] Start position:', startPosition, 'Initial progress:', initialProgress)
 
     const animateScroll = (currentTime: number) => {
       const elapsed = currentTime - startTime
@@ -68,22 +108,34 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
         : 1 - Math.pow(-2 * progress + 2, 3) / 2
 
       const currentPosition = startPosition + (targetPosition - startPosition) * easeInOutCubic
-      window.scrollTo(0, currentPosition)
+      
+      // Use scrollTo with smooth behavior as fallback, but we control the animation
+      window.scrollTo({
+        top: currentPosition,
+        behavior: 'auto' // Disable native smooth scroll to avoid conflicts
+      })
 
-      // Update scroll progress for circular animation (starts from current progress, completes to 1)
-      // The circle should animate from left side (starting position) and complete as we reach top
-      const initialProgress = scrollProgress
+      // Update scroll progress for circular animation
       const scrollProgressValue = initialProgress + (1 - initialProgress) * easeInOutCubic
+      scrollProgressRef.current = scrollProgressValue
       setScrollProgress(scrollProgressValue)
 
       if (progress < 1) {
         animationFrameRef.current = requestAnimationFrame(animateScroll)
       } else {
+        // Ensure we're at the top
+        window.scrollTo({ top: 0, behavior: 'auto' })
+        console.log('[ScrollToTop] Animation complete')
+        
+        // Reset state after animation completes
+        isScrollingRef.current = false
         setIsScrolling(false)
-        // Reset progress after a brief delay
         setTimeout(() => {
           setScrollProgress(0)
+          scrollProgressRef.current = 0
         }, 200)
+        
+        animationFrameRef.current = null
       }
     }
 
@@ -112,6 +164,7 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
         'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500',
         className
       )}
+      style={{ opacity }}
       aria-label="Scroll back to top"
     >
       {/* Circular progress border - white border that animates */}
@@ -130,7 +183,7 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
           strokeWidth="2"
           className="text-gray-200"
         />
-        {/* Animated progress circle */}
+        {/* Animated progress circle - cyan blue accent color */}
         <circle
           cx="28"
           cy="28"
@@ -140,7 +193,7 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
           strokeWidth="2"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="text-gray-700 transition-all duration-75"
+          className="text-cyan-400 transition-all duration-75"
           style={{
             strokeLinecap: 'round',
             strokeLinejoin: 'round',
@@ -151,7 +204,7 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
       {/* Arrow icon */}
       <ArrowUp
         className={cn(
-          'w-6 h-6 text-gray-700 relative z-10',
+          'w-6 h-6 text-cyan-400 relative z-10',
           'transition-transform duration-300',
           'group-hover:translate-y-[-2px]',
           isScrolling && 'animate-pulse'

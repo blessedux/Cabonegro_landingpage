@@ -285,8 +285,8 @@ export default function HeroEs() {
               ease: "easeOut" 
             }}
           >
-            <span className="flex items-center gap-2">
-              <span>Plataforma</span>
+            <span>Plataforma</span>
+            <span>
               <WordRotate
                 words={rotatingWords}
                 controlledIndex={displayWordIndex}
@@ -362,57 +362,59 @@ export default function HeroEs() {
             ) : (
               <motion.div 
                 key="project-buttons"
-                className="flex flex-row gap-4 justify-start items-center relative z-[40]"
+                className="flex flex-col md:flex-row gap-4 justify-start items-start relative z-[40]"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
                 style={{ pointerEvents: 'auto' }}
               >
-                {/* Back Button */}
+                {/* First Row: Back Button + First Project Button */}
+                <div className="flex flex-row gap-4 items-center">
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                    onClick={handleBack}
+                    style={{ 
+                      userSelect: 'none', 
+                      WebkitUserSelect: 'none', 
+                      MozUserSelect: 'none', 
+                      msUserSelect: 'none',
+                      pointerEvents: 'auto',
+                      opacity: 1,
+                      position: 'relative',
+                      zIndex: 50,
+                      minWidth: 'auto',
+                      padding: '0.5rem 1rem'
+                    }}
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer text-sm md:text-base"
+                    onClick={() => handleProjectNavigation('/terminal-maritimo')}
+                    style={{ 
+                      userSelect: 'none', 
+                      WebkitUserSelect: 'none', 
+                      MozUserSelect: 'none', 
+                      msUserSelect: 'none',
+                      pointerEvents: 'auto',
+                      opacity: 1,
+                      position: 'relative',
+                      zIndex: 50
+                    }}
+                  >
+                    Terminal Marítimo
+                  </Button>
+                </div>
+                {/* Second Row: Second Project Button */}
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
-                  onClick={handleBack}
-                  style={{ 
-                    userSelect: 'none', 
-                    WebkitUserSelect: 'none', 
-                    MozUserSelect: 'none', 
-                    msUserSelect: 'none',
-                    pointerEvents: 'auto',
-                    opacity: 1,
-                    position: 'relative',
-                    zIndex: 50,
-                    minWidth: 'auto',
-                    padding: '0.5rem 1rem'
-                  }}
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-                {/* Three Project Buttons */}
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
-                  onClick={() => handleProjectNavigation('/terminal-maritimo')}
-                  style={{ 
-                    userSelect: 'none', 
-                    WebkitUserSelect: 'none', 
-                    MozUserSelect: 'none', 
-                    msUserSelect: 'none',
-                    pointerEvents: 'auto',
-                    opacity: 1,
-                    position: 'relative',
-                    zIndex: 50
-                  }}
-                >
-                  Terminal Marítimo
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer text-sm md:text-base"
                   onClick={() => handleProjectNavigation('/parque-tecnologico')}
                   style={{ 
                     userSelect: 'none', 
@@ -427,10 +429,11 @@ export default function HeroEs() {
                 >
                   Parque Tecnológico
                 </Button>
+                {/* Third Row: Third Project Button */}
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer text-sm md:text-base"
                   onClick={() => handleProjectNavigation('/parque-logistico')}
                   style={{ 
                     userSelect: 'none', 

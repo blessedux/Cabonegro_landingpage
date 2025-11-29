@@ -27,6 +27,7 @@ function HomeContent() {
   const [assetsPreloaded, setAssetsPreloaded] = useState(false)
   const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
   const [contentReady, setContentReady] = useState(false)
+  const [contentPreRendered, setContentPreRendered] = useState(false) // Track if content is pre-rendered
   const contentRef = useRef<HTMLDivElement>(null)
   const { isFadingOut } = useAnimation()
   const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete, isPreloaderBVisible } = usePreloader()
@@ -62,6 +63,22 @@ function HomeContent() {
     preloadAssets()
   }, [])
 
+  // Pre-render content early when preloader is visible (but keep it hidden)
+  // This ensures content is loaded and ready before preloader fades out
+  useEffect(() => {
+    if (isPreloaderVisible && !isPreloaderBVisible) {
+      // Start pre-rendering content early (after a short delay to let preloader initialize)
+      const preRenderTimer = setTimeout(() => {
+        setContentPreRendered(true)
+      }, 1000) // Start pre-rendering after 1 second
+      
+      return () => clearTimeout(preRenderTimer)
+    } else if (!isPreloaderVisible) {
+      // If preloader is not visible, content should be ready
+      setContentPreRendered(true)
+    }
+  }, [isPreloaderVisible, isPreloaderBVisible])
+
   // Handle preloader visibility logic
   useEffect(() => {
     // Check if assets are cached
@@ -72,6 +89,7 @@ function HomeContent() {
       setPreloaderVisible(false)
       setPreloaderFadeComplete(true)
       setContentReady(true)
+      setContentPreRendered(true)
       return
     }
     
@@ -80,6 +98,7 @@ function HomeContent() {
       setPreloaderVisible(false)
       setPreloaderFadeComplete(true)
       setContentReady(true)
+      setContentPreRendered(true)
       return
     }
     
@@ -93,6 +112,7 @@ function HomeContent() {
     if (hasSeenPreloader && !isPreloaderVisible) {
       setPreloaderFadeComplete(true)
       setContentReady(true)
+      setContentPreRendered(true)
     }
   }, [hasSeenPreloader, isPreloaderBVisible, isPreloaderVisible, setPreloaderVisible])
 
@@ -115,21 +135,27 @@ function HomeContent() {
     }
   }, [preloaderFadeComplete])
 
-  // Handle content fade-in animation
+  // Handle content fade-in animation - start immediately when preloader starts fading
   useEffect(() => {
-    if (contentReady && contentRef.current) {
-      // Start content fade-in animation - faster and smoother
-      gsap.fromTo(contentRef.current, 
-        { opacity: 0 },
-        { 
-          opacity: 1, 
-          duration: 0.8, // Faster fade-in to match preloader fade-out
-          ease: 'power2.out',
-          delay: 0.1 // Small delay to ensure smooth overlap
-        }
-      )
+    if (preloaderFadeComplete && contentRef.current && contentPreRendered) {
+      // Start content fade-in immediately when preloader starts fading out
+      // No delay - content should be visible behind the fading preloader (cross-fade)
+      // Content is already pre-rendered, so it's ready to fade in smoothly
+      gsap.to(contentRef.current, { 
+        opacity: 1, 
+        duration: 0.6, // Match preloader fade duration for perfect cross-fade
+        ease: 'power2.out',
+        delay: 0 // No delay - start immediately
+      })
     }
-  }, [contentReady])
+  }, [preloaderFadeComplete, contentPreRendered])
+
+  // Ensure contentReady is set when preloaderFadeComplete is true
+  useEffect(() => {
+    if (preloaderFadeComplete && !contentReady) {
+      setContentReady(true)
+    }
+  }, [preloaderFadeComplete, contentReady])
 
   // Safety fallback: ensure content shows after preloader duration + buffer
   useEffect(() => {
@@ -148,6 +174,8 @@ function HomeContent() {
 
   const handlePreloaderFadeOutStart = () => {
     // Pre-render content when preloader starts fading out
+    // This ensures content is fully loaded and ready before preloader disappears
+    setContentPreRendered(true)
     setContentReady(true)
     setPreloaderFadeComplete(true)
   }
@@ -171,19 +199,38 @@ function HomeContent() {
         />
       )}
 
-      {/* Main Content - Pre-render but hidden, fade in when ready */}
-      {preloaderFadeComplete && (
+      {/* Hero - Pre-render early but keep hidden until preloader fades */}
+      {/* Hero should be visible immediately when preloader starts fading */}
+      {contentPreRendered && (
+        <div 
+          style={{ 
+            opacity: preloaderFadeComplete ? 1 : 0,
+            pointerEvents: preloaderFadeComplete ? 'auto' : 'none',
+            transition: preloaderFadeComplete ? 'opacity 0.6s ease-out' : 'none',
+            position: 'relative',
+            zIndex: preloaderFadeComplete ? 1 : 0
+          }}
+        >
+          <Hero />
+        </div>
+      )}
+
+      {/* Main Content - Pre-render early but hidden, fade in when ready */}
+      {contentPreRendered && (
         <div 
           ref={contentRef}
-          className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : ''}`}
-          style={{ opacity: 0, pointerEvents: 'auto' }} // Start invisible, GSAP handles animation
+          className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
+          style={{ 
+            opacity: preloaderFadeComplete ? 0 : 0, // Start invisible, GSAP will fade it in when preloaderFadeComplete is true
+            pointerEvents: preloaderFadeComplete ? 'auto' : 'none',
+            transition: 'none' // GSAP handles all transitions
+          }}
         >
           {/* Navigation */}
           <Navbar />
-          
+        
           {/* Main Sections */}
           <main style={{ pointerEvents: 'auto' }}>
-            <Hero />
             <AboutUs />
             <Stats />
             <Partners />

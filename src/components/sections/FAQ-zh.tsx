@@ -186,7 +186,7 @@ export default function FAQZh() {
   }
 
   return (
-    <div className="py-20 px-6 bg-black text-white">
+    <div className="pt-8 md:pt-20 pb-20 px-6 bg-black text-white">
       <div className="max-w-4xl mx-auto">
 
         {/* FAQ Items */}

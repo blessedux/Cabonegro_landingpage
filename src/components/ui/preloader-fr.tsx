@@ -262,8 +262,18 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
         />
       </div>
 
+      {/* Mobile Icon - Centered behind scrambled text, small and centered */}
+      <div className="lg:hidden absolute inset-0 flex items-center justify-center z-0 pointer-events-none">
+        <img 
+          src="/BNWCRANE_preloaderB.png" 
+          alt="Infrastructure Industrielle Cabo Negro" 
+          className="w-96 h-96 sm:w-[512px] sm:h-[512px] object-contain opacity-100"
+          style={{ filter: 'invert(1)' }}
+        />
+      </div>
+
       {/* Terminal Preloader */}
-      <div className="w-[95%] sm:w-[90%] max-w-4xl relative overflow-hidden block opacity-100 flex flex-col">
+      <div className="w-[95%] sm:w-[90%] max-w-4xl relative overflow-hidden block opacity-100 flex flex-col z-10">
         {/* Border Top - Fixed height to prevent vertical movement */}
         <div className="w-full h-6 sm:h-8 flex justify-between items-center px-2 sm:px-2.5 text-xs sm:text-sm text-black font-secondary uppercase tracking-wider flex-shrink-0">
           <span className="truncate max-w-[45%]">Zone Industrielle Cabo Negro</span>

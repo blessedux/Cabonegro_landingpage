@@ -135,7 +135,7 @@ export function WorldMapDemo() {
       >
         {/* Mobile wrapper - full width, no side margins */}
         <motion.div
-          className="relative w-full overflow-hidden bg-white h-[100vh]"
+          className="relative w-full overflow-hidden bg-white h-[200vh]"
           style={{
             y: mapY,
             x: 0, // No horizontal movement on mobile

@@ -53,8 +53,8 @@ Estructurado por página y por secciones, según requerimientos del cliente.
 - [x] Diseño: Tarjetas con íconos
 - [x] Tarjeta: Ruta alternativa al Canal de Panamá
 - [x] Tarjeta: Capital energética del hidrógeno verde
-- [ ] Tarjeta: Ecosistema satelital y tecnológico
-- [ ] Tarjeta: Nodo logístico industrial
+- [x] Tarjeta: Ecosistema satelital y tecnológico
+- [x] Tarjeta: Nodo logístico industrial
 
 ---
 

@@ -25,8 +25,8 @@ const getPressArticles = (locale: string): PressArticle[] => {
         id: 1,
         title: 'Cabo Negro: Strategic Gateway to the South',
         description: 'New industrial complex set to transform maritime logistics in Patagonia',
-        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article1',
+        image: '/article_1_cabonegro.jpeg',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Maritime News',
         date: '2024-01-15'
       },
@@ -35,7 +35,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Hydrogen Economy Infrastructure Development',
         description: 'Cabo Negro positioned as key hub for green hydrogen export operations',
         image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article2',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Energy Today',
         date: '2024-02-20'
       },
@@ -44,7 +44,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Industrial Park Expansion in Patagonia',
         description: 'Major investment in sustainable industrial infrastructure for Southern Chile',
         image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article3',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Industrial Weekly',
         date: '2024-03-10'
       },
@@ -53,7 +53,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Environmental Compliance and Sustainability',
         description: 'Cabo Negro sets new standards for eco-friendly port operations',
         image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article4',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Green Business',
         date: '2024-04-05'
       }
@@ -63,7 +63,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         id: 1,
         title: 'Se aprueba concesión marítima para nuevo puerto en Punta Arenas',
         description: 'La Comisión Regional de Uso del Borde Costero (CRUBC) aprobó por unanimidad la concesión de uso de borde costero para el proyecto "Cabo Negro", impulsado por Inversiones PPG SpA. El proyecto contempla 20.519 metros de concesión marítima, un muelle de 700 metros y más de 100 hectáreas terrestres de respaldo, posicionándose como el primer puerto privado de uso público en Magallanes.',
-        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
+        image: '/article_1_cabonegro.jpeg',
         link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Gobierno Regional de Magallanes',
         date: '2025-04-03'
@@ -73,7 +73,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Desarrollo de Infraestructura de Economía del Hidrógeno',
         description: 'Cabo Negro posicionado como centro clave para operaciones de exportación de hidrógeno verde',
         image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article2',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Energía Hoy',
         date: '2024-02-20'
       },
@@ -82,7 +82,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Expansión del Parque Industrial en Patagonia',
         description: 'Gran inversión en infraestructura industrial sostenible para el sur de Chile',
         image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article3',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Industrial Semanal',
         date: '2024-03-10'
       },
@@ -91,7 +91,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Cumplimiento Ambiental y Sostenibilidad',
         description: 'Cabo Negro establece nuevos estándares para operaciones portuarias ecológicas',
         image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article4',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Negocios Verdes',
         date: '2024-04-05'
       }
@@ -101,8 +101,8 @@ const getPressArticles = (locale: string): PressArticle[] => {
         id: 1,
         title: '卡波内格罗：通往南方的战略门户',
         description: '新工业综合体将改变巴塔哥尼亚的海事物流',
-        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article1',
+        image: '/article_1_cabonegro.jpeg',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: '海事新闻',
         date: '2024-01-15'
       },
@@ -111,7 +111,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: '氢经济基础设施发展',
         description: '卡波内格罗定位为绿色氢出口运营的关键枢纽',
         image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article2',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: '今日能源',
         date: '2024-02-20'
       },
@@ -120,7 +120,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: '巴塔哥尼亚工业园扩张',
         description: '对智利南部可持续工业基础设施的重大投资',
         image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article3',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: '工业周刊',
         date: '2024-03-10'
       },
@@ -129,7 +129,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: '环境合规与可持续性',
         description: '卡波内格罗为生态友好型港口运营设定新标准',
         image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article4',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: '绿色商业',
         date: '2024-04-05'
       }
@@ -139,8 +139,8 @@ const getPressArticles = (locale: string): PressArticle[] => {
         id: 1,
         title: 'Cabo Negro : Porte d\'Entrée Stratégique vers le Sud',
         description: 'Nouveau complexe industriel destiné à transformer la logistique maritime en Patagonie',
-        image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article1',
+        image: '/article_1_cabonegro.jpeg',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Actualités Maritimes',
         date: '2024-01-15'
       },
@@ -149,7 +149,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Développement d\'Infrastructure pour l\'Économie de l\'Hydrogène',
         description: 'Cabo Negro positionné comme centre clé pour les opérations d\'exportation d\'hydrogène vert',
         image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article2',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Énergie Aujourd\'hui',
         date: '2024-02-20'
       },
@@ -158,7 +158,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Expansion du Parc Industriel en Patagonie',
         description: 'Investissement majeur dans l\'infrastructure industrielle durable pour le sud du Chili',
         image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article3',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Industrie Hebdo',
         date: '2024-03-10'
       },
@@ -167,7 +167,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         title: 'Conformité Environnementale et Durabilité',
         description: 'Cabo Negro établit de nouvelles normes pour les opérations portuaires écologiques',
         image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article4',
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
         source: 'Business Vert',
         date: '2024-04-05'
       }
@@ -263,7 +263,7 @@ export default function Press() {
   const currentArticleData = pressArticles[currentArticle]
 
   return (
-    <section className="py-8 px-4 bg-white relative z-[10] min-h-screen" ref={heroRef} data-keep-navbar-black="true">
+    <section className="py-8 px-4 bg-white relative z-[10] min-h-screen md:mb-0 mb-4" ref={heroRef} data-keep-navbar-black="true">
       <div className="max-w-6xl mx-auto">
         <div className="relative">
           {/* Header */}
@@ -288,10 +288,10 @@ export default function Press() {
             animationNum={4}
             timelineRef={heroRef}
             customVariants={scaleVariants}
-            className="relative group"
+            className="relative group pt-12 md:pt-0"
           >
             <div
-              className="relative w-full overflow-hidden"
+              className="relative w-full overflow-visible"
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
@@ -333,14 +333,14 @@ export default function Press() {
               {/* Navigation Arrows */}
               <button
                 onClick={prevArticle}
-                className="absolute left-4 top-[80%] p-2 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full border border-white/20 text-white transition-all hover:scale-110 active:scale-95 z-20"
+                className="absolute left-4 bottom-16 md:top-[80%] md:bottom-auto p-2 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full border border-white/20 text-white transition-all hover:scale-110 active:scale-95 z-20"
                 aria-label="Previous article"
               >
                 <ChevronLeft className="w-6 h-6" />
               </button>
               <button
                 onClick={nextArticle}
-                className="absolute right-4 top-[80%] p-2 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full border border-white/20 text-white transition-all hover:scale-110 active:scale-95 z-20"
+                className="absolute right-4 bottom-16 md:top-[80%] md:bottom-auto p-2 bg-black/60 hover:bg-black/80 backdrop-blur-md rounded-full border border-white/20 text-white transition-all hover:scale-110 active:scale-95 z-20"
                 aria-label="Next article"
               >
                 <ChevronRight className="w-6 h-6" />

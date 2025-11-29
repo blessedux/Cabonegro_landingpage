@@ -151,7 +151,7 @@ export default function FAQ() {
   const deckPath = locale === 'en' ? '/deck' : `/${locale}/deck`
 
   return (
-    <section className="pt-20 pb-20 px-6 bg-white relative z-20" id="FAQ" data-white-background="true">
+    <section className="pt-8 md:pt-20 pb-20 px-6 bg-white relative z-20" id="FAQ" data-white-background="true">
       <div className="container mx-auto max-w-4xl">
         <motion.h2 
           initial={{ x: -50, opacity: 0 }}

@@ -425,24 +425,22 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
         className="w-full h-auto rounded-2xl"
         style={{ maxWidth: "100%", height: "auto", background: "transparent" }}
       />
-      <div className="absolute bottom-4 right-4 text-xs text-muted-foreground px-2 py-1 rounded-md dark bg-neutral-900/80 backdrop-blur-sm">
-        Drag to rotate • Pinch to zoom
-      </div>
       
-      {/* Debug Panel */}
-      <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 text-xs font-mono text-white">
-        <div className="mb-2 font-semibold text-cyan-400">Debug Panel</div>
-        <div className="space-y-1">
-          <div>
-            <span className="text-gray-400">Longitude:</span>{" "}
-            <span className="text-cyan-300">{dotCoords[0].toFixed(4)}°</span>
+      {/* Location Info Panel */}
+      <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 text-sm text-white">
+        <div className="space-y-1 text-xs sm:text-sm">
+          <div className="text-white">
+            Estrecho de Magallanes, Chile
           </div>
           <div>
-            <span className="text-gray-400">Latitude:</span>{" "}
-            <span className="text-cyan-300">{dotCoords[1].toFixed(4)}°</span>
-          </div>
-          <div className="mt-2 pt-2 border-t border-gray-700 text-gray-500 text-[10px]">
-            Original: 52°56'52.4"S 70°48'20.3"W
+            <a
+              href={`https://www.google.com/maps?q=${dotCoords[1]},${dotCoords[0]}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-300 hover:text-cyan-200 underline cursor-pointer transition-colors"
+            >
+              {dotCoords[1].toFixed(4)}°S, {Math.abs(dotCoords[0]).toFixed(4)}°W
+            </a>
           </div>
         </div>
       </div>

@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import NavbarZh from '@/components/sections/Navbar-zh'
+import Navbar from '@/components/sections/Navbar'
 import Footer from '@/components/sections/Footer'
 import { DownloadDeckButton } from '@/components/ui/download-deck-button'
 
-function DeckPageContentZh() {
+function DeckPageContentFr() {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -17,7 +17,7 @@ function DeckPageContentZh() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <NavbarZh />
+      <Navbar />
       
       {isVisible && (
         <main className="pt-20 h-screen relative">
@@ -25,7 +25,7 @@ function DeckPageContentZh() {
           <div className="absolute top-24 right-4 z-10">
             <DownloadDeckButton 
               variant="outline"
-              language="zh"
+              language="fr"
               className="bg-black/80 backdrop-blur-sm border-white/20 text-white hover:bg-white hover:text-black shadow-lg"
             />
           </div>
@@ -35,7 +35,7 @@ function DeckPageContentZh() {
               src="https://gamma.app/embed/8uz4114rec81me0" 
               style={{ width: '100%', height: '100%' }} 
               allow="fullscreen" 
-              title="卡波内格罗：绿色氢气和全球贸易的战略投资"
+              title="Cabo Negro: Investissement Stratégique dans l'Hydrogène Vert et le Commerce Mondial"
               className="border-0"
             />
           </div>
@@ -47,6 +47,7 @@ function DeckPageContentZh() {
   )
 }
 
-export default function DeckPageZh() {
-  return <DeckPageContentZh />
+export default function DeckPageFr() {
+  return <DeckPageContentFr />
 }
+
