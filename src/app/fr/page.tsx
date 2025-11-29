@@ -30,18 +30,18 @@ function HomeContent() {
   const [contentPreRendered, setContentPreRendered] = useState(false) // Track if content is pre-rendered
   const contentRef = useRef<HTMLDivElement>(null)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete, isPreloaderBVisible } = usePreloader()
+  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete, isPreloaderBVisible, isLanguageSwitch } = usePreloader()
 
   // Preload critical assets
   useEffect(() => {
     const preloadAssets = async () => {
       try {
-        // Preload video
-        const videoLink = document.createElement('link')
-        videoLink.rel = 'preload'
-        videoLink.href = 'https://res.cloudinary.com/dezm9avsj/video/upload/v1763931613/cabonegro_pjk8im.mp4'
-        videoLink.as = 'video'
-        document.head.appendChild(videoLink)
+        // Preload Spline scene
+        const splineLink = document.createElement('link')
+        splineLink.rel = 'preload'
+        splineLink.href = 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/'
+        splineLink.as = 'document'
+        document.head.appendChild(splineLink)
 
         // Preload critical fonts
         const fontLink = document.createElement('link')
@@ -160,17 +160,18 @@ function HomeContent() {
   // Safety fallback: ensure content shows after preloader duration + buffer
   useEffect(() => {
     if (isPreloaderVisible && !isPreloaderBVisible) {
+      const duration = isLanguageSwitch ? 1.5 : 6
       const safetyTimeout = setTimeout(() => {
         // If preloader is still visible after duration + buffer, force show content
         setPreloaderFadeComplete(true)
         setContentReady(true)
         setPreloaderVisible(false)
         setPreloaderComplete(true)
-      }, 7000) // 6s duration + 1s buffer
+      }, (duration + 1) * 1000) // duration + 1s buffer
 
       return () => clearTimeout(safetyTimeout)
     }
-  }, [isPreloaderVisible, isPreloaderBVisible, setPreloaderVisible, setPreloaderComplete])
+  }, [isPreloaderVisible, isPreloaderBVisible, isLanguageSwitch, setPreloaderVisible, setPreloaderComplete])
 
   const handlePreloaderFadeOutStart = () => {
     // Pre-render content when preloader starts fading out
@@ -195,7 +196,7 @@ function HomeContent() {
         <Preloader 
           onComplete={handlePreloaderComplete}
           onFadeOutStart={handlePreloaderFadeOutStart}
-          duration={6}
+          duration={isLanguageSwitch ? 1.5 : 6}
         />
       )}
 

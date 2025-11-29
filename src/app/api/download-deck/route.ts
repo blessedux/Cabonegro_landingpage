@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
     const pdfFiles = {
       'en': 'investors-deck.pdf',
       'es': 'investors-deck_es.pdf',
-      'zh': 'investors-deck_zh.pdf'
+      'zh': 'investors-deck_zh.pdf',
+      'fr': 'investors-deck.pdf' // Fallback to English for now
     }
     
     const pdfFileName = pdfFiles[lang as keyof typeof pdfFiles] || pdfFiles['en']
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       }
       // Use fallback
       const pdfBuffer = fs.readFileSync(fallbackPath)
-      zip.file('Cabo_Negro_Investors_Deck.pdf', pdfBuffer)
+      zip.file('Cabo_Negro_Investors_Deck.pdf', new Uint8Array(pdfBuffer))
     } else {
       // Read the language-specific PDF file
       const pdfBuffer = fs.readFileSync(pdfPath)
@@ -42,8 +43,9 @@ export async function GET(request: NextRequest) {
       // Add the PDF to the zip file with language-specific naming
       const zipFileName = lang === 'en' ? 'Cabo_Negro_Investors_Deck.pdf' : 
                          lang === 'es' ? 'Cabo_Negro_Deck_Inversionistas.pdf' :
-                         'Cabo_Negro_Investors_Deck_CN.pdf'
-      zip.file(zipFileName, pdfBuffer)
+                         lang === 'zh' ? 'Cabo_Negro_Investors_Deck_CN.pdf' :
+                         'Cabo_Negro_Deck_Investisseurs.pdf'
+      zip.file(zipFileName, new Uint8Array(pdfBuffer))
     }
     
     // Add a README file with language-specific information
@@ -118,6 +120,40 @@ CONTENIDO DEL DECK DE INVERSIONISTAS:
 Para más información, visite: https://cabonegro.com
 
 © 2025 Cabo Negro. Todos los derechos reservados.`,
+      'fr': `CABO NEGRO - INVESTISSEMENT STRATÉGIQUE DANS L'HYDROGÈNE VERT ET LE COMMERCE MONDIAL
+DECK D'INVESTISSEURS 2025
+
+AVIS RAPIDE:
+Ce matériel et les informations qu'il contient sont confidentiels et propriétaires.
+Les informations et données présentées sont à jour en 2025 et peuvent être modifiées.
+
+PROPRIÉTÉ ET RESPONSABILITÉ DU PROJET:
+
+Inversiones PPG SpA (PPG): Demandeur de concession maritime en cours (CM61260)
+
+Inmobiliaria Patagon Valley SpA (PV): ~33 hectares. Le propriétaire est un Fonds d'investissement privé.
+AWS et GTD sont installés ici. Le concept original était de se concentrer sur un parc technologique.
+
+Inversiones A&J Limitada (A&J): Terres subdivisées en lots à partir de 5 000 m².
+
+Inversiones J&P Limitada (J&P): Zone portuaire. Maintenant divisée en sociétés séparées par parcelle.
+La J&P continue serait directement liée au développement du projet portuaire avec PPG.
+J&P 2 et J&P 3 comme options d'expansion pour la zone logistique/portuaire.
+
+Inmobiliaria Cabo Negro Dos (CN2): Résultat de la subdivision J&P. ~173 hectares,
+sans subdivision.
+
+CONTENU DU DECK D'INVESTISSEURS:
+- Emplacement de la porte d'entrée stratégique
+- Analyse des opportunités H₂V
+- Spécifications du parc industriel
+- Développement du terminal maritime
+- Avantages réglementaires
+- Potentiel éolien
+
+Pour plus d'informations, visitez: https://cabonegro.com
+
+© 2025 Cabo Negro. Tous droits réservés.`,
       'zh': `卡波内格罗 - 绿色氢气和全球贸易的战略投资
 投资者演示文稿 2025
 
@@ -157,7 +193,8 @@ Inmobiliaria Cabo Negro Dos (CN2)：J&P细分的产物。约173公顷，
     const readmeContent = readmeContents[lang as keyof typeof readmeContents] || readmeContents['en']
     const readmeFileName = lang === 'en' ? 'README.txt' : 
                           lang === 'es' ? 'LEEME.txt' : 
-                          '说明.txt'
+                          lang === 'zh' ? '说明.txt' :
+                          'LISEZMOI.txt'
     zip.file(readmeFileName, readmeContent)
     
     // Generate the zip file
@@ -166,7 +203,8 @@ Inmobiliaria Cabo Negro Dos (CN2)：J&P细分的产物。约173公顷，
     // Set response headers for file download with language-specific naming
     const zipFileName = lang === 'en' ? 'Cabo_Negro_Investors_Deck.zip' : 
                        lang === 'es' ? 'Cabo_Negro_Deck_Inversionistas.zip' :
-                       'Cabo_Negro_Investors_Deck_CN.zip'
+                       lang === 'zh' ? 'Cabo_Negro_Investors_Deck_CN.zip' :
+                       'Cabo_Negro_Deck_Investisseurs.zip'
     
     const headers = new Headers()
     headers.set('Content-Type', 'application/zip')

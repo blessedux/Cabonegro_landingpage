@@ -29,7 +29,8 @@ export function WorldMapDemoZh() {
   return (
     <div ref={containerRef} className="py-20 dark:bg-black bg-white w-full relative overflow-hidden">
       <div className="relative w-full max-w-full overflow-hidden">
-        <WorldMap
+        <div className="scale-[2] origin-center overflow-hidden h-full w-full">
+          <WorldMap
           dashed
           dots={[
           { start: { lat: -33.0458, lng: -71.6197 }, end: { lat: -70.0, lng: -70.83 }, endColor: '#0ea5e9', controlOffsetX: -40, controlOffsetY: 45 },
@@ -59,6 +60,7 @@ export function WorldMapDemoZh() {
           { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
         ]}
       />
+        </div>
       </div>
       {/* Text below the map frame */}
       <TerminalCaptionZh active={captionActive} />
@@ -120,7 +122,7 @@ function TerminalCaptionZh({ active }: { active: boolean }) {
   }, [active]);
 
   return (
-    <div className="px-4 md:px-8 lg:px-12 pt-8 pb-12 text-center">
+    <div className="px-4 md:px-8 lg:px-12 pt-2 md:pt-8 pb-4 md:pb-12 text-center">
       <div className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed">
         {displayLines.map((line, i) => (
           <div key={i} className={i < displayLines.length - 1 ? "mb-2" : ""}>

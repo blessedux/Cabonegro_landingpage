@@ -7,6 +7,7 @@ interface PreloaderContextType {
   isPreloaderComplete: boolean
   hasSeenPreloader: boolean
   isPreloaderBVisible: boolean
+  isLanguageSwitch: boolean
   setPreloaderVisible: (visible: boolean) => void
   setPreloaderComplete: (complete: boolean) => void
   showPreloader: () => void
@@ -14,6 +15,7 @@ interface PreloaderContextType {
   completePreloader: () => void
   showPreloaderB: () => void
   hidePreloaderB: () => void
+  setLanguageSwitch: (isSwitch: boolean) => void
 }
 
 const PreloaderContext = createContext<PreloaderContextType | undefined>(undefined)
@@ -23,6 +25,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const [isPreloaderComplete, setIsPreloaderComplete] = useState(false)
   const [hasSeenPreloader, setHasSeenPreloader] = useState(false)
   const [isPreloaderBVisible, setIsPreloaderBVisible] = useState(false)
+  const [isLanguageSwitch, setIsLanguageSwitch] = useState(false)
 
   // Check if user has seen preloader before and if assets are cached
   useEffect(() => {
@@ -48,6 +51,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
       setIsPreloaderComplete(true)
     } else if (!hasSeenBefore) {
       // First visit - show preloader to load assets
+      setIsLanguageSwitch(false) // Explicitly ensure it's false on first load
       setIsPreloaderVisible(true)
     } else {
       // Has seen before but assets might not be cached - show briefly or skip
@@ -60,6 +64,8 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const showPreloader = () => {
     setIsPreloaderVisible(true)
     setIsPreloaderComplete(false)
+    // Reset language switch flag when showing preloader normally
+    setIsLanguageSwitch(false)
   }
 
   const hidePreloader = () => {
@@ -70,11 +76,16 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
     setIsPreloaderComplete(true)
     setHasSeenPreloader(true)
     // Store in localStorage that user has seen preloader and assets are cached
-    localStorage.setItem('cabonegro-preloader-seen', 'true')
-    localStorage.setItem('cabonegro-assets-cached', 'true')
+    // Only store on first load, not on language switches
+    if (!isLanguageSwitch) {
+      localStorage.setItem('cabonegro-preloader-seen', 'true')
+      localStorage.setItem('cabonegro-assets-cached', 'true')
+    }
     // Auto-hide after completion
     setTimeout(() => {
       setIsPreloaderVisible(false)
+      // Reset language switch flag after preloader completes
+      setIsLanguageSwitch(false)
     }, 1000)
   }
 
@@ -94,6 +105,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         isPreloaderComplete,
         hasSeenPreloader,
         isPreloaderBVisible,
+        isLanguageSwitch,
         setPreloaderVisible: setIsPreloaderVisible,
         setPreloaderComplete: setIsPreloaderComplete,
         showPreloader,
@@ -101,6 +113,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         completePreloader,
         showPreloaderB,
         hidePreloaderB,
+        setLanguageSwitch: setIsLanguageSwitch,
       }}
     >
       {children}

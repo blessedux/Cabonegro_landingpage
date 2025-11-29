@@ -50,7 +50,7 @@ export default function Partners() {
         ref={partnersRef} 
         data-partners-section="true"
         data-white-background="true"
-        className="pt-20 pb-20 px-3 md:px-6 relative overflow-visible bg-white rounded-t-[3rem] md:rounded-t-[4rem] -mt-8 md:-mt-8 mt-12 relative z-10"
+        className="pt-20 pb-20 px-3 md:px-6 relative overflow-visible bg-white rounded-t-[3rem] md:rounded-t-[4rem] -mt-8 md:-mt-8 mt-[212px] md:mt-[276px] relative z-10"
       >
       {/* Enhanced shadow that moves with parallax - creates depth as it slides */}
       <motion.div
@@ -117,7 +117,17 @@ export default function Partners() {
           </div>
           
           <div className="mb-4">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black tracking-tight pb-2">
+            <h2 
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight pb-2 text-black"
+              style={{ 
+                color: '#000000 !important',
+                transform: 'none',
+                opacity: 1,
+                whiteSpace: 'normal',
+                wordBreak: 'normal',
+                lineHeight: '1.2'
+              }}
+            >
               {t('subtitle')}
             </h2>
           </div>
@@ -128,7 +138,7 @@ export default function Partners() {
           >
             <MagicText 
               text={t('description')}
-              className="text-gray-600 text-lg"
+              className="text-black text-lg"
             />
           </motion.div>
         </div>

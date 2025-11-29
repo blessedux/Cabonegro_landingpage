@@ -19,7 +19,7 @@ export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
-  const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete } = usePreloader()
+  const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete, setLanguageSwitch } = usePreloader()
 
   // Detect when navbar is over white background sections
   useEffect(() => {
@@ -271,6 +271,7 @@ export default function Navbar() {
     
     // If switching language on homepage, show main preloader and delay navigation slightly
     if (isOnHomePage && !isOnSpecialPage) {
+      setLanguageSwitch(true) // Mark this as a language switch for faster preloader
       setPreloaderVisible(true)
       setPreloaderComplete(false)
       delay = 50 // Small delay to ensure preloader state is set before navigation

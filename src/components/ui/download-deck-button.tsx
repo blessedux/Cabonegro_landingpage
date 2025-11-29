@@ -8,7 +8,7 @@ interface DownloadDeckButtonProps {
   className?: string
   variant?: 'default' | 'outline' | 'secondary' | 'ghost' | 'link' | 'destructive'
   size?: 'default' | 'sm' | 'lg' | 'icon'
-  language?: 'en' | 'es' | 'zh'
+  language?: 'en' | 'es' | 'zh' | 'fr'
 }
 
 export function DownloadDeckButton({ 
@@ -41,7 +41,8 @@ export function DownloadDeckButton({
       // Set language-specific download filename
       const downloadFileName = language === 'en' ? 'Cabo_Negro_Investors_Deck.zip' : 
                               language === 'es' ? 'Cabo_Negro_Deck_Inversionistas.zip' :
-                              'Cabo_Negro_Investors_Deck_CN.zip'
+                              language === 'zh' ? 'Cabo_Negro_Investors_Deck_CN.zip' :
+                              'Cabo_Negro_Deck_Investisseurs.zip'
       link.download = downloadFileName
       
       // Trigger the download

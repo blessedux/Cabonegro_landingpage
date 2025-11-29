@@ -43,8 +43,14 @@ function AnimatedWord({
   isImportant?: boolean
 }) {
   const start = index / totalWords;
-  const end = start + 1 / totalWords;
-  const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
+  const end = Math.min(start + 1 / totalWords, 0.99);
+  // Once opacity reaches 1, it stays at 1 (no fade out) - use clamp and ensure it never goes below the max reached value
+  const opacity = useTransform(
+    scrollYProgress, 
+    [start, end, 1], 
+    [0, 1, 1], // Third value ensures it stays at 1
+    { clamp: true }
+  );
 
   return (
     <span className="relative mr-2">

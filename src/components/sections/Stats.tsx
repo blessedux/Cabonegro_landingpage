@@ -354,8 +354,8 @@ export default function Stats() {
   const statBox4Opacity = useTransform(scrollYProgress, [0.26, 0.36], [0, 1], { clamp: true })
   const statBox4Y = useTransform(scrollYProgress, [0.26, 0.36], [30, 0], { clamp: true })
   
-  const statBox5Opacity = useTransform(scrollYProgress, [0.28, 0.38], [0, 1], { clamp: true })
-  const statBox5Y = useTransform(scrollYProgress, [0.28, 0.38], [30, 0], { clamp: true })
+  const statBox5Opacity = useTransform(scrollYProgress, [0.28, 0.40], [0, 1], { clamp: true })
+  const statBox5Y = useTransform(scrollYProgress, [0.28, 0.40], [30, 0], { clamp: true })
 
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(false)

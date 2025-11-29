@@ -121,27 +121,32 @@ export function WorldMapDemo() {
   return (
     <div 
       ref={containerRef} 
-      className="pt-0 pb-0 bg-white w-full relative overflow-hidden z-20 min-h-[100vh]"
+      className="pt-0 pb-0 bg-white w-full relative z-20 min-h-[100vh]"
       data-white-background="true"
+      style={{ marginTop: '6.5rem' }}
     >
       {/* Mobile sticky wrapper - full width, no side margins */}
       <motion.div 
         ref={mapWrapperRef}
-        className="md:hidden sticky top-0 flex items-start justify-center pt-0"
+        className="md:hidden sticky top-0 flex items-start justify-center pt-0 w-full"
         style={{
           paddingLeft: 0,
           paddingRight: 0,
+          zIndex: 1,
+          height: '100vh'
         }}
       >
         {/* Mobile wrapper - full width, no side margins */}
         <motion.div
-          className="relative w-full overflow-hidden bg-white h-[200vh]"
+          className="relative w-full bg-white"
           style={{
             y: mapY,
             x: 0, // No horizontal movement on mobile
+            height: '100vh'
           }}
         >
-          <WorldMap
+          <div className="scale-[2] origin-center h-full w-full" style={{ overflow: 'hidden' }}>
+            <WorldMap
             dashed
             dots={[
             // Americas
@@ -194,6 +199,7 @@ export function WorldMapDemo() {
             { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
           ]}
           />
+          </div>
         </motion.div>
       </motion.div>
       
@@ -202,7 +208,7 @@ export function WorldMapDemo() {
         className="hidden md:block sticky top-0 flex items-start justify-center pt-0"
         style={{
           paddingLeft: sideMargin,
-          paddingRight: sideMargin,
+          paddingRight: sideMargin
         }}
       >
         {/* Desktop wrapper - with side margins and horizontal movement */}
@@ -210,10 +216,11 @@ export function WorldMapDemo() {
           className="relative w-full max-w-full overflow-hidden bg-white"
           style={{
             y: mapY,
-            x: mapX,
+            x: mapX
           }}
         >
-          <WorldMap
+          <div className="scale-[2] origin-center overflow-hidden h-full w-full">
+            <WorldMap
           dashed
           dots={[
           // Americas
@@ -266,11 +273,12 @@ export function WorldMapDemo() {
           { start: { lat: 35, lng: -180 }, end: { lat: 31.2304, lng: 121.4737 }, controlOffsetX: 40, controlOffsetY: -10 },
         ]}
           />
+          </div>
         </motion.div>
       </motion.div>
       
       {/* Animated text below the map frame */}
-      <div className="px-4 md:px-8 lg:px-12 pt-8 pb-12 text-center" style={{ marginTop: '20px' }}>
+      <div className="px-4 md:px-8 lg:px-12 pt-2 pb-4 md:pb-12 text-center">
         <MagicTextWrapper 
           text={mapText}
           className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed"
