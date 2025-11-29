@@ -50,7 +50,7 @@ export default function PartnersEs() {
         ref={partnersRef} 
         data-partners-section="true"
         data-white-background="true"
-        className="pt-20 pb-20 px-3 md:px-6 relative overflow-visible bg-white rounded-t-[3rem] md:rounded-t-[4rem] -mt-8 md:-mt-8 mt-[212px] md:mt-[276px] relative z-10"
+        className="pt-20 pb-20 px-3 md:px-6 relative overflow-visible bg-white rounded-t-[3rem] md:rounded-t-[4rem] -mt-8 md:-mt-8 mt-[300px] md:mt-[276px] relative z-10"
       >
       {/* Enhanced shadow that moves with parallax - creates depth as it slides */}
       <motion.div

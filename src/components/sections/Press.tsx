@@ -402,25 +402,13 @@ export default function Press() {
               </VerticalCutReveal>
             </h1>
 
-            <TimelineContent
-              as="div"
-              animationNum={9}
-              timelineRef={heroRef}
-              customVariants={revealVariants}
-              className="text-gray-600"
-            >
-              <TimelineContent
-                as="div"
-                animationNum={10}
-                timelineRef={heroRef}
-                customVariants={revealVariants}
-                className="sm:text-base text-xs"
-              >
+            <div className="text-gray-600">
+              <div className="sm:text-base text-xs">
                 <p className="leading-relaxed text-justify mb-6">
                   {currentArticleData.description}
                 </p>
-              </TimelineContent>
-            </TimelineContent>
+              </div>
+            </div>
           </div>
 
           <div className="md:col-span-1">

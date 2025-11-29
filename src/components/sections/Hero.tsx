@@ -1,29 +1,63 @@
 import { Button } from '@/components/ui/button'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
-import Link from 'next/link'
-import { useAnimation } from '@/contexts/AnimationContext'
-import { usePreloader } from '@/contexts/PreloaderContext'
-import { useRouter } from 'next/navigation'
+import { WordRotate } from '@/components/ui/word-rotate'
+import { HeroVideoSlider } from '@/components/ui/hero-video-slider'
+import { ArrowLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence, useMotionTemplate } from 'framer-motion'
+import { useRouter, usePathname } from 'next/navigation'
+import { usePreloader } from '@/contexts/PreloaderContext'
 
 export default function Hero() {
-  const router = useRouter()
-  const { startFadeOut } = useAnimation()
-  const { showPreloaderB } = usePreloader()
-  const [backgroundLoaded, setBackgroundLoaded] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const [showProjectOptions, setShowProjectOptions] = useState(false)
+  const [canStartAutoSlide, setCanStartAutoSlide] = useState(false)
   const heroRef = useRef<HTMLDivElement>(null)
+  const h1Ref = useRef<HTMLHeadingElement>(null)
+  const paragraphRef = useRef<HTMLParagraphElement>(null)
+  const ctaRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const pathname = usePathname()
+  const { showPreloaderB, isPreloaderVisible, isPreloaderComplete, hasSeenPreloader } = usePreloader()
+
+  // Video sources for the slider
+  // Slide 0: logistics, Slide 1: maritime, Slide 2: Technological
+  const heroVideos = [
+    'https://res.cloudinary.com/dezm9avsj/video/upload/v1763931613/cabonegro_pjk8im.mp4', // Slide 1: logistics
+    'https://res.cloudinary.com/dezm9avsj/video/upload/v1764433234/cabonegro_slide2_vktkza.mp4', // Slide 2: maritime
+    'https://res.cloudinary.com/dezm9avsj/video/upload/v1764433255/cabonegro_slide3_ngbqi0.mp4', // Slide 3: Technological
+  ]
+  
+  // Extract locale from pathname
+  const getLocale = () => {
+    const segments = pathname.split('/').filter(Boolean)
+    const locale = segments[0] || 'en'
+    return ['es', 'en', 'zh', 'fr'].includes(locale) ? locale : 'en'
+  }
+  
+  const currentLocale = getLocale()
   
   // Track overall page scroll progress (not section-specific)
   // This ensures fade-out happens at the correct overall page scroll percentage
   const { scrollYProgress } = useScroll()
 
-  // Hero content fades out earlier - from 0% to 5% of overall page scroll
-  // Smooth fade window for gradual transition
+  // Hero content stays visible until AboutUs starts appearing
+  // Fade out smoothly as user scrolls - starts fading earlier for smoother transition
+  // Fades out from 0% to 5% of overall page scroll to fade out earlier
+  // Ensure it starts at opacity 1 (visible) on initial load
   const heroContentOpacity = useTransform(scrollYProgress, [0, 0, 0.05], [1, 1, 0], { clamp: true })
   const heroContentY = useTransform(scrollYProgress, [0, 0, 0.05], [0, 0, -30], { clamp: true })
+  
+  // Background blur and overlay effects - fade in as AboutUs comes into view
+  // Start fading in slightly before hero content fades out (at 2% scroll) and reach full effect at 8% scroll
+  // This creates a smooth transition where background gets darker/blurred as AboutUs text appears
+  // Blur: 0px to 3px (subtle blur, a couple of points)
+  // Overlay: 0% to 10% opacity black
+  const backgroundBlur = useTransform(scrollYProgress, [0.02, 0.08], [0, 3], { clamp: true })
+  const overlayOpacity = useTransform(scrollYProgress, [0.02, 0.08], [0, 0.1], { clamp: true })
+  
+  // Create a template for the blur filter using the MotionValue
+  const blurFilter = useMotionTemplate`blur(${backgroundBlur}px)`
   
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(true)
@@ -38,87 +72,170 @@ export default function Hero() {
   // Export scroll progress for use in other components (via context or prop)
   // For now, we'll use a shared scroll tracking approach
   
-  // Trigger hero animations after preloader fade out
+  // Trigger hero animations immediately - no delay needed
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(true)
-    }, 200) // Small delay to ensure smooth transition from preloader
-    
-    return () => clearTimeout(timer)
+    setIsVisible(true)
+    // Initialize display word index
+    setDisplayWordIndex(0)
+    // Mark slide as settled on initial load (no transition needed)
+    setSlideSettled(true)
   }, [])
 
-  // Handle video loading
+  // Words ordered to match video slides: logistics (slide 0), maritime (slide 1), Technological (slide 2)
+  const rotatingWords = ['logistics', 'maritime', 'technological']
+  const subtitle = 'integrated infrastructure in the Strait of Magellan for the new energy and technological economy'
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
+  const [displayWordIndex, setDisplayWordIndex] = useState(0) // Word index to display (delayed)
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
+  const [slideSettled, setSlideSettled] = useState(false) // Track when slide transition completes
+
+  // Check if all content is loaded and visible
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.addEventListener('loadeddata', () => {
-        setBackgroundLoaded(true)
+    // Don't check if already enabled
+    if (canStartAutoSlide) return
+    
+    const checkContentReady = () => {
+      // Check if preloader is complete (either not visible, or has been seen before)
+      const preloaderDone = !isPreloaderVisible || hasSeenPreloader || isPreloaderComplete
+      
+      // Check if slide 1 has settled (we're on slide 0 initially)
+      const slideReady = slideSettled && currentSlideIndex === 0
+      
+      // Check if all elements exist and are visible
+      const h1Ready = h1Ref.current && 
+        h1Ref.current.offsetHeight > 0 && 
+        parseFloat(window.getComputedStyle(h1Ref.current).opacity) > 0.5
+      
+      const paragraphReady = paragraphRef.current && 
+        paragraphRef.current.offsetHeight > 0 && 
+        parseFloat(window.getComputedStyle(paragraphRef.current).opacity) > 0.5
+      
+      const ctaReady = ctaRef.current && 
+        ctaRef.current.offsetHeight > 0 && 
+        parseFloat(window.getComputedStyle(ctaRef.current).opacity) > 0.5
+      
+      // Check if navbar exists (it's in the parent component, so we check by class or ID)
+      const navbarReady = document.querySelector('nav') !== null || 
+        document.querySelector('[class*="navbar"]') !== null ||
+        document.querySelector('[class*="Navbar"]') !== null
+      
+      // All conditions must be met: preloader done, slide settled, and all content visible
+      if (preloaderDone && slideReady && h1Ready && paragraphReady && ctaReady && navbarReady) {
+        // Add a delay to ensure smooth transition and content is fully rendered
+        // This gives users time to read slide 1 before auto-sliding starts
+        setTimeout(() => {
+          setCanStartAutoSlide(true)
+        }, 1000) // 1 second delay after everything is ready to give time to read slide 1
+        return true
+      }
+      return false
+    }
+    
+    // Initial check
+    if (checkContentReady()) {
+      return
+    }
+    
+    // Poll for content readiness (check every 100ms)
+    const checkInterval = setInterval(() => {
+      if (checkContentReady()) {
+        clearInterval(checkInterval)
+      }
+    }, 100)
+    
+    // Also check on various events
+    const events = ['load', 'DOMContentLoaded']
+    events.forEach(event => {
+      window.addEventListener(event, checkContentReady)
+    })
+    
+    // Cleanup
+    return () => {
+      clearInterval(checkInterval)
+      events.forEach(event => {
+        window.removeEventListener(event, checkContentReady)
       })
     }
-  }, [])
+  }, [isPreloaderVisible, isPreloaderComplete, hasSeenPreloader, slideSettled, currentSlideIndex, canStartAutoSlide])
 
-  const handleExploreTerrain = () => {
-    // Show PreloaderB first BEFORE any other actions
-    showPreloaderB()
-    
-    // Use requestAnimationFrame to ensure state update is processed
-    requestAnimationFrame(() => {
-      startFadeOut()
-      
-      // Navigate after PreloaderB has time to display (2.5 seconds)
-      setTimeout(() => {
-        router.push('/explore')
-      }, 2500)
-    })
+  // Handle "Explore Project" button click - instant response
+  const handleExploreProject = () => {
+    setShowProjectOptions(true)
   }
 
-  const handleDeckClick = () => {
-    showPreloaderB()
-    setTimeout(() => {
-      router.push('/deck')
-    }, 100)
+  // Handle back button click - instant response
+  const handleBack = () => {
+    setShowProjectOptions(false)
   }
 
-  const title = 'Gateway to the South of the World'
-  const subtitle = 'Cabo Negro is a Strategic Industrial & Maritime Hub of the Southern Hemisphere.'
+  // Handle project navigation - optimized for speed
+  const handleProjectNavigation = (route: string) => {
+    // Show preloader immediately
+    showPreloaderB()
+    // Navigate immediately without delay
+    router.push(`/${currentLocale}${route}`)
+  }
 
   return (
+    <>
     <section 
       ref={heroRef}
-      className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[5]"
+      className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[1]"
       style={{
         backgroundColor: 'transparent',
         pointerEvents: 'auto',
         height: '100vh',
         maxHeight: '100vh',
-        width: '100vw'
+        width: '100vw',
+        zIndex: 1,
+        opacity: 1, // Ensure section itself is always visible
+        visibility: 'visible', // Force visibility
+        display: 'flex' // Ensure it's displayed
       }}
     >
-      {/* Background Video - stays visible until Stats background covers it */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover object-center"
+      {/* Background Video Slider - auto-slides when at top, stops when scrolled */}
+      <div className="absolute inset-0 z-0 overflow-hidden" style={{ zIndex: 0, pointerEvents: 'none' }}>
+        <motion.div
           style={{
-            opacity: 1,
-            filter: 'brightness(1) contrast(1) saturate(1)',
-            mixBlendMode: 'normal',
-            zIndex: 0,
-            willChange: 'auto'
+            filter: blurFilter,
+            willChange: 'filter',
+            width: '100%',
+            height: '100%'
           }}
         >
-          <source 
-            src="https://res.cloudinary.com/dezm9avsj/video/upload/v1763931613/cabonegro_pjk8im.mp4" 
-            type="video/mp4" 
+          <HeroVideoSlider
+            videos={heroVideos}
+            slideDuration={8000}
+            className="w-full h-full"
+            showDots={true}
+            disableAutoSlide={showProjectOptions}
+            startAutoSlide={canStartAutoSlide}
+            onSlideChange={(index, direction) => {
+              setCurrentSlideIndex(index)
+              setSlideDirection(direction || 'left')
+              // Reset slide settled state when slide changes
+              setSlideSettled(false)
+              // After slide transition completes (0.6s), mark as settled and update word
+              setTimeout(() => {
+                setSlideSettled(true)
+                setDisplayWordIndex(index)
+              }, 600) // Match the slide transition duration
+            }}
           />
-          Your browser does not support the video tag.
-        </video>
+        </motion.div>
+        {/* Dark overlay that fades in as AboutUs comes into view */}
+        <motion.div
+          className="absolute inset-0 bg-black"
+          style={{
+            opacity: overlayOpacity,
+            zIndex: 1,
+            pointerEvents: 'none',
+            willChange: 'opacity'
+          }}
+        />
       </div>
 
-      {/* Hero Content - fades out on scroll */}
+      {/* Hero Content - slides horizontally with videos and fades out on scroll */}
       <motion.div 
         className="container mx-auto relative z-[30] flex justify-start"
         style={{ 
@@ -128,42 +245,65 @@ export default function Hero() {
           willChange: 'opacity, transform'
         }}
       >
-        <div 
-          className="max-w-4xl w-full px-6 lg:px-12 relative z-[30] text-white" 
-          style={{ 
-            pointerEvents: 'auto',
-            filter: 'brightness(1)',
-            color: '#ffffff',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-          }}
-        >
+        <AnimatePresence mode="sync" custom={slideDirection}>
+          <motion.div
+            key={currentSlideIndex}
+            custom={slideDirection}
+            initial={{ x: slideDirection === 'left' ? '100%' : '-100%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: slideDirection === 'left' ? '-100%' : '100%', opacity: 0 }}
+            transition={{ 
+              duration: 0.6, 
+              ease: [0.25, 0.1, 0.25, 1] 
+            }}
+            className="max-w-4xl w-full px-6 lg:px-12 relative z-[30] text-white" 
+            style={{ 
+              pointerEvents: 'auto',
+              filter: 'brightness(1)',
+              color: '#ffffff',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}
+          >
+          {/* Title and Subtitle - fade in after slide settles */}
           <motion.h1 
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none text-white"
+            ref={h1Ref}
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none text-white flex flex-col font-primary"
             style={{ 
               userSelect: 'none', 
               WebkitUserSelect: 'none', 
               MozUserSelect: 'none', 
               msUserSelect: 'none',
               color: '#ffffff',
-              textShadow: '0 0 0 rgba(255,255,255,1)'
+              textShadow: '0 0 0 rgba(255,255,255,1)',
+              fontFamily: "'PP Neue Montreal', sans-serif"
             }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            initial={{ opacity: 0 }}
+            animate={slideSettled && isVisible ? { opacity: 1 } : { opacity: 0 }}
             transition={{ 
-              duration: 0.8, 
-              delay: 0.2, // Start immediately after preloader fade
+              duration: 0.6, 
+              delay: 0.1,
               ease: "easeOut" 
             }}
           >
-            <BlurTextAnimation 
-              text={title}
-              fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
-              textColor="text-white"
-              animationDelay={0}
-            />
+            <span>Gateway</span>
+            <span>
+              <WordRotate
+                words={rotatingWords}
+                controlledIndex={displayWordIndex}
+                className="font-bold text-white"
+                framerProps={{
+                  initial: { opacity: 0, y: -50 },
+                  animate: { opacity: 1, y: 0 },
+                  exit: { opacity: 0, y: 50 },
+                  transition: { duration: 0.6, ease: "easeOut" },
+                }}
+              />
+            </span>
+            <span>to the South of the World</span>
           </motion.h1>
           <motion.p 
-            className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none"
+            ref={paragraphRef}
+            className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none italic"
             style={{ 
               userSelect: 'none', 
               WebkitUserSelect: 'none', 
@@ -173,65 +313,148 @@ export default function Hero() {
               textShadow: '0 0 0 rgba(255,255,255,1)'
             }}
             initial={{ opacity: 0, y: 20 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            animate={slideSettled && isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ 
-              duration: 0.8, 
-              delay: 1.0, // Start after h1 completes (0.2s + 0.8s)
+              duration: 0.6, 
+              delay: 0.4, // Fade in after H1 starts appearing
               ease: "easeOut" 
             }}
           >
             {subtitle}
           </motion.p>
-          <motion.div 
-            className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[40]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ 
-              duration: 0.8, 
-              delay: 1.0, // Same delay as subtitle - they appear together
-              ease: "easeOut" 
-            }}
-            style={{ pointerEvents: 'auto' }}
-          >
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="uppercase border-black text-black hover:bg-cyan-500 hover:text-white select-none relative z-[50] cursor-pointer"
-              onClick={handleExploreTerrain}
-              style={{ 
-                userSelect: 'none', 
-                WebkitUserSelect: 'none', 
-                MozUserSelect: 'none', 
-                msUserSelect: 'none',
-                pointerEvents: 'auto',
-                opacity: 1,
-                position: 'relative',
-                zIndex: 50
-              }}
-            >
-              Explore Terrain
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="uppercase border-black text-black hover:bg-cyan-500 hover:text-white select-none relative z-[50] cursor-pointer"
-              onClick={handleDeckClick}
-              style={{ 
-                userSelect: 'none', 
-                WebkitUserSelect: 'none', 
-                MozUserSelect: 'none', 
-                msUserSelect: 'none',
-                pointerEvents: 'auto',
-                opacity: 1,
-                position: 'relative',
-                zIndex: 50
-              }}
-            >
-              View Deck
-            </Button>
+
+          {/* Button Section - switches between single CTA and three project buttons */}
+          <AnimatePresence mode="wait">
+            {!showProjectOptions ? (
+              <motion.div 
+                ref={ctaRef}
+                key="cta-button"
+                className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[40]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={slideSettled && isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ 
+                  duration: 0.5,
+                  delay: 0.7, // Fade in after subtitle
+                  ease: "easeOut" 
+                }}
+                style={{ pointerEvents: 'auto' }}
+              >
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer transition-all duration-200"
+                  onClick={handleExploreProject}
+                  style={{ 
+                    userSelect: 'none', 
+                    WebkitUserSelect: 'none', 
+                    MozUserSelect: 'none', 
+                    msUserSelect: 'none',
+                    pointerEvents: 'auto',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 50
+                  }}
+                >
+                  Explore Project
+                </Button>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="project-buttons"
+                className="flex flex-col md:flex-row gap-4 justify-start items-start relative z-[40]"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                style={{ pointerEvents: 'auto' }}
+              >
+                {/* First Row: Back Button + First Project Button */}
+                <div className="flex flex-row gap-4 items-center">
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                    onClick={handleBack}
+                    style={{ 
+                      userSelect: 'none', 
+                      WebkitUserSelect: 'none', 
+                      MozUserSelect: 'none', 
+                      msUserSelect: 'none',
+                      pointerEvents: 'auto',
+                      opacity: 1,
+                      position: 'relative',
+                      zIndex: 50,
+                      minWidth: 'auto',
+                      padding: '0.5rem 1rem'
+                    }}
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer text-sm md:text-base"
+                    onClick={() => handleProjectNavigation('/terminal-maritimo')}
+                    style={{ 
+                      userSelect: 'none', 
+                      WebkitUserSelect: 'none', 
+                      MozUserSelect: 'none', 
+                      msUserSelect: 'none',
+                      pointerEvents: 'auto',
+                      opacity: 1,
+                      position: 'relative',
+                      zIndex: 50
+                    }}
+                  >
+                    Maritime Terminal
+                  </Button>
+                </div>
+                {/* Second Row: Second Project Button */}
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer text-sm md:text-base"
+                  onClick={() => handleProjectNavigation('/parque-tecnologico')}
+                  style={{ 
+                    userSelect: 'none', 
+                    WebkitUserSelect: 'none', 
+                    MozUserSelect: 'none', 
+                    msUserSelect: 'none',
+                    pointerEvents: 'auto',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 50
+                  }}
+                >
+                  Technology Park
+                </Button>
+                {/* Third Row: Third Project Button */}
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer text-sm md:text-base"
+                  onClick={() => handleProjectNavigation('/parque-logistico')}
+                  style={{ 
+                    userSelect: 'none', 
+                    WebkitUserSelect: 'none', 
+                    MozUserSelect: 'none', 
+                    msUserSelect: 'none',
+                    pointerEvents: 'auto',
+                    opacity: 1,
+                    position: 'relative',
+                    zIndex: 50
+                  }}
+                >
+                  Logistics Park
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
           </motion.div>
-        </div>
+        </AnimatePresence>
       </motion.div>
     </section>
+    </>
   )
 }

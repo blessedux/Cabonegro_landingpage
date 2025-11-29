@@ -18,7 +18,7 @@ export default function Navbar() {
   const languageDropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
+  const { isNavbarHidden, setIsNavbarHidden } = useAnimation()
   const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete, setLanguageSwitch } = usePreloader()
 
   // Detect when navbar is over white background sections
@@ -170,33 +170,45 @@ export default function Navbar() {
   
   const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
 
+  // Handle project navigation
+  const handleProjectNavigation = (route: string) => {
+    showPreloaderB()
+    setTimeout(() => {
+      router.push(`/${currentLocale}${route}`)
+    }, 100)
+  }
+
   // Get localized text based on current locale
   const getLocalizedText = () => {
     const texts = {
       en: {
-        exploreTerrain: 'Explore Terrain',
-        viewDeck: 'View Deck',
+        maritimeTerminal: 'Maritime Terminal',
+        technologyPark: 'Technology Park',
+        logisticsPark: 'Logistics Park',
         faq: 'FAQ',
         contactUs: 'Contact Us',
         language: 'Language:'
       },
       es: {
-        exploreTerrain: 'Explorar Terreno',
-        viewDeck: 'Ver Deck',
-        faq: 'Preguntas Frecuentes',
+        maritimeTerminal: 'Terminal Marítimo',
+        technologyPark: 'Parque Tecnológico',
+        logisticsPark: 'Parque Logístico',
+        faq: 'FAQ',
         contactUs: 'Contáctanos',
         language: 'Idioma:'
       },
       zh: {
-        exploreTerrain: '探索地形',
-        viewDeck: '查看甲板',
+        maritimeTerminal: '海运码头',
+        technologyPark: '科技园',
+        logisticsPark: '物流园',
         faq: '常见问题',
         contactUs: '联系我们',
         language: '语言:'
       },
       fr: {
-        exploreTerrain: 'Explorer le Terrain',
-        viewDeck: 'Voir le Deck',
+        maritimeTerminal: 'Terminal Maritime',
+        technologyPark: 'Parc Technologique',
+        logisticsPark: 'Parc Logistique',
         faq: 'FAQ',
         contactUs: 'Nous Contacter',
         language: 'Langue:'
@@ -293,24 +305,6 @@ export default function Navbar() {
     }, delay)
   }
 
-  // Handle Explore Terrain click
-  const handleExploreTerrain = () => {
-    // If already on explore, do nothing and ensure navbar remains visible
-    if (pathname.includes('/explore')) {
-      setIsNavbarHidden(false)
-      return
-    }
-    startFadeOut()
-    showPreloaderB()
-    // Navigate to explore route - let usePageTransition handle PreloaderB on route change
-    setTimeout(() => {
-      const explorePath = currentLocale === 'en' ? '/en/explore' : 
-                         currentLocale === 'es' ? '/es/explore' :
-                         currentLocale === 'zh' ? '/zh/explore' :
-                         currentLocale === 'fr' ? '/fr/explore' : '/en/explore'
-      router.push(explorePath)
-    }, 100)
-  }
 
   // Handle Home navigation (logo click)
   const handleHomeClick = (e: React.MouseEvent) => {
@@ -415,23 +409,22 @@ export default function Navbar() {
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               <button 
-                onClick={handleExploreTerrain}
+                onClick={() => handleProjectNavigation('/terminal-maritimo')}
                 className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
-                {localizedText.exploreTerrain}
+                {localizedText.maritimeTerminal}
               </button>
               <button 
-                onClick={() => {
-                  showPreloaderB()
-                  const deckPath = currentLocale === 'en' ? '/en/deck' : 
-                                  currentLocale === 'es' ? '/es/deck' :
-                                  currentLocale === 'zh' ? '/zh/deck' :
-                                  currentLocale === 'fr' ? '/fr/deck' : '/en/deck'
-                  setTimeout(() => router.push(deckPath), 100)
-                }}
+                onClick={() => handleProjectNavigation('/parque-tecnologico')}
                 className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
               >
-                {localizedText.viewDeck}
+                {localizedText.technologyPark}
+              </button>
+              <button 
+                onClick={() => handleProjectNavigation('/parque-logistico')}
+                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
+              >
+                {localizedText.logisticsPark}
               </button>
               <button 
                 onClick={handleFAQClick}
@@ -519,32 +512,36 @@ export default function Navbar() {
 
           {/* Mobile Navigation with Animation */}
           <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}>
             <div className="px-6 pb-6 border-t border-white/20">
               <div className="flex flex-col gap-4 pt-4">
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false)
-                    handleExploreTerrain()
+                    handleProjectNavigation('/terminal-maritimo')
                   }}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  {localizedText.exploreTerrain}
+                  {localizedText.maritimeTerminal}
                 </button>
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false)
-                    showPreloaderB()
-                    const deckPath = currentLocale === 'en' ? '/en/deck' : 
-                                    currentLocale === 'es' ? '/es/deck' :
-                                    currentLocale === 'zh' ? '/zh/deck' :
-                                    currentLocale === 'fr' ? '/fr/deck' : '/en/deck'
-                    setTimeout(() => router.push(deckPath), 100)
+                    handleProjectNavigation('/parque-tecnologico')
                   }}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  {localizedText.viewDeck}
+                  {localizedText.technologyPark}
+                </button>
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleProjectNavigation('/parque-logistico')
+                  }}
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
+                >
+                  {localizedText.logisticsPark}
                 </button>
                 <button 
                   onClick={handleFAQClick}
