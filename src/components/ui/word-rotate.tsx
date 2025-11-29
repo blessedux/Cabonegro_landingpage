@@ -11,6 +11,7 @@ interface WordRotateProps {
   duration?: number;
   framerProps?: HTMLMotionProps<"span">;
   className?: string;
+  controlledIndex?: number; // Optional controlled index for syncing with external state
 }
 
 export function WordRotate({
@@ -23,17 +24,29 @@ export function WordRotate({
     transition: { duration: 0.25, ease: "easeOut" },
   },
   className,
+  controlledIndex,
 }: WordRotateProps) {
   const [index, setIndex] = useState(0);
 
+  // Use controlled index if provided, otherwise auto-rotate
   useEffect(() => {
+    if (controlledIndex !== undefined) {
+      setIndex(controlledIndex);
+      return;
+    }
+  }, [controlledIndex]);
+
+  // Auto-rotate only if not controlled
+  useEffect(() => {
+    if (controlledIndex !== undefined) return; // Don't auto-rotate if controlled
+
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % words.length);
     }, duration);
 
     // Clean up interval on unmount
     return () => clearInterval(interval);
-  }, [words, duration]);
+  }, [words, duration, controlledIndex]);
 
   return (
     <span className="inline-block overflow-hidden">

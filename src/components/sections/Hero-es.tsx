@@ -1,21 +1,28 @@
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { WordRotate } from '@/components/ui/word-rotate'
+import { HeroVideoSlider } from '@/components/ui/hero-video-slider'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence, useMotionTemplate } from 'framer-motion'
 import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
 
 export default function HeroEs() {
-  const [backgroundLoaded, setBackgroundLoaded] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const [showProjectOptions, setShowProjectOptions] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
   const { showPreloaderB } = usePreloader()
+
+  // Video sources for the slider
+  // Slide 0: logística, Slide 1: portuaria, Slide 2: Tecnológica
+  const heroVideos = [
+    'https://res.cloudinary.com/dezm9avsj/video/upload/v1763931613/cabonegro_pjk8im.mp4', // Slide 1: logística
+    'https://res.cloudinary.com/dezm9avsj/video/upload/v1764433234/cabonegro_slide2_vktkza.mp4', // Slide 2: portuaria
+    'https://res.cloudinary.com/dezm9avsj/video/upload/v1764433255/cabonegro_slide3_ngbqi0.mp4', // Slide 3: Tecnológica
+  ]
   
   // Extract locale from pathname
   const getLocale = () => {
@@ -37,6 +44,17 @@ export default function HeroEs() {
   const heroContentOpacity = useTransform(scrollYProgress, [0, 0, 0.05], [1, 1, 0], { clamp: true })
   const heroContentY = useTransform(scrollYProgress, [0, 0, 0.05], [0, 0, -30], { clamp: true })
   
+  // Background blur and overlay effects - fade in as AboutUs comes into view
+  // Start fading in slightly before hero content fades out (at 2% scroll) and reach full effect at 8% scroll
+  // This creates a smooth transition where background gets darker/blurred as AboutUs text appears
+  // Blur: 0px to 3px (subtle blur, a couple of points)
+  // Overlay: 0% to 10% opacity black
+  const backgroundBlur = useTransform(scrollYProgress, [0.02, 0.08], [0, 3], { clamp: true })
+  const overlayOpacity = useTransform(scrollYProgress, [0.02, 0.08], [0, 0.1], { clamp: true })
+  
+  // Create a template for the blur filter using the MotionValue
+  const blurFilter = useMotionTemplate`blur(${backgroundBlur}px)`
+  
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(true)
   
@@ -53,36 +71,36 @@ export default function HeroEs() {
   // Trigger hero animations immediately - no delay needed
   useEffect(() => {
     setIsVisible(true)
+    // Initialize display word index
+    setDisplayWordIndex(0)
+    // Mark slide as settled on initial load (no transition needed)
+    setSlideSettled(true)
   }, [])
 
-  // Handle video loading
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.addEventListener('loadeddata', () => {
-        setBackgroundLoaded(true)
-      })
-    }
-  }, [])
-
-  const rotatingWords = ['portuaria', 'Tecnológica', 'logística']
+  // Words ordered to match video slides: logística (slide 0), portuaria (slide 1), Tecnológica (slide 2)
+  const rotatingWords = ['logística', 'portuaria', 'Tecnológica']
   const subtitle = 'infraestructura integrada en el estrecho de magallanes para la nueva economía energética y tecnológica'
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0)
+  const [displayWordIndex, setDisplayWordIndex] = useState(0) // Word index to display (delayed)
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
+  const [slideSettled, setSlideSettled] = useState(false) // Track when slide transition completes
 
-  // Handle "Explorar Proyecto" button click
+  // Handle "Explorar Proyecto" button click - instant response
   const handleExploreProject = () => {
     setShowProjectOptions(true)
   }
 
-  // Handle back button click
+  // Handle back button click - instant response
   const handleBack = () => {
     setShowProjectOptions(false)
   }
 
-  // Handle project navigation
+  // Handle project navigation - optimized for speed
   const handleProjectNavigation = (route: string) => {
+    // Show preloader immediately
     showPreloaderB()
-    setTimeout(() => {
-      router.push(`/${currentLocale}${route}`)
-    }, 100)
+    // Navigate immediately without delay
+    router.push(`/${currentLocale}${route}`)
   }
 
   return (
@@ -102,35 +120,50 @@ export default function HeroEs() {
         display: 'flex' // Ensure it's displayed
       }}
     >
-      {/* Background Video - stays visible until Stats background covers it */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover object-center"
+      {/* Background Video Slider - auto-slides when at top, stops when scrolled */}
+      <div className="absolute inset-0 z-0 overflow-hidden" style={{ zIndex: 0, pointerEvents: 'none' }}>
+        <motion.div
           style={{
-            opacity: 1,
-            filter: 'brightness(1) contrast(1) saturate(1)',
-            mixBlendMode: 'normal',
-            zIndex: 0,
-            willChange: 'auto'
+            filter: blurFilter,
+            willChange: 'filter',
+            width: '100%',
+            height: '100%'
           }}
         >
-          <source 
-            src="https://res.cloudinary.com/dezm9avsj/video/upload/v1763931613/cabonegro_pjk8im.mp4" 
-            type="video/mp4" 
+          <HeroVideoSlider
+            videos={heroVideos}
+            slideDuration={8000}
+            className="w-full h-full"
+            showDots={true}
+            disableAutoSlide={showProjectOptions}
+            onSlideChange={(index, direction) => {
+              setCurrentSlideIndex(index)
+              setSlideDirection(direction || 'left')
+              // Reset slide settled state when slide changes
+              setSlideSettled(false)
+              // After slide transition completes (0.6s), mark as settled and update word
+              setTimeout(() => {
+                setSlideSettled(true)
+                setDisplayWordIndex(index)
+              }, 600) // Match the slide transition duration
+            }}
           />
-          Your browser does not support the video tag.
-        </video>
+        </motion.div>
+        {/* Dark overlay that fades in as AboutUs comes into view */}
+        <motion.div
+          className="absolute inset-0 bg-black"
+          style={{
+            opacity: overlayOpacity,
+            zIndex: 1,
+            pointerEvents: 'none',
+            willChange: 'opacity'
+          }}
+        />
       </div>
 
-      {/* Hero Content - fades out on scroll */}
+      {/* Hero Content - slides horizontally with videos and fades out on scroll */}
       <motion.div 
         className="container mx-auto relative z-[30] flex justify-start"
-        initial={{ opacity: 1 }}
         style={{ 
           opacity: heroContentOpacity,
           y: heroContentY,
@@ -138,16 +171,26 @@ export default function HeroEs() {
           willChange: 'opacity, transform'
         }}
       >
-        <div 
-          className="max-w-4xl w-full px-6 lg:px-12 relative z-[30] text-white" 
-          style={{ 
-            pointerEvents: 'auto',
-            filter: 'brightness(1)',
-            color: '#ffffff',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-          }}
-        >
-          {/* Title and Subtitle - always visible */}
+        <AnimatePresence mode="sync" custom={slideDirection}>
+          <motion.div
+            key={currentSlideIndex}
+            custom={slideDirection}
+            initial={{ x: slideDirection === 'left' ? '100%' : '-100%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: slideDirection === 'left' ? '-100%' : '100%', opacity: 0 }}
+            transition={{ 
+              duration: 0.6, 
+              ease: [0.25, 0.1, 0.25, 1] 
+            }}
+            className="max-w-4xl w-full px-6 lg:px-12 relative z-[30] text-white" 
+            style={{ 
+              pointerEvents: 'auto',
+              filter: 'brightness(1)',
+              color: '#ffffff',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}
+          >
+          {/* Title and Subtitle - fade in after slide settles */}
           <motion.h1 
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none text-white flex flex-col font-primary"
             style={{ 
@@ -159,11 +202,11 @@ export default function HeroEs() {
               textShadow: '0 0 0 rgba(255,255,255,1)',
               fontFamily: "'PP Neue Montreal', sans-serif"
             }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            initial={{ opacity: 0 }}
+            animate={slideSettled && isVisible ? { opacity: 1 } : { opacity: 0 }}
             transition={{ 
-              duration: 0.8, 
-              delay: 0.2,
+              duration: 0.6, 
+              delay: 0.1,
               ease: "easeOut" 
             }}
           >
@@ -171,13 +214,13 @@ export default function HeroEs() {
               <span>Plataforma</span>
               <WordRotate
                 words={rotatingWords}
-                duration={2500}
+                controlledIndex={displayWordIndex}
                 className="font-bold text-white"
                 framerProps={{
                   initial: { opacity: 0, y: -50 },
                   animate: { opacity: 1, y: 0 },
                   exit: { opacity: 0, y: 50 },
-                  transition: { duration: 0.25, ease: "easeOut" },
+                  transition: { duration: 0.6, ease: "easeOut" },
                 }}
               />
             </span>
@@ -194,10 +237,10 @@ export default function HeroEs() {
               textShadow: '0 0 0 rgba(255,255,255,1)'
             }}
             initial={{ opacity: 0, y: 20 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            animate={slideSettled && isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ 
-              duration: 0.8, 
-              delay: 1.0,
+              duration: 0.6, 
+              delay: 0.4, // Fade in after H1 starts appearing
               ease: "easeOut" 
             }}
           >
@@ -211,11 +254,11 @@ export default function HeroEs() {
                 key="cta-button"
                 className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[40]"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={slideSettled && isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ 
                   duration: 0.5,
-                  delay: 1.8,
+                  delay: 0.7, // Fade in after subtitle
                   ease: "easeOut" 
                 }}
                 style={{ pointerEvents: 'auto' }}
@@ -223,7 +266,7 @@ export default function HeroEs() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer"
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer transition-all duration-200"
                   onClick={handleExploreProject}
                   style={{ 
                     userSelect: 'none', 
@@ -246,7 +289,7 @@ export default function HeroEs() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
                 style={{ pointerEvents: 'auto' }}
               >
                 {/* Back Button */}
@@ -328,7 +371,8 @@ export default function HeroEs() {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
     </section>
     </>
