@@ -70,7 +70,7 @@ export function CaboNegroRulerCarousel() {
   ];
   
   return (
-    <div className="min-h-screen overflow-hidden flex items-start justify-center bg-white">
+    <div className="min-h-screen overflow-hidden flex items-start justify-center bg-black">
       <div className="w-full">
         <RulerCarousel originalItems={originalItems} />
       </div>
