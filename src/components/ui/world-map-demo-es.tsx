@@ -110,14 +110,13 @@ export function WorldMapDemoEs() {
   return (
     <div 
       ref={containerRef} 
-      className="pt-0 pb-0 bg-white w-full relative z-20 min-h-[100vh] md:min-h-[100vh]"
+      className="pt-0 pb-0 bg-white w-full relative z-20 min-h-[100vh] md:min-h-[100vh] md:mt-0"
       data-white-background="true"
-      style={{ marginTop: '6.5rem' }}
     >
       {/* Mobile sticky wrapper - full width, no side margins */}
       <motion.div 
         ref={mapWrapperRef}
-        className="md:hidden sticky top-0 flex items-start justify-center pt-0 w-full"
+        className="md:hidden sticky top-0 flex items-start justify-center pt-0 w-full mt-16"
         style={{
           paddingLeft: 0,
           paddingRight: 0,
@@ -194,10 +193,11 @@ export function WorldMapDemoEs() {
       
       {/* Desktop sticky wrapper - with side margins and horizontal movement */}
       <motion.div 
-        className="hidden md:block sticky top-0 flex items-start justify-center pt-0"
+        className="hidden md:block sticky top-[6.5rem] flex items-start justify-center pt-0"
         style={{
           paddingLeft: sideMargin,
-          paddingRight: sideMargin
+          paddingRight: sideMargin,
+          zIndex: 1
         }}
       >
         {/* Desktop wrapper - with side margins and horizontal movement */}
@@ -205,7 +205,8 @@ export function WorldMapDemoEs() {
           className="relative w-full max-w-full overflow-hidden bg-white"
           style={{
             y: mapY,
-            x: mapX
+            x: mapX,
+            height: '100vh'
           }}
         >
           <div className="scale-[2] origin-center overflow-hidden h-full w-full">
@@ -266,8 +267,8 @@ export function WorldMapDemoEs() {
         </motion.div>
       </motion.div>
       
-      {/* Animated text below the map frame */}
-      <div className="px-4 md:px-8 lg:px-12 pt-2 pb-4 md:pb-12 text-center">
+      {/* Animated text below the map frame - positioned after sticky map scrolls */}
+      <div className="px-4 md:px-8 lg:px-12 pt-0 pb-4 md:pb-12 text-center relative z-30 bg-white md:mt-[100vh]">
         <MagicTextWrapper 
           text={mapText}
           className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed"
