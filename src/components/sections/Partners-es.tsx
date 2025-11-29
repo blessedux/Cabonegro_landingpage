@@ -118,7 +118,17 @@ export default function PartnersEs() {
           </div>
           
           <div className="mb-4">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black tracking-tight pb-2">
+            <h2 
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight pb-2 text-black"
+              style={{ 
+                color: '#000000 !important',
+                transform: 'none',
+                opacity: 1,
+                whiteSpace: 'normal',
+                wordBreak: 'normal',
+                lineHeight: '1.2'
+              }}
+            >
               {t('subtitle')}
             </h2>
           </div>
@@ -129,7 +139,7 @@ export default function PartnersEs() {
           >
             <MagicText 
               text={t('description')}
-              className="text-gray-600 text-lg"
+              className="text-black text-lg"
             />
           </motion.div>
         </div>

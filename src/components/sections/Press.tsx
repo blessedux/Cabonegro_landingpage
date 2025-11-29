@@ -61,12 +61,12 @@ const getPressArticles = (locale: string): PressArticle[] => {
     es: [
       {
         id: 1,
-        title: 'Cabo Negro: Puerta de Entrada Estratégica al Sur',
-        description: 'Nuevo complejo industrial transformará la logística marítima en Patagonia',
+        title: 'Se aprueba concesión marítima para nuevo puerto en Punta Arenas',
+        description: 'La Comisión Regional de Uso del Borde Costero (CRUBC) aprobó por unanimidad la concesión de uso de borde costero para el proyecto "Cabo Negro", impulsado por Inversiones PPG SpA. El proyecto contempla 20.519 metros de concesión marítima, un muelle de 700 metros y más de 100 hectáreas terrestres de respaldo, posicionándose como el primer puerto privado de uso público en Magallanes.',
         image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&auto=format&fit=crop',
-        link: 'https://example.com/article1',
-        source: 'Noticias Marítimas',
-        date: '2024-01-15'
+        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
+        source: 'Gobierno Regional de Magallanes',
+        date: '2025-04-03'
       },
       {
         id: 2,

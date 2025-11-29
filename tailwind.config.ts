@@ -12,6 +12,7 @@ export default {
       fontFamily: {
         'primary': ['PP Neue Montreal', 'sans-serif'],
         'secondary': ['TheGoodMonolith', 'monospace'],
+        'playfair': ['Playfair Display', 'serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

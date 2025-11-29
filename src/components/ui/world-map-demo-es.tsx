@@ -89,7 +89,7 @@ export function WorldMapDemoEs() {
   return (
     <div 
       ref={containerRef} 
-      className="pt-0 pb-0 bg-white w-full relative overflow-hidden z-20 min-h-[100vh]"
+      className="pt-0 pb-0 bg-white w-full relative overflow-hidden z-20 min-h-[100vh] md:min-h-[100vh]"
       data-white-background="true"
     >
       {/* Mobile sticky wrapper - full width, no side margins */}
@@ -103,7 +103,7 @@ export function WorldMapDemoEs() {
       >
         {/* Mobile wrapper - full width, no side margins */}
         <motion.div
-          className="relative w-full overflow-hidden bg-white h-[100vh]"
+          className="relative w-full overflow-hidden bg-white h-[70vh] md:h-[100vh]"
           style={{
             y: mapY,
             x: 0, // No horizontal movement on mobile
@@ -238,7 +238,7 @@ export function WorldMapDemoEs() {
       </motion.div>
       
       {/* Animated text below the map frame */}
-      <div className="px-4 md:px-8 lg:px-12 pt-8 pb-12 text-center">
+      <div className="px-4 md:px-8 lg:px-12 pt-2 md:pt-8 pb-12 text-center">
         <MagicTextWrapper 
           text={mapText}
           className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed"

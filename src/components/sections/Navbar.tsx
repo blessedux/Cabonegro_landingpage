@@ -26,32 +26,86 @@ export default function Navbar() {
     const checkBackground = () => {
       if (!navbarRef.current) return
       
+      const scrollY = window.scrollY || window.pageYOffset
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
       const navbarRect = navbarRef.current.getBoundingClientRect()
+      const navbarTop = navbarRect.top
+      const navbarBottom = navbarRect.bottom
       const navbarCenterY = navbarRect.top + navbarRect.height / 2
       
-      // Check if navbar center is over white background sections
-      // But exclude sections that should keep navbar black
+      // FIRST: Check if we've scrolled to or past the Partners section
+      // Once at or past Partners, keep navbar black for the rest of the page
+      const partnersSection = document.querySelector('[data-partners-section="true"]')
+      if (partnersSection) {
+        const partnersRect = partnersSection.getBoundingClientRect()
+        // If Partners section top is at or above navbar bottom (navbar has reached or passed Partners), keep navbar black
+        // This ensures navbar text turns black when it reaches Partners section and stays black for all subsequent sections
+        if (partnersRect.top <= navbarBottom) {
+          setIsOverWhiteBackground(true)
+          return
+        }
+      }
+      
+      // SECOND: Check if we're near the bottom of the page (where footer usually is)
+      // If we're in the last 30% of the page, likely over footer - keep navbar black
+      const scrollPercentage = (scrollY + windowHeight) / documentHeight
+      if (scrollPercentage > 0.7) {
+        setIsOverWhiteBackground(true)
+        return
+      }
+      
+      // THIRD: Check if navbar is over sections that should keep navbar black
+      // This takes priority over white background sections
       const keepBlackSections = document.querySelectorAll('[data-keep-navbar-black="true"]')
       let isOverKeepBlack = false
       
       keepBlackSections.forEach((section) => {
         const rect = section.getBoundingClientRect()
-        if (navbarCenterY >= rect.top && navbarCenterY <= rect.bottom) {
+        
+        // More reliable overlap detection: check if navbar is anywhere near the section
+        // This ensures Press and Footer sections always keep navbar black
+        const isOverlapping = (
+          // Navbar top is within section bounds (with generous padding)
+          (navbarTop >= rect.top - 150 && navbarTop <= rect.bottom + 150) ||
+          // Navbar bottom is within section bounds (with generous padding)
+          (navbarBottom >= rect.top - 150 && navbarBottom <= rect.bottom + 150) ||
+          // Navbar completely covers section
+          (navbarTop <= rect.top && navbarBottom >= rect.bottom) ||
+          // Navbar center is over section (with generous padding)
+          (navbarCenterY >= rect.top - 150 && navbarCenterY <= rect.bottom + 150) ||
+          // Section is visible in viewport and navbar is near it
+          (rect.top <= windowHeight && rect.bottom >= 0 && 
+           Math.abs(navbarCenterY - (rect.top + rect.bottom) / 2) < 300) ||
+          // Navbar is above section but close (within 200px)
+          (navbarBottom >= rect.top - 200 && navbarBottom <= rect.top) ||
+          // Navbar is below section but close (within 200px)
+          (navbarTop <= rect.bottom + 200 && navbarTop >= rect.bottom)
+        )
+        
+        if (isOverlapping) {
           isOverKeepBlack = true
         }
       })
       
-      // If over a section that should keep navbar black, don't turn white
+      // If over a section that should keep navbar black, ALWAYS keep it black and return early
       if (isOverKeepBlack) {
-        setIsOverWhiteBackground(false)
+        setIsOverWhiteBackground(true)
         return
       }
       
+      // FOURTH: Only check white background sections if we're NOT over a keep-black section
+      // AND we haven't passed the Partners section yet
       const whiteSections = document.querySelectorAll('[data-white-background="true"]')
       let isOverWhite = false
       
       whiteSections.forEach((section) => {
+        // Skip if this section also has keep-navbar-black attribute
+        if (section.hasAttribute('data-keep-navbar-black')) {
+          return
+        }
         const rect = section.getBoundingClientRect()
+        // Check if navbar overlaps with section
         if (navbarCenterY >= rect.top && navbarCenterY <= rect.bottom) {
           isOverWhite = true
         }
@@ -60,14 +114,30 @@ export default function Navbar() {
       setIsOverWhiteBackground(isOverWhite)
     }
     
-    // Check on scroll and resize
-    window.addEventListener('scroll', checkBackground)
+    // Check on scroll and resize with requestAnimationFrame for better performance
+    let rafId: number | null = null
+    const handleScroll = () => {
+      if (rafId !== null) return
+      rafId = requestAnimationFrame(() => {
+        checkBackground()
+        rafId = null
+      })
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', checkBackground)
     checkBackground() // Initial check
     
+    // Check more frequently to catch any missed updates, especially near footer
+    const intervalId = setInterval(checkBackground, 25)
+    
     return () => {
-      window.removeEventListener('scroll', checkBackground)
+      window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', checkBackground)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
+      clearInterval(intervalId)
     }
   }, [])
 

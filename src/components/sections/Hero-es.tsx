@@ -1,9 +1,10 @@
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
+import { WordRotate } from '@/components/ui/word-rotate'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence } from 'framer-motion'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
 
 export default function HeroEs() {
@@ -13,7 +14,17 @@ export default function HeroEs() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const pathname = usePathname()
   const { showPreloaderB } = usePreloader()
+  
+  // Extract locale from pathname
+  const getLocale = () => {
+    const segments = pathname.split('/').filter(Boolean)
+    const locale = segments[0] || 'es'
+    return ['es', 'en', 'zh', 'fr'].includes(locale) ? locale : 'es'
+  }
+  
+  const currentLocale = getLocale()
   
   // Track overall page scroll progress (not section-specific)
   // This ensures fade-out happens at the correct overall page scroll percentage
@@ -53,7 +64,7 @@ export default function HeroEs() {
     }
   }, [])
 
-  const title = 'Plataforma portuaria, Tecnológica y logística del sur del mundo'
+  const rotatingWords = ['portuaria', 'Tecnológica', 'logística']
   const subtitle = 'infraestructura integrada en el estrecho de magallanes para la nueva economía energética y tecnológica'
 
   // Handle "Explorar Proyecto" button click
@@ -70,7 +81,7 @@ export default function HeroEs() {
   const handleProjectNavigation = (route: string) => {
     showPreloaderB()
     setTimeout(() => {
-      router.push(`/es${route}`)
+      router.push(`/${currentLocale}${route}`)
     }, 100)
   }
 
@@ -138,14 +149,15 @@ export default function HeroEs() {
         >
           {/* Title and Subtitle - always visible */}
           <motion.h1 
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none text-white"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none text-white flex flex-col font-primary"
             style={{ 
               userSelect: 'none', 
               WebkitUserSelect: 'none', 
               MozUserSelect: 'none', 
               msUserSelect: 'none',
               color: '#ffffff',
-              textShadow: '0 0 0 rgba(255,255,255,1)'
+              textShadow: '0 0 0 rgba(255,255,255,1)',
+              fontFamily: "'PP Neue Montreal', sans-serif"
             }}
             initial={{ opacity: 0, y: 30 }}
             animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -155,12 +167,21 @@ export default function HeroEs() {
               ease: "easeOut" 
             }}
           >
-            <BlurTextAnimation 
-              text={title}
-              fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
-              textColor="text-white"
-              animationDelay={0}
-            />
+            <span className="flex items-center gap-2">
+              <span>Plataforma</span>
+              <WordRotate
+                words={rotatingWords}
+                duration={2500}
+                className="font-bold text-white"
+                framerProps={{
+                  initial: { opacity: 0, y: -50 },
+                  animate: { opacity: 1, y: 0 },
+                  exit: { opacity: 0, y: 50 },
+                  transition: { duration: 0.25, ease: "easeOut" },
+                }}
+              />
+            </span>
+            <span>del sur del mundo</span>
           </motion.h1>
           <motion.p 
             className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none italic"

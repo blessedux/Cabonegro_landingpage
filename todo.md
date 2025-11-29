@@ -50,9 +50,9 @@ Estructurado por página y por secciones, según requerimientos del cliente.
 
 ### 5. Contextos Relevantes del Territorio
 
-- [ ] Diseño: Tarjetas con íconos
-- [ ] Tarjeta: Ruta alternativa al Canal de Panamá
-- [ ] Tarjeta: Capital energética del hidrógeno verde
+- [x] Diseño: Tarjetas con íconos
+- [x] Tarjeta: Ruta alternativa al Canal de Panamá
+- [x] Tarjeta: Capital energética del hidrógeno verde
 - [ ] Tarjeta: Ecosistema satelital y tecnológico
 - [ ] Tarjeta: Nodo logístico industrial
 
@@ -86,16 +86,16 @@ Estructurado por página y por secciones, según requerimientos del cliente.
 
 ### 8. Partners y Entidades Relacionadas
 
-- [ ] Logo: Patagon Valley
+- [x] Logo: Patagon Valley
 - [ ] Logo: Patagonia Port Group – PPG SpA
 - [ ] Logo: J&P Ltda.
-- [ ] Logo: Compas Marine
+- [x] Logo: Compas Marine
 
 ---
 
 ### 9. Noticias (Blog)
 
-- [ ] Crear sección tipo blog
+- [x] Crear sección tipo blog
 - [ ] Preparar CMS/entradas
 
 ---

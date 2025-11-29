@@ -20,10 +20,10 @@ export default function Hero() {
   // This ensures fade-out happens at the correct overall page scroll percentage
   const { scrollYProgress } = useScroll()
 
-  // Hero content stays visible until 2% of overall page scroll, then fades out smoothly from 2% to 4%
-  // Smooth fade window of 2% for gradual transition
-  const heroContentOpacity = useTransform(scrollYProgress, [0, 0.02, 0.04], [1, 1, 0])
-  const heroContentY = useTransform(scrollYProgress, [0, 0.02, 0.04], [0, 0, -20])
+  // Hero content fades out earlier - from 0% to 5% of overall page scroll
+  // Smooth fade window for gradual transition
+  const heroContentOpacity = useTransform(scrollYProgress, [0, 0, 0.05], [1, 1, 0], { clamp: true })
+  const heroContentY = useTransform(scrollYProgress, [0, 0, 0.05], [0, 0, -30], { clamp: true })
   
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(true)

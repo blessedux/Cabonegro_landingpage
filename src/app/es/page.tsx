@@ -112,28 +112,19 @@ function HomeContent() {
     }
   }, [preloaderFadeComplete])
 
-  // Handle content fade-in animation
+  // Handle content fade-in animation - start immediately when preloader starts fading
   useEffect(() => {
-    if (contentReady && contentRef.current) {
-      // Start content fade-in animation - faster and smoother
-      // Only animate if opacity is not already 1 (to avoid conflicts)
-      const currentOpacity = window.getComputedStyle(contentRef.current).opacity
-      if (parseFloat(currentOpacity) < 1) {
-        gsap.fromTo(contentRef.current, 
-          { opacity: 0 },
-          { 
-            opacity: 1, 
-            duration: 0.8, // Faster fade-in to match preloader fade-out
-            ease: 'power2.out',
-            delay: 0.1 // Small delay to ensure smooth overlap
-          }
-        )
-      } else {
-        // If already visible, just ensure it stays visible
-        gsap.set(contentRef.current, { opacity: 1 })
-      }
+    if (preloaderFadeComplete && contentRef.current) {
+      // Start content fade-in immediately when preloader starts fading out
+      // No delay - content should be visible behind the fading preloader (cross-fade)
+      gsap.to(contentRef.current, { 
+        opacity: 1, 
+        duration: 0.6, // Match preloader fade duration for perfect cross-fade
+        ease: 'power2.out',
+        delay: 0 // No delay - start immediately
+      })
     }
-  }, [contentReady])
+  }, [preloaderFadeComplete])
   
   // Ensure contentReady is set when preloaderFadeComplete is true
   useEffect(() => {
@@ -179,6 +170,7 @@ function HomeContent() {
           onComplete={handlePreloaderComplete}
           onFadeOutStart={handlePreloaderFadeOutStart}
           duration={6}
+          showDebug={true}
         />
       )}
 
@@ -191,9 +183,9 @@ function HomeContent() {
           ref={contentRef}
           className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
           style={{ 
-            opacity: isFadingOut ? 0 : (contentReady ? 1 : 0.99), // Show when ready, GSAP will smooth it
+            opacity: 0, // Start invisible, GSAP will fade it in
             pointerEvents: 'auto',
-            transition: contentReady ? 'none' : 'opacity 0.8s ease-out' // Fallback transition if GSAP doesn't run
+            transition: 'none' // GSAP handles all transitions
           }}
         >
           {/* Navigation */}

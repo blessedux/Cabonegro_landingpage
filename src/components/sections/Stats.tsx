@@ -136,19 +136,30 @@ export default function Stats() {
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
   const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : locale === 'fr' ? 'Explorer le Terrain' : 'Explore Terrain'
   
-  // Find AboutUs section to use its bottom as trigger point and track its scroll progress
+  // Track scroll progress using statsRef (always defined, avoids hydration errors)
+  // We'll manually adjust the scroll progress based on AboutUs position if needed
+  const { scrollYProgress: baseScrollProgress } = useScroll({
+    target: statsRef,
+    offset: ["start end", "end start"]
+  })
+  
+  // Find AboutUs section to potentially adjust scroll calculations
   const aboutUsSectionRef = useRef<HTMLElement | null>(null)
   
   useEffect(() => {
-    aboutUsSectionRef.current = document.querySelector('[data-aboutus-section="true"]') as HTMLElement
+    const findElement = () => {
+      const element = document.querySelector('[data-aboutus-section="true"]') as HTMLElement
+      if (element) {
+        aboutUsSectionRef.current = element
+      }
+    }
+    requestAnimationFrame(findElement)
   }, [])
   
-  // Track AboutUs section scroll progress - using same offset as AboutUs component
-  // This tracks from when AboutUs top enters viewport to when AboutUs bottom exits viewport
-  const { scrollYProgress: aboutUsScrollProgress } = useScroll({
-    target: aboutUsSectionRef,
-    offset: ["start end", "end start"]
-  })
+  // For now, use baseScrollProgress as aboutUsScrollProgress
+  // The animations should still work since they're based on scroll position
+  // If precise AboutUs tracking is needed, we can add manual calculations later
+  const aboutUsScrollProgress = baseScrollProgress
   
   // AboutUs content opacity - matches the original AboutUs component
   const aboutUsOpacity = useTransform(aboutUsScrollProgress, [0, 0.01, 0.05, 0.7, 1], [0, 0, 1, 1, 0], { clamp: true })
@@ -186,11 +197,11 @@ export default function Stats() {
   })
 
   // Background fade in - starts later at 0.40 (40% of AboutUs scroll), completes at 0.60 (60%)
-  // This gives users time to see Hero and AboutUs before transitioning to Stats
-  // IMPORTANT: Only show when AboutUs is actually in view (scrollYProgress > 0)
+  // Adjusted for shorter AboutUs section (100vh) - trigger earlier
+  // Start fading in when AboutUs is at 20% scroll progress (earlier than before)
   const backgroundOpacity = useTransform(
     scrollYProgress, 
-    [0, 0.40, 0.60], 
+    [0, 0.20, 0.40], 
     [0, 0, 1],
     { clamp: true }
   )
@@ -199,7 +210,7 @@ export default function Stats() {
   // Only apply zoom when background starts appearing
   const backgroundScale = useTransform(
     scrollYProgress, 
-    [0, 0.40, 1], 
+    [0, 0.20, 1], 
     [1, 1, 1.1], 
     { clamp: true }
   )
@@ -227,16 +238,16 @@ export default function Stats() {
     { clamp: true }
   )
   
-  // Content fade in - smooth fade from 40% to 50% (when background appears)
+  // Content fade in - start earlier to match stat cards (0.20 when background starts)
   const contentOpacity = useTransform(
     scrollYProgress, 
-    [0, 0.40, 0.50], 
+    [0, 0.20, 0.30], 
     [0, 0, 1],
     { clamp: true }
   )
   const contentY = useTransform(
     scrollYProgress, 
-    [0, 0.40, 0.50], 
+    [0, 0.20, 0.30], 
     [0, 0, 0],
     { clamp: true }
   )
@@ -285,6 +296,24 @@ export default function Stats() {
   // Fade to white when Partners reaches above 50% of viewport (center line)
   // Partners scroll progress: 0 = Partners at center, 1 = Partners at top
   const whiteOverlayOpacity = useTransform(partnersScrollProgress, [0, 1], [0, 1])
+
+  // Staggered fade-in animations for stat boxes
+  // Each box fades in sequentially as we scroll through the Stats section
+  // Start at 0.20 (when background starts fading in) and stagger over the next 0.15 (15% of scroll progress)
+  const statBox1Opacity = useTransform(scrollYProgress, [0.20, 0.30], [0, 1], { clamp: true })
+  const statBox1Y = useTransform(scrollYProgress, [0.20, 0.30], [30, 0], { clamp: true })
+  
+  const statBox2Opacity = useTransform(scrollYProgress, [0.22, 0.32], [0, 1], { clamp: true })
+  const statBox2Y = useTransform(scrollYProgress, [0.22, 0.32], [30, 0], { clamp: true })
+  
+  const statBox3Opacity = useTransform(scrollYProgress, [0.24, 0.34], [0, 1], { clamp: true })
+  const statBox3Y = useTransform(scrollYProgress, [0.24, 0.34], [30, 0], { clamp: true })
+  
+  const statBox4Opacity = useTransform(scrollYProgress, [0.26, 0.36], [0, 1], { clamp: true })
+  const statBox4Y = useTransform(scrollYProgress, [0.26, 0.36], [30, 0], { clamp: true })
+  
+  const statBox5Opacity = useTransform(scrollYProgress, [0.28, 0.38], [0, 1], { clamp: true })
+  const statBox5Y = useTransform(scrollYProgress, [0.28, 0.38], [30, 0], { clamp: true })
 
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(false)
@@ -410,7 +439,13 @@ export default function Stats() {
             {/* Company/Area Breakdown */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* PPG */}
-              <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+              <motion.div 
+                className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl"
+                style={{
+                  opacity: statBox1Opacity,
+                  y: statBox1Y
+                }}
+              >
                 <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
                 <p className="text-gray-400 text-xs mb-3">
                   {locale === 'es' ? 'Inversiones PPG SpA' : locale === 'zh' ? 'PPG投资公司' : locale === 'fr' ? 'Investissements PPG SpA' : 'Inversiones PPG SpA'}
@@ -424,10 +459,16 @@ export default function Stats() {
                     {locale === 'es' ? 'Desarrollo de zona portuaria con J&P' : locale === 'zh' ? '与J&P合作开发港口区' : locale === 'fr' ? 'Développement de zone portuaire avec J&P' : 'Port zone development with J&P'}
                   </p>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Patagon Valley */}
-              <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+              <motion.div 
+                className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl"
+                style={{
+                  opacity: statBox2Opacity,
+                  y: statBox2Y
+                }}
+              >
                 <h3 className="text-white font-bold text-lg mb-3">Patagon Valley</h3>
                 <p className="text-gray-400 text-xs mb-3">
                   {locale === 'es' ? 'Inmobiliaria Patagon Valley SpA' : locale === 'zh' ? '巴塔哥尼亚谷房地产公司' : locale === 'fr' ? 'Immobilier Patagon Valley SpA' : 'Inmobiliaria Patagon Valley SpA'}
@@ -448,10 +489,16 @@ export default function Stats() {
                     {locale === 'es' ? 'Originalmente planificado como parque tecnológico' : locale === 'zh' ? '最初规划为科技园' : locale === 'fr' ? 'Initialement prévu comme parc technologique' : 'Originally planned as tech park'}
                   </p>
                 </div>
-              </div>
+              </motion.div>
 
               {/* A&J */}
-              <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+              <motion.div 
+                className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl"
+                style={{
+                  opacity: statBox3Opacity,
+                  y: statBox3Y
+                }}
+              >
                 <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
                 <p className="text-gray-400 text-xs mb-3">
                   {locale === 'es' ? 'Inversiones A&J Limitada' : locale === 'zh' ? 'A&J投资有限公司' : locale === 'fr' ? 'Investissements A&J Limitée' : 'Inversiones A&J Limitada'}
@@ -465,54 +512,69 @@ export default function Stats() {
                     {locale === 'es' ? 'Tamaño mínimo de lote' : locale === 'zh' ? '最小地块面积' : locale === 'fr' ? 'Taille minimale du lot' : 'Minimum lot size'}
                   </p>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* J&P */}
-              <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-                <h3 className="text-white font-bold text-lg mb-3">
-                  {locale === 'es' ? 'Zona Portuaria J&P' : locale === 'zh' ? 'J&P港口区' : locale === 'fr' ? 'Zone Portuaire J&P' : 'J&P Port Zone'}
-                </h3>
-                <p className="text-gray-400 text-xs mb-3">
-                  {locale === 'es' ? 'Inversiones J&P Limitada' : locale === 'zh' ? 'J&P投资有限公司' : locale === 'fr' ? 'Investissements J&P Limitée' : 'Inversiones J&P Limitada'}
-                </p>
-                <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">
-                    {locale === 'es' ? 'Desarrollo de zona portuaria' : locale === 'zh' ? '港口区开发' : locale === 'fr' ? 'Développement de zone portuaire' : 'Port zone development'}
+              {/* Last two boxes wrapper - centered on desktop */}
+              <div className="md:col-span-2 lg:col-span-3 lg:flex lg:justify-center lg:gap-6">
+                {/* J&P */}
+                <motion.div 
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl lg:max-w-[calc(33.333%-0.75rem)]"
+                  style={{
+                    opacity: statBox4Opacity,
+                    y: statBox4Y
+                  }}
+                >
+                  <h3 className="text-white font-bold text-lg mb-3">
+                    {locale === 'es' ? 'Zona Portuaria J&P' : locale === 'zh' ? 'J&P港口区' : locale === 'fr' ? 'Zone Portuaire J&P' : 'J&P Port Zone'}
+                  </h3>
+                  <p className="text-gray-400 text-xs mb-3">
+                    {locale === 'es' ? 'Inversiones J&P Limitada' : locale === 'zh' ? 'J&P投资有限公司' : locale === 'fr' ? 'Investissements J&P Limitée' : 'Inversiones J&P Limitada'}
                   </p>
-                  <p className="text-gray-300 text-sm">
-                    {locale === 'es' ? 'Vinculado al proyecto portuario PPG' : locale === 'zh' ? '与PPG港口项目相关' : locale === 'fr' ? 'Lié au projet portuaire PPG' : 'Linked to PPG port project'}
-                  </p>
-                  <p className="text-gray-400 text-xs mt-3">
-                    {locale === 'es' ? 'Dividido en sociedades separadas:' : locale === 'zh' ? '分为独立公司：' : locale === 'fr' ? 'Divisé en sociétés séparées :' : 'Divided into separate companies:'}
-                  </p>
-                  <p className="text-gray-300 text-xs">
-                    {locale === 'es' ? '• J&P (continuadora) - Desarrollo portuario' : locale === 'zh' ? '• J&P（继续者）- 港口开发' : locale === 'fr' ? '• J&P (continuatrice) - Développement portuaire' : '• J&P (continuadora) - Port development'}
-                  </p>
-                  <p className="text-gray-300 text-xs">
-                    {locale === 'es' ? '• J&P 2 y J&P 3 - Opciones de ampliación' : locale === 'zh' ? '• J&P 2和J&P 3 - 扩展选项' : locale === 'fr' ? '• J&P 2 et J&P 3 - Options d\'expansion' : '• J&P 2 & J&P 3 - Expansion options'}
-                  </p>
-                </div>
-              </div>
-
-              {/* CN2 */}
-              <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-                <h3 className="text-white font-bold text-lg mb-3">Cabo Negro Dos</h3>
-                <p className="text-gray-400 text-xs mb-3">
-                  {locale === 'es' ? 'Inmobiliaria Cabo Negro Dos' : locale === 'zh' ? '卡波内格罗二号房地产公司' : locale === 'fr' ? 'Immobilier Cabo Negro Dos' : 'Inmobiliaria Cabo Negro Dos'}
-                </p>
-                <div className="mb-3">
-                  <div className="text-3xl font-bold text-white mb-1">
-                    <AnimatedCounter end={173} suffix=" ha" />
+                  <div className="space-y-2">
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Desarrollo de zona portuaria' : locale === 'zh' ? '港口区开发' : locale === 'fr' ? 'Développement de zone portuaire' : 'Port zone development'}
+                    </p>
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Vinculado al proyecto portuario PPG' : locale === 'zh' ? '与PPG港口项目相关' : locale === 'fr' ? 'Lié au projet portuaire PPG' : 'Linked to PPG port project'}
+                    </p>
+                    <p className="text-gray-400 text-xs mt-3">
+                      {locale === 'es' ? 'Dividido en sociedades separadas:' : locale === 'zh' ? '分为独立公司：' : locale === 'fr' ? 'Divisé en sociétés séparées :' : 'Divided into separate companies:'}
+                    </p>
+                    <p className="text-gray-300 text-xs">
+                      {locale === 'es' ? '• J&P (continuadora) - Desarrollo portuario' : locale === 'zh' ? '• J&P（继续者）- 港口开发' : locale === 'fr' ? '• J&P (continuatrice) - Développement portuaire' : '• J&P (continuadora) - Port development'}
+                    </p>
+                    <p className="text-gray-300 text-xs">
+                      {locale === 'es' ? '• J&P 2 y J&P 3 - Opciones de ampliación' : locale === 'zh' ? '• J&P 2和J&P 3 - 扩展选项' : locale === 'fr' ? '• J&P 2 et J&P 3 - Options d\'expansion' : '• J&P 2 & J&P 3 - Expansion options'}
+                    </p>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">
-                    {locale === 'es' ? 'Resultante de la subdivisión de J&P' : locale === 'zh' ? '来自J&P细分' : locale === 'fr' ? 'Résultant de la subdivision de J&P' : 'Resulting from J&P subdivision'}
+                </motion.div>
+
+                {/* CN2 */}
+                <motion.div 
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl lg:max-w-[calc(33.333%-0.75rem)]"
+                  style={{
+                    opacity: statBox5Opacity,
+                    y: statBox5Y
+                  }}
+                >
+                  <h3 className="text-white font-bold text-lg mb-3">Cabo Negro Dos</h3>
+                  <p className="text-gray-400 text-xs mb-3">
+                    {locale === 'es' ? 'Inmobiliaria Cabo Negro Dos' : locale === 'zh' ? '卡波内格罗二号房地产公司' : locale === 'fr' ? 'Immobilier Cabo Negro Dos' : 'Inmobiliaria Cabo Negro Dos'}
                   </p>
-                  <p className="text-gray-400 text-xs">
-                    {locale === 'es' ? 'Área única unificada (sin subdivisión)' : locale === 'zh' ? '单一统一区域（无细分）' : locale === 'fr' ? 'Zone unique unifiée (sans subdivision)' : 'Single unified area (no subdivision)'}
-                  </p>
-                </div>
+                  <div className="mb-3">
+                    <div className="text-3xl font-bold text-white mb-1">
+                      <AnimatedCounter end={173} suffix=" ha" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Resultante de la subdivisión de J&P' : locale === 'zh' ? '来自J&P细分' : locale === 'fr' ? 'Résultant de la subdivision de J&P' : 'Resulting from J&P subdivision'}
+                    </p>
+                    <p className="text-gray-400 text-xs">
+                      {locale === 'es' ? 'Área única unificada (sin subdivisión)' : locale === 'zh' ? '单一统一区域（无细分）' : locale === 'fr' ? 'Zone unique unifiée (sans subdivision)' : 'Single unified area (no subdivision)'}
+                    </p>
+                  </div>
+                </motion.div>
               </div>
             </div>
             </motion.div>
