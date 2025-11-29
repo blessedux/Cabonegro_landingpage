@@ -10,7 +10,7 @@ import Hero from '@/components/sections/Hero-fr'
 import AboutUs from '@/components/sections/AboutUs'
 import Stats from '@/components/sections/Stats'
 import Partners from '@/components/sections/Partners'
-import { WorldMapDemo } from '@/components/ui/world-map-demo'
+import { WorldMapDemoFr } from '@/components/ui/world-map-demo-fr'
 import Press from '@/components/sections/Press'
 import FAQ from '@/components/sections/FAQ'
 import Footer from '@/components/sections/Footer'
@@ -235,7 +235,7 @@ function HomeContent() {
             <AboutUs />
             <Stats />
             <Partners />
-            <WorldMapDemo />
+            <WorldMapDemoFr />
             <Press />
             <FAQ />
           </main>

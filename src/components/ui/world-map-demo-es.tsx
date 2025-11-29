@@ -197,7 +197,7 @@ export function WorldMapDemoEs() {
             height: '100vh'
           }}
         >
-          <div className="scale-[2] origin-center overflow-hidden h-full w-full">
+          <div className="origin-center overflow-hidden h-full w-full">
             <WorldMap
           dashed
           dots={[
@@ -255,8 +255,8 @@ export function WorldMapDemoEs() {
         </motion.div>
       </motion.div>
       
-      {/* Animated text below the map frame - positioned after sticky map scrolls */}
-      <div className="px-4 md:px-8 lg:px-12 pt-0 pb-4 md:pb-12 text-center relative z-30 bg-white md:mt-[100vh]">
+      {/* Animated text below the map frame - positioned right after the map */}
+      <div className="px-4 md:px-8 lg:px-12 pt-0 pb-4 md:pb-12 text-center relative z-30 bg-white">
         <MagicTextWrapper 
           text={mapText}
           className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed"

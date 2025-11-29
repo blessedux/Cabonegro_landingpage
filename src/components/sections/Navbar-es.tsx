@@ -192,20 +192,12 @@ export default function NavbarEs() {
     }
   }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden])
 
-  // Handle language change
+  // Handle language change - optimized for instant response
   const handleLanguageChange = (newLocale: string) => {
     // Check if we're on a special page (explore, deck, contact)
     const isOnSpecialPage = pathname.includes('/explore') || 
                            pathname.includes('/deck') || 
                            pathname.includes('/contact')
-    
-    // Check if we're on homepage (or root)
-    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
-    
-    // If switching language on special page, show PreloaderB
-    if (isOnSpecialPage) {
-      showPreloaderB()
-    }
     
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
@@ -229,33 +221,25 @@ export default function NavbarEs() {
       pathWithoutLocale = ''
     }
     
-    // Navigate to the new locale with the same path
-    // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
-    let delay = isOnSpecialPage ? 100 : 0
+    // Build target path
+    const targetPath = `/${newLocale}${pathWithoutLocale}`
     
-    // If switching language on homepage, show main preloader and delay navigation slightly
-    if (isOnHomePage && !isOnSpecialPage) {
-      setLanguageSwitch(true) // Mark this as a language switch for faster preloader
-      setPreloaderVisible(true)
-      setPreloaderComplete(false)
-      delay = 50 // Small delay to ensure preloader state is set before navigation
+    // For special pages, use PreloaderB
+    if (isOnSpecialPage) {
+      showPreloaderB()
+      // Navigate immediately without delay
+      router.push(targetPath)
+      return
     }
     
-    setTimeout(() => {
-      if (newLocale === 'en') {
-        const targetPath = '/en' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'es') {
-        const targetPath = '/es' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'zh') {
-        const targetPath = '/zh' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'fr') {
-        const targetPath = '/fr' + pathWithoutLocale
-        router.push(targetPath)
-      }
-    }, delay)
+    // For homepage and other pages, show main preloader INSTANTLY
+    // Set all preloader state synchronously before navigation
+    setLanguageSwitch(true)
+    setPreloaderVisible(true)
+    setPreloaderComplete(false)
+    
+    // Navigate immediately - React will batch state updates and navigation
+    router.push(targetPath)
   }
 
   // Handle project navigation

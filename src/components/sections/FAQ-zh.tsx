@@ -3,30 +3,10 @@
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChevronDown } from 'lucide-react'
-import * as React from "react"
 import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { MagicText } from "@/components/ui/magic-text"
-
-interface HeroAction {
-  label: string
-  href: string
-  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"
-}
-
-interface HeroProps {
-  className?: string
-  gradient?: boolean
-  blur?: boolean
-  title?: string
-  subtitle?: string
-  actions?: HeroAction[]
-  titleClassName?: string
-  subtitleClassName?: string
-  actionsClassName?: string
-}
 
 const faqs = [
   {
@@ -55,196 +35,72 @@ const faqs = [
   }
 ]
 
-const Hero = React.forwardRef<HTMLElement, HeroProps>(
-  (
-    {
-      className,
-      gradient = true,
-      blur = true,
-      title,
-      subtitle,
-      actions,
-      titleClassName,
-      subtitleClassName,
-      actionsClassName,
-      ...props
-    },
-    ref,
-  ) => {
-    return (
-      <section
-        ref={ref}
-        className={cn(
-          "relative z-0 flex min-h-[80vh] w-full flex-col items-center justify-center overflow-hidden rounded-md bg-background",
-          className,
-        )}
-        {...props}
-      >
-        {gradient && (
-          <div className="absolute top-0 isolate z-0 flex w-screen flex-1 items-start justify-center">
-            {blur && (
-              <div className="absolute top-0 z-50 h-48 w-screen bg-transparent opacity-10 backdrop-blur-md" />
-            )}
-
-            {/* Main glow */}
-            <div className="absolute inset-auto z-50 h-36 w-[28rem] -translate-y-[-30%] rounded-full bg-cyan-400/80 opacity-80 blur-3xl" />
-
-            {/* Lamp effect */}
-            <motion.div
-              initial={{ width: "8rem" }}
-              transition={{ ease: "easeInOut", delay: 0.3, duration: 0.8 }}
-              whileInView={{ width: "16rem" }}
-              viewport={{ margin: "-10% 0px -10% 0px" }}
-              className="absolute top-0 z-30 h-36 -translate-y-[20%] rounded-full bg-white/80 blur-2xl"
-            />
-
-            {/* Top line */}
-            <motion.div
-              initial={{ width: "15rem" }}
-              transition={{ ease: "easeInOut", delay: 0.3, duration: 0.8 }}
-              whileInView={{ width: "30rem" }}
-              viewport={{ margin: "-10% 0px -10% 0px" }}
-              className="absolute inset-auto z-50 h-0.5 -translate-y-[-10%] bg-cyan-400/80"
-            />
-
-            {/* Left gradient cone */}
-            <motion.div
-              initial={{ opacity: 0.5, width: "15rem" }}
-              whileInView={{ opacity: 1, width: "30rem" }}
-              viewport={{ margin: "-10% 0px -10% 0px" }}
-              transition={{
-                delay: 0.3,
-                duration: 0.8,
-                ease: "easeInOut",
-              }}
-              style={{
-                backgroundImage: `conic-gradient(var(--conic-position), var(--tw-gradient-stops))`,
-              }}
-              className="absolute inset-auto right-1/2 h-56 overflow-visible w-[30rem] bg-gradient-conic from-cyan-400/80 via-transparent to-transparent [--conic-position:from_70deg_at_center_top]"
-            >
-              <div className="absolute w-[100%] left-0 bg-background h-40 bottom-0 z-20 [mask-image:linear-gradient(to_top,white,transparent)]" />
-              <div className="absolute w-40 h-[100%] left-0 bg-background bottom-0 z-20 [mask-image:linear-gradient(to_right,white,transparent)]" />
-            </motion.div>
-
-            {/* Right gradient cone */}
-            <motion.div
-              initial={{ opacity: 0.5, width: "15rem" }}
-              whileInView={{ opacity: 1, width: "30rem" }}
-              viewport={{ margin: "-10% 0px -10% 0px" }}
-              transition={{
-                delay: 0.3,
-                duration: 0.8,
-                ease: "easeInOut",
-              }}
-              style={{
-                backgroundImage: `conic-gradient(var(--conic-position), var(--tw-gradient-stops))`,
-              }}
-              className="absolute inset-auto left-1/2 h-56 w-[30rem] bg-gradient-conic from-transparent via-transparent to-cyan-400/80 [--conic-position:from_290deg_at_center_top]"
-            >
-              <div className="absolute w-40 h-[100%] right-0 bg-background bottom-0 z-20 [mask-image:linear-gradient(to_left,white,transparent)]" />
-              <div className="absolute w-[100%] right-0 bg-background h-40 bottom-0 z-20 [mask-image:linear-gradient(to_top,white,transparent)]" />
-            </motion.div>
-          </div>
-        )}
-
-        <div className="relative z-10 flex flex-col items-center justify-center px-4 py-16 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ margin: "-10% 0px -10% 0px" }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="space-y-6"
-          >
-            <h1 className={cn("text-4xl font-bold tracking-tight sm:text-6xl", titleClassName)}>
-              {title || "常见问题"}
-            </h1>
-            <p className={cn("text-lg text-muted-foreground sm:text-xl", subtitleClassName)}>
-              {subtitle || "解答您的疑问"}
-            </p>
-            {actions && (
-              <div className={cn("flex flex-col gap-4 sm:flex-row", actionsClassName)}>
-                {actions.map((action, index) => (
-                  <Button key={index} variant={action.variant || "default"} asChild>
-                    <Link href={action.href}>{action.label}</Link>
-                  </Button>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        </div>
-      </section>
-    )
-  },
-)
-Hero.displayName = "Hero"
-
 export default function FAQZh() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
-
-  const toggleFAQ = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index)
-  }
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
 
   return (
-    <div className="pt-8 md:pt-20 pb-20 px-6 bg-black text-white">
-      <div className="max-w-4xl mx-auto">
+    <section className="pt-8 md:pt-20 pb-20 px-6 bg-white relative z-20" id="FAQ" data-white-background="true">
+      <div className="container mx-auto max-w-4xl">
+        <motion.h2 
+          initial={{ x: -50, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ margin: "-10% 0px -10% 0px" }}
+          className="text-4xl md:text-5xl font-bold mb-6 text-foreground"
+        >
+          投资与合资战略
+        </motion.h2>
+        <div className="mb-12 max-w-3xl mx-auto text-center">
+          <MagicText 
+            text="从愿景到准备建设：寻求资金将卡波内格罗终端带到准备建设阶段"
+            className="text-gray-600 text-lg"
+          />
+        </div>
 
         {/* FAQ Items */}
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <motion.div
+            <Card
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ margin: "-10% 0px -10% 0px" }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="bg-white border-gray-200 cursor-pointer hover:border-accent transition-colors shadow-sm"
+              onClick={() => setOpenFaq(openFaq === index ? null : index)}
             >
-              <Card className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 transition-colors">
-                <CardContent className="p-0">
-                  <button
-                    onClick={() => toggleFAQ(index)}
-                    className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-800/30 transition-colors"
-                  >
-                    <h3 className="text-lg font-semibold text-white pr-4">
-                      {faq.question}
-                    </h3>
-                    <ChevronDown 
-                      className={cn(
-                        "h-5 w-5 text-gray-400 transition-transform duration-200 flex-shrink-0",
-                        openIndex === index && "rotate-180"
-                      )}
-                    />
-                  </button>
-                  
-                  <motion.div
-                    initial={false}
-                    animate={{
-                      height: openIndex === index ? "auto" : 0,
-                      opacity: openIndex === index ? 1 : 0
-                    }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-6 pb-4">
-                      <p className="text-gray-300 leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </motion.div>
-                </CardContent>
-              </Card>
-            </motion.div>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold pr-4 text-foreground">{faq.question}</h3>
+                  <ChevronDown
+                    className={`w-5 h-5 flex-shrink-0 transition-transform text-gray-600 ${
+                      openFaq === index ? 'rotate-180' : ''
+                    }`}
+                  />
+                </div>
+                {openFaq === index && (
+                  <p className="text-gray-700 mt-4 leading-relaxed">{faq.answer}</p>
+                )}
+              </CardContent>
+            </Card>
           ))}
         </div>
 
-        {/* Lamp CTA moved to bottom */}
-        <Hero 
-          title="还有问题？"
-          subtitle="联系团队获取更多信息"
-          actions={[{ label: "联系我们", href: "/zh/contact" }]}
-          className="mt-16"
-        />
+        <div className="mt-16 flex flex-col sm:flex-row gap-4 justify-center items-center group">
+          <Button
+            asChild
+            variant="default"
+            size="lg"
+            className="bg-cyan-500 hover:bg-cyan-400 text-white font-semibold shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/70 transition-all"
+          >
+            <Link href="/zh/deck">下载投资提案</Link>
+          </Button>
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="hover:bg-white hover:text-black transition-colors"
+          >
+            <Link href="https://calendly.com/" target="_blank" rel="noopener noreferrer">安排投资者会议</Link>
+          </Button>
+        </div>
       </div>
-    </div>
+    </section>
   )
 }

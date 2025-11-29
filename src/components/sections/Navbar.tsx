@@ -223,37 +223,30 @@ export default function Navbar() {
   useEffect(() => {
     // Check if we're on deck, explore, or contact routes - show navbar immediately and reset hidden state
     if (pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact')) {
-      // Reset navbar hidden state when navigating to explore/deck/contact pages
+      // Reset navbar hidden state when navigating to explore/deck pages
       setIsNavbarHidden(false)
-      setIsVisible(true) // Show immediately for these routes
-      return
+      const timer = setTimeout(() => {
+        setIsVisible(true)
+      }, 100) // Quick delay for deck/explore routes
+      return () => clearTimeout(timer)
     }
     
     // Normal preloader logic for other routes
-    // Show navbar when preloader completes OR if preloader is not visible (for faster initial load)
-    if ((isPreloaderComplete && !isPreloaderVisible) || (!isPreloaderVisible && !showPreloaderB)) {
+    if (isPreloaderComplete && !isPreloaderVisible) {
       const timer = setTimeout(() => {
         setIsVisible(true)
-      }, 300) // Reduced delay for smoother entrance
+      }, 500) // Delay for smooth entrance after preloader
 
       return () => clearTimeout(timer)
     }
-  }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden, showPreloaderB])
+  }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden])
 
-  // Handle language change
+  // Handle language change - optimized for instant response
   const handleLanguageChange = (newLocale: string) => {
     // Check if we're on a special page (explore, deck, contact)
     const isOnSpecialPage = pathname.includes('/explore') || 
                            pathname.includes('/deck') || 
                            pathname.includes('/contact')
-    
-    // Check if we're on homepage (or root)
-    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
-    
-    // If switching language on special page, show PreloaderB
-    if (isOnSpecialPage) {
-      showPreloaderB()
-    }
     
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
@@ -277,32 +270,25 @@ export default function Navbar() {
       pathWithoutLocale = ''
     }
     
-    // Navigate to the new locale with the same path
-    // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
-    let delay = isOnSpecialPage ? 100 : 0
+    // Build target path
+    const targetPath = `/${newLocale}${pathWithoutLocale}`
     
-    // If switching language on homepage, show main preloader and delay navigation slightly
-    if (isOnHomePage && !isOnSpecialPage) {
-      setLanguageSwitch(true) // Mark this as a language switch for faster preloader
-      setPreloaderVisible(true)
-      setPreloaderComplete(false)
-      delay = 50 // Small delay to ensure preloader state is set before navigation
+    // For special pages, use PreloaderB
+    if (isOnSpecialPage) {
+      showPreloaderB()
+      // Navigate immediately without delay
+      router.push(targetPath)
+      return
     }
-    setTimeout(() => {
-      if (newLocale === 'en') {
-        const targetPath = '/en' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'es') {
-        const targetPath = '/es' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'zh') {
-        const targetPath = '/zh' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'fr') {
-        const targetPath = '/fr' + pathWithoutLocale
-        router.push(targetPath)
-      }
-    }, delay)
+    
+    // For homepage and other pages, show main preloader INSTANTLY
+    // Set all preloader state synchronously before navigation
+    setLanguageSwitch(true)
+    setPreloaderVisible(true)
+    setPreloaderComplete(false)
+    
+    // Navigate immediately - React will batch state updates and navigation
+    router.push(targetPath)
   }
 
 
@@ -373,8 +359,8 @@ export default function Navbar() {
     <header 
       ref={navbarRef}
       className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck, explore, and contact routes, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact')
+      // For deck and explore routes, only hide if navbar is explicitly hidden
+      pathname.includes('/deck') || pathname.includes('/explore')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
         : (isNavbarHidden || isPreloaderVisible
             ? '-translate-y-full opacity-0' 
@@ -406,34 +392,9 @@ export default function Navbar() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              <button 
-                onClick={() => handleProjectNavigation('/terminal-maritimo')}
-                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
-              >
-                {localizedText.maritimeTerminal}
-              </button>
-              <button 
-                onClick={() => handleProjectNavigation('/parque-tecnologico')}
-                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
-              >
-                {localizedText.technologyPark}
-              </button>
-              <button 
-                onClick={() => handleProjectNavigation('/parque-logistico')}
-                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
-              >
-                {localizedText.logisticsPark}
-              </button>
-              <button 
-                onClick={handleFAQClick}
-                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
-              >
-                {localizedText.faq}
-              </button>
-              
-              {/* Language Dropdown */}
+            {/* Right side: Language Dropdown + Hamburger Button */}
+            <div className="flex items-center gap-3">
+              {/* Language Dropdown - Always visible, to the left of hamburger */}
               <div className="relative" ref={languageDropdownRef}>
                 <button
                   onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
@@ -477,41 +438,22 @@ export default function Navbar() {
                 )}
               </div>
 
-              <Button
-                variant="outline"
-                className={`uppercase transition-all duration-300 ${
-                  isOverWhiteBackground 
-                    ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
-                    : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
-                }`}
-                onClick={() => {
-                  showPreloaderB()
-                  const contactPath = currentLocale === 'en' ? '/en/contact' : 
-                                     currentLocale === 'es' ? '/es/contact' :
-                                     currentLocale === 'zh' ? '/zh/contact' :
-                                     currentLocale === 'fr' ? '/fr/contact' : '/en/contact'
-                  setTimeout(() => router.push(contactPath), 100)
-                }}
+              {/* Menu Button - Desktop and Mobile */}
+              <button
+                className={`p-2 rounded-lg transition-colors ${textColor} ${isOverWhiteBackground ? 'hover:bg-black/10' : 'hover:bg-white/10'}`}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
-                {localizedText.contactUs}
-              </Button>
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
+              </button>
             </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              className={`md:hidden p-2 rounded-lg transition-colors ${textColor} ${isOverWhiteBackground ? 'hover:bg-black/10' : 'hover:bg-white/10'}`}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
           </div>
 
-          {/* Mobile Navigation with Animation */}
-          <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          {/* Navigation Menu with Animation - Desktop and Mobile */}
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}>
             <div className="px-6 pb-6 border-t border-white/20">
@@ -549,24 +491,6 @@ export default function Navbar() {
                 >
                   {localizedText.faq}
                 </button>
-                
-                {/* Mobile Language Toggle */}
-                <div className="flex items-center gap-2 py-2">
-                  <span className={`text-sm uppercase ${isOverWhiteBackground ? 'text-black/80' : 'text-white/80'}`}>{localizedText.language}</span>
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
-                      className={`text-xs px-2 py-1 rounded transition-colors ${
-                        currentLocale === lang.code
-                          ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-accent border border-accent'}`
-                          : `${textColor} ${hoverColor}`
-                      }`}
-                    >
-                      {lang.code.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
 
                 <Button
                   onClick={() => {

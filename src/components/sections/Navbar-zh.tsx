@@ -192,20 +192,12 @@ export default function NavbarZh() {
     }
   }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden])
 
-  // Handle language change
+  // Handle language change - optimized for instant response
   const handleLanguageChange = (newLocale: string) => {
     // Check if we're on a special page (explore, deck, contact)
     const isOnSpecialPage = pathname.includes('/explore') || 
                            pathname.includes('/deck') || 
                            pathname.includes('/contact')
-    
-    // Check if we're on homepage (or root)
-    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
-    
-    // If switching language on special page, show PreloaderB
-    if (isOnSpecialPage) {
-      showPreloaderB()
-    }
     
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
@@ -229,33 +221,25 @@ export default function NavbarZh() {
       pathWithoutLocale = ''
     }
     
-    // Navigate to the new locale with the same path
-    // English routes use /en prefix, Spanish routes use /es prefix, Chinese routes use /zh prefix
-    let delay = isOnSpecialPage ? 100 : 0
+    // Build target path
+    const targetPath = `/${newLocale}${pathWithoutLocale}`
     
-    // If switching language on homepage, show main preloader and delay navigation slightly
-    if (isOnHomePage && !isOnSpecialPage) {
-      setLanguageSwitch(true) // Mark this as a language switch for faster preloader
-      setPreloaderVisible(true)
-      setPreloaderComplete(false)
-      delay = 50 // Small delay to ensure preloader state is set before navigation
+    // For special pages, use PreloaderB
+    if (isOnSpecialPage) {
+      showPreloaderB()
+      // Navigate immediately without delay
+      router.push(targetPath)
+      return
     }
     
-    setTimeout(() => {
-      if (newLocale === 'en') {
-        const targetPath = '/en' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'es') {
-        const targetPath = '/es' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'zh') {
-        const targetPath = '/zh' + pathWithoutLocale
-        router.push(targetPath)
-      } else if (newLocale === 'fr') {
-        const targetPath = '/fr' + pathWithoutLocale
-        router.push(targetPath)
-      }
-    }, delay)
+    // For homepage and other pages, show main preloader INSTANTLY
+    // Set all preloader state synchronously before navigation
+    setLanguageSwitch(true)
+    setPreloaderVisible(true)
+    setPreloaderComplete(false)
+    
+    // Navigate immediately - React will batch state updates and navigation
+    router.push(targetPath)
   }
 
   // Handle Explore Terrain click
@@ -358,23 +342,9 @@ export default function NavbarZh() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              <button 
-                onClick={handleExploreTerrain}
-                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
-              >
-                探索地形
-              </button>
-              <Link href="/zh/deck" className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}>查看甲板</Link>
-              <button 
-                onClick={handleFAQClick}
-                className={`text-sm ${hoverColor} transition-colors uppercase ${textColor}`}
-              >
-                常见问题
-              </button>
-              
-              {/* Language Dropdown */}
+            {/* Right side: Language Dropdown + Hamburger Button */}
+            <div className="flex items-center gap-3">
+              {/* Language Dropdown - Always visible, to the left of hamburger */}
               <div className="relative" ref={languageDropdownRef}>
                 <button
                   onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
@@ -418,38 +388,23 @@ export default function NavbarZh() {
                 )}
               </div>
 
-              <Button 
-                variant="outline" 
-                className={`uppercase transition-all duration-300 ${
-                  isOverWhiteBackground 
-                    ? 'border-black text-black bg-transparent hover:bg-black hover:text-white' 
-                    : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
-                }`}
-                onClick={() => {
-                  showPreloaderB()
-                  setTimeout(() => router.push('/zh/contact'), 100)
-                }}
+              {/* Menu Button - Desktop and Mobile */}
+              <button
+                className={`p-2 rounded-lg transition-colors ${textColor} ${isOverWhiteBackground ? 'hover:bg-black/10' : 'hover:bg-white/10'}`}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
-                联系我们
-              </Button>
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
+              </button>
             </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              className={`md:hidden p-2 rounded-lg transition-colors ${textColor} ${isOverWhiteBackground ? 'hover:bg-black/10' : 'hover:bg-white/10'}`}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
-            </button>
           </div>
 
-          {/* Mobile Navigation with Animation */}
-          <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          {/* Navigation Menu with Animation - Desktop and Mobile */}
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}>
             <div className="px-6 pb-6 border-t border-white/20">
               <div className="flex flex-col gap-4 pt-4">
@@ -475,24 +430,6 @@ export default function NavbarZh() {
                 >
                   常见问题
                 </button>
-                
-                {/* Mobile Language Toggle */}
-                <div className="flex items-center gap-2 py-2">
-                  <span className={`text-sm uppercase ${isOverWhiteBackground ? 'text-black/80' : 'text-white/80'}`}>语言:</span>
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
-                      className={`text-xs px-2 py-1 rounded transition-colors ${
-                        currentLocale === lang.code
-                          ? `${isOverWhiteBackground ? 'text-black bg-accent border border-accent' : 'text-white bg-accent border border-accent'}`
-                          : `${textColor} ${hoverColor}`
-                      }`}
-                    >
-                      {lang.code.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
 
                 <Button
                   onClick={() => {

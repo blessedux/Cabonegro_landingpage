@@ -11,6 +11,7 @@ import CookieBanner from '@/components/sections/CookieBanner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { CaboNegroRulerCarousel } from '@/components/sections/RulerCarousel'
 
 export default function TerminalMaritimoPage() {
   const params = useParams()
@@ -228,18 +229,6 @@ export default function TerminalMaritimoPage() {
 
   const contactPath = `/${locale}/contact?from=terminal-maritimo`
 
-  // Timeline data
-  const timelineData = [
-    { year: '2021', event: 'Project Initiation' },
-    { year: '2022', event: 'Feasibility Studies' },
-    { year: '2023', event: 'Design Phase' },
-    { year: '2024', event: 'Permits and Approvals' },
-    { year: '2025', event: 'Construction Start' },
-    { year: '2026', event: 'Phase 1 Completion' },
-    { year: '2027', event: 'Phase 2 Development' },
-    { year: '2028', event: 'Ready to Build (RtB)' }
-  ]
-
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
@@ -315,34 +304,16 @@ export default function TerminalMaritimoPage() {
         </div>
       </section>
 
-      {/* Timeline Section */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+      {/* Timeline Section - Replaced with RulerCarousel */}
+      <section className="py-20 px-6 bg-black">
+        <div className="container mx-auto max-w-7xl">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white text-center">
             {localizedText.timeline.title}
           </h2>
-          <p className="text-xl text-gray-300 mb-12">
+          <p className="text-xl text-gray-300 mb-12 text-center">
             {localizedText.timeline.description}
           </p>
-          <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-blue-500/50" />
-            <div className="space-y-12">
-              {timelineData.map((item, index) => (
-                <div key={index} className="relative pl-20">
-                  <div className="absolute left-6 top-0 w-4 h-4 bg-blue-500 rounded-full border-4 border-black" />
-                  <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-                    <div className="text-2xl font-bold text-blue-400 mb-2">{item.year}</div>
-                    <div className="text-lg text-gray-300">{item.event}</div>
-                    {item.year === '2028' && (
-                      <div className="mt-4 inline-block px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full text-sm font-semibold">
-                        Ready to Build
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <CaboNegroRulerCarousel />
         </div>
       </section>
 
