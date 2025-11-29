@@ -14,7 +14,8 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
     en: {
       contact: {
         title: 'CONTACT',
-        description: 'Want to know more about the project? Contact us for more information.',
+        question: 'Want to know more about the project?',
+        description: 'Contact us for more information.',
         formPlaceholder: 'Your email',
         formButton: 'Subscribe',
         meetingButton: 'Schedule Meeting',
@@ -44,7 +45,8 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
     es: {
       contact: {
         title: 'CONTACTO',
-        description: '¿Quieres conocer más sobre el proyecto? Contáctanos para más información.',
+        question: '¿Quieres conocer más sobre el proyecto?',
+        description: 'Contáctanos para más información.',
         formPlaceholder: 'Tu correo',
         formButton: 'Suscribirse',
         meetingButton: 'Agenda Reunión',
@@ -74,7 +76,8 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
     zh: {
       contact: {
         title: '联系',
-        description: '想了解更多关于项目的信息？联系我们获取更多信息。',
+        question: '想了解更多关于项目的信息？',
+        description: '联系我们获取更多信息。',
         formPlaceholder: '您的邮箱',
         formButton: '订阅',
         meetingButton: '安排会议',
@@ -104,7 +107,8 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
     fr: {
       contact: {
         title: 'CONTACT',
-        description: 'Vous voulez en savoir plus sur le projet ? Contactez-nous pour plus d\'informations.',
+        question: 'Vous voulez en savoir plus sur le projet ?',
+        description: 'Contactez-nous pour plus d\'informations.',
         formPlaceholder: 'Votre email',
         formButton: 'S\'abonner',
         meetingButton: 'Planifier une Réunion',
@@ -147,27 +151,31 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
       {/* Top Section - Contact Form & Meeting Button (White Background) */}
       <section className="bg-white py-12 md:py-16 px-6">
         <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Left: Contact Info */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                {content.contact.title}
-              </h2>
-              <p className="text-lg text-gray-600 italic mb-6">
-                {content.contact.description}
-              </p>
-            </div>
-
-            {/* Right: Single CTA Button */}
-            <div className="flex justify-end">
-              <a
-                href={`https://wa.me/56993091951?text=${whatsappMessage}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-neutral-900 hover:bg-neutral-950 shadow-lg shadow-neutral-900 border border-neutral-700 flex w-fit gap-2 hover:gap-4 transition-all duration-300 ease-in-out text-white px-5 py-3 rounded-lg cursor-pointer font-semibold"
-              >
-                {content.contact.meetingButton} <ArrowRight className="w-5 h-5" />
-              </a>
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              {content.contact.title}
+            </h2>
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+              {/* Paragraph Section */}
+              <div className="flex-1">
+                <p className="text-lg text-gray-600 italic mb-2">
+                  {content.contact.question}
+                </p>
+                <p className="text-lg text-gray-600 italic">
+                  {content.contact.description}
+                </p>
+              </div>
+              {/* CTA Button */}
+              <div className="flex md:items-start">
+                <a
+                  href={`https://wa.me/56993091951?text=${whatsappMessage}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-neutral-900 hover:bg-neutral-950 shadow-lg shadow-neutral-900 border border-neutral-700 flex w-fit gap-2 hover:gap-4 transition-all duration-300 ease-in-out text-white px-5 py-3 rounded-lg cursor-pointer font-semibold"
+                >
+                  {content.contact.meetingButton} <ArrowRight className="w-5 h-5" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -184,10 +192,14 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 items-center justify-items-center">
             {/* COMPAS marine */}
             <div className="flex flex-col items-center">
-              <div className="text-black text-4xl md:text-5xl font-bold">
-                COMPAS
-                <span className="text-xl md:text-2xl block text-right">marine</span>
-              </div>
+              <Image
+                src="/logos/COMPAS_MARINE.png"
+                alt="COMPAS marine"
+                width={120}
+                height={60}
+                className="mb-2"
+                style={{ filter: 'brightness(0)' }}
+              />
             </div>
 
             {/* PATAGON VALLEY */}

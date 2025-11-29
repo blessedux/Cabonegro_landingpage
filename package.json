@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -H 0.0.0.0 --turbopack",
+    "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "lint": "bunx tsc --noEmit && next lint",
@@ -12,11 +12,13 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
     "@studio-freight/lenis": "^1.0.42",
+    "@types/d3": "^7.4.3",
     "@types/jszip": "^3.4.1",
     "@types/leaflet": "^1.9.20",
     "@types/three": "^0.180.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "d3": "^7.9.0",
     "dotted-map": "^2.2.3",
     "framer-motion": "^12.23.24",
     "gsap": "^3.13.0",

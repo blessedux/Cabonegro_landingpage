@@ -12,6 +12,7 @@ interface HeroVideoSliderProps {
   showDots?: boolean;
   onSlideChange?: (index: number, direction?: 'left' | 'right') => void;
   disableAutoSlide?: boolean; // Disable auto-sliding when project options are open
+  startAutoSlide?: boolean; // Control when auto-sliding should start (wait for content to load)
 }
 
 export function HeroVideoSlider({ 
@@ -21,10 +22,11 @@ export function HeroVideoSlider({
   className = '',
   showDots = true,
   onSlideChange,
-  disableAutoSlide = false
+  disableAutoSlide = false,
+  startAutoSlide = false // Default to false - wait for explicit enable
 }: HeroVideoSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoSliding, setIsAutoSliding] = useState(true);
+  const [isAutoSliding, setIsAutoSliding] = useState(false); // Start as false, wait for startAutoSlide
   const [lockedIndex, setLockedIndex] = useState<number | null>(null);
   const [loadedVideos, setLoadedVideos] = useState<Set<number>>(new Set());
   const [direction, setDirection] = useState<'left' | 'right'>('left');
@@ -108,8 +110,8 @@ export function HeroVideoSlider({
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    // Only restart auto-slide if not disabled, not locked, and auto-sliding is enabled
-    if (isAutoSliding && lockedIndex === null && !disableAutoSlide) {
+    // Only restart auto-slide if not disabled, not locked, auto-sliding is enabled, and startAutoSlide is true
+    if (isAutoSliding && lockedIndex === null && !disableAutoSlide && startAutoSlide) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => {
           const next = (prev + 1) % videos.length;
@@ -149,9 +151,16 @@ export function HeroVideoSlider({
     return () => unsubscribe();
   }, [scrollYProgress, currentIndex, lockedIndex]);
 
-  // Auto-slide logic - only when at top, not locked, and not disabled
+  // Enable auto-sliding when startAutoSlide becomes true
   useEffect(() => {
-    if (!isAutoSliding || lockedIndex !== null || disableAutoSlide) {
+    if (startAutoSlide && !disableAutoSlide) {
+      setIsAutoSliding(true);
+    }
+  }, [startAutoSlide, disableAutoSlide]);
+
+  // Auto-slide logic - only when at top, not locked, not disabled, and startAutoSlide is true
+  useEffect(() => {
+    if (!isAutoSliding || lockedIndex !== null || disableAutoSlide || !startAutoSlide) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -178,7 +187,7 @@ export function HeroVideoSlider({
         clearInterval(intervalRef.current);
       }
     };
-  }, [isAutoSliding, slideDuration, videos.length, lockedIndex, disableAutoSlide]);
+  }, [isAutoSliding, slideDuration, videos.length, lockedIndex, disableAutoSlide, startAutoSlide]);
 
   // Handle video loading
   const handleVideoLoad = (index: number) => {

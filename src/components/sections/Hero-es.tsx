@@ -11,10 +11,14 @@ import { usePreloader } from '@/contexts/PreloaderContext'
 export default function HeroEs() {
   const [isVisible, setIsVisible] = useState(false)
   const [showProjectOptions, setShowProjectOptions] = useState(false)
+  const [canStartAutoSlide, setCanStartAutoSlide] = useState(false)
   const heroRef = useRef<HTMLDivElement>(null)
+  const h1Ref = useRef<HTMLHeadingElement>(null)
+  const paragraphRef = useRef<HTMLParagraphElement>(null)
+  const ctaRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const { showPreloaderB } = usePreloader()
+  const { showPreloaderB, isPreloaderVisible, isPreloaderComplete, hasSeenPreloader } = usePreloader()
 
   // Video sources for the slider
   // Slide 0: logística, Slide 1: portuaria, Slide 2: Tecnológica
@@ -85,6 +89,75 @@ export default function HeroEs() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left')
   const [slideSettled, setSlideSettled] = useState(false) // Track when slide transition completes
 
+  // Check if all content is loaded and visible
+  useEffect(() => {
+    // Don't check if already enabled
+    if (canStartAutoSlide) return
+    
+    const checkContentReady = () => {
+      // Check if preloader is complete (either not visible, or has been seen before)
+      const preloaderDone = !isPreloaderVisible || hasSeenPreloader || isPreloaderComplete
+      
+      // Check if slide 1 has settled (we're on slide 0 initially)
+      const slideReady = slideSettled && currentSlideIndex === 0
+      
+      // Check if all elements exist and are visible
+      const h1Ready = h1Ref.current && 
+        h1Ref.current.offsetHeight > 0 && 
+        parseFloat(window.getComputedStyle(h1Ref.current).opacity) > 0.5
+      
+      const paragraphReady = paragraphRef.current && 
+        paragraphRef.current.offsetHeight > 0 && 
+        parseFloat(window.getComputedStyle(paragraphRef.current).opacity) > 0.5
+      
+      const ctaReady = ctaRef.current && 
+        ctaRef.current.offsetHeight > 0 && 
+        parseFloat(window.getComputedStyle(ctaRef.current).opacity) > 0.5
+      
+      // Check if navbar exists (it's in the parent component, so we check by class or ID)
+      const navbarReady = document.querySelector('nav') !== null || 
+        document.querySelector('[class*="navbar"]') !== null ||
+        document.querySelector('[class*="Navbar"]') !== null
+      
+      // All conditions must be met: preloader done, slide settled, and all content visible
+      if (preloaderDone && slideReady && h1Ready && paragraphReady && ctaReady && navbarReady) {
+        // Add a delay to ensure smooth transition and content is fully rendered
+        // This gives users time to read slide 1 before auto-sliding starts
+        setTimeout(() => {
+          setCanStartAutoSlide(true)
+        }, 1000) // 1 second delay after everything is ready to give time to read slide 1
+        return true
+      }
+      return false
+    }
+    
+    // Initial check
+    if (checkContentReady()) {
+      return
+    }
+    
+    // Poll for content readiness (check every 100ms)
+    const checkInterval = setInterval(() => {
+      if (checkContentReady()) {
+        clearInterval(checkInterval)
+      }
+    }, 100)
+    
+    // Also check on various events
+    const events = ['load', 'DOMContentLoaded']
+    events.forEach(event => {
+      window.addEventListener(event, checkContentReady)
+    })
+    
+    // Cleanup
+    return () => {
+      clearInterval(checkInterval)
+      events.forEach(event => {
+        window.removeEventListener(event, checkContentReady)
+      })
+    }
+  }, [isPreloaderVisible, isPreloaderComplete, hasSeenPreloader, slideSettled, currentSlideIndex, canStartAutoSlide])
+
   // Handle "Explorar Proyecto" button click - instant response
   const handleExploreProject = () => {
     setShowProjectOptions(true)
@@ -136,6 +209,7 @@ export default function HeroEs() {
             className="w-full h-full"
             showDots={true}
             disableAutoSlide={showProjectOptions}
+            startAutoSlide={canStartAutoSlide}
             onSlideChange={(index, direction) => {
               setCurrentSlideIndex(index)
               setSlideDirection(direction || 'left')
@@ -192,6 +266,7 @@ export default function HeroEs() {
           >
           {/* Title and Subtitle - fade in after slide settles */}
           <motion.h1 
+            ref={h1Ref}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-left select-none text-white flex flex-col font-primary"
             style={{ 
               userSelect: 'none', 
@@ -227,6 +302,7 @@ export default function HeroEs() {
             <span>del sur del mundo</span>
           </motion.h1>
           <motion.p 
+            ref={paragraphRef}
             className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none italic"
             style={{ 
               userSelect: 'none', 
@@ -251,6 +327,7 @@ export default function HeroEs() {
           <AnimatePresence mode="wait">
             {!showProjectOptions ? (
               <motion.div 
+                ref={ctaRef}
                 key="cta-button"
                 className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[40]"
                 initial={{ opacity: 0, y: 20 }}

@@ -51,7 +51,7 @@ export function ParallaxComponent() {
       // Clean up GSAP and ScrollTrigger instances
       ScrollTrigger.getAll().forEach(st => st.kill());
       if (triggerElement) {
-        gsap.killTweensOf(triggerElement);
+      gsap.killTweensOf(triggerElement);
       }
       lenis.destroy();
     };
@@ -63,43 +63,46 @@ export function ParallaxComponent() {
         <div className="parallax__visuals">
           <div className="parallax__black-line-overflow"></div>
           <div data-parallax-layers className="parallax__layers">
+            {/* Layer 1 - Background (furthest) */}
             <img 
-              src="https://cdn.prod.website-files.com/671752cd4027f01b1b8f1c7f/6717795be09b462b2e8ebf71_osmo-parallax-layer-3.webp" 
+              src="/cabo_negro1.webp" 
+              alt="Cabo Negro Background" 
               loading="eager" 
-              width="800" 
-              data-parallax-layer="1" 
-              alt="" 
               className="parallax__layer-img" 
+              data-parallax-layer="1"
             />
+            {/* Layer 2 */}
             <img 
-              src="https://cdn.prod.website-files.com/671752cd4027f01b1b8f1c7f/6717795b4d5ac529e7d3a562_osmo-parallax-layer-2.webp" 
+              src="/cabonegro_smooth_sobel.webp" 
+              alt="Cabo Negro Layer 2" 
               loading="eager" 
-              width="800" 
-              data-parallax-layer="2" 
-              alt="" 
               className="parallax__layer-img" 
+              data-parallax-layer="2"
             />
+            {/* Layer 3 - Title */}
             <div data-parallax-layer="3" className="parallax__layer-title">
               <h2 className="parallax__title">CABO NEGRO</h2>
             </div>
+            {/* Layer 4 - Foreground (closest) */}
             <img 
-              src="https://cdn.prod.website-files.com/671752cd4027f01b1b8f1c7f/6717795bb5aceca85011ad83_osmo-parallax-layer-1.webp" 
+              src="/cabonegro_wirefram2.webp" 
+              alt="Cabo Negro Foreground" 
               loading="eager" 
-              width="800" 
-              data-parallax-layer="4" 
-              alt="" 
               className="parallax__layer-img" 
+              data-parallax-layer="4"
             />
           </div>
           <div className="parallax__fade"></div>
         </div>
       </section>
       <section className="parallax__content">
-        <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 160 160" fill="none" className="osmo-icon-svg">
-          <path d="M94.8284 53.8578C92.3086 56.3776 88 54.593 88 51.0294V0H72V59.9999C72 66.6273 66.6274 71.9999 60 71.9999H0V87.9999H51.0294C54.5931 87.9999 56.3777 92.3085 53.8579 94.8283L18.3431 130.343L29.6569 141.657L65.1717 106.142C67.684 103.63 71.9745 105.396 72 108.939V160L88.0001 160L88 99.9999C88 93.3725 93.3726 87.9999 100 87.9999H160V71.9999H108.939C105.407 71.9745 103.64 67.7091 106.12 65.1938L106.142 65.1716L141.657 29.6568L130.343 18.3432L94.8284 53.8578Z" fill="currentColor"></path>
-        </svg>
+        {/* Footer content will go here - buttons, links, etc. */}
+        <div className="container mx-auto max-w-7xl px-6 py-12">
+          <p className="text-white text-center text-lg">
+            Footer 2.0 Content Area - Customize buttons and content here
+          </p>
+        </div>
       </section>
     </div>
   );
 }
-

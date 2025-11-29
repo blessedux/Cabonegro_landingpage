@@ -43,19 +43,40 @@ function MagicTextWrapper({ text, className }: { text: string; className?: strin
     offset: ["start 1.2", "start 0.4"], // Start earlier, finish earlier
   });
   
-  const words = text.split(" ");
+  // Split by newlines first to preserve line breaks, then split each line by spaces
+  const lines = text.split("\n");
+  const allWords: Array<{ word: string; lineIndex: number; wordIndex: number }> = [];
+  
+  lines.forEach((line, lineIdx) => {
+    const words = line.split(" ").filter(w => w.length > 0);
+    words.forEach((word, wordIdx) => {
+      allWords.push({ word, lineIndex: lineIdx, wordIndex: wordIdx });
+    });
+  });
 
   return (
-    <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`}>
-      {words.map((word, i) => (
-        <AnimatedWord 
-          key={i}
-          word={word}
-          index={i}
-          totalWords={words.length}
-          scrollYProgress={scrollYProgress}
-        />
-      ))}
+    <p ref={container} className={`flex flex-col leading-relaxed ${className}`}>
+      {lines.map((line, lineIdx) => {
+        const words = line.split(" ").filter(w => w.length > 0);
+        const lineStartIndex = lines.slice(0, lineIdx).reduce((acc, l) => acc + l.split(" ").filter(w => w.length > 0).length, 0);
+        
+        return (
+          <span key={lineIdx} className="flex flex-wrap">
+            {words.map((word, wordIdx) => {
+              const globalIndex = lineStartIndex + wordIdx;
+              return (
+                <AnimatedWord 
+                  key={`${lineIdx}-${wordIdx}`}
+                  word={word}
+                  index={globalIndex}
+                  totalWords={allWords.length}
+                  scrollYProgress={scrollYProgress}
+                />
+              );
+            })}
+          </span>
+        );
+      })}
     </p>
   );
 }
@@ -64,8 +85,8 @@ export function WorldMapDemoEs() {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapWrapperRef = useRef<HTMLDivElement>(null);
   
-  // Spanish text
-  const mapText = 'Enlace del Estrecho de Magallanes amplía capacidad Pacífico–Atlántico. Rutas selectivas: 10–15% menos tiempo de tránsito. Redundancia para flujos limitados por el Canal de Panamá.';
+  // Spanish text with line breaks
+  const mapText = 'Enlace del Estrecho de Magallanes amplía capacidad Pacífico–Atlántico.\nRutas selectivas: 10–15% menos tiempo de tránsito.\nRedundancia para flujos limitados por el Canal de Panamá.';
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
@@ -238,7 +259,7 @@ export function WorldMapDemoEs() {
       </motion.div>
       
       {/* Animated text below the map frame */}
-      <div className="px-4 md:px-8 lg:px-12 pt-2 md:pt-8 pb-12 text-center">
+      <div className="px-4 md:px-8 lg:px-12 pt-2 md:pt-8 pb-12 text-center" style={{ marginTop: '20px' }}>
         <MagicTextWrapper 
           text={mapText}
           className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed"

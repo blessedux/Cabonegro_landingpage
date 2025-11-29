@@ -17,7 +17,6 @@ interface PreloaderProps {
   onFadeOutStart?: () => void
   duration?: number
   className?: string
-  showDebug?: boolean
 }
 
 const TERMINAL_LINES_ES: TerminalLine[] = [
@@ -49,8 +48,18 @@ const TERMINAL_LINES_ES: TerminalLine[] = [
 const runningScrambles = new WeakMap<HTMLElement, () => void>()
 
 // Custom scramble effect function - reveals letters one by one, never reverts
-const scrambleText = (element: HTMLElement, originalText: string, chars: string = '▪', speed: number = 0.1) => {
-  if (!element || !originalText) return () => {}
+// Now accepts onComplete callback to track when animation finishes
+const scrambleText = (
+  element: HTMLElement, 
+  originalText: string, 
+  chars: string = '▪', 
+  speed: number = 0.1,
+  onComplete?: () => void
+) => {
+  if (!element || !originalText) {
+    onComplete?.()
+    return () => {}
+  }
   
   // If already running, don't start again
   if (runningScrambles.has(element)) {
@@ -67,6 +76,7 @@ const scrambleText = (element: HTMLElement, originalText: string, chars: string 
     if (!element || !element.parentElement || isComplete) {
       clearInterval(interval)
       runningScrambles.delete(element)
+      onComplete?.()
       return
     }
     
@@ -89,6 +99,7 @@ const scrambleText = (element: HTMLElement, originalText: string, chars: string 
       clearInterval(interval)
       element.textContent = originalText
       runningScrambles.delete(element)
+      onComplete?.()
       return
     }
     
@@ -99,6 +110,7 @@ const scrambleText = (element: HTMLElement, originalText: string, chars: string 
   const cleanup = () => {
     clearInterval(interval)
     runningScrambles.delete(element)
+    onComplete?.()
   }
   
   runningScrambles.set(element, cleanup)
@@ -168,30 +180,42 @@ const glitchText = (element: HTMLElement, originalText: string, chars: string = 
   return () => clearInterval(glitchInterval)
 }
 
-export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, className = '', showDebug = false }: PreloaderProps) {
+export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, className = '' }: PreloaderProps) {
   const [progress, setProgress] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
   const [isFadingOut, setIsFadingOut] = useState(false)
   const [fontsLoaded, setFontsLoaded] = useState(false)
   const [actualProgress, setActualProgress] = useState(0)
-  const [debugVisible, setDebugVisible] = useState(showDebug)
   const lastActualProgressRef = useRef(0)
+  const actualProgressRef = useRef(0) // Ref to access latest actualProgress without causing re-renders
   
   const preloaderRef = useRef<HTMLDivElement>(null)
   const progressBarRef = useRef<HTMLDivElement>(null)
   const terminalLinesRef = useRef<HTMLDivElement[]>([])
   const progressAnimationRef = useRef<ReturnType<typeof gsap.to> | null>(null)
   const animationTlRef = useRef<gsap.core.Timeline | null>(null)
+  const scrambleAnimationsRef = useRef<Set<HTMLElement>>(new Set())
+  const allAnimationsCompleteRef = useRef(false)
+  const fadeOutStartedRef = useRef(false)
+  const maxProgressReachedRef = useRef(0) // Track maximum progress to prevent going backwards
   
   const specialChars = '▪'
 
+  // Track maximum actual progress to prevent backwards movement
+  const maxActualProgressRef = useRef(0)
+  
   // Use content loader to track actual loading progress
   const { stats, isComplete: contentComplete, progress: realProgress } = useContentLoader({
     onProgress: (progress) => {
-      // Only update if change is significant (reduce jumping)
-      if (Math.abs(progress - lastActualProgressRef.current) > 2) {
-        lastActualProgressRef.current = progress
-        setActualProgress(progress)
+      // Always use the maximum progress we've seen (never go backwards)
+      const maxProgress = Math.max(maxActualProgressRef.current, progress)
+      maxActualProgressRef.current = maxProgress
+      
+      // Only update if change is significant (reduce jumping) and it's forward
+      if (maxProgress > lastActualProgressRef.current && Math.abs(maxProgress - lastActualProgressRef.current) > 2) {
+        lastActualProgressRef.current = maxProgress
+        actualProgressRef.current = maxProgress // Update ref for access without re-renders
+        setActualProgress(maxProgress)
       }
     },
     minLoadingTime: 2000,
@@ -212,13 +236,59 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
     }
   }, [])
 
+  // Function to check if we can start fade out (both progress and animations complete)
+  const checkAndStartFadeOut = () => {
+    if (fadeOutStartedRef.current) return // Already started
+    
+    const progressComplete = parseFloat(progressBarRef.current?.style.width || '0') >= 99.5
+    
+    // Check if animations are complete
+    // Animations are complete ONLY when:
+    // 1. We have no running animations (size === 0) AND
+    // 2. We've marked them as complete OR there were no animations to begin with
+    const hasRunningAnimations = scrambleAnimationsRef.current.size > 0
+    const animationsComplete = !hasRunningAnimations && (allAnimationsCompleteRef.current || scrambleAnimationsRef.current.size === 0)
+    
+    // Only fade out when BOTH progress is complete AND all animations are finished
+    if (progressComplete && animationsComplete) {
+      fadeOutStartedRef.current = true
+      // Start fade out smoothly
+      onFadeOutStart?.()
+      setIsFadingOut(true)
+      
+      // Hide preloader after fade completes
+      setTimeout(() => {
+        setIsVisible(false)
+        onComplete?.()
+      }, 600) // Match fade duration
+    } else {
+      // If progress is complete but animations aren't, keep progress at 100% and wait
+      // This ensures the progress bar doesn't freeze mid-animation
+      if (progressComplete && hasRunningAnimations) {
+        // Keep progress at 100% while waiting for animations
+        if (progressBarRef.current) {
+          progressBarRef.current.style.width = '100%'
+          setProgress(100)
+        }
+      }
+    }
+  }
+
   useEffect(() => {
     if (!preloaderRef.current) return
 
     const animatePreloader = () => {
       // Independent animation timeline - runs smoothly regardless of loading state
       // These animations continue even when progress bar reaches 100%
-      const animationTl = gsap.timeline({ paused: false })
+      // CRITICAL: This timeline runs like a video - from start to finish, independent of loading
+      const animationTl = gsap.timeline({ 
+        paused: false,
+        // Ensure timeline never pauses or stops based on external state
+        onComplete: () => {
+          // Only mark animations as complete when timeline actually finishes
+          // This ensures the full animation cycle completes
+        }
+      })
       animationTlRef.current = animationTl
 
       // Set initial states
@@ -233,7 +303,8 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
           return aTop - bTop
         })
 
-      // Animation duration - independent of loading (ensures smooth flow)
+      // Animation duration - completely independent of loading (ensures smooth flow like a video)
+      // This duration determines the full animation cycle, regardless of loading speed
       const animationDuration = Math.max(duration, 4) // Minimum 4 seconds for smooth animation
 
       // Animate terminal lines - spread over most of the animation duration
@@ -262,18 +333,50 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
           // Initialize with dots immediately (before animation starts)
           span.textContent = originalText.split('').map(() => specialChars[0]).join('')
           
+          // Track this animation
+          scrambleAnimationsRef.current.add(span as HTMLElement)
+          
           // Start scramble animation when line becomes visible
           // Small delay after line opacity animation starts
           const scrambleDelay = (timePoint + 0.2 + (spanIndex * 0.03)) * 1000
           
           const timeoutId = setTimeout(() => {
             // Verify span still exists and is in the DOM
+            // CRITICAL: Continue animation even if progress is 100% - animations are independent
             if (span && span.parentElement && span.getAttribute('data-scramble') === 'true') {
               const originalTextCheck = span.getAttribute('data-original-text') || ''
               
               if (originalTextCheck) {
-                // Start scramble animation - function handles duplicate prevention
-                scrambleText(span as HTMLElement, originalTextCheck, specialChars, 0.1) // Consistent speed for all lines
+                // Start scramble animation with completion callback
+                // This animation runs independently - like a video, it completes its full cycle
+                scrambleText(span as HTMLElement, originalTextCheck, specialChars, 0.1, () => {
+                  // Remove from tracking when complete
+                  scrambleAnimationsRef.current.delete(span as HTMLElement)
+                  
+                  // Check if all animations are complete
+                  if (scrambleAnimationsRef.current.size === 0) {
+                    allAnimationsCompleteRef.current = true
+                    // Trigger fade out if progress is also complete
+                    // But don't stop animations - they should complete naturally
+                    checkAndStartFadeOut()
+                  }
+                })
+              } else {
+                // No text, mark as complete immediately
+                scrambleAnimationsRef.current.delete(span as HTMLElement)
+                // Check if all animations are complete
+                if (scrambleAnimationsRef.current.size === 0) {
+                  allAnimationsCompleteRef.current = true
+                  checkAndStartFadeOut()
+                }
+              }
+            } else {
+              // Span removed, mark as complete
+              scrambleAnimationsRef.current.delete(span as HTMLElement)
+              // Check if all animations are complete
+              if (scrambleAnimationsRef.current.size === 0) {
+                allAnimationsCompleteRef.current = true
+                checkAndStartFadeOut()
               }
             }
           }, Math.max(0, scrambleDelay))
@@ -311,6 +414,7 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
       }
 
       // Staggered disappearing effect - happens near the end but before fade out
+      // This is part of the animation sequence, not tied to loading
       const disappearTl = gsap.timeline()
       disappearTl.to(sortedLines, {
         opacity: 0,
@@ -319,31 +423,54 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
         ease: 'power1.in'
       })
 
-      // Add disappearing effect - happens when progress is high or near animation end
-      // This ensures animations complete smoothly even if loading is fast
+      // Add disappearing effect - happens at a fixed time in the animation sequence
+      // This ensures the full animation cycle completes like a video, regardless of loading speed
+      // The animation runs from start to finish, independent of progress bar
       animationTl.add(disappearTl, animationDuration - 0.8)
 
       // Progress bar animation - ONLY element tied to actual loading progress
       // This runs independently from the visual animations above
+      // CRITICAL: Progress bar must ALWAYS move forward, never backwards
       if (progressBarRef.current) {
-        let lastActualProgress = 0
-        let targetProgress = 0
+        // Reset max progress when starting
+        maxProgressReachedRef.current = 0
         
-        // Smooth progress updates - throttle to avoid jumping
+        // Function to set progress - ensures it never goes backwards
+        const setProgressForward = (newProgress: number) => {
+          if (progressBarRef.current) {
+            // Always use the maximum between current progress and new progress
+            const currentProgress = parseFloat(progressBarRef.current.style.width) || 0
+            const targetProgress = Math.max(currentProgress, Math.min(100, newProgress))
+            
+            // Update max progress reached
+            maxProgressReachedRef.current = Math.max(maxProgressReachedRef.current, targetProgress)
+            
+            // Only update if we're moving forward
+            if (targetProgress > currentProgress) {
+              progressBarRef.current.style.width = `${targetProgress}%`
+              setProgress(targetProgress)
+            }
+          }
+        }
+        
+        // Smooth progress updates - always moves forward
+        // Uses ref to get latest actualProgress without causing animation re-runs
         const updateProgressSmoothly = () => {
           if (progressBarRef.current) {
-            // Smoothly interpolate towards actual progress
             const currentProgress = parseFloat(progressBarRef.current.style.width) || 0
-            const diff = actualProgress - currentProgress
+            const latestActualProgress = actualProgressRef.current // Get latest from ref
             
-            // Only update if there's a meaningful difference (avoid micro-updates)
-            if (Math.abs(diff) > 0.5) {
-              // Smooth interpolation (ease out)
-              const step = diff * 0.15 // Smooth step size
-              const newProgress = Math.min(100, Math.max(0, currentProgress + step))
+            // Use the maximum of actual progress and current progress to prevent going backwards
+            const targetProgress = Math.max(currentProgress, latestActualProgress)
+            
+            // Only update if we can move forward
+            if (targetProgress > currentProgress) {
+              // Smooth interpolation towards target (but never backwards)
+              const diff = targetProgress - currentProgress
+              const step = diff * 0.2 // Smooth step size (20% of difference)
+              const newProgress = Math.min(100, currentProgress + step)
               
-              progressBarRef.current.style.width = `${newProgress}%`
-              setProgress(newProgress)
+              setProgressForward(newProgress)
             }
           }
         }
@@ -351,39 +478,43 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
         // Update progress smoothly every 100ms (less frequent = smoother)
         const progressInterval = setInterval(updateProgressSmoothly, 100)
 
-        // Also ensure we reach 100% by the end of duration
-        const ensureCompletion = gsap.to(progressBarRef.current, {
-          width: '100%',
+        // GSAP animation to ensure we reach 100% by the end of duration
+        // This runs in parallel but respects the forward-only rule
+        // Use a proxy object to track GSAP's progress
+        const progressProxy = { value: 0 }
+        const ensureCompletion = gsap.to(progressProxy, {
+          value: 100,
           duration: duration,
           ease: 'power1.out',
-          onUpdate: () => {
-            // Only let GSAP drive if actual progress is close or we're near the end
+          onUpdate: function() {
             if (progressBarRef.current) {
-              const gsapProgress = parseFloat(progressBarRef.current.style.width) || 0
-              const timeElapsed = gsapProgress / 100 * duration
+              const gsapProgress = progressProxy.value
+              const currentProgress = parseFloat(progressBarRef.current.style.width) || 0
               
-              // After 80% of duration, let GSAP finish it smoothly
-              if (timeElapsed > duration * 0.8) {
-                progressBarRef.current.style.width = `${gsapProgress}%`
-                setProgress(gsapProgress)
-              } else {
-                // Before 80%, let actual progress drive (but smooth it)
-                updateProgressSmoothly()
+              // Only update if GSAP progress is ahead of current progress (forward only)
+              if (gsapProgress > currentProgress) {
+                setProgressForward(gsapProgress)
               }
             }
           },
           onComplete: () => {
-            setProgress(100)
+            setProgressForward(100)
             clearInterval(progressInterval)
-            // Immediately start fade out when progress reaches 100%
-            onFadeOutStart?.()
-            setIsFadingOut(true)
+            // Ensure progress bar is at 100%
+            if (progressBarRef.current) {
+              progressBarRef.current.style.width = '100%'
+              maxProgressReachedRef.current = 100
+            }
+            setProgress(100)
+            // Check if we can start fade out (wait for animations if needed)
+            // This will wait for animations to complete even if progress is 100%
+            checkAndStartFadeOut()
           }
         })
 
         progressAnimationRef.current = ensureCompletion
 
-        // Check if progress reaches 100% and trigger immediate fade out
+        // Check if progress reaches 100% and trigger fade out (after animations complete)
         const checkComplete = setInterval(() => {
           const currentProgress = parseFloat(progressBarRef.current?.style.width || '0') || 0
           if (currentProgress >= 99.5) {
@@ -392,21 +523,31 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
             if (progressAnimationRef.current && 'kill' in progressAnimationRef.current) {
               progressAnimationRef.current.kill()
             }
-            // Ensure we're at 100%
+            // Ensure we're at 100% (forward only)
+            setProgressForward(100)
             if (progressBarRef.current) {
               progressBarRef.current.style.width = '100%'
-              setProgress(100)
+              maxProgressReachedRef.current = 100
             }
-            // Immediately start fade out - no delay
-            // Animations continue running during fade (they're independent)
-            onFadeOutStart?.()
-            setIsFadingOut(true)
+            setProgress(100)
+            // Check if we can start fade out (wait for animations if needed)
+            // This will NOT fade out if animations are still running
+            checkAndStartFadeOut()
             
-            // Hide preloader after fade completes (animations will be cleaned up then)
+            // Continue checking periodically in case animations complete later
+            // This ensures we don't miss the completion if progress reached 100% first
+            const animationCheckInterval = setInterval(() => {
+              if (fadeOutStartedRef.current) {
+                clearInterval(animationCheckInterval)
+                return
+              }
+              checkAndStartFadeOut()
+            }, 100)
+            
+            // Clean up after a reasonable timeout (shouldn't be needed, but safety)
             setTimeout(() => {
-              setIsVisible(false)
-              onComplete?.()
-            }, 600) // Match fade duration
+              clearInterval(animationCheckInterval)
+            }, 10000) // 10 second max wait
           }
         }, 100) // Check more frequently near completion
 
@@ -424,11 +565,21 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
     }
 
     // Start independent animations (they run smoothly regardless of loading state)
+    // These animations run like a video - from start to finish, completely independent of loading
     animatePreloader()
+    
+    // CRITICAL: Ensure animation timeline never pauses, even when progress reaches 100%
+    // The animations must complete their full cycle regardless of loading state
+    // The timeline is already playing (paused: false in timeline config) and will continue
+    if (animationTlRef.current && 'play' in animationTlRef.current) {
+      // Explicitly ensure timeline is playing and won't be paused
+      animationTlRef.current.play()
+    }
 
     return () => {
-      // Clean up animations when component unmounts or preloader is fully hidden
-      // Animations continue during fade-out, only killed when component unmounts
+      // Clean up animations ONLY when component unmounts
+      // Animations continue during fade-out - they must complete their full cycle
+      // Only kill when component is actually being removed from DOM
       if (animationTlRef.current && 'kill' in animationTlRef.current) {
         animationTlRef.current.kill()
         animationTlRef.current = null
@@ -439,20 +590,14 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
         progressAnimationRef.current = null
       }
     }
-  }, [duration, onComplete, onFadeOutStart, actualProgress, contentComplete])
+    // CRITICAL: Do NOT include actualProgress or contentComplete in dependencies
+    // This ensures animations run independently like a video, not re-triggered by loading state
+    // Only re-run if duration or callbacks change (which shouldn't happen during animation)
+    // The animation timeline runs once from start to finish, like a video playback
+  }, [duration, onComplete, onFadeOutStart])
 
   if (!isVisible) return null
 
-  // Toggle debug panel with 'D' key
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'd' || e.key === 'D') {
-        setDebugVisible(prev => !prev)
-      }
-    }
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [])
 
   return (
     <div 
@@ -480,6 +625,14 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
         {/* Light overlay for better text readability on white background */}
         <div className="absolute inset-0 bg-white/60" />
       </div>
+
+      {/* Circular Gradient Overlay - 3D Tunnel Effect */}
+      <div 
+        className="absolute inset-0 pointer-events-none z-20"
+        style={{
+          background: 'radial-gradient(circle at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0.03) 45%, rgba(0, 0, 0, 0.06) 70%, rgba(0, 0, 0, 0.10) 90%, rgba(0, 0, 0, 0.15) 100%)'
+        }}
+      />
 
       {/* Image on Right Side - Desktop Only - Absolute Positioned - Inverted to black */}
       <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 z-10 opacity-100">
@@ -560,57 +713,6 @@ export default function PreloaderEs({ onComplete, onFadeOutStart, duration = 6, 
         </div>
       </div>
 
-      {/* Debug Panel */}
-      {debugVisible && (
-        <div className="fixed bottom-4 left-4 bg-black/90 text-white p-4 rounded-lg font-mono text-xs z-50 max-w-sm backdrop-blur-sm border border-white/20">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold text-sm uppercase tracking-wider">Debug Panel</h3>
-            <button
-              onClick={() => setDebugVisible(false)}
-              className="text-white/60 hover:text-white text-lg leading-none"
-            >
-              ×
-            </button>
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-white/70">Progress Bar:</span>
-              <span className="font-bold">{progress.toFixed(1)}%</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-white/70">Actual Load:</span>
-              <span className={`font-bold ${Math.abs(progress - actualProgress) > 10 ? 'text-yellow-400' : 'text-green-400'}`}>
-                {actualProgress.toFixed(1)}%
-              </span>
-            </div>
-            <div className="h-px bg-white/20 my-2" />
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="text-white/60">Images:</span>
-                <span>{stats.images.loaded}/{stats.images.total} ({stats.images.total > 0 ? ((stats.images.loaded / stats.images.total) * 100).toFixed(0) : 0}%)</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-white/60">Fonts:</span>
-                <span>{stats.fonts.loaded}/{stats.fonts.total} ({stats.fonts.total > 0 ? ((stats.fonts.loaded / stats.fonts.total) * 100).toFixed(0) : 0}%)</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-white/60">Components:</span>
-                <span>{stats.components.mounted}/{stats.components.total} ({stats.components.total > 0 ? ((stats.components.mounted / stats.components.total) * 100).toFixed(0) : 0}%)</span>
-              </div>
-            </div>
-            <div className="h-px bg-white/20 my-2" />
-            <div className="flex justify-between text-xs">
-              <span className="text-white/60">Difference:</span>
-              <span className={Math.abs(progress - actualProgress) > 10 ? 'text-yellow-400' : 'text-green-400'}>
-                {(progress - actualProgress).toFixed(1)}%
-              </span>
-            </div>
-            <div className="text-[10px] text-white/40 mt-2 pt-2 border-t border-white/10">
-              Press 'D' to toggle
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -70,13 +70,31 @@ interface AnimatedCounterProps {
 function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', className = '', start = 0 }: AnimatedCounterProps) {
   const [count, setCount] = useState(start)
   const [isVisible, setIsVisible] = useState(false)
+  const [hasAnimated, setHasAnimated] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const animationFrameRef = useRef<number | null>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isVisible) {
-          setIsVisible(true)
+        if (entry.isIntersecting) {
+          // Trigger animation when element becomes visible
+          // Reset state so it can animate again
+          if (!isVisible) {
+            setIsVisible(true)
+            setHasAnimated(false)
+            setCount(start)
+          }
+        } else {
+          // Reset when element leaves viewport so it can animate again
+          setIsVisible(false)
+          setHasAnimated(false)
+          setCount(start)
+          // Cancel any ongoing animation
+          if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current)
+            animationFrameRef.current = null
+          }
         }
       },
       { threshold: 0.1 }
@@ -86,14 +104,18 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
       observer.observe(ref.current)
     }
 
-    return () => observer.disconnect()
-  }, [isVisible])
+    return () => {
+      observer.disconnect()
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+    }
+  }, [isVisible, start])
 
   useEffect(() => {
-    if (!isVisible) return
+    if (!isVisible || hasAnimated) return
 
-    let startTime: number
-    let animationFrame: number
+    let startTime: number | null = null
 
     const animate = (currentTime: number) => {
       if (!startTime) startTime = currentTime
@@ -106,18 +128,22 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
       setCount(currentCount)
 
       if (progress < 1) {
-        animationFrame = requestAnimationFrame(animate)
+        animationFrameRef.current = requestAnimationFrame(animate)
+      } else {
+        setHasAnimated(true)
+        animationFrameRef.current = null
       }
     }
 
-    animationFrame = requestAnimationFrame(animate)
+    animationFrameRef.current = requestAnimationFrame(animate)
 
     return () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame)
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+        animationFrameRef.current = null
       }
     }
-  }, [isVisible, end, duration, start])
+  }, [isVisible, end, duration, start, hasAnimated])
 
   return (
     <div ref={ref} className={className}>
@@ -135,6 +161,22 @@ export default function Stats() {
   // Determine locale from pathname for button text
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
   const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : locale === 'fr' ? 'Explorer le Terrain' : 'Explore Terrain'
+  
+  // Navigation handlers
+  const handlePatagonValleyClick = () => {
+    showPreloaderB()
+    router.push(`/${locale}/parque-tecnologico`)
+  }
+  
+  const handlePortZoneClick = () => {
+    showPreloaderB()
+    router.push(`/${locale}/terminal-maritimo`)
+  }
+  
+  const handleCaboNegroDosClick = () => {
+    showPreloaderB()
+    router.push(`/${locale}/parque-logistico`)
+  }
   
   // Track scroll progress using statsRef (always defined, avoids hydration errors)
   // We'll manually adjust the scroll progress based on AboutUs position if needed
@@ -436,93 +478,99 @@ export default function Stats() {
                 </div>
               </div>
 
-            {/* Company/Area Breakdown */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* PPG */}
-              <motion.div 
-                className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl"
-                style={{
-                  opacity: statBox1Opacity,
-                  y: statBox1Y
-                }}
-              >
-                <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
-                <p className="text-gray-400 text-xs mb-3">
-                  {locale === 'es' ? 'Inversiones PPG SpA' : locale === 'zh' ? 'PPG投资公司' : locale === 'fr' ? 'Investissements PPG SpA' : 'Inversiones PPG SpA'}
-                </p>
-                <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">
-                    {locale === 'es' ? 'Solicitud de concesión marítima en trámite' : locale === 'zh' ? '海事特许申请处理中' : locale === 'fr' ? 'Demande de concession maritime en cours' : 'Maritime concession application in process'}
-                  </p>
-                  <p className="text-blue-400 text-xs font-mono">CM61260</p>
-                  <p className="text-gray-400 text-xs mt-3">
-                    {locale === 'es' ? 'Desarrollo de zona portuaria con J&P' : locale === 'zh' ? '与J&P合作开发港口区' : locale === 'fr' ? 'Développement de zone portuaire avec J&P' : 'Port zone development with J&P'}
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* Patagon Valley */}
-              <motion.div 
-                className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl"
-                style={{
-                  opacity: statBox2Opacity,
-                  y: statBox2Y
-                }}
-              >
-                <h3 className="text-white font-bold text-lg mb-3">Patagon Valley</h3>
-                <p className="text-gray-400 text-xs mb-3">
-                  {locale === 'es' ? 'Inmobiliaria Patagon Valley SpA' : locale === 'zh' ? '巴塔哥尼亚谷房地产公司' : locale === 'fr' ? 'Immobilier Patagon Valley SpA' : 'Inmobiliaria Patagon Valley SpA'}
-                </p>
-                <div className="mb-3">
-                  <div className="text-3xl font-bold text-white mb-1">
-                    <AnimatedCounter end={33} suffix=" ha" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">
-                    {locale === 'es' ? 'Propiedad de fondo de inversión privado' : locale === 'zh' ? '由私人投资基金拥有' : locale === 'fr' ? 'Propriété d\'un fonds d\'investissement privé' : 'Owned by private investment fund'}
-                  </p>
-                  <p className="text-gray-300 text-sm">
-                    {locale === 'es' ? 'Instalado: AWS y GTD' : locale === 'zh' ? '已安装：AWS和GTD' : locale === 'fr' ? 'Installé : AWS et GTD' : 'Installed: AWS and GTD'}
-                  </p>
-                  <p className="text-gray-400 text-xs mt-2">
-                    {locale === 'es' ? 'Originalmente planificado como parque tecnológico' : locale === 'zh' ? '最初规划为科技园' : locale === 'fr' ? 'Initialement prévu comme parc technologique' : 'Originally planned as tech park'}
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* A&J */}
-              <motion.div 
-                className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl"
-                style={{
-                  opacity: statBox3Opacity,
-                  y: statBox3Y
-                }}
-              >
-                <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
-                <p className="text-gray-400 text-xs mb-3">
-                  {locale === 'es' ? 'Inversiones A&J Limitada' : locale === 'zh' ? 'A&J投资有限公司' : locale === 'fr' ? 'Investissements A&J Limitée' : 'Inversiones A&J Limitada'}
-                </p>
-                <div className="space-y-2">
-                  <p className="text-gray-300 text-sm">
-                    {locale === 'es' ? 'Lotes subdivididos disponibles' : locale === 'zh' ? '可用的细分地块' : locale === 'fr' ? 'Lots subdivisés disponibles' : 'Subdivided lots available'}
-                  </p>
-                  <p className="text-2xl font-bold text-white mb-2">5,000 m²+</p>
-                  <p className="text-gray-400 text-xs">
-                    {locale === 'es' ? 'Tamaño mínimo de lote' : locale === 'zh' ? '最小地块面积' : locale === 'fr' ? 'Taille minimale du lot' : 'Minimum lot size'}
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* Last two boxes wrapper - centered on desktop */}
-              <div className="md:col-span-2 lg:col-span-3 lg:flex lg:justify-center lg:gap-6">
-                {/* J&P */}
+            {/* Company/Area Breakdown - Reorganized Layout */}
+            {/* Desktop: Top 300+, Middle PPG/A&J, Bottom 3 cards */}
+            <div className="space-y-6">
+              {/* Middle Row: PPG and A&J (2 cards) - Desktop only */}
+              <div className="hidden lg:grid lg:grid-cols-2 gap-6">
+                {/* PPG */}
                 <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl lg:max-w-[calc(33.333%-0.75rem)]"
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl text-center"
+                  style={{
+                    opacity: statBox1Opacity,
+                    y: statBox1Y
+                  }}
+                >
+                  <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
+                  <p className="text-gray-400 text-xs mb-3">
+                    {locale === 'es' ? 'Inversiones PPG SpA' : locale === 'zh' ? 'PPG投资公司' : locale === 'fr' ? 'Investissements PPG SpA' : 'Inversiones PPG SpA'}
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Solicitud de concesión marítima en trámite' : locale === 'zh' ? '海事特许申请处理中' : locale === 'fr' ? 'Demande de concession maritime en cours' : 'Maritime concession application in process'}
+                    </p>
+                    <p className="text-blue-400 text-xs font-mono">CM61260</p>
+                    <p className="text-gray-400 text-xs mt-3">
+                      {locale === 'es' ? 'Desarrollo de zona portuaria con J&P' : locale === 'zh' ? '与J&P合作开发港口区' : locale === 'fr' ? 'Développement de zone portuaire avec J&P' : 'Port zone development with J&P'}
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* A&J */}
+                <motion.div 
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl text-center"
+                  style={{
+                    opacity: statBox3Opacity,
+                    y: statBox3Y
+                  }}
+                >
+                  <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
+                  <p className="text-gray-400 text-xs mb-3">
+                    {locale === 'es' ? 'Inversiones A&J Limitada' : locale === 'zh' ? 'A&J投资有限公司' : locale === 'fr' ? 'Investissements A&J Limitée' : 'Inversiones A&J Limitada'}
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Lotes subdivididos disponibles' : locale === 'zh' ? '可用的细分地块' : locale === 'fr' ? 'Lots subdivisés disponibles' : 'Subdivided lots available'}
+                    </p>
+                    <p className="text-2xl font-bold text-white mb-2">5,000 m²+</p>
+                    <p className="text-gray-400 text-xs">
+                      {locale === 'es' ? 'Tamaño mínimo de lote' : locale === 'zh' ? '最小地块面积' : locale === 'fr' ? 'Taille minimale du lot' : 'Minimum lot size'}
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Bottom Row: Patagon Valley, Port Zone, Cabo Negro Dos (3 cards) */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Patagon Valley */}
+                <motion.div 
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl cursor-pointer hover:bg-black/50 transition-colors text-center"
+                  style={{
+                    opacity: statBox2Opacity,
+                    y: statBox2Y
+                  }}
+                  onClick={handlePatagonValleyClick}
+                >
+                  <h3 className="text-white font-bold text-lg mb-3">Patagon Valley</h3>
+                  <p className="text-gray-400 text-xs mb-3">
+                    {locale === 'es' ? 'Inmobiliaria Patagon Valley SpA' : locale === 'zh' ? '巴塔哥尼亚谷房地产公司' : locale === 'fr' ? 'Immobilier Patagon Valley SpA' : 'Inmobiliaria Patagon Valley SpA'}
+                  </p>
+                  <div className="mb-3">
+                    <div className="text-3xl font-bold text-white mb-1">
+                      <AnimatedCounter end={33} suffix=" ha" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Propiedad de fondo de inversión privado' : locale === 'zh' ? '由私人投资基金拥有' : locale === 'fr' ? 'Propriété d\'un fonds d\'investissement privé' : 'Owned by private investment fund'}
+                    </p>
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Instalado: AWS y GTD' : locale === 'zh' ? '已安装：AWS和GTD' : locale === 'fr' ? 'Installé : AWS et GTD' : 'Installed: AWS and GTD'}
+                    </p>
+                    <p className="text-gray-400 text-xs mt-2">
+                      {locale === 'es' ? 'Originalmente planificado como parque tecnológico' : locale === 'zh' ? '最初规划为科技园' : locale === 'fr' ? 'Initialement prévu comme parc technologique' : 'Originally planned as tech park'}
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* J&P Port Zone */}
+                <motion.div 
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl cursor-pointer hover:bg-black/50 transition-colors text-center"
                   style={{
                     opacity: statBox4Opacity,
                     y: statBox4Y
                   }}
+                  onClick={handlePortZoneClick}
                 >
                   <h3 className="text-white font-bold text-lg mb-3">
                     {locale === 'es' ? 'Zona Portuaria J&P' : locale === 'zh' ? 'J&P港口区' : locale === 'fr' ? 'Zone Portuaire J&P' : 'J&P Port Zone'}
@@ -549,13 +597,14 @@ export default function Stats() {
                   </div>
                 </motion.div>
 
-                {/* CN2 */}
+                {/* Cabo Negro Dos */}
                 <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl lg:max-w-[calc(33.333%-0.75rem)]"
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl cursor-pointer hover:bg-black/50 transition-colors text-center"
                   style={{
                     opacity: statBox5Opacity,
                     y: statBox5Y
                   }}
+                  onClick={handleCaboNegroDosClick}
                 >
                   <h3 className="text-white font-bold text-lg mb-3">Cabo Negro Dos</h3>
                   <p className="text-gray-400 text-xs mb-3">
@@ -572,6 +621,55 @@ export default function Stats() {
                     </p>
                     <p className="text-gray-400 text-xs">
                       {locale === 'es' ? 'Área única unificada (sin subdivisión)' : locale === 'zh' ? '单一统一区域（无细分）' : locale === 'fr' ? 'Zone unique unifiée (sans subdivision)' : 'Single unified area (no subdivision)'}
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Mobile/Tablet: Show PPG and A&J in grid below */}
+              <div className="grid md:grid-cols-2 lg:hidden gap-6">
+                {/* PPG */}
+                <motion.div 
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl text-center"
+                  style={{
+                    opacity: statBox1Opacity,
+                    y: statBox1Y
+                  }}
+                >
+                  <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
+                  <p className="text-gray-400 text-xs mb-3">
+                    {locale === 'es' ? 'Inversiones PPG SpA' : locale === 'zh' ? 'PPG投资公司' : locale === 'fr' ? 'Investissements PPG SpA' : 'Inversiones PPG SpA'}
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Solicitud de concesión marítima en trámite' : locale === 'zh' ? '海事特许申请处理中' : locale === 'fr' ? 'Demande de concession maritime en cours' : 'Maritime concession application in process'}
+                    </p>
+                    <p className="text-blue-400 text-xs font-mono">CM61260</p>
+                    <p className="text-gray-400 text-xs mt-3">
+                      {locale === 'es' ? 'Desarrollo de zona portuaria con J&P' : locale === 'zh' ? '与J&P合作开发港口区' : locale === 'fr' ? 'Développement de zone portuaire avec J&P' : 'Port zone development with J&P'}
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* A&J */}
+                <motion.div 
+                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl text-center"
+                  style={{
+                    opacity: statBox3Opacity,
+                    y: statBox3Y
+                  }}
+                >
+                  <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
+                  <p className="text-gray-400 text-xs mb-3">
+                    {locale === 'es' ? 'Inversiones A&J Limitada' : locale === 'zh' ? 'A&J投资有限公司' : locale === 'fr' ? 'Investissements A&J Limitée' : 'Inversiones A&J Limitada'}
+                  </p>
+                  <div className="space-y-2">
+                    <p className="text-gray-300 text-sm">
+                      {locale === 'es' ? 'Lotes subdivididos disponibles' : locale === 'zh' ? '可用的细分地块' : locale === 'fr' ? 'Lots subdivisés disponibles' : 'Subdivided lots available'}
+                    </p>
+                    <p className="text-2xl font-bold text-white mb-2">5,000 m²+</p>
+                    <p className="text-gray-400 text-xs">
+                      {locale === 'es' ? 'Tamaño mínimo de lote' : locale === 'zh' ? '最小地块面积' : locale === 'fr' ? 'Taille minimale du lot' : 'Minimum lot size'}
                     </p>
                   </div>
                 </motion.div>

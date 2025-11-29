@@ -37,7 +37,6 @@ export default function PartnersEs() {
   
   const titleY = useTransform(adjustedProgress, [0, 1], [50, -50])
   const titleOpacity = useTransform(adjustedProgress, [0, 0.3, 1], [0, 1, 1])
-  const descriptionY = useTransform(adjustedProgress, [0, 1], [30, -30])
   const descriptionOpacity = useTransform(adjustedProgress, [0, 0.2, 1], [0, 1, 1])
   
   // Shadow intensity - static, no parallax movement
@@ -134,7 +133,7 @@ export default function PartnersEs() {
           </div>
           
           <motion.div
-            style={{ y: descriptionY, opacity: descriptionOpacity }}
+            style={{ opacity: descriptionOpacity }}
             className="max-w-2xl mx-auto"
           >
             <MagicText 

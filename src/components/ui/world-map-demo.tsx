@@ -44,19 +44,40 @@ function MagicTextWrapper({ text, className }: { text: string; className?: strin
     offset: ["start 1.2", "start 0.4"], // Start earlier, finish earlier
   });
   
-  const words = text.split(" ");
+  // Split by newlines first to preserve line breaks, then split each line by spaces
+  const lines = text.split("\n");
+  const allWords: Array<{ word: string; lineIndex: number; wordIndex: number }> = [];
+  
+  lines.forEach((line, lineIdx) => {
+    const words = line.split(" ").filter(w => w.length > 0);
+    words.forEach((word, wordIdx) => {
+      allWords.push({ word, lineIndex: lineIdx, wordIndex: wordIdx });
+    });
+  });
 
   return (
-    <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`}>
-      {words.map((word, i) => (
-        <AnimatedWord 
-          key={i}
-          word={word}
-          index={i}
-          totalWords={words.length}
-          scrollYProgress={scrollYProgress}
-        />
-      ))}
+    <p ref={container} className={`flex flex-col leading-relaxed ${className}`}>
+      {lines.map((line, lineIdx) => {
+        const words = line.split(" ").filter(w => w.length > 0);
+        const lineStartIndex = lines.slice(0, lineIdx).reduce((acc, l) => acc + l.split(" ").filter(w => w.length > 0).length, 0);
+        
+        return (
+          <span key={lineIdx} className="flex flex-wrap">
+            {words.map((word, wordIdx) => {
+              const globalIndex = lineStartIndex + wordIdx;
+              return (
+                <AnimatedWord 
+                  key={`${lineIdx}-${wordIdx}`}
+                  word={word}
+                  index={globalIndex}
+                  totalWords={allWords.length}
+                  scrollYProgress={scrollYProgress}
+                />
+              );
+            })}
+          </span>
+        );
+      })}
     </p>
   );
 }
@@ -69,14 +90,14 @@ export function WorldMapDemo() {
   // Determine locale from pathname
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en';
   
-  // Get localized text
+  // Get localized text with line breaks
   const mapText = locale === 'es'
-    ? 'Enlace del Estrecho de Magallanes amplía capacidad Pacífico–Atlántico. Rutas selectivas: 10–15% menos tiempo de tránsito. Redundancia para flujos limitados por el Canal de Panamá.'
+    ? 'Enlace del Estrecho de Magallanes amplía capacidad Pacífico–Atlántico.\nRutas selectivas: 10–15% menos tiempo de tránsito.\nRedundancia para flujos limitados por el Canal de Panamá.'
     : locale === 'zh'
     ? '麦哲伦连接扩大太平洋-大西洋容量。选择性路线：减少10-15%的过境时间。为受巴拿马限制的贸易流增加冗余。'
     : locale === 'fr'
-    ? 'La liaison de Magellan élargit la capacité Pacifique-Atlantique. Routes sélectives : réduction de 10 à 15 % du temps de transit. Ajoute de la redondance aux flux commerciaux contraints par Panama.'
-    : 'Magellan linkage expands Pacific–Atlantic capacity. Selective routes: 10–15% transit time reduction. Adds redundancy to Panama-constrained trade flows.';
+    ? 'La liaison de Magellan élargit la capacité Pacifique-Atlantique.\nRoutes sélectives : réduction de 10 à 15 % du temps de transit.\nAjoute de la redondance aux flux commerciaux contraints par Panama.'
+    : 'Magellan linkage expands Pacific–Atlantic capacity.\nSelective routes: 10–15% transit time reduction.\nAdds redundancy to Panama-constrained trade flows.';
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
@@ -249,7 +270,7 @@ export function WorldMapDemo() {
       </motion.div>
       
       {/* Animated text below the map frame */}
-      <div className="px-4 md:px-8 lg:px-12 pt-8 pb-12 text-center">
+      <div className="px-4 md:px-8 lg:px-12 pt-8 pb-12 text-center" style={{ marginTop: '20px' }}>
         <MagicTextWrapper 
           text={mapText}
           className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed"

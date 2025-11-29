@@ -1,9 +1,11 @@
 'use client'
 
 import { useRef } from 'react'
+import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { usePathname } from 'next/navigation'
+import RotatingEarth from '@/components/ui/rotating-earth'
 
 interface TextSection {
   label: string
@@ -114,9 +116,36 @@ export default function AboutUs() {
     }
   ]
 
-  // No scroll logic needed - showing all content at once
-  
   const sectionRef = useRef<HTMLElement>(null)
+  
+  // Track scroll progress relative to section
+  // When section top hits viewport top (progress = 0), content becomes sticky
+  // We need enough scroll distance for the crossfade transition
+  // Progress 0 = section top at viewport top (sticky starts)
+  // Progress 0.5 = halfway through section (crossfade complete)
+  // Progress 1 = section bottom at viewport top (sticky ends, can scroll to stats)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"] // Start when section top hits viewport top, end when section bottom hits viewport top
+  })
+  
+  
+  // Content becomes sticky when section top reaches viewport (scrollYProgress = 0)
+  // As we continue scrolling, fade out title and paragraph, fade in icons
+  // Progress: 0 = section top at viewport top, 1 = section bottom at viewport top
+  
+  // Title fades out as we scroll (0 to 0.3 of scroll progress)
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0], { clamp: true })
+  const titleY = useTransform(scrollYProgress, [0, 0.3], [0, -20], { clamp: true })
+  
+  // Paragraph fades out slightly after title (0.1 to 0.4)
+  const paragraphOpacity = useTransform(scrollYProgress, [0.1, 0.4], [1, 0], { clamp: true })
+  const paragraphY = useTransform(scrollYProgress, [0.1, 0.4], [0, -20], { clamp: true })
+  
+  // Icons fade in as title/paragraph fade out (0.2 to 0.5)
+  const iconsOpacity = useTransform(scrollYProgress, [0.2, 0.5], [0, 1], { clamp: true })
+  const iconsY = useTransform(scrollYProgress, [0.2, 0.5], [20, 0], { clamp: true })
+  
   
   return (
     <>
@@ -131,133 +160,128 @@ export default function AboutUs() {
         style={{
           backgroundColor: 'transparent',
           zIndex: 4,
-          minHeight: '100vh', // Fixed to 100vh
-          border: '2px solid red' // DEBUG: Red border for section
+          minHeight: '200vh' // Increased to allow sticky scroll - needs enough space for crossfade transition
         }}
       >
-        <div className="w-full max-w-7xl mx-auto px-4 md:px-6 py-24" style={{ border: '2px solid blue' }}>
-          {/* Title */}
-          <div className="mb-12 w-full text-center" style={{ border: '2px solid yellow' }}>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-center text-white" style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+        {/* Sticky container - becomes sticky when section top hits viewport */}
+        {/* This container stays in place during the crossfade transition */}
+        <div 
+          data-sticky-container="true"
+          className="sticky top-0 left-0 right-0 w-full max-w-7xl mx-auto px-4 md:px-6 py-24"
+          style={{ 
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            willChange: 'transform', // Optimize for sticky positioning
+            zIndex: 5 // Ensure it's above other content
+          }}
+        >
+          {/* Title - fades out as scrolling continues */}
+          <motion.div 
+            className="mb-12 w-full text-center" 
+            style={{ 
+              opacity: titleOpacity,
+              y: titleY
+            }}
+          >
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-center text-white whitespace-nowrap" style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
                 <BlurTextAnimation 
                   text={aboutTitle}
-                  fontSize="text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
+                  fontSize="text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
                   textColor="text-white"
                   animationDelay={0}
                 />
               </h2>
-                  </div>
+          </motion.div>
 
           {/* Content Container - Reorganized layout */}
           <div 
-            className="max-w-md mx-auto lg:max-w-none"
-            style={{
-              border: '2px solid green'
-            }}
+            className="max-w-md mx-auto lg:max-w-none w-full"
           >
             <div 
-              className="flex flex-col lg:flex-row lg:gap-12 items-start"
-              style={{
-                border: '2px solid purple'
-              }}
+              className="flex flex-col lg:flex-row lg:gap-12 items-start lg:items-center"
             >
               {/* Left column - Paragraph first, then icons */}
               <div 
-                className="flex-1 w-full"
-                style={{ border: '2px solid cyan' }}
+                className="flex-1 w-full lg:w-auto lg:h-[500px] lg:relative"
               >
-                {/* Intro Paragraph */}
-                <div className="mb-8 lg:mb-12">
-                  <p className="text-lg sm:text-xl text-white leading-relaxed">
+                {/* Intro Paragraph - fades out as scrolling continues */}
+                <motion.div 
+                  className="mb-8 lg:mb-0 lg:absolute lg:inset-0 lg:flex lg:items-center"
+                  style={{
+                    opacity: paragraphOpacity,
+                    y: paragraphY
+                  }}
+                >
+                  <p className="text-lg sm:text-xl text-white leading-[2]">
                     {introParagraph}
                   </p>
-                </div>
+                </motion.div>
                 
-                {/* Icons Grid - 4 icons displayed as a list */}
-                <div className="space-y-6 lg:space-y-8">
+                {/* Icons Grid - fades in as paragraph fades out, aligned with globe */}
+                <motion.div 
+                  className="space-y-6 lg:space-y-8 mt-8 lg:mt-0 lg:absolute lg:inset-0 lg:flex lg:flex-col lg:justify-center"
+                  style={{
+                    opacity: iconsOpacity,
+                    y: iconsY
+                  }}
+                >
                   {textSections.map((section, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-4"
-                      style={{ border: '2px solid orange' }}
-                    >
-                      {/* Icon */}
-                      <div className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center">
-                        {index === 0 && (
-                          <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C9 2 7 4 7 7c0 3 3 6 5 8 2-2 5-5 5-8 0-3-2-5-5-5z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v3M10 21h4" />
-                            <circle cx="12" cy="12" r="9" strokeWidth={1} strokeDasharray="1.5 2" opacity="0.5" />
-                          </svg>
-                        )}
-                        {index === 1 && (
-                          <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 18h18M4 18v-5c0-1 1-2 2-2h12c1 0 2 1 2 2v5" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 13h12M7 10h10" />
-                            <circle cx="9" cy="14" r="0.8" fill="currentColor" />
-                            <circle cx="12" cy="14" r="0.8" fill="currentColor" />
-                            <circle cx="15" cy="14" r="0.8" fill="currentColor" />
-                          </svg>
-                        )}
-                        {index === 2 && (
-                          <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C9 2 7 4 7 7c0 3 3 6 5 8 2-2 5-5 5-8 0-3-2-5-5-5z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v3M10 21h4" />
-                            <circle cx="12" cy="12" r="9" strokeWidth={1} strokeDasharray="1.5 2" opacity="0.5" />
-                          </svg>
-                        )}
-                        {index === 3 && (
-                          <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 18h18M4 18v-5c0-1 1-2 2-2h12c1 0 2 1 2 2v5" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 13h12M7 10h10" />
-                            <line x1="17" y1="10" x2="17" y2="7" strokeLinecap="round" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 7l2-1" />
-                          </svg>
-                        )}
+                      <div
+                        key={index}
+                        className="flex items-start gap-4"
+                      >
+                        <div className="flex-shrink-0 w-12 h-12 lg:w-14 lg:h-14 flex items-center justify-center">
+                          {index === 0 && (
+                            <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C9 2 7 4 7 7c0 3 3 6 5 8 2-2 5-5 5-8 0-3-2-5-5-5z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v3M10 21h4" />
+                              <circle cx="12" cy="12" r="9" strokeWidth={1} strokeDasharray="1.5 2" opacity="0.5" />
+                            </svg>
+                          )}
+                          {index === 1 && (
+                            <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 18h18M4 18v-5c0-1 1-2 2-2h12c1 0 2 1 2 2v5" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 13h12M7 10h10" />
+                              <circle cx="9" cy="14" r="0.8" fill="currentColor" />
+                              <circle cx="12" cy="14" r="0.8" fill="currentColor" />
+                              <circle cx="15" cy="14" r="0.8" fill="currentColor" />
+                            </svg>
+                          )}
+                          {index === 2 && (
+                            <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 2C9 2 7 4 7 7c0 3 3 6 5 8 2-2 5-5 5-8 0-3-2-5-5-5z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v3M10 21h4" />
+                              <circle cx="12" cy="12" r="9" strokeWidth={1} strokeDasharray="1.5 2" opacity="0.5" />
+                            </svg>
+                          )}
+                          {index === 3 && (
+                            <svg className="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 18h18M4 18v-5c0-1 1-2 2-2h12c1 0 2 1 2 2v5" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 13h12M7 10h10" />
+                              <line x1="17" y1="10" x2="17" y2="7" strokeLinecap="round" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17 7l2-1" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl lg:text-2xl text-white font-semibold mb-2">{section.title}</h3>
+                          <p className="text-base lg:text-lg text-white/90 leading-relaxed">{section.description}</p>
+                        </div>
                       </div>
-                      {/* Content */}
-                      <div className="flex-1">
-                        <h3 className="text-xl lg:text-2xl text-white font-semibold mb-2">{section.title}</h3>
-                        <p className="text-base lg:text-lg text-white/90 leading-relaxed">{section.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                </motion.div>
               </div>
               
-              {/* Right column - Map placeholder with margin-top */}
+              {/* Right column - Interactive Globe - stays in place */}
               <div 
-                className="flex-1 flex items-start lg:sticky lg:z-10 w-full lg:w-auto mt-8 lg:mt-0"
-                style={{
-                  border: '2px solid magenta',
-                  top: '80px' // Margin from top to avoid overlapping title
-                }}
+                className="flex-1 flex items-center justify-center w-full lg:w-auto mt-8 lg:mt-0"
               >
                 <div 
-                  className="w-full h-[400px] lg:h-[500px] bg-gray-800/50 backdrop-blur-sm rounded-lg flex items-center justify-center"
-                  style={{ border: '2px solid lime' }}
+                  className="w-full h-[400px] lg:h-[500px]"
                 >
-                <div className="text-center text-gray-400">
-                  <svg 
-                    className="w-24 h-24 mx-auto mb-4 opacity-50" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" 
-                    />
-                  </svg>
-                    <p className="text-sm font-medium text-white/70">
-                      {locale === 'es' ? 'Mapa Interactivo' : locale === 'zh' ? '交互式地图' : locale === 'fr' ? 'Carte Interactive' : 'Interactive Map'}
-                    </p>
-                    <p className="text-xs mt-2 opacity-75 text-white/50">
-                      {locale === 'es' ? 'Próximamente' : locale === 'zh' ? '即将推出' : locale === 'fr' ? 'Bientôt disponible' : 'Coming Soon'}
-                    </p>
-                  </div>
+                  <RotatingEarth width={600} height={500} className="w-full h-full" />
                 </div>
               </div>
             </div>
