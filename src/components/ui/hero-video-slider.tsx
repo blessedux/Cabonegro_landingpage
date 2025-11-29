@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useScroll } from 'framer-motion';
 
@@ -32,6 +32,60 @@ export function HeroVideoSlider({
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const onSlideChangeRef = useRef(onSlideChange);
   const { scrollYProgress } = useScroll();
+  
+  // Network detection for adaptive loading
+  const [connectionType, setConnectionType] = useState<'slow' | 'fast' | 'unknown'>('unknown');
+  
+  // Detect network connection quality
+  useEffect(() => {
+    const detectConnection = () => {
+      // @ts-ignore - navigator.connection may not be in all browsers
+      const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      
+      if (connection) {
+        // Check effective connection type
+        const effectiveType = connection.effectiveType;
+        const downlink = connection.downlink;
+        
+        // Consider 2g, slow-2g, or low downlink as slow
+        if (effectiveType === '2g' || effectiveType === 'slow-2g' || (downlink && downlink < 1.5)) {
+          setConnectionType('slow');
+        } else {
+          setConnectionType('fast');
+        }
+      } else {
+        // Default to fast if we can't detect
+        setConnectionType('fast');
+      }
+    };
+    
+    detectConnection();
+    
+    // @ts-ignore
+    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (connection) {
+      connection.addEventListener('change', detectConnection);
+      return () => connection.removeEventListener('change', detectConnection);
+    }
+  }, []);
+  
+  // Determine preload strategy based on connection
+  // This function will be defined after displayIndex is available
+  const getPreloadStrategy = (index: number, isCurrent: boolean, isPrevious: boolean, currentIdx: number): 'auto' | 'metadata' | 'none' => {
+    if (connectionType === 'slow') {
+      // For slow connections, only preload current video metadata
+      if (isCurrent) return 'metadata';
+      if (isPrevious) return 'none'; // Previous video already loaded
+      return 'none'; // Don't preload future videos
+    }
+    
+    // For fast connections, preload current fully, next video metadata
+    if (isCurrent) return 'auto';
+    if (isPrevious) return 'auto'; // Keep previous loaded
+    // Only preload next video metadata
+    const nextIndex = (currentIdx + 1) % videos.length;
+    return index === nextIndex ? 'metadata' : 'none';
+  };
   
   // Keep callback ref updated
   useEffect(() => {
@@ -131,28 +185,47 @@ export function HeroVideoSlider({
     setLoadedVideos((prev) => new Set([...prev, index]));
   };
 
-  // Preload next video for smooth transitions - use requestIdleCallback for performance
+  // Preload next video for smooth transitions - adaptive based on connection
   useEffect(() => {
-    if (!isAutoSliding || disableAutoSlide) return; // Only preload when auto-sliding and not disabled
+    if (disableAutoSlide) return; // Don't preload if auto-slide is disabled
     
     const preloadNext = () => {
       const nextIndex = (currentIndex + 1) % videos.length;
       const nextVideo = videoRefs.current[nextIndex];
+      
       if (nextVideo && !loadedVideos.has(nextIndex)) {
-        // Use requestIdleCallback to preload during idle time
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(() => {
-            nextVideo.load();
-          });
+        // For slow connections, only preload when we're about to transition
+        if (connectionType === 'slow') {
+          // Only preload if auto-sliding and close to transition time
+          if (isAutoSliding) {
+            // Preload 1 second before transition
+            const timeUntilNext = slideDuration - (Date.now() % slideDuration);
+            if (timeUntilNext < 1000) {
+              nextVideo.load();
+            }
+          }
         } else {
-          // Fallback for browsers without requestIdleCallback
-          setTimeout(() => nextVideo.load(), 100);
+          // For fast connections, preload during idle time
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+              if (nextVideo && !loadedVideos.has(nextIndex)) {
+                nextVideo.load();
+              }
+            }, { timeout: 2000 });
+          } else {
+            // Fallback for browsers without requestIdleCallback
+            setTimeout(() => {
+              if (nextVideo && !loadedVideos.has(nextIndex)) {
+                nextVideo.load();
+              }
+            }, 100);
+          }
         }
       }
     };
 
     preloadNext();
-  }, [currentIndex, videos.length, loadedVideos, isAutoSliding, disableAutoSlide]);
+  }, [currentIndex, videos.length, loadedVideos, isAutoSliding, disableAutoSlide, connectionType, slideDuration]);
 
   // Use locked index if scrolled, otherwise use current index
   const displayIndex = lockedIndex !== null ? lockedIndex : currentIndex;
@@ -176,6 +249,31 @@ export function HeroVideoSlider({
       return () => clearTimeout(timer);
     }
   }, [displayIndex]);
+  
+  // Pause videos that are far from current to save resources
+  useEffect(() => {
+    const pauseFarVideos = () => {
+      videoRefs.current.forEach((video, index) => {
+        if (video && video.readyState > 0) {
+          const distance = Math.min(
+            Math.abs(index - displayIndex),
+            Math.abs(index - displayIndex + videos.length),
+            Math.abs(index - displayIndex - videos.length)
+          );
+          
+          // Pause videos that are 2+ slides away (but keep them loaded for smooth transitions)
+          if (distance > 1 && index !== previousIndex && !video.paused) {
+            video.pause();
+          }
+        }
+      });
+    };
+    
+    // Only pause on fast connections (slow connections need videos ready)
+    if (connectionType === 'fast') {
+      pauseFarVideos();
+    }
+  }, [displayIndex, previousIndex, videos.length, connectionType]);
 
   return (
     <div className={`absolute inset-0 overflow-hidden bg-black ${className}`}>
@@ -194,16 +292,19 @@ export function HeroVideoSlider({
               ref={(el) => {
                 videoRefs.current[previousIndex] = el;
                 if (el) {
-                  el.play().catch(() => {});
+                  // Only play if connection is fast, otherwise just keep it loaded
+                  if (connectionType !== 'slow') {
+                    el.play().catch(() => {});
+                  }
                 }
               }}
-              autoPlay
+              autoPlay={connectionType !== 'slow'}
               loop
               muted
               playsInline
               className="absolute inset-0 w-full h-full object-cover object-center"
               onLoadedData={() => handleVideoLoad(previousIndex)}
-              preload="auto"
+              preload={getPreloadStrategy(previousIndex, false, true, displayIndex)}
             >
               <source src={videos[previousIndex]} type="video/mp4" />
             </video>
@@ -216,8 +317,17 @@ export function HeroVideoSlider({
         key={displayIndex}
         initial={{ x: '100%' }}
         animate={{ x: 0 }}
-        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        transition={{ 
+          duration: 0.6, 
+          ease: [0.25, 0.1, 0.25, 1],
+          // Optimize for performance
+          type: 'tween'
+        }}
         className="absolute inset-0 z-10"
+        style={{
+          willChange: 'transform',
+          transform: 'translateZ(0)', // Force GPU acceleration
+        }}
       >
           {images[displayIndex] ? (
             // Use image if available (better performance)
@@ -234,9 +344,16 @@ export function HeroVideoSlider({
                 videoRefs.current[displayIndex] = el;
                 // Ensure video plays when it becomes visible
                 if (el) {
-                  el.play().catch(() => {
-                    // Ignore play errors (browser autoplay policies)
-                  });
+                  // For slow connections, wait for video to be ready
+                  if (connectionType === 'slow') {
+                    el.addEventListener('canplay', () => {
+                      el.play().catch(() => {});
+                    }, { once: true });
+                  } else {
+                    el.play().catch(() => {
+                      // Ignore play errors (browser autoplay policies)
+                    });
+                  }
                 }
               }}
               autoPlay
@@ -245,10 +362,11 @@ export function HeroVideoSlider({
               playsInline
               className="absolute inset-0 w-full h-full object-cover object-center"
               onLoadedData={() => handleVideoLoad(displayIndex)}
-              preload={displayIndex === 0 ? 'auto' : 'auto'}
-              // Performance optimizations
+              preload={getPreloadStrategy(displayIndex, true, false, displayIndex)}
+              // Performance optimizations - use transform for GPU acceleration
               style={{
-                willChange: 'opacity',
+                willChange: 'transform',
+                transform: 'translateZ(0)', // Force GPU acceleration
               }}
             >
               <source src={videos[displayIndex]} type="video/mp4" />
