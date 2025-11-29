@@ -41,7 +41,7 @@ export function HeroVideoSlider({
   // Detect network connection quality
   useEffect(() => {
     const detectConnection = () => {
-      // @ts-ignore - navigator.connection may not be in all browsers
+      // @ts-expect-error - navigator.connection may not be in all browsers
       const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
       
       if (connection) {
@@ -63,7 +63,7 @@ export function HeroVideoSlider({
     
     detectConnection();
     
-    // @ts-ignore
+    // @ts-expect-error - navigator.connection may not be in all browsers
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (connection) {
       connection.addEventListener('change', detectConnection);
