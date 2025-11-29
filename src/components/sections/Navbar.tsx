@@ -324,6 +324,14 @@ export default function Navbar() {
                         currentLocale === 'fr' ? '/fr' : '/en'
         router.push(homePath)
       }, 100)
+      return
+    }
+    
+    // If on homepage, scroll to top
+    const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
+    if (isOnHomePage) {
+      e.preventDefault()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
@@ -339,7 +347,9 @@ export default function Navbar() {
       e.preventDefault()
       const faqElement = document.getElementById('FAQ')
       if (faqElement) {
-        faqElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const elementPosition = faqElement.getBoundingClientRect().top
+        const offsetPosition = elementPosition + window.pageYOffset - 20 // 20px offset to account for navbar
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
       }
       setMobileMenuOpen(false)
       return

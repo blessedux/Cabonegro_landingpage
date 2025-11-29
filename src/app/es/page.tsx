@@ -16,6 +16,7 @@ import FAQ from '@/components/sections/FAQ-es'
 import Footer from '@/components/sections/Footer'
 import Navbar from '@/components/sections/Navbar-es'
 import CookieBanner from '@/components/sections/CookieBanner'
+import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
 
 // Import messages for Spanish locale
 import esMessages from '../../../messages/es.json'
@@ -104,7 +105,9 @@ function HomeContent() {
         const timer = setTimeout(() => {
           const element = document.getElementById(hash.substring(1))
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            const elementPosition = element.getBoundingClientRect().top
+            const offsetPosition = elementPosition + window.pageYOffset - 20 // 20px offset to account for navbar
+            window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
           }
         }, 300)
         return () => clearTimeout(timer)
@@ -170,7 +173,6 @@ function HomeContent() {
           onComplete={handlePreloaderComplete}
           onFadeOutStart={handlePreloaderFadeOutStart}
           duration={6}
-          showDebug={true}
         />
       )}
 
@@ -206,6 +208,9 @@ function HomeContent() {
 
           {/* Cookie Banner */}
           <CookieBanner />
+
+          {/* Scroll to Top Button */}
+          <ScrollToTopButton />
         </div>
       )}
     </>
