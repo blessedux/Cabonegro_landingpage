@@ -18,7 +18,7 @@ export default function CookieBanner() {
           <Button
             variant="outline"
             size="sm"
-            className="uppercase border-white text-white hover:bg-white hover:text-black transition-colors"
+            className="uppercase border-white bg-white text-black hover:bg-gray-100 hover:text-black transition-colors"
             onClick={acceptCookies}
           >
             Accept All

@@ -9,6 +9,11 @@ import { PageTransitionWrapper } from '@/components/ui/PageTransitionWrapper';
 
 const locales = ['en', 'es', 'zh', 'fr'];
 
+// Generate static params for all locales to enable static generation
+export async function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
 export default async function LocaleLayout({
   children,
   params

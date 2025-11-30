@@ -285,7 +285,7 @@ export default function Hero() {
               ease: "easeOut" 
             }}
           >
-            <span>Gateway</span>
+            <span>Platform</span>
             <span>
               <WordRotate
                 words={rotatingWords}
@@ -299,7 +299,7 @@ export default function Hero() {
                 }}
               />
             </span>
-            <span>to the South of the World</span>
+            <span>of the south of the world</span>
           </motion.h1>
           <motion.p 
             ref={paragraphRef}

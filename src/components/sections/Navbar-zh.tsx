@@ -192,8 +192,40 @@ export default function NavbarZh() {
     }
   }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden])
 
+  // Prefetch language route on hover for instant navigation
+  const prefetchLanguageRoute = (newLocale: string) => {
+    // Remove current locale prefix from pathname
+    let pathWithoutLocale = pathname
+    if (pathname.startsWith('/es')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/es'
+    } else if (pathname.startsWith('/zh')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/zh'
+    } else if (pathname.startsWith('/fr')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/fr'
+    } else if (pathname.startsWith('/en')) {
+      pathWithoutLocale = pathname.substring(3) // Remove '/en'
+    }
+    
+    // Ensure path starts with '/'
+    if (!pathWithoutLocale.startsWith('/')) {
+      pathWithoutLocale = '/' + pathWithoutLocale
+    }
+    
+    // Handle empty path (root)
+    if (pathWithoutLocale === '/') {
+      pathWithoutLocale = ''
+    }
+    
+    // Build target path and prefetch it
+    const targetPath = `/${newLocale}${pathWithoutLocale}`
+    router.prefetch(targetPath)
+  }
+
   // Handle language change - optimized for instant response
   const handleLanguageChange = (newLocale: string) => {
+    // Close dropdown immediately for instant UI feedback
+    setLanguageDropdownOpen(false)
+    
     // Check if we're on a special page (explore, deck, contact)
     const isOnSpecialPage = pathname.includes('/explore') || 
                            pathname.includes('/deck') || 
@@ -238,8 +270,11 @@ export default function NavbarZh() {
     setPreloaderVisible(true)
     setPreloaderComplete(false)
     
-    // Navigate immediately - React will batch state updates and navigation
-    router.push(targetPath)
+    // Navigate immediately - use microtask to ensure state updates are processed first
+    // This keeps the UI responsive
+    Promise.resolve().then(() => {
+      router.push(targetPath)
+    })
   }
 
   // Handle Explore Terrain click
@@ -367,6 +402,7 @@ export default function NavbarZh() {
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
+                        onMouseEnter={() => prefetchLanguageRoute(lang.code)}
                         onClick={() => {
                           handleLanguageChange(lang.code)
                           setLanguageDropdownOpen(false)
