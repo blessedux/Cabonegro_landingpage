@@ -350,50 +350,62 @@ export default function AboutUs() {
           </div>
           
           {/* Icons Grid - Full width, horizontal layout (4 columns) */}
-          <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-            {textSections.map((section, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-start text-left p-6 rounded-lg border border-white/20 bg-white/5 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/30"
-                style={{ 
-                  opacity: iconOpacities[index] || 0,
-                  transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,
-                  transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
-                }}
-                onMouseEnter={() => setHoveredCard(index)}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                <div className="w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mb-4">
-                  {index === 0 && (
-                    <MdDirectionsBoat className="w-full h-full text-white" />
-                  )}
-                  {index === 1 && (
-                    <MdEnergySavingsLeaf className="w-full h-full text-white" />
-                  )}
-                  {index === 2 && (
-                    <Icon path={mdiSatelliteVariant} size={80} className="text-white w-full h-full" />
-                  )}
-                  {index === 3 && (
-                    <Icon path={mdiGantryCrane} size={80} className="text-white w-full h-full" />
-                  )}
-                </div>
-                <h3 className="text-lg lg:text-xl text-white font-semibold mb-2">{section.title}</h3>
-                <div 
-                  className="overflow-hidden transition-all duration-300"
-                  style={{
-                    maxHeight: hoveredCard === index ? '24rem' : '0',
+          <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full items-start">
+            {textSections.map((section, index) => {
+              const isHovered = hoveredCard === index
+              return (
+                <div
+                  key={index}
+                  className="flex flex-col items-start text-left p-6 rounded-lg border border-white/20 bg-white/5 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/30 self-start"
+                  style={{ 
+                    opacity: iconOpacities[index] || 0,
+                    transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,
+                    transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+                    height: isHovered ? 'auto' : 'auto',
+                    minHeight: 'auto'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.stopPropagation()
+                    setHoveredCard(index)
+                  }}
+                  onMouseLeave={(e) => {
+                    e.stopPropagation()
+                    setHoveredCard(null)
                   }}
                 >
-                  <p 
-                    className={`text-sm lg:text-base text-white/90 leading-relaxed transition-opacity duration-300 ${
-                      hoveredCard === index ? 'opacity-100' : 'opacity-0'
-                    }`}
+                  <div className="w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mb-4">
+                    {index === 0 && (
+                      <MdDirectionsBoat className="w-full h-full text-white" />
+                    )}
+                    {index === 1 && (
+                      <MdEnergySavingsLeaf className="w-full h-full text-white" />
+                    )}
+                    {index === 2 && (
+                      <Icon path={mdiSatelliteVariant} size={80} className="text-white w-full h-full" />
+                    )}
+                    {index === 3 && (
+                      <Icon path={mdiGantryCrane} size={80} className="text-white w-full h-full" />
+                    )}
+                  </div>
+                  <h3 className="text-lg lg:text-xl text-white font-semibold mb-2">{section.title}</h3>
+                  <div 
+                    className="overflow-hidden transition-all duration-300"
+                    style={{
+                      maxHeight: isHovered ? '24rem' : '0',
+                      minHeight: isHovered ? 'auto' : '0',
+                    }}
                   >
-                    {section.description}
-                  </p>
+                    <p 
+                      className={`text-sm lg:text-base text-white/90 leading-relaxed transition-opacity duration-300 ${
+                        isHovered ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      {section.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>

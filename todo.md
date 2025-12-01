@@ -311,9 +311,9 @@ Estructurado por página y por secciones, según requerimientos del cliente.
 
 ### Idioma / Internacionalización
 
-- [ ] Implementar ES / EN / CH / FR
-- [ ] Preparar archivos de traducción
-- [ ] Permitir futuro escalamiento
+- [x] Implementar ES / EN / CH / FR
+- [x] Preparar archivos de traducción
+- [x] Permitir futuro escalamiento
 
 ---
 
@@ -335,10 +335,40 @@ Estructurado por página y por secciones, según requerimientos del cliente.
 
 ## 📊 RESUMEN DE PROGRESO
 
-**Total de tareas:** [Contar automáticamente]
-**Completadas:** [Actualizar manualmente]
-**Pendientes:** [Actualizar manualmente]
+### 📈 **Estadísticas de Tareas**
+
+- **Tareas Completadas:** ~40 ✅ _(estimado basado en checkmarks)_
+- **Tareas Pendientes:** ~60 ⏳
+- **Total de Tareas:** ~100
+
+### Completado: **~40%**
+
+- Header y Navegación: ✅
+- Hero Principal: ✅
+- Sección "Localización Estratégica": ✅
+- Contextos Relevantes del Territorio: ✅
+- Partners (parcial): ✅
+- Noticias/Blog (estructura): ✅
+- Página Patagon Valley: ✅ (completa)
+- Internacionalización (ES/EN/CH/FR): ✅
+
+### Pendiente: **~60%**
+
+- Mapa Interactivo de Ubicación (3 niveles)
+- Sección "Pilares que dan forma a Cabo Negro"
+- Sección "¿A quién está dirigido?"
+- Página Terminal Marítimo (completa)
+- Página Parque Logístico (completa)
+- Footer completo
+- Sección Equipo
+- Contacto Final del Home
+- Sistema de Contacto con Detección de Origen
+- CMS/Panel de Control
 
 ---
 
-_Última actualización: [Fecha]_
+> **Nota:** Para un desglose detallado de tareas técnicas y de implementación, ver `docs/todo_completo_es.md`
+
+---
+
+_Última actualización: 2024-12-19_

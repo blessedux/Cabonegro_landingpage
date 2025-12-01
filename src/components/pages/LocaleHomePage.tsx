@@ -48,17 +48,30 @@ const PartnersEs = dynamic(() => import('@/components/sections/Partners-es'), {
   loading: () => <div className="min-h-[400px]" />
 })
 
-// Import locale-specific components (Hero and Navbar need to be loaded early for above-the-fold content)
-import Hero from '@/components/sections/Hero'
-import HeroEs from '@/components/sections/Hero-es'
-import HeroZh from '@/components/sections/Hero-zh'
-import HeroFr from '@/components/sections/Hero-fr'
-import Navbar from '@/components/sections/Navbar'
-import NavbarEs from '@/components/sections/Navbar-es'
-import NavbarZh from '@/components/sections/Navbar-zh'
-import FAQ from '@/components/sections/FAQ'
-import FAQEs from '@/components/sections/FAQ-es'
-import FAQZh from '@/components/sections/FAQ-zh'
+// Code-split Hero components - load when needed
+const Hero = dynamic(() => import('@/components/sections/Hero'), { ssr: false })
+const HeroEs = dynamic(() => import('@/components/sections/Hero-es'), { ssr: false })
+const HeroZh = dynamic(() => import('@/components/sections/Hero-zh'), { ssr: false })
+const HeroFr = dynamic(() => import('@/components/sections/Hero-fr'), { ssr: false })
+
+// Code-split Navbar components - load when needed
+const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
+const NavbarEs = dynamic(() => import('@/components/sections/Navbar-es'), { ssr: false })
+const NavbarZh = dynamic(() => import('@/components/sections/Navbar-zh'), { ssr: false })
+
+// Code-split FAQ components - load when needed
+const FAQ = dynamic(() => import('@/components/sections/FAQ'), { 
+  ssr: false,
+  loading: () => <div className="min-h-[400px]" />
+})
+const FAQEs = dynamic(() => import('@/components/sections/FAQ-es'), { 
+  ssr: false,
+  loading: () => <div className="min-h-[400px]" />
+})
+const FAQZh = dynamic(() => import('@/components/sections/FAQ-zh'), { 
+  ssr: false,
+  loading: () => <div className="min-h-[400px]" />
+})
 
 interface LocaleHomePageProps {
   locale: string
@@ -166,12 +179,24 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       return
     }
     
+    // If PreloaderB is visible, wait for it to complete before rendering
+    // PreloaderB completion is handled by PageTransitionWrapper
+    if (isPreloaderBVisible) {
+      // Still pre-render content but keep it hidden until PreloaderB completes
+      setContentPreRendered(true)
+      return
+    }
+    
+    // If PreloaderB is NOT visible (e.g., coming from project pages), render immediately
+    // This makes navigation from project pages to home instant
+    if (!isPreloaderBVisible) {
+      setContentPreRendered(true)
+      return
+    }
+    
     if (isPreloaderVisible && !isPreloaderBVisible) {
-      const preRenderTimer = setTimeout(() => {
-        setContentPreRendered(true)
-      }, 1000)
-      
-      return () => clearTimeout(preRenderTimer)
+      // Pre-render immediately - no delay needed
+      setContentPreRendered(true)
     } else if (!isPreloaderVisible) {
       setContentPreRendered(true)
     }
@@ -190,7 +215,22 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
     
     const assetsCached = localStorage.getItem('cabonegro-assets-cached') === 'true'
     
+    // When PreloaderB is visible, wait for it to complete (handled by PageTransitionWrapper)
+    // Don't set preloaderFadeComplete until PreloaderB is hidden
     if (isPreloaderBVisible) {
+      setPreloaderVisible(false)
+      // Keep content hidden until PreloaderB completes
+      setPreloaderFadeComplete(false)
+      setContentReady(false)
+      // But still pre-render content
+      setContentPreRendered(true)
+      return
+    }
+    
+    // FAST PATH: If PreloaderB is NOT visible (e.g., navigating from project pages)
+    // AND user has seen preloader OR assets are cached, show content immediately
+    // This makes navigation from project pages to home instant
+    if (!isPreloaderBVisible && !isPreloaderVisible && (hasSeenPreloader || assetsCached)) {
       setPreloaderVisible(false)
       setPreloaderFadeComplete(true)
       setContentReady(true)
@@ -198,11 +238,10 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       return
     }
     
-    if (assetsCached && hasSeenPreloader) {
-      setPreloaderVisible(false)
+    // Once PreloaderB is hidden and content is pre-rendered, show it immediately
+    if (!isPreloaderBVisible && contentPreRendered && !preloaderFadeComplete) {
       setPreloaderFadeComplete(true)
       setContentReady(true)
-      setContentPreRendered(true)
       return
     }
     
@@ -211,12 +250,13 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       return
     }
     
-    if (hasSeenPreloader && !isPreloaderVisible) {
+    // Fallback: If user has seen preloader and no preloaders are visible, show content
+    if (hasSeenPreloader && !isPreloaderVisible && !isPreloaderBVisible) {
       setPreloaderFadeComplete(true)
       setContentReady(true)
       setContentPreRendered(true)
     }
-  }, [hasSeenPreloader, isPreloaderBVisible, isPreloaderVisible, isLanguageSwitch, setPreloaderVisible])
+  }, [hasSeenPreloader, isPreloaderBVisible, isPreloaderVisible, isLanguageSwitch, setPreloaderVisible, contentPreRendered, preloaderFadeComplete])
 
   // Handle hash navigation
   useEffect(() => {
@@ -239,8 +279,12 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
   // Handle content fade-in animation
   useEffect(() => {
     if (preloaderFadeComplete && contentRef.current && contentPreRendered) {
-      // On language switch, skip animation for instant switching
-      if (isLanguageSwitch) {
+      // Skip animation for instant display when:
+      // 1. Language switch
+      // 2. Coming from project pages (no PreloaderB)
+      const skipAnimation = isLanguageSwitch || (!isPreloaderBVisible && !isPreloaderVisible && hasSeenPreloader)
+      
+      if (skipAnimation) {
         gsap.set(contentRef.current, { opacity: 1 })
       } else {
         gsap.to(contentRef.current, { 
@@ -251,7 +295,7 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         })
       }
     }
-  }, [preloaderFadeComplete, contentPreRendered, isLanguageSwitch])
+  }, [preloaderFadeComplete, contentPreRendered, isLanguageSwitch, isPreloaderBVisible, isPreloaderVisible, hasSeenPreloader])
 
   // Ensure contentReady is set
   useEffect(() => {
@@ -259,6 +303,16 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       setContentReady(true)
     }
   }, [preloaderFadeComplete, contentReady])
+
+  // Watch for PreloaderB completion - when it hides, show content immediately
+  useEffect(() => {
+    if (!isPreloaderBVisible && contentPreRendered && !preloaderFadeComplete) {
+      // PreloaderB just completed, show content immediately
+      setPreloaderFadeComplete(true)
+      setContentReady(true)
+    }
+  }, [isPreloaderBVisible, contentPreRendered, preloaderFadeComplete])
+
 
   // Safety fallback - skip on language switches
   useEffect(() => {
@@ -307,7 +361,8 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           style={{ 
             opacity: preloaderFadeComplete ? 1 : 0,
             pointerEvents: preloaderFadeComplete ? 'auto' : 'none',
-            transition: preloaderFadeComplete ? 'opacity 0.6s ease-out' : 'none',
+            // Skip transition when coming from project pages for instant display
+            transition: (preloaderFadeComplete && !isPreloaderBVisible && !isPreloaderVisible && hasSeenPreloader) ? 'none' : (preloaderFadeComplete ? 'opacity 0.6s ease-out' : 'none'),
             position: 'relative',
             zIndex: preloaderFadeComplete ? 1 : 0
           }}
@@ -322,9 +377,10 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           ref={contentRef}
           className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
           style={{ 
-            opacity: preloaderFadeComplete ? 0 : 0,
+            opacity: preloaderFadeComplete ? 1 : 0,
             pointerEvents: preloaderFadeComplete ? 'auto' : 'none',
-            transition: 'none'
+            // Skip transition when coming from project pages for instant display
+            transition: (preloaderFadeComplete && !isPreloaderBVisible && !isPreloaderVisible && hasSeenPreloader) ? 'none' : (preloaderFadeComplete ? 'opacity 0.6s ease-out' : 'none')
           }}
         >
           {/* Navigation */}

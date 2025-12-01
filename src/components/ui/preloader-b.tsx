@@ -44,7 +44,7 @@ export default function PreloaderB({ onComplete, duration = 1.5, className = '',
       setTimeout(() => {
         setIsVisible(false)
         onComplete?.()
-      }, 1000) // 1s fade out duration for smooth transition
+      }, 400) // Faster fade out (400ms) for quicker navigation
     }, duration * 1000)
 
     return () => clearTimeout(fadeOutTimer)

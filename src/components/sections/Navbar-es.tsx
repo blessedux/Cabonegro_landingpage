@@ -278,30 +278,41 @@ export default function NavbarEs() {
 
   // Handle project navigation
   const handleProjectNavigation = (route: string) => {
-    showPreloaderB()
-    setTimeout(() => {
-      router.push(`/${currentLocale}${route}`)
-    }, 100)
+    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Navigate immediately without delay
+    router.push(`/${currentLocale}${route}`)
   }
 
   // Handle Home navigation (logo click)
   const handleHomeClick = (e: React.MouseEvent) => {
-    // If on explore page, show PreloaderB before navigating home
-    if (pathname.includes('/explore')) {
-      e.preventDefault()
-      showPreloaderB()
-      setTimeout(() => {
-        router.push('/es')
-      }, 100)
-      return
-    }
-    
     // If on homepage, scroll to top
     const isOnHomePage = pathname === '/es' || pathname === '/'
     if (isOnHomePage) {
       e.preventDefault()
       window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
     }
+    
+    // Check if we're on a project page - no PreloaderB needed (usePageTransition handles it)
+    const isOnProjectPage = pathname.includes('/parque-tecnologico') || 
+                           pathname.includes('/parque-logistico') || 
+                           pathname.includes('/terminal-maritimo')
+    
+    // Only show PreloaderB for special pages (explore, deck, contact)
+    // Project pages → home is fast and doesn't need PreloaderB
+    const isOnSpecialPage = pathname.includes('/explore') || 
+                           pathname.includes('/deck') || 
+                           pathname.includes('/contact')
+    
+    e.preventDefault()
+    
+    // Only show PreloaderB for special pages, not project pages
+    if (isOnSpecialPage) {
+      showPreloaderB()
+    }
+    
+    // Navigate immediately without delay
+    router.push('/es')
   }
 
   // Handle FAQ click
@@ -359,6 +370,7 @@ export default function NavbarEs() {
                 href="/es" 
                 className="cursor-pointer"
                 onClick={handleHomeClick}
+                onMouseEnter={() => router.prefetch('/es')}
               >
                 <img 
                   src="/cabonegro_logo.png" 
@@ -477,7 +489,8 @@ export default function NavbarEs() {
                   onClick={() => {
                     setMobileMenuOpen(false)
                     showPreloaderB()
-                    setTimeout(() => router.push('/es/contact'), 100)
+                    // Navigate immediately without delay
+                    router.push('/es/contact')
                   }}
                   variant="outline"
                   className={`uppercase transition-all duration-300 w-full mt-2 ${

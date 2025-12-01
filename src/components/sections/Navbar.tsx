@@ -172,10 +172,9 @@ export default function Navbar() {
 
   // Handle project navigation
   const handleProjectNavigation = (route: string) => {
-    showPreloaderB()
-    setTimeout(() => {
-      router.push(`/${currentLocale}${route}`)
-    }, 100)
+    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Navigate immediately without delay
+    router.push(`/${currentLocale}${route}`)
   }
 
   // Get localized text based on current locale
@@ -328,26 +327,38 @@ export default function Navbar() {
 
   // Handle Home navigation (logo click)
   const handleHomeClick = (e: React.MouseEvent) => {
-    // If on explore page, show PreloaderB before navigating home
-    if (pathname.includes('/explore')) {
-      e.preventDefault()
-      showPreloaderB()
-      setTimeout(() => {
-        const homePath = currentLocale === 'en' ? '/en' : 
-                        currentLocale === 'es' ? '/es' :
-                        currentLocale === 'zh' ? '/zh' :
-                        currentLocale === 'fr' ? '/fr' : '/en'
-        router.push(homePath)
-      }, 100)
-      return
-    }
-    
     // If on homepage, scroll to top
     const isOnHomePage = pathname === '/en' || pathname === '/' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
     if (isOnHomePage) {
       e.preventDefault()
       window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
     }
+    
+    // Check if we're on a project page - no PreloaderB needed (usePageTransition handles it)
+    const isOnProjectPage = pathname.includes('/parque-tecnologico') || 
+                           pathname.includes('/parque-logistico') || 
+                           pathname.includes('/terminal-maritimo')
+    
+    // Only show PreloaderB for special pages (explore, deck, contact)
+    // Project pages → home is fast and doesn't need PreloaderB
+    const isOnSpecialPage = pathname.includes('/explore') || 
+                           pathname.includes('/deck') || 
+                           pathname.includes('/contact')
+    
+    e.preventDefault()
+    
+    // Only show PreloaderB for special pages, not project pages
+    if (isOnSpecialPage) {
+      showPreloaderB()
+    }
+    
+    const homePath = currentLocale === 'en' ? '/en' : 
+                    currentLocale === 'es' ? '/es' :
+                    currentLocale === 'zh' ? '/zh' :
+                    currentLocale === 'fr' ? '/fr' : '/en'
+    // Navigate immediately without delay
+    router.push(homePath)
   }
 
   // Handle FAQ click
@@ -413,6 +424,13 @@ export default function Navbar() {
                       currentLocale === 'fr' ? '/fr' : '/en'} 
                 className="cursor-pointer"
                 onClick={handleHomeClick}
+                onMouseEnter={() => {
+                  const homePath = currentLocale === 'en' ? '/en' : 
+                                  currentLocale === 'es' ? '/es' :
+                                  currentLocale === 'zh' ? '/zh' :
+                                  currentLocale === 'fr' ? '/fr' : '/en'
+                  router.prefetch(homePath)
+                }}
               >
                 <img 
                   src="/cabonegro_logo.png" 
@@ -498,6 +516,7 @@ export default function Navbar() {
                     setMobileMenuOpen(false)
                     handleProjectNavigation('/terminal-maritimo')
                   }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/terminal-maritimo`)}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
                   {localizedText.maritimeTerminal}
@@ -507,6 +526,7 @@ export default function Navbar() {
                     setMobileMenuOpen(false)
                     handleProjectNavigation('/parque-tecnologico')
                   }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/parque-tecnologico`)}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
                   {localizedText.technologyPark}
@@ -516,6 +536,7 @@ export default function Navbar() {
                     setMobileMenuOpen(false)
                     handleProjectNavigation('/parque-logistico')
                   }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/parque-logistico`)}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
                   {localizedText.logisticsPark}
@@ -535,7 +556,8 @@ export default function Navbar() {
                                        currentLocale === 'es' ? '/es/contact' :
                                        currentLocale === 'zh' ? '/zh/contact' :
                                        currentLocale === 'fr' ? '/fr/contact' : '/en/contact'
-                    setTimeout(() => router.push(contactPath), 100)
+                    // Navigate immediately without delay
+                    router.push(contactPath)
                   }}
                   variant="outline"
                   className={`uppercase transition-all duration-300 w-full mt-2 ${

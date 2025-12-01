@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useLayoutEffect } from 'react'
+import { useEffect, useState, useRef, useLayoutEffect, startTransition } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent, useSpring, useMotionValue } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
@@ -164,18 +164,27 @@ export default function Stats() {
   
   // Navigation handlers
   const handlePatagonValleyClick = () => {
-    showPreloaderB()
-    router.push(`/${locale}/parque-tecnologico`)
+    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Use startTransition for non-blocking navigation
+    startTransition(() => {
+      router.push(`/${locale}/parque-tecnologico`)
+    })
   }
   
   const handlePortZoneClick = () => {
-    showPreloaderB()
-    router.push(`/${locale}/terminal-maritimo`)
+    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Use startTransition for non-blocking navigation
+    startTransition(() => {
+      router.push(`/${locale}/terminal-maritimo`)
+    })
   }
   
   const handleCaboNegroDosClick = () => {
-    showPreloaderB()
-    router.push(`/${locale}/parque-logistico`)
+    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Use startTransition for non-blocking navigation
+    startTransition(() => {
+      router.push(`/${locale}/parque-logistico`)
+    })
   }
   
   // Track scroll progress using statsRef (always defined, avoids hydration errors)
@@ -240,11 +249,12 @@ export default function Stats() {
     }
   }, [])
   
-  // Use statsRef directly as target - it's always valid and attached to the motion.section element
-  // This prevents "Target ref is defined but not hydrated" errors
+  // Track Partners section scroll progress
+  // Use a more delayed offset - only start tracking when Partners section is actually approaching
+  // Changed from ["start center", "start start"] to ["end center", "end start"] to delay the trigger
   const { scrollYProgress: partnersScrollProgress } = useScroll({
     target: statsRef,
-    offset: ["start center", "start start"]
+    offset: ["end center", "end start"] // Start tracking later - when Stats end reaches center
   })
 
   // Background fade in - starts later at 0.40 (40% of AboutUs scroll), completes at 0.60 (60%)
@@ -344,9 +354,12 @@ export default function Stats() {
     { clamp: true }
   )
   
-  // Fade to white when Partners reaches above 50% of viewport (center line)
-  // Partners scroll progress: 0 = Partners at center, 1 = Partners at top
-  const whiteOverlayOpacity = useTransform(partnersScrollProgress, [0, 1], [0, 1])
+  // Fade to white when Partners section approaches
+  // Partners scroll progress: 0 = Stats end at center, 1 = Stats end at top
+  // Delay the white overlay significantly - only start fading when Partners is very close (at 0.7 progress)
+  // and complete when Stats end reaches top (at 1.0 progress)
+  // This ensures the white overlay only appears right before Partners section
+  const whiteOverlayOpacity = useTransform(partnersScrollProgress, [0.7, 1], [0, 1], { clamp: true })
 
   // Staggered fade-in animations for stat boxes
   // Each box fades in sequentially as we scroll through the Stats section
@@ -549,6 +562,7 @@ export default function Stats() {
                     y: statBox2Y
                   }}
                   onClick={handlePatagonValleyClick}
+                  onMouseEnter={() => router.prefetch(`/${locale}/parque-tecnologico`)}
                 >
                   <h3 className="text-white font-bold text-lg mb-3">Patagon Valley</h3>
                   <p className="text-gray-400 text-xs mb-3">
@@ -580,6 +594,7 @@ export default function Stats() {
                     y: statBox4Y
                   }}
                   onClick={handlePortZoneClick}
+                  onMouseEnter={() => router.prefetch(`/${locale}/terminal-maritimo`)}
                 >
                   <h3 className="text-white font-bold text-lg mb-3">
                     {locale === 'es' ? 'Zona Portuaria J&P' : locale === 'zh' ? 'J&P港口区' : locale === 'fr' ? 'Zone Portuaire J&P' : 'J&P Port Zone'}
@@ -614,6 +629,7 @@ export default function Stats() {
                     y: statBox5Y
                   }}
                   onClick={handleCaboNegroDosClick}
+                  onMouseEnter={() => router.prefetch(`/${locale}/parque-logistico`)}
                 >
                   <h3 className="text-white font-bold text-lg mb-3">Cabo Negro Dos</h3>
                   <p className="text-gray-400 text-xs mb-3">
@@ -714,12 +730,13 @@ export default function Stats() {
         />
         
         {/* White overlay - fades in when Partners starts reaching top */}
+        {/* Only affects background, content stays visible above it */}
         <motion.div 
-          className="fixed inset-0 z-[8]"
+          className="fixed inset-0 pointer-events-none"
           style={{
             backgroundColor: 'rgba(255, 255, 255, 1)',
             opacity: whiteOverlayOpacity,
-            zIndex: 8
+            zIndex: 3 // Same as background layer, below content (z-7)
           }}
         />
       </motion.section>

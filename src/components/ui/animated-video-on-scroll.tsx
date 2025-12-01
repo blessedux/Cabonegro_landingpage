@@ -62,8 +62,7 @@ export const ContainerScroll: React.FC<
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: scrollRef,
-    offset: ["start start", "end start"], // Changed to keep sticky longer - starts when top hits viewport top, ends when bottom hits viewport top
-    layoutEffect: false // Prevent hydration issues
+    offset: ["start start", "end start"] // Changed to keep sticky longer - starts when top hits viewport top, ends when bottom hits viewport top
   })
 
   return (
@@ -110,20 +109,22 @@ export const ContainerAnimated = React.forwardRef<
     // But keep scroll-based animations (y transform) working
     const shouldSkipFadeIn = propInitial === "visible" && propAnimate === "visible"
     
+    // Simplify props to avoid complex union type
+    const motionProps: any = {
+      ref,
+      className: cn("", className),
+      variants,
+      initial: propInitial !== undefined ? propInitial : "hidden",
+      animate: propAnimate !== undefined ? propAnimate : undefined,
+      whileInView: shouldSkipFadeIn ? undefined : "visible",
+      viewport: shouldSkipFadeIn ? undefined : { once: true },
+      style: { y, ...style },
+      transition: shouldSkipFadeIn ? { opacity: { duration: 0 }, filter: { duration: 0 }, ...transition } : { ...SPRING_TRANSITION_CONFIG, ...transition },
+      ...props
+    }
+    
     return (
-      <motion.div
-        ref={ref}
-        className={cn("", className)}
-        variants={variants}
-        initial={propInitial !== undefined ? propInitial : "hidden"}
-        animate={propAnimate !== undefined ? propAnimate : undefined}
-        whileInView={shouldSkipFadeIn ? undefined : "visible"}
-        viewport={shouldSkipFadeIn ? undefined : { once: true }}
-        style={{ y, ...style }}
-        // Only skip transition for fade-in variants, not for scroll transforms
-        transition={shouldSkipFadeIn ? { opacity: { duration: 0 }, filter: { duration: 0 }, ...transition } : { ...SPRING_TRANSITION_CONFIG, ...transition }}
-        {...props}
-      />
+      <motion.div {...motionProps} />
     )
   }
 )

@@ -12,7 +12,7 @@ export function LocaleHtmlLang() {
     let locale = routing.defaultLocale
     for (const loc of routing.locales) {
       if (pathname.startsWith(`/${loc}`)) {
-        locale = loc
+        locale = loc as typeof locale
         break
       }
     }

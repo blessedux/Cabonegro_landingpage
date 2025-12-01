@@ -27,7 +27,7 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
         <PreloaderB 
           key={`preloader-b-${pathname}`}
           onComplete={handlePreloaderBComplete}
-          duration={2.0}
+          duration={0.8}
         />
       )}
       {children}

@@ -2,6 +2,8 @@
 
 ## Estado del Proyecto desde Demo1 hasta Main Actual
 
+> **Nota:** Este documento complementa el archivo `todo.md` (fuente de verdad principal) que contiene la guía de implementación detallada por páginas. Este documento se enfoca en tareas técnicas y de implementación organizadas por categorías.
+
 ---
 
 ## ✅ **TAREAS COMPLETADAS**
@@ -141,12 +143,36 @@
 - [ ] Mejorar sección "Maritime Terminal Project" con animación 3D de evolución del puerto
 - [ ] Agregar animación de batimetría mostrando áreas de acceso y atraque
 
+### 🗺️ **Páginas y Secciones Específicas (de todo.md)**
+
+- [ ] Mapa Interactivo de Ubicación (3 niveles: Sudamérica → Chile → Punta Arenas → Cabo Negro)
+- [ ] Sección "Pilares que dan forma a Cabo Negro" (3 tarjetas con enlaces)
+- [ ] Sección "¿A quién está dirigido el proyecto?" (4 tarjetas)
+- [ ] Página Terminal Marítimo completa:
+  - [ ] Hero interno con imagen panorámica
+  - [ ] Visión del proyecto
+  - [ ] Sección "Desarrollado por" (logos J&P, PPG, Compas Marine)
+  - [ ] Línea de tiempo deslizable (2021-2028)
+  - [ ] Mapa programado con conexiones globales
+  - [ ] Ventajas del puerto (6 tarjetas)
+  - [ ] Enfoque comercial (5 tipos de carga)
+- [ ] Página Parque Logístico completa:
+  - [ ] Hero con imagen aérea
+  - [ ] Información de terreno disponible
+  - [ ] Usos recomendados (5 tarjetas)
+- [ ] Footer completo (mini mapa, menú rápido, datos contacto, logos partners)
+- [ ] Sección Equipo (mostrar integrantes de PPG, Patagon Valley, Compas Marine)
+
 ### 📊 **Datos y Contenido**
 
 - [ ] Completar todos los datos especificados en el plan arquitectónico
 - [ ] Agregar información detallada del Plan Regulador 2024-2026
 - [ ] Agregar información de los socios (J&P S.A., PPG S.A., Compas Marine)
 - [ ] Crear sección con información técnica del terminal marítimo
+- [ ] Agregar logos faltantes en Partners (PPG SpA, J&P Ltda.)
+- [ ] Preparar CMS/entradas para sección de Noticias (Blog)
+- [ ] Crear/ubicar archivos PDF de Fact Sheets para descarga
+- [ ] Ajustar distancias "X km" cuando cliente confirme datos
 
 ### 🔧 **Funcionalidad**
 
@@ -154,6 +180,14 @@
 - [ ] Agregar formulario de contacto funcional
 - [ ] Mejorar integración de Google Maps 3D
 - [ ] Optimizar carga de assets 3D
+- [ ] Sistema de Contacto con Detección de Origen:
+  - [ ] Implementar query params (`?from=patagon-valley`, `?from=terminal-maritimo`, `?from=macro-lote`)
+  - [ ] Enviar email a canal diferenciado según origen
+  - [ ] Guardar origen en backend/CMS
+- [ ] CMS / Panel de Control:
+  - [ ] Gestión de noticias/blog
+  - [ ] Gestión de textos e imágenes
+  - [ ] Archivos Fact Sheets por página
 
 ---
 
@@ -228,21 +262,33 @@
 
 ## 📊 **RESUMEN DE PROGRESO**
 
-### Completado: **~65%**
+### 📈 **Estadísticas de Tareas**
+
+- **Tareas Completadas:** 87 ✅
+- **Tareas Pendientes (Alta Prioridad):** 35 ⏳ _(actualizado con tareas de todo.md)_
+- **Nice to Have (Mejoras Futuras):** 29 💡
+- **Total de Tareas:** 151
+
+### Completado: **~58%** (87/151)
 
 - Componentes base: ✅
 - Multiidioma: ✅
 - Preloader: ✅
 - Features principales: ✅
 - Navegación: ✅
+- Página Patagon Valley: ✅ (completa)
 
-### Pendiente: **~25%**
+### Pendiente (Alta Prioridad): **~23%** (35/151)
 
 - Funcionalidades del plan
 - Animaciones avanzadas
 - Secciones específicas del plan
+- Páginas internas (Terminal Marítimo, Parque Logístico)
+- Mapa interactivo 3 niveles
+- Sistema de contacto con detección de origen
+- CMS/Panel de control
 
-### Nice to Have: **~10%**
+### Nice to Have: **~19%** (29/151)
 
 - Optimizaciones
 - Mejoras de UX
@@ -250,5 +296,30 @@
 
 ---
 
-_Última actualización: Basado en commits desde demo1 hasta main actual_
+## 🎯 **PRIORIDADES ACTUALES**
+
+### 🔴 **Prioridad Crítica (Inmediata)**
+
+1. **Funcionalidad de Descarga del Deck** - Completar implementación de descarga
+2. **Formulario de Contacto Funcional** - Hacer que el formulario envíe datos correctamente
+3. **Consistencia en Terminología Técnica** - Asegurar traducciones consistentes entre idiomas
+
+### 🟡 **Prioridad Alta (Próximas 2 semanas)**
+
+4. **Sección Regulatory Evolution** - Implementar completamente la evolución regulatoria
+5. **Sección Investment & JV Strategy** - Crear sección de estrategia de inversión
+6. **Sección References & Validation** - Crear cubo rotativo de logos
+7. **Funcionalidad Completa de Explore** - Completar la página de exploración
+8. **Mejoras en Maritime Terminal Project** - Agregar animación 3D de evolución del puerto
+
+### 🟢 **Prioridad Media (Próximo mes)**
+
+9. **Animaciones Avanzadas** - Transiciones de planeta, mapa 3D, entre secciones
+10. **Datos y Contenido** - Completar información del Plan Regulador y socios
+11. **Optimización de Assets 3D** - Mejorar carga de Spline
+12. **Integración Google Maps 3D** - Mejorar visualización del mapa
+
+---
+
+_Última actualización: 2024-12-19_
 _Total de commits analizados: 90+_

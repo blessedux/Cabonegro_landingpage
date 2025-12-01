@@ -99,8 +99,7 @@ export default function HeroZh() {
 
   // Handle project navigation - optimized for speed
   const handleProjectNavigation = (route: string) => {
-    // Show preloader immediately
-    showPreloaderB()
+    // No PreloaderB needed - project pages are fast, usePageTransition handles it
     // Navigate immediately without delay
     router.push(`/${currentLocale}${route}`)
   }
