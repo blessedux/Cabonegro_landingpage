@@ -12,7 +12,6 @@ interface HoverSliderImageProps {
   index: number
   imageUrl: string
 }
-interface HoverSliderProps {}
 interface HoverSliderContextValue {
   activeSlide: number
   changeSlide: (index: number) => void
@@ -42,7 +41,7 @@ export function useHoverSliderContext() {
 
 export const HoverSlider = React.forwardRef<
   HTMLElement,
-  React.HTMLAttributes<HTMLElement> & HoverSliderProps
+  React.HTMLAttributes<HTMLElement>
 >(({ children, className, ...props }, ref) => {
   const [activeSlide, setActiveSlide] = React.useState<number>(0)
   const changeSlide = React.useCallback(
