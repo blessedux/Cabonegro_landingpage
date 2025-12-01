@@ -22,6 +22,16 @@ export default function NavbarZh() {
   const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
   const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete, setLanguageSwitch } = usePreloader()
 
+  // Handle Explore Terrain click
+  const handleExploreTerrain = () => {
+    startFadeOut()
+    
+    // Navigate to explore route after animations
+    setTimeout(() => {
+      router.push('/zh/explore')
+    }, 1000)
+  }
+
   // Detect when navbar is over white background sections
   useEffect(() => {
     const checkBackground = () => {
@@ -322,23 +332,58 @@ export default function NavbarZh() {
     })
   }
 
-  // Handle Explore Terrain click
-  const handleExploreTerrain = () => {
-    if (pathname.includes('/explore')) {
-      setIsNavbarHidden(false)
-      return
-    }
-    startFadeOut()
-    showPreloaderB()
-    setTimeout(() => {
-      router.push('/zh/explore')
-    }, 100)
+  // Handle project navigation
+  const handleProjectNavigation = (route: string) => {
+    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Navigate immediately without delay
+    router.push(`/${currentLocale}${route}`)
   }
+
+  // Get localized text based on current locale
+  const getLocalizedText = () => {
+    const texts = {
+      en: {
+        maritimeTerminal: 'Maritime Terminal',
+        technologyPark: 'Technology Park',
+        logisticsPark: 'Logistics Park',
+        faq: 'FAQ',
+        contactUs: 'Contact Us',
+        language: 'Language:'
+      },
+      es: {
+        maritimeTerminal: 'Terminal Marítimo',
+        technologyPark: 'Parque Tecnológico',
+        logisticsPark: 'Parque Logístico',
+        faq: 'FAQ',
+        contactUs: 'Contáctanos',
+        language: 'Idioma:'
+      },
+      zh: {
+        maritimeTerminal: '海运码头',
+        technologyPark: '科技园',
+        logisticsPark: '物流园',
+        faq: '常见问题',
+        contactUs: '联系我们',
+        language: '语言:'
+      },
+      fr: {
+        maritimeTerminal: 'Terminal Maritime',
+        technologyPark: 'Parc Technologique',
+        logisticsPark: 'Parc Logistique',
+        faq: 'FAQ',
+        contactUs: 'Nous Contacter',
+        language: 'Langue:'
+      }
+    }
+    return texts[currentLocale] || texts.en
+  }
+
+  const localizedText = getLocalizedText()
 
   // Handle Home navigation (logo click)
   const handleHomeClick = (e: React.MouseEvent) => {
     // If on homepage, scroll to top
-    const isOnHomePage = pathname === '/zh' || pathname === '/'
+    const isOnHomePage = pathname === '/zh' || pathname === '/' || pathname === '/en' || pathname === '/es' || pathname === '/fr'
     if (isOnHomePage) {
       e.preventDefault()
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -363,8 +408,12 @@ export default function NavbarZh() {
       showPreloaderB()
     }
     
+    const homePath = currentLocale === 'en' ? '/en' : 
+                    currentLocale === 'es' ? '/es' :
+                    currentLocale === 'zh' ? '/zh' :
+                    currentLocale === 'fr' ? '/fr' : '/zh'
     // Navigate immediately without delay
-    router.push('/zh')
+    router.push(homePath)
   }
 
   // Handle FAQ click
@@ -374,7 +423,8 @@ export default function NavbarZh() {
                            pathname.includes('/contact')
     
     // If on homepage, just scroll to FAQ
-    if (!isOnSpecialPage && (pathname === '/zh' || pathname === '/')) {
+    const isOnHomePage = pathname === '/zh' || pathname === '/' || pathname === '/en' || pathname === '/es' || pathname === '/fr'
+    if (!isOnSpecialPage && isOnHomePage) {
       e.preventDefault()
       const faqElement = document.getElementById('FAQ')
       if (faqElement) {
@@ -392,7 +442,11 @@ export default function NavbarZh() {
     setMobileMenuOpen(false)
     
     setTimeout(() => {
-      router.push('/zh#FAQ')
+      const homePath = currentLocale === 'en' ? '/en#FAQ' : 
+                      currentLocale === 'es' ? '/es#FAQ' :
+                      currentLocale === 'zh' ? '/zh#FAQ' :
+                      currentLocale === 'fr' ? '/fr#FAQ' : '/zh#FAQ'
+      router.push(homePath)
     }, 100)
   }
 
@@ -405,29 +459,38 @@ export default function NavbarZh() {
     <header 
       ref={navbarRef}
       className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-        // For deck, explore, contact, and terminal-maritimo routes, only hide if navbar is explicitly hidden
-        pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact') || pathname.includes('/terminal-maritimo')
-          ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
-          : (isNavbarHidden || isPreloaderVisible
-              ? '-translate-y-full opacity-0' 
-              : isVisible 
-                ? 'top-0 translate-y-0 opacity-100' 
-                : '-translate-y-full opacity-0')
-      }`}>
+      // For deck, explore, and terminal-maritimo routes, only hide if navbar is explicitly hidden
+      pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/terminal-maritimo')
+        ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
+        : (isNavbarHidden || isPreloaderVisible
+            ? '-translate-y-full opacity-0' 
+            : isVisible 
+              ? 'top-0 translate-y-0 opacity-100' 
+              : '-translate-y-full opacity-0')
+    }`}>
       <nav className="container mx-auto">
         <div ref={mobileMenuRef} className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
               <Link 
-                href="/zh" 
+                href={currentLocale === 'en' ? '/en' : 
+                      currentLocale === 'es' ? '/es' :
+                      currentLocale === 'zh' ? '/zh' :
+                      currentLocale === 'fr' ? '/fr' : '/zh'} 
                 className="cursor-pointer"
                 onClick={handleHomeClick}
-                onMouseEnter={() => router.prefetch('/zh')}
+                onMouseEnter={() => {
+                  const homePath = currentLocale === 'en' ? '/en' : 
+                                  currentLocale === 'es' ? '/es' :
+                                  currentLocale === 'zh' ? '/zh' :
+                                  currentLocale === 'fr' ? '/fr' : '/zh'
+                  router.prefetch(homePath)
+                }}
               >
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-11 w-auto hover:opacity-80 transition-all duration-300"
+                  className="h-12 w-auto hover:opacity-80 transition-all duration-300"
                   style={{
                     filter: isOverWhiteBackground ? 'brightness(0)' : 'brightness(1)',
                     transition: 'filter 0.3s ease-in-out'
@@ -506,31 +569,49 @@ export default function NavbarZh() {
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false)
-                    handleExploreTerrain()
+                    handleProjectNavigation('/terminal-maritimo')
                   }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/terminal-maritimo`)}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  探索地形
+                  {localizedText.maritimeTerminal}
                 </button>
-                <Link 
-                  href="/zh/deck" 
-                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 ${textColor}`}
-                  onClick={() => setMobileMenuOpen(false)}
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleProjectNavigation('/parque-tecnologico')
+                  }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/parque-tecnologico`)}
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  查看甲板
-                </Link>
+                  {localizedText.technologyPark}
+                </button>
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleProjectNavigation('/parque-logistico')
+                  }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/parque-logistico`)}
+                  className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
+                >
+                  {localizedText.logisticsPark}
+                </button>
                 <button 
                   onClick={handleFAQClick}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  常见问题
+                  {localizedText.faq}
                 </button>
 
                 <Button
                   onClick={() => {
                     setMobileMenuOpen(false)
+                    const contactPath = currentLocale === 'en' ? '/en/contact' : 
+                                       currentLocale === 'es' ? '/es/contact' :
+                                       currentLocale === 'zh' ? '/zh/contact' :
+                                       currentLocale === 'fr' ? '/fr/contact' : '/zh/contact'
                     // Navigate immediately - usePageTransition will handle PreloaderB automatically
-                    router.push('/zh/contact')
+                    router.push(contactPath)
                   }}
                   variant="outline"
                   className={`uppercase transition-all duration-300 w-full mt-2 ${
@@ -539,7 +620,7 @@ export default function NavbarZh() {
                       : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
                   }`}
                 >
-                  联系我们
+                  {localizedText.contactUs}
                 </Button>
               </div>
             </div>

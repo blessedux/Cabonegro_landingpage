@@ -24,11 +24,8 @@ export default function LanguageSwitcher() {
   // Get current language using next-intl's useLocale hook
   const currentLanguage = languages.find(lang => lang.code === locale) || languages[0]
 
-  // Prefetch language route on hover for instant switching
-  const prefetchLanguageRoute = (newLocale: string) => {
-    if (newLocale === locale) return
-    
-    // Remove current locale prefix from pathname
+  // Helper function to get path without locale
+  const getPathWithoutLocale = () => {
     let pathWithoutLocale = pathname
     for (const loc of routing.locales) {
       if (pathname.startsWith(`/${loc}`)) {
@@ -36,16 +33,18 @@ export default function LanguageSwitcher() {
         break
       }
     }
-    
     // Handle empty path (root)
     if (pathWithoutLocale === '/') {
       pathWithoutLocale = ''
     }
-    
-    // Build target path
+    return pathWithoutLocale
+  }
+
+  // Prefetch language route on hover for instant switching
+  const prefetchLanguageRoute = (newLocale: string) => {
+    if (newLocale === locale) return
+    const pathWithoutLocale = getPathWithoutLocale()
     const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
-    
-    // Prefetch the route for instant navigation
     router.prefetch(targetPath)
   }
 
@@ -55,33 +54,19 @@ export default function LanguageSwitcher() {
       return
     }
     
-    // Set language switch flag to skip preloader and optimize performance
+    // Set language switch flag to skip preloader
     setLanguageSwitch(true)
     
     // Close dropdown immediately for instant UI feedback
     setIsOpen(false)
     
-    // Remove current locale prefix from pathname
-    let pathWithoutLocale = pathname
-    for (const loc of routing.locales) {
-      if (pathname.startsWith(`/${loc}`)) {
-        pathWithoutLocale = pathname.substring(loc.length + 1) || ''
-        break
-      }
-    }
-    
-    // Handle empty path (root)
-    if (pathWithoutLocale === '/') {
-      pathWithoutLocale = ''
-    }
-    
-    // Build target path
+    const pathWithoutLocale = getPathWithoutLocale()
     const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
     
-    // Use startTransition to make navigation non-blocking and faster
-    // This keeps the UI responsive during navigation
+    // Use replace instead of push to avoid adding to history and make it faster
+    // Use startTransition to make navigation non-blocking and keep UI responsive
     startTransition(() => {
-      router.push(targetPath)
+      router.replace(targetPath)
     })
   }
 
@@ -105,26 +90,33 @@ export default function LanguageSwitcher() {
 
       {isOpen && (
         <div className="absolute top-full right-0 mt-2 w-48 bg-gray-900/95 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg z-50">
-          {languages.map((language) => (
-            <button
-              key={language.code}
-              onClick={() => handleLanguageChange(language.code)}
-              onMouseEnter={() => prefetchLanguageRoute(language.code)}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                language.code === locale
-                  ? 'text-cyan-400 bg-gray-800/50'
-                  : 'text-white hover:bg-gray-800/50'
-              }`}
-            >
-              <span className="text-lg">{language.flag}</span>
-              <span>{language.name}</span>
-              {language.code === locale && (
-                <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              )}
-            </button>
-          ))}
+          {languages.map((language) => {
+            const isActive = language.code === locale
+            
+            return (
+              <button
+                key={language.code}
+                onClick={() => handleLanguageChange(language.code)}
+                onMouseEnter={() => prefetchLanguageRoute(language.code)}
+                disabled={isActive || isPending}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                  isActive
+                    ? 'text-cyan-400 bg-gray-800/50 cursor-default'
+                    : isPending
+                    ? 'text-gray-400 cursor-wait'
+                    : 'text-white hover:bg-gray-800/50'
+                }`}
+              >
+                <span className="text-lg">{language.flag}</span>
+                <span>{language.name}</span>
+                {isActive && (
+                  <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
 

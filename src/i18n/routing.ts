@@ -4,7 +4,7 @@ export const routing = {
   locales: ['en', 'es', 'zh', 'fr'] as const,
 
   // Used when no locale matches
-  defaultLocale: 'en' as const,
+  defaultLocale: 'es' as const,
   
   // Always show locale prefix - this ensures all routes have locale prefix
   localePrefix: 'always' as const
