@@ -1,21 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
-import { NextRequest } from 'next/server';
+import { routing } from './i18n/routing';
 
-const intlMiddleware = createMiddleware({
-  // A list of all locales that are supported
-  locales: ['en', 'es', 'zh', 'fr'],
-
-  // Used when no locale matches
-  defaultLocale: 'en'
-});
-
-export default function middleware(request: NextRequest) {
-  // Debug logging
-  if (request.nextUrl.pathname.includes('footer')) {
-    console.log('🔍 Footer route detected:', request.nextUrl.pathname);
-  }
-  return intlMiddleware(request);
-}
+export default createMiddleware(routing);
 
 export const config = {
   // Match all pathnames except for

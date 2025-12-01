@@ -135,56 +135,72 @@ Estructurado por página y por secciones, según requerimientos del cliente.
 
 ## 🏢 PÁGINA INTERNA: PROYECTO PATAGON VALLEY
 
-**Ruta → `/parque-tecnologico`**
+**Ruta → `/parque-tecnologico` o `/patagon-valley`**
 
-### 1. Hero
+### 📝 TRABAJO EN PROGRESO - PÁGINA PATAGON VALLEY
 
-- [ ] Imagen conceptual tecnológica
+#### 1. Hero
 
----
-
-### 2. Visión y Ventajas
-
-- [ ] Título
-- [ ] Texto completo sobre conectividad:
-  - [ ] Fibra Óptica Austral
-  - [ ] Ruta 9 Norte
-  - [ ] Órbita LEO
-  - [ ] Proximidad al puerto
+- [x] Imagen conceptual tecnológica (`patagon_valley.webp`)
+- [x] Título: "Patagon Valley"
+- [x] Subtítulo: "Parque Tecnológico & Logístico"
 
 ---
 
-### 3. Enfoque Comercial
+#### 2. Visión y Ventajas
 
-- [ ] Imagen conceptual tecnológica
-- [ ] Texto con lista de sectores:
-  - [ ] IA
-  - [ ] Robótica marina
-  - [ ] Hidrógeno verde
-  - [ ] Satelital y espacial
-  - [ ] Data centers
-  - [ ] Telecomunicaciones
-  - [ ] Logística e industria
+- [x] Título: "Ecosistema tecnológico del extremo sur del mundo para empresas intensivas en energía, conectividad satelital y operaciones industriales avanzadas."
+- [x] Texto completo sobre conectividad:
+  - [x] "Patagon Valley cuenta con terrenos disponibles, ideales para empresas que busquen desarrollar sus proyectos en una zona con excelente conectividad en todo sentido."
+  - [x] **Conexión directa a Fibra Óptica Austral**: permitiendo transmisión de datos de alta capacidad y baja latencia.
+  - [x] **Acceso inmediato a Ruta 9 Norte**: carretera internacional que conecta el extremo sur de Chile con Argentina y el resto de la Patagonia.
+  - [x] **Conexión satelital privilegiada**: aprovechando la órbita polar LEO (Low Earth Orbit), que ofrece mayor estabilidad en la comunicación y rapidez en el traspaso de datos gracias a la cercanía de los satélites a la superficie terrestre.
+  - [x] **Conectividad logística con el proyecto portuario**: ya que los terrenos de Patagon Valley se encuentran a X km del área del Terminal Marítimo Cabo Negro, lo que los convierte en una alternativa ideal para proyectos tecnológicos y logísticos que requieran proximidad operativa al puerto.
 
 ---
 
-### 4. Nuestros Clientes
+#### 3. Enfoque Comercial
 
-- [ ] Logo: AWS
-- [ ] Logo: GTD
+- [x] Imagen conceptual tecnológica
+- [x] Texto: "Estamos abiertos a recibir a cualquier empresa o institución interesada en desarrollar sus proyectos dentro de nuestras áreas, promoviendo la sinergia natural que se genera en este polo portuario, tecnológico y logístico. Considerando las características de los distintos pilares de Cabo Negro, identificamos como potenciales interesados a empresas vinculadas con:"
+- [x] Lista de sectores:
+  - [x] Inteligencia artificial
+  - [x] Robótica marina
+  - [x] Energía e industrias asociadas al hidrógeno verde
+  - [x] Sector satelital y espacial
+  - [x] Data centers y servicios de alta demanda energética
+  - [x] Telecomunicaciones y conectividad avanzada
+  - [x] Desarrollo logístico e industrial
 
 ---
 
-### 5. Contacto
+#### 4. Nuestros Clientes
 
-- [ ] Enlace a página de contacto
-- [ ] Agregar lógica:
-  - [ ] Saber si el usuario viene desde Patagon Valley (query param o hidden field)
-  - [ ] Posibilidad de enviar contacto a correo especial
-- [ ] Enlaces:
-  - [ ] Contacto
-  - [ ] Agendar reunión
-  - [ ] Descargar Fact Sheet
+- [x] Logo: AWS
+- [x] Logo: GTD
+
+---
+
+#### 5. Contacto
+
+- [x] Enlace a página de contacto con query param `?from=patagon-valley`
+- [x] Agregar lógica:
+  - [x] Query param `?from=patagon-valley` para saber origen
+  - [ ] Posibilidad de enviar contacto a correo especial (patagon-valley@cabonegro.cl o similar) - _Requiere configuración backend_
+  - [ ] Guardar origen en el formulario de contacto - _Requiere actualización del formulario_
+- [x] Enlaces:
+  - [x] Contacto → `/${locale}/contact?from=patagon-valley`
+  - [x] Agendar reunión → `/${locale}/contact?from=patagon-valley&action=schedule`
+  - [x] Descargar Fact Sheet (enlace configurado, pendiente archivo PDF)
+
+---
+
+#### Notas de Implementación
+
+- [x] Usar imagen `patagon_valley.webp` para Hero y Enfoque Comercial
+- [ ] Ajustar "X km" cuando cliente confirme distancia al Terminal Marítimo
+- [ ] Crear/ubicar archivo PDF del Fact Sheet para descarga
+- [ ] Configurar email especial para contactos desde Patagon Valley (opcional)
 
 ---
 

@@ -4,10 +4,16 @@ import { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { usePathname } from 'next/navigation'
-import RotatingEarth from '@/components/ui/rotating-earth'
+import dynamic from 'next/dynamic'
 import { MdDirectionsBoat, MdEnergySavingsLeaf } from 'react-icons/md'
 import Icon from '@mdi/react'
 import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
+
+// Code-split RotatingEarth component (includes D3.js ~200KB) - only load when needed
+const RotatingEarth = dynamic(() => import('@/components/ui/rotating-earth'), {
+  ssr: false,
+  loading: () => <div className="w-full h-[400px] flex items-center justify-center"><div className="text-white">Loading globe...</div></div>
+})
 
 interface TextSection {
   label: string

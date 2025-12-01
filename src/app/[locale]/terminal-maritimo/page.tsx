@@ -1,21 +1,38 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, usePathname } from 'next/navigation'
 import { ArrowLeft, Download, Calendar, Mail, Ship, Shield, Navigation, MapPin, Zap, Factory } from 'lucide-react'
 import Image from 'next/image'
-import Navbar from '@/components/sections/Navbar'
-import NavbarEs from '@/components/sections/Navbar-es'
-import NavbarZh from '@/components/sections/Navbar-zh'
-import Footer from '@/components/sections/Footer'
-import CookieBanner from '@/components/sections/CookieBanner'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import {
+  ContainerScroll,
+  ContainerSticky,
+  ContainerAnimated,
+  ContainerInset,
+  HeroVideo,
+  HeroButton,
+} from '@/components/ui/animated-video-on-scroll'
+
+// Code-split navigation components - only load when needed
+const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
+const NavbarEs = dynamic(() => import('@/components/sections/Navbar-es'), { ssr: false })
+const NavbarZh = dynamic(() => import('@/components/sections/Navbar-zh'), { ssr: false })
+
+// Code-split footer and cookie banner - only load when needed
+const Footer = dynamic(() => import('@/components/sections/Footer'), { 
+  ssr: false,
+  loading: () => <div className="min-h-[200px]" />
+})
+const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
 
 export default function TerminalMaritimoPage() {
   const params = useParams()
   const router = useRouter()
-  const locale = params?.locale as string || 'en'
+  const pathname = usePathname()
+  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -32,7 +49,8 @@ export default function TerminalMaritimoPage() {
         },
         developedBy: {
           title: 'Developed By',
-          description: 'This project is being developed by leading companies in the maritime and logistics sector:'
+          description: 'This project is being developed by leading companies in the maritime and logistics sector:',
+          compasDescription: 'Compas Marine is a leading maritime services company with extensive experience in port operations and logistics in the southern region of Chile.'
         },
         advantages: {
           title: 'Port Advantages',
@@ -58,7 +76,22 @@ export default function TerminalMaritimoPage() {
         },
         timeline: {
           title: 'Project Timeline',
-          description: 'Key milestones from 2021 to 2028'
+          description: 'Key milestones from 2021 to 2028',
+          readyToBuild: 'Ready to Build',
+          events: {
+            '2021': 'Project Initiation',
+            '2022': 'Feasibility Studies',
+            '2023': 'Design Phase',
+            '2024': 'Permits and Approvals',
+            '2025': 'Construction Start',
+            '2026': 'Phase 1 Completion',
+            '2027': 'Phase 2 Development',
+            '2028': 'Ready to Build (RtB)'
+          }
+        },
+        map: {
+          title: 'Global Connections',
+          comingSoon: 'Interactive Map Coming Soon'
         },
         contact: {
           title: 'Get in Touch',
@@ -80,7 +113,8 @@ export default function TerminalMaritimoPage() {
         },
         developedBy: {
           title: 'Desarrollado Por',
-          description: 'Este proyecto está siendo desarrollado por empresas líderes en el sector marítimo y logístico:'
+          description: 'Este proyecto está siendo desarrollado por empresas líderes en el sector marítimo y logístico:',
+          compasDescription: 'Compas Marine es una empresa líder en servicios marítimos con amplia experiencia en operaciones portuarias y logística en la región sur de Chile.'
         },
         advantages: {
           title: 'Ventajas del Puerto',
@@ -106,7 +140,22 @@ export default function TerminalMaritimoPage() {
         },
         timeline: {
           title: 'Línea de Tiempo del Proyecto',
-          description: 'Hitos clave desde 2021 hasta 2028'
+          description: 'Hitos clave desde 2021 hasta 2028',
+          readyToBuild: 'Listo para Construir',
+          events: {
+            '2021': 'Inicio del Proyecto',
+            '2022': 'Estudios de Factibilidad',
+            '2023': 'Fase de Diseño',
+            '2024': 'Permisos y Aprobaciones',
+            '2025': 'Inicio de Construcción',
+            '2026': 'Finalización Fase 1',
+            '2027': 'Desarrollo Fase 2',
+            '2028': 'Listo para Construir (RtB)'
+          }
+        },
+        map: {
+          title: 'Conexiones Globales',
+          comingSoon: 'Mapa Interactivo Próximamente'
         },
         contact: {
           title: 'Contáctanos',
@@ -128,7 +177,8 @@ export default function TerminalMaritimoPage() {
         },
         developedBy: {
           title: '开发方',
-          description: '该项目由海运和物流行业的领先公司开发：'
+          description: '该项目由海运和物流行业的领先公司开发：',
+          compasDescription: 'Compas Marine是一家领先的海运服务公司，在智利南部地区的港口运营和物流方面拥有丰富经验。'
         },
         advantages: {
           title: '港口优势',
@@ -154,7 +204,22 @@ export default function TerminalMaritimoPage() {
         },
         timeline: {
           title: '项目时间线',
-          description: '2021年至2028年的关键里程碑'
+          description: '2021年至2028年的关键里程碑',
+          readyToBuild: '准备建设',
+          events: {
+            '2021': '项目启动',
+            '2022': '可行性研究',
+            '2023': '设计阶段',
+            '2024': '许可和批准',
+            '2025': '建设开始',
+            '2026': '第一阶段完成',
+            '2027': '第二阶段开发',
+            '2028': '准备建设 (RtB)'
+          }
+        },
+        map: {
+          title: '全球连接',
+          comingSoon: '交互式地图即将推出'
         },
         contact: {
           title: '联系我们',
@@ -176,7 +241,8 @@ export default function TerminalMaritimoPage() {
         },
         developedBy: {
           title: 'Développé Par',
-          description: 'Ce projet est développé par des entreprises leaders du secteur maritime et logistique :'
+          description: 'Ce projet est développé par des entreprises leaders du secteur maritime et logistique :',
+          compasDescription: 'Compas Marine est une entreprise leader en services maritimes avec une vaste expérience dans les opérations portuaires et la logistique dans la région sud du Chili.'
         },
         advantages: {
           title: 'Avantages du Port',
@@ -202,7 +268,22 @@ export default function TerminalMaritimoPage() {
         },
         timeline: {
           title: 'Calendrier du Projet',
-          description: 'Jalons clés de 2021 à 2028'
+          description: 'Jalons clés de 2021 à 2028',
+          readyToBuild: 'Prêt à Construire',
+          events: {
+            '2021': 'Initiation du Projet',
+            '2022': 'Études de Faisabilité',
+            '2023': 'Phase de Conception',
+            '2024': 'Permis et Approbations',
+            '2025': 'Début de la Construction',
+            '2026': 'Finalisation Phase 1',
+            '2027': 'Développement Phase 2',
+            '2028': 'Prêt à Construire (RtB)'
+          }
+        },
+        map: {
+          title: 'Connexions Mondiales',
+          comingSoon: 'Carte Interactive Bientôt Disponible'
         },
         contact: {
           title: 'Contactez-nous',
@@ -223,54 +304,93 @@ export default function TerminalMaritimoPage() {
   const getNavbar = () => {
     if (locale === 'es') return <NavbarEs />
     if (locale === 'zh') return <NavbarZh />
+    if (locale === 'fr') return <Navbar /> // French uses default Navbar for now
     return <Navbar />
   }
 
   const contactPath = `/${locale}/contact?from=terminal-maritimo`
 
-  // Timeline data
+  // Timeline data - localized
   const timelineData = [
-    { year: '2021', event: 'Project Initiation' },
-    { year: '2022', event: 'Feasibility Studies' },
-    { year: '2023', event: 'Design Phase' },
-    { year: '2024', event: 'Permits and Approvals' },
-    { year: '2025', event: 'Construction Start' },
-    { year: '2026', event: 'Phase 1 Completion' },
-    { year: '2027', event: 'Phase 2 Development' },
-    { year: '2028', event: 'Ready to Build (RtB)' }
+    { year: '2021', event: localizedText.timeline.events['2021'] },
+    { year: '2022', event: localizedText.timeline.events['2022'] },
+    { year: '2023', event: localizedText.timeline.events['2023'] },
+    { year: '2024', event: localizedText.timeline.events['2024'] },
+    { year: '2025', event: localizedText.timeline.events['2025'] },
+    { year: '2026', event: localizedText.timeline.events['2026'] },
+    { year: '2027', event: localizedText.timeline.events['2027'] },
+    { year: '2028', event: localizedText.timeline.events['2028'] }
   ]
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Navigation */}
-      {getNavbar()}
+      {/* Navigation - Fixed at top with high z-index, always visible on this page */}
+      <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
+        <div className="pointer-events-auto">
+          {getNavbar()}
+        </div>
+      </div>
 
-      {/* Back Button */}
+      {/* Back Button - Fixed above sticky content */}
       <button
         onClick={() => router.push(homePath)}
-        className="fixed top-24 left-6 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
+        className="fixed top-24 left-6 z-[95] flex items-center gap-2 text-white hover:text-gray-300 transition-colors pointer-events-auto"
         aria-label={localizedText.back}
       >
         <ArrowLeft className="w-5 h-5" />
         <span className="text-sm font-medium">{localizedText.back}</span>
       </button>
 
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/30 via-black to-black z-0">
-          <div className="absolute inset-0 opacity-20">
-            <div className="w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.2),transparent_70%)]" />
-          </div>
-        </div>
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <Ship className="w-16 h-16 mx-auto mb-6 text-blue-400" />
-          <h1 className="text-5xl md:text-7xl font-bold mb-4">
-            {localizedText.hero.title}
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300">
-            {localizedText.hero.subtitle}
-          </p>
-        </div>
+      {/* Hero Section with Animated Video on Scroll */}
+      <section className="relative">
+        <ContainerScroll className="h-[350vh]">
+          <ContainerSticky
+            style={{
+              background:
+                "radial-gradient(40% 40% at 50% 20%, #0e19ae 0%, #0b1387 22.92%, #080f67 42.71%, #030526 88.54%)",
+            }}
+            className="bg-stone-900 px-6 py-10 text-slate-50 pointer-events-none"
+          >
+            <div className="pointer-events-auto">
+              <ContainerAnimated 
+                className="space-y-4 text-center"
+                initial="visible"
+                animate="visible"
+              >
+                <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4">
+                  {localizedText.hero.title}
+                </h1>
+                <p className="mx-auto max-w-[42ch] text-xl md:text-2xl opacity-80">
+                  {localizedText.hero.subtitle}
+                </p>
+              </ContainerAnimated>
+
+              <ContainerInset className="max-h-[450px] w-auto py-6">
+                <HeroVideo
+                  src="https://res.cloudinary.com/dezm9avsj/video/upload/v1764433234/cabonegro_slide2_vktkza.mp4"
+                  className="w-full h-auto"
+                />
+              </ContainerInset>
+
+              <ContainerAnimated
+                transition={{ delay: 0 }}
+                outputRange={[-120, 0]}
+                inputRange={[0, 0.7]}
+                className="mx-auto mt-2 w-fit"
+                initial="visible"
+                animate="visible"
+              >
+                <HeroButton
+                  onClick={() => router.push(contactPath)}
+                  className="border-blue-400 bg-gray-950/10 px-6 py-3 shadow-[0px_4px_24px_rgba(59,130,246,0.5)] hover:bg-slate-950/50 text-white"
+                >
+                  <Mail className="w-5 h-5 mr-2 inline" />
+                  {localizedText.contact.contactBtn}
+                </HeroButton>
+              </ContainerAnimated>
+            </div>
+          </ContainerSticky>
+        </ContainerScroll>
       </section>
 
       {/* Vision Section */}
@@ -309,7 +429,7 @@ export default function TerminalMaritimoPage() {
           </div>
           <div className="mt-8 p-6 bg-white/5 rounded-lg">
             <p className="text-gray-300 leading-relaxed">
-              Compas Marine is a leading maritime services company with extensive experience in port operations and logistics in the southern region of Chile.
+              {localizedText.developedBy.compasDescription}
             </p>
           </div>
         </div>
@@ -335,7 +455,7 @@ export default function TerminalMaritimoPage() {
                     <div className="text-lg text-gray-300">{item.event}</div>
                     {item.year === '2028' && (
                       <div className="mt-4 inline-block px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full text-sm font-semibold">
-                        Ready to Build
+                        {localizedText.timeline.readyToBuild}
                       </div>
                     )}
                   </div>
@@ -350,12 +470,12 @@ export default function TerminalMaritimoPage() {
       <section className="py-20 px-6 bg-white/5">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">
-            Global Connections
+            {localizedText.map.title}
           </h2>
           <div className="relative h-[400px] rounded-lg overflow-hidden bg-gradient-to-br from-blue-900/20 to-cyan-900/20 flex items-center justify-center">
             <div className="text-center p-8">
               <MapPin className="w-16 h-16 mx-auto mb-4 text-blue-400" />
-              <p className="text-gray-400 text-lg">Interactive Map Coming Soon</p>
+              <p className="text-gray-400 text-lg">{localizedText.map.comingSoon}</p>
             </div>
           </div>
         </div>

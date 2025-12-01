@@ -1,34 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { useLocale } from 'next-intl'
+import { routing } from '@/i18n/routing'
 import { usePreloader } from '@/contexts/PreloaderContext'
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Español', flag: '🇨🇱' }
+  { code: 'es', name: 'Español', flag: '🇨🇱' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' }
 ]
 
 export default function LanguageSwitcher() {
   const router = useRouter()
   const pathname = usePathname()
+  const locale = useLocale()
   const [isOpen, setIsOpen] = useState(false)
-  const { setPreloaderComplete, setPreloaderVisible } = usePreloader()
+  const [isPending, startTransition] = useTransition()
+  const { setLanguageSwitch } = usePreloader()
   
-  // Determine current language from pathname
-  const currentLocale = pathname.startsWith('/es') ? 'es' : 'en'
-  const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
+  // Get current language using next-intl's useLocale hook
+  const currentLanguage = languages.find(lang => lang.code === locale) || languages[0]
 
-  const handleLanguageChange = (newLocale: string) => {
+  // Prefetch language route on hover for instant switching
+  const prefetchLanguageRoute = (newLocale: string) => {
+    if (newLocale === locale) return
+    
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
-    if (pathname.startsWith('/es')) {
-      pathWithoutLocale = pathname.substring(3) // Remove '/es'
-    }
-    
-    // Ensure path starts with '/'
-    if (!pathWithoutLocale.startsWith('/')) {
-      pathWithoutLocale = '/' + pathWithoutLocale
+    for (const loc of routing.locales) {
+      if (pathname.startsWith(`/${loc}`)) {
+        pathWithoutLocale = pathname.substring(loc.length + 1) || ''
+        break
+      }
     }
     
     // Handle empty path (root)
@@ -36,18 +42,47 @@ export default function LanguageSwitcher() {
       pathWithoutLocale = ''
     }
     
-    // Reset preloader state to prevent black screen
-    setPreloaderComplete(true)
-    setPreloaderVisible(false)
+    // Build target path
+    const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
     
-    // Navigate to the new locale with the same path
-    // English routes don't have a prefix, Spanish routes use /es prefix
-    if (newLocale === 'en') {
-      router.push(pathWithoutLocale || '/')
-    } else {
-      router.push('/es' + pathWithoutLocale)
+    // Prefetch the route for instant navigation
+    router.prefetch(targetPath)
+  }
+
+  const handleLanguageChange = (newLocale: string) => {
+    // Validate locale
+    if (!routing.locales.includes(newLocale as any) || newLocale === locale) {
+      return
     }
+    
+    // Set language switch flag to skip preloader and optimize performance
+    setLanguageSwitch(true)
+    
+    // Close dropdown immediately for instant UI feedback
     setIsOpen(false)
+    
+    // Remove current locale prefix from pathname
+    let pathWithoutLocale = pathname
+    for (const loc of routing.locales) {
+      if (pathname.startsWith(`/${loc}`)) {
+        pathWithoutLocale = pathname.substring(loc.length + 1) || ''
+        break
+      }
+    }
+    
+    // Handle empty path (root)
+    if (pathWithoutLocale === '/') {
+      pathWithoutLocale = ''
+    }
+    
+    // Build target path
+    const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
+    
+    // Use startTransition to make navigation non-blocking and faster
+    // This keeps the UI responsive during navigation
+    startTransition(() => {
+      router.push(targetPath)
+    })
   }
 
   return (
@@ -74,15 +109,16 @@ export default function LanguageSwitcher() {
             <button
               key={language.code}
               onClick={() => handleLanguageChange(language.code)}
+              onMouseEnter={() => prefetchLanguageRoute(language.code)}
               className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                language.code === currentLocale
+                language.code === locale
                   ? 'text-cyan-400 bg-gray-800/50'
                   : 'text-white hover:bg-gray-800/50'
               }`}
             >
               <span className="text-lg">{language.flag}</span>
               <span>{language.name}</span>
-              {language.code === currentLocale && (
+              {language.code === locale && (
                 <svg className="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>

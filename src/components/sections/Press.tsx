@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { TimelineContent } from '@/components/ui/timeline-animation'
-import { VerticalCutReveal } from '@/components/ui/vertical-cut-reveal'
+import { VerticalCutReveal, VerticalCutRevealRef } from '@/components/ui/vertical-cut-reveal'
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
@@ -32,30 +32,30 @@ const getPressArticles = (locale: string): PressArticle[] => {
       },
       {
         id: 2,
-        title: 'Hydrogen Economy Infrastructure Development',
-        description: 'Cabo Negro positioned as key hub for green hydrogen export operations',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Energy Today',
-        date: '2024-02-20'
+        title: 'Patagon Valley, the project that unites Amazon and SpaceX in southern Chile',
+        description: 'Those familiar with the terrain explain that the weather conditions are so harsh that construction work resembles a film by German director Werner Herzog. Strong winds that force workers to secure themselves with ropes for fear of falling on the sandy steppe and freezing cold are the main barriers facing a group of entrepreneurs who decided to build Latin America\'s first technology and energy park: Patagon Valley.',
+        image: '/patagon_valley.webp',
+        link: 'https://www.latercera.com/pulso-pm/noticia/patagon-valley-el-proyecto-que-une-a-amazon-y-spacex-al-sur-de-chile/EFPIMV6M6VGLHFFXOXNWDC5RXU/',
+        source: 'La Tercera',
+        date: '2022-05-13'
       },
       {
         id: 3,
-        title: 'Industrial Park Expansion in Patagonia',
-        description: 'Major investment in sustainable industrial infrastructure for Southern Chile',
+        title: 'Ambitious industrial park project in Cabo Negro',
+        description: 'The idea is to create a new industrial park on a 179-hectare extension that will stretch between the highway and the sea, starting at kilometer 28 of Route 9 Norte. This initiative arises from the need to have a properly enabled space for the installation of industrial projects, especially those involving the use of chemical products, due to the new urban regulations established by the latest modification to the Punta Arenas Regulatory Plan.',
         image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Industrial Weekly',
-        date: '2024-03-10'
+        link: 'https://elpinguino.com/noticia/2018/12/20/ambicioso-proyecto-de-parque-industrial-en-cabo-negro',
+        source: 'El Pingüino',
+        date: '2018-12-20'
       },
       {
         id: 4,
-        title: 'Environmental Compliance and Sustainability',
-        description: 'Cabo Negro sets new standards for eco-friendly port operations',
-        image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Green Business',
-        date: '2024-04-05'
+        title: 'Patagon Valley, the project that unites Amazon and SpaceX in southern Chile',
+        description: 'The project that was born in 2019 considers an investment of US$400 million and contemplates the construction of a port in order to take advantage of the booming green hydrogen market, a cornerstone of the efforts of large multinationals to curb CO2 emissions that cause climate change. The port they seek to build in Cabo Negro takes the Rotterdam maritime terminal in the Netherlands as its inspiration model.',
+        image: '/PCORL3V6UJHZPEXYERJXVDM7UQ.webp',
+        link: 'https://www.chileenergias.cl/2022/05/18/patagon-valley-proyecto-une-amazon-spacex-al-sur-chile/',
+        source: 'Chile Energías',
+        date: '2022-05-18'
       }
     ],
     es: [
@@ -70,30 +70,30 @@ const getPressArticles = (locale: string): PressArticle[] => {
       },
       {
         id: 2,
-        title: 'Desarrollo de Infraestructura de Economía del Hidrógeno',
-        description: 'Cabo Negro posicionado como centro clave para operaciones de exportación de hidrógeno verde',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Energía Hoy',
-        date: '2024-02-20'
+        title: 'Patagon Valley, el proyecto que une a Amazon y SpaceX al sur de Chile',
+        description: 'Quienes conocen el terreno explican que las condiciones climáticas son tan duras que los trabajos de edificación se asemejan a una película del alemán Werner Herzog. Fuertes vientos que obligan a afirmarse a una cuerda por temor a caídas sobre la estepa arenosa y un gélido frío son las principales barreras que enfrenta un grupo de emprendedores que decidió levantar el primer parque tecnológico y energético de América Latina: Patagon Valley.',
+        image: '/patagon_valley.webp',
+        link: 'https://www.latercera.com/pulso-pm/noticia/patagon-valley-el-proyecto-que-une-a-amazon-y-spacex-al-sur-de-chile/EFPIMV6M6VGLHFFXOXNWDC5RXU/',
+        source: 'La Tercera',
+        date: '2022-05-13'
       },
       {
         id: 3,
-        title: 'Expansión del Parque Industrial en Patagonia',
-        description: 'Gran inversión en infraestructura industrial sostenible para el sur de Chile',
+        title: 'Ambicioso proyecto de parque industrial en Cabo Negro',
+        description: 'La idea es crear un nuevo parque industrial en una extensión de 179 hectáreas y que se extenderá entre la carretera y el mar, a contar del kilómetro 28 de la ruta 9 Norte. Esta iniciativa surge debido a la necesidad de contar con un espacio debidamente habilitado para la instalación de proyectos industriales, especialmente, aquellos que involucran el uso de productos químicos, debido a las nuevas normativas urbanas establecidas por la última modificación al Plano Regulador de Punta Arenas.',
         image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Industrial Semanal',
-        date: '2024-03-10'
+        link: 'https://elpinguino.com/noticia/2018/12/20/ambicioso-proyecto-de-parque-industrial-en-cabo-negro',
+        source: 'El Pingüino',
+        date: '2018-12-20'
       },
       {
         id: 4,
-        title: 'Cumplimiento Ambiental y Sostenibilidad',
-        description: 'Cabo Negro establece nuevos estándares para operaciones portuarias ecológicas',
-        image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Negocios Verdes',
-        date: '2024-04-05'
+        title: 'Patagon Valley, el proyecto que une a Amazon y SpaceX al sur de Chile',
+        description: 'El proyecto que nació en 2019 considera una inversión de US$400 millones y contempla la construcción de un puerto a fin de aprovechar el pujante mercado del hidrógeno verde, piedra angular de los esfuerzos de grandes transnacionales para frenar las emisiones de CO2 que provocan el cambio climático. El puerto que buscan construir en Cabo Negro lleva como modelo de inspiración el terminal marítimo de Rotterdam, en Países Bajos.',
+        image: '/PCORL3V6UJHZPEXYERJXVDM7UQ.webp',
+        link: 'https://www.chileenergias.cl/2022/05/18/patagon-valley-proyecto-une-amazon-spacex-al-sur-chile/',
+        source: 'Chile Energías',
+        date: '2022-05-18'
       }
     ],
     zh: [
@@ -108,30 +108,30 @@ const getPressArticles = (locale: string): PressArticle[] => {
       },
       {
         id: 2,
-        title: '氢经济基础设施发展',
-        description: '卡波内格罗定位为绿色氢出口运营的关键枢纽',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: '今日能源',
-        date: '2024-02-20'
+        title: 'Patagon Valley，将亚马逊和SpaceX连接在智利南部的项目',
+        description: '了解这片土地的人解释说，气候条件如此恶劣，以至于建设工作就像德国导演Werner Herzog的电影一样。强风迫使人们必须用绳索固定以防在沙质草原上摔倒，以及严寒是决定建设拉丁美洲第一个技术和能源园区的一群企业家面临的主要障碍：Patagon Valley。',
+        image: '/patagon_valley.webp',
+        link: 'https://www.latercera.com/pulso-pm/noticia/patagon-valley-el-proyecto-que-une-a-amazon-y-spacex-al-sur-de-chile/EFPIMV6M6VGLHFFXOXNWDC5RXU/',
+        source: 'La Tercera',
+        date: '2022-05-13'
       },
       {
         id: 3,
-        title: '巴塔哥尼亚工业园扩张',
-        description: '对智利南部可持续工业基础设施的重大投资',
+        title: '卡波内格罗雄心勃勃的工业园区项目',
+        description: '该计划是在179公顷的土地上创建一个新的工业园区，从9号公路北段28公里处开始，延伸至公路与海洋之间。这一倡议源于需要拥有一个适当启用的空间来安装工业项目，特别是那些涉及化学品使用的项目，这是由于对蓬塔阿雷纳斯监管计划的最后修改所建立的新城市规范。',
         image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: '工业周刊',
-        date: '2024-03-10'
+        link: 'https://elpinguino.com/noticia/2018/12/20/ambicioso-proyecto-de-parque-industrial-en-cabo-negro',
+        source: 'El Pingüino',
+        date: '2018-12-20'
       },
       {
         id: 4,
-        title: '环境合规与可持续性',
-        description: '卡波内格罗为生态友好型港口运营设定新标准',
-        image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: '绿色商业',
-        date: '2024-04-05'
+        title: 'Patagon Valley，将亚马逊和SpaceX连接在智利南部的项目',
+        description: '该项目于2019年启动，考虑投资4亿美元，并计划建设一个港口，以利用蓬勃发展的绿色氢市场，这是大型跨国公司努力遏制导致气候变化的CO2排放的基石。他们寻求在卡波内格罗建造的港口以荷兰鹿特丹的海上码头为灵感模型。',
+        image: '/PCORL3V6UJHZPEXYERJXVDM7UQ.webp',
+        link: 'https://www.chileenergias.cl/2022/05/18/patagon-valley-proyecto-une-amazon-spacex-al-sur-chile/',
+        source: 'Chile Energías',
+        date: '2022-05-18'
       }
     ],
     fr: [
@@ -146,30 +146,30 @@ const getPressArticles = (locale: string): PressArticle[] => {
       },
       {
         id: 2,
-        title: 'Développement d\'Infrastructure pour l\'Économie de l\'Hydrogène',
-        description: 'Cabo Negro positionné comme centre clé pour les opérations d\'exportation d\'hydrogène vert',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Énergie Aujourd\'hui',
-        date: '2024-02-20'
+        title: 'Patagon Valley, le projet qui unit Amazon et SpaceX au sud du Chili',
+        description: 'Ceux qui connaissent le terrain expliquent que les conditions climatiques sont si difficiles que les travaux de construction ressemblent à un film du réalisateur allemand Werner Herzog. Des vents forts qui obligent à s\'attacher à une corde par crainte de chutes sur la steppe sablonneuse et un froid glacial sont les principaux obstacles auxquels fait face un groupe d\'entrepreneurs qui a décidé de construire le premier parc technologique et énergétique d\'Amérique latine : Patagon Valley.',
+        image: '/patagon_valley.webp',
+        link: 'https://www.latercera.com/pulso-pm/noticia/patagon-valley-el-proyecto-que-une-a-amazon-y-spacex-al-sur-de-chile/EFPIMV6M6VGLHFFXOXNWDC5RXU/',
+        source: 'La Tercera',
+        date: '2022-05-13'
       },
       {
         id: 3,
-        title: 'Expansion du Parc Industriel en Patagonie',
-        description: 'Investissement majeur dans l\'infrastructure industrielle durable pour le sud du Chili',
+        title: 'Projet ambitieux de parc industriel à Cabo Negro',
+        description: 'L\'idée est de créer un nouveau parc industriel sur une superficie de 179 hectares qui s\'étendra entre la route et la mer, à partir du kilomètre 28 de la route 9 Norte. Cette initiative naît de la nécessité de disposer d\'un espace correctement aménagé pour l\'installation de projets industriels, en particulier ceux impliquant l\'utilisation de produits chimiques, en raison des nouvelles normes urbaines établies par la dernière modification du Plan Régulateur de Punta Arenas.',
         image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Industrie Hebdo',
-        date: '2024-03-10'
+        link: 'https://elpinguino.com/noticia/2018/12/20/ambicioso-proyecto-de-parque-industrial-en-cabo-negro',
+        source: 'El Pingüino',
+        date: '2018-12-20'
       },
       {
         id: 4,
-        title: 'Conformité Environnementale et Durabilité',
-        description: 'Cabo Negro établit de nouvelles normes pour les opérations portuaires écologiques',
-        image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop',
-        link: 'https://www.goremagallanes.cl/comision-regional-de-uso-del-borde-costero-aprueba-concesion-maritima-para-nuevo-puerto-en-punta-arenas/',
-        source: 'Business Vert',
-        date: '2024-04-05'
+        title: 'Patagon Valley, le projet qui unit Amazon et SpaceX au sud du Chili',
+        description: 'Le projet né en 2019 prévoit un investissement de 400 millions de dollars US et comprend la construction d\'un port afin d\'exploiter le marché florissant de l\'hydrogène vert, pierre angulaire des efforts des grandes multinationales pour freiner les émissions de CO2 qui provoquent le changement climatique. Le port qu\'ils cherchent à construire à Cabo Negro s\'inspire du terminal maritime de Rotterdam, aux Pays-Bas.',
+        image: '/PCORL3V6UJHZPEXYERJXVDM7UQ.webp',
+        link: 'https://www.chileenergias.cl/2022/05/18/patagon-valley-proyecto-une-amazon-spacex-al-sur-chile/',
+        source: 'Chile Energías',
+        date: '2022-05-18'
       }
     ]
   }
@@ -179,6 +179,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
 
 export default function Press() {
   const heroRef = useRef<HTMLDivElement>(null)
+  const titleAnimationRef = useRef<VerticalCutRevealRef>(null)
   const pathname = usePathname()
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
   const pressArticles = getPressArticles(locale)
@@ -261,6 +262,19 @@ export default function Press() {
   }
 
   const currentArticleData = pressArticles[currentArticle]
+
+  // Trigger title animation when slide changes or on mount
+  useEffect(() => {
+    if (titleAnimationRef.current) {
+      // Reset and restart animation on slide change
+      titleAnimationRef.current.reset()
+      // Small delay to ensure reset completes before starting
+      const timer = setTimeout(() => {
+        titleAnimationRef.current?.startAnimation()
+      }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [currentArticle])
 
   return (
     <section className="py-8 px-4 bg-white relative z-[10] min-h-screen md:mb-0 mb-4" ref={heroRef} data-keep-navbar-black="true">
@@ -387,15 +401,18 @@ export default function Press() {
           <div className="md:col-span-2">
             <h1 className="sm:text-4xl md:text-5xl text-2xl !leading-[110%] font-semibold text-gray-900 mb-8">
               <VerticalCutReveal
+                key={currentArticle}
+                ref={titleAnimationRef}
                 splitBy="words"
                 staggerDuration={0.1}
                 staggerFrom="first"
                 reverse={true}
+                autoStart={false}
                 transition={{
                   type: 'spring',
                   stiffness: 250,
                   damping: 30,
-                  delay: 3,
+                  delay: 0,
                 }}
               >
                 {currentArticleData.title}

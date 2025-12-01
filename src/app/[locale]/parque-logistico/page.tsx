@@ -173,13 +173,18 @@ export default function ParqueLogisticoPage() {
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-green-900/30 via-black to-black z-0">
-          <div className="absolute inset-0 opacity-20">
-            <div className="w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1),transparent_70%)]" />
-          </div>
+        <div className="absolute inset-0 z-0">
+          <video
+            src="https://res.cloudinary.com/dezm9avsj/video/upload/v1764433255/cabonegro_slide3_ngbqi0.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-0" />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <Warehouse className="w-16 h-16 mx-auto mb-6 text-green-400" />
           <h1 className="text-5xl md:text-7xl font-bold mb-4">
             {localizedText.hero.title}
           </h1>

@@ -172,14 +172,13 @@ export default function NavbarEs() {
 
   // Dropdown animation only after preloader completes
   useEffect(() => {
-    // Check if we're on deck, explore, or contact routes - show navbar immediately and reset hidden state
-    if (pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact')) {
-      // Reset navbar hidden state when navigating to explore/deck pages
+    // Check if we're on deck, explore, contact, or terminal-maritimo routes - show navbar immediately and reset hidden state
+    if (pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact') || pathname.includes('/terminal-maritimo')) {
+      // Reset navbar hidden state when navigating to these pages
       setIsNavbarHidden(false)
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 100) // Quick delay for deck/explore routes
-      return () => clearTimeout(timer)
+      // Show immediately for instant language switching
+      setIsVisible(true)
+      return
     }
     
     // Normal preloader logic for other routes
@@ -343,8 +342,8 @@ export default function NavbarEs() {
     <header 
       ref={navbarRef}
       className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck and explore routes, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') || pathname.includes('/explore')
+      // For deck, explore, contact, and terminal-maritimo routes, only hide if navbar is explicitly hidden
+      pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact') || pathname.includes('/terminal-maritimo')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
         : (isNavbarHidden || isPreloaderVisible
             ? '-translate-y-full opacity-0' 

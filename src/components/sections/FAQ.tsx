@@ -14,20 +14,8 @@ const getFAQs = (locale: string) => {
   const faqs = {
     en: [
       {
-        question: 'What is the investment structure for Cabo Negro Terminal?',
-        answer: 'The project follows a structured 3-phase development timeline designed to minimize risk while maximizing returns. Phase 1 focuses on capital raising and initial studies (6 months), Phase 2 involves comprehensive engineering and regulatory approvals (24 months), and Phase 3 covers project sale or construction partnerships (12 months). This staged approach allows investors to participate in Chile\'s industrial transformation with clear milestones and exit opportunities.'
-      },
-      {
-        question: 'Who are the key partners in this project?',
-        answer: 'The project is developed by J&P S.A. (landowners), PPG S.A. (maritime concession holders), and Compas Marine (JV and terminal expertise). These partnerships provide the necessary land, regulatory approvals, and maritime expertise.'
-      },
-      {
         question: 'What makes Cabo Negro strategically important?',
         answer: 'Cabo Negro is positioned as the primary gateway to Antarctica and serves as an alternative route to the Panama Canal, free of tolls and geopolitical risks. It\'s located at the heart of the Magallanes Region, connecting Atlantic and Pacific Oceans.'
-      },
-      {
-        question: 'What is the regulatory status of the project?',
-        answer: 'The new Plan Regulador 2024-2026 extends urban limits to include Cabo Negro (3,258 hectares) and declares the area as the future industrial nucleus. This allows orderly growth and zoning for large-scale industrial projects.'
       },
       {
         question: 'How does this project support Chile\'s hydrogen economy?',
@@ -40,20 +28,8 @@ const getFAQs = (locale: string) => {
     ],
     es: [
       {
-        question: '¿Cuál es la estructura de inversión para el Terminal Cabo Negro?',
-        answer: 'El proyecto sigue una línea de tiempo estructurada de desarrollo en 3 fases diseñada para minimizar riesgos mientras maximiza retornos. La Fase 1 se enfoca en recaudación de capital y estudios iniciales (6 meses), la Fase 2 involucra ingeniería integral y aprobaciones regulatorias (24 meses), y la Fase 3 cubre venta del proyecto o asociaciones de construcción (12 meses). Este enfoque por etapas permite a los inversionistas participar en la transformación industrial de Chile con hitos claros y oportunidades de salida.'
-      },
-      {
-        question: '¿Quiénes son los socios clave en este proyecto?',
-        answer: 'El proyecto es desarrollado por J&P S.A. (propietarios de tierras), PPG S.A. (titulares de concesión marítima), y Compas Marine (JV y experiencia en terminales). Estas asociaciones proporcionan la tierra necesaria, aprobaciones regulatorias y experiencia marítima.'
-      },
-      {
         question: '¿Qué hace estratégicamente importante a Cabo Negro?',
         answer: 'Cabo Negro está posicionado como la puerta de entrada principal a la Antártida y sirve como ruta alternativa al Canal de Panamá, libre de peajes y riesgos geopolíticos. Está ubicado en el corazón de la Región de Magallanes, conectando los Océanos Atlántico y Pacífico.'
-      },
-      {
-        question: '¿Cuál es el estado regulatorio del proyecto?',
-        answer: 'El nuevo Plan Regulador 2024-2026 extiende los límites urbanos para incluir Cabo Negro (3,258 hectáreas) y declara el área como el futuro núcleo industrial. Esto permite crecimiento ordenado y zonificación para proyectos industriales a gran escala.'
       },
       {
         question: '¿Cómo apoya este proyecto la economía del hidrógeno de Chile?',
@@ -66,20 +42,8 @@ const getFAQs = (locale: string) => {
     ],
     zh: [
       {
-        question: '卡波内格罗终端的投资结构是什么？',
-        answer: '该项目遵循结构化的3阶段开发时间表，旨在最小化风险同时最大化回报。第一阶段专注于资本筹集和初步研究（6个月），第二阶段涉及综合工程和监管批准（24个月），第三阶段涵盖项目销售或建设合作伙伴关系（12个月）。这种分阶段方法使投资者能够参与智利的工业转型，具有明确的里程碑和退出机会。'
-      },
-      {
-        question: '这个项目的主要合作伙伴是谁？',
-        answer: '该项目由J&P S.A.（土地所有者）、PPG S.A.（海事特许权持有者）和Compas Marine（合资企业和终端专业知识）开发。这些合作伙伴关系提供了必要的土地、监管批准和海事专业知识。'
-      },
-      {
         question: '什么使卡波内格罗具有战略重要性？',
         answer: '卡波内格罗被定位为通往南极洲的主要门户，并作为巴拿马运河的替代路线，免收通行费且无地缘政治风险。它位于麦哲伦地区的中心，连接大西洋和太平洋。'
-      },
-      {
-        question: '项目的监管状况如何？',
-        answer: '新的2024-2026年规划条例将城市边界扩展到包括卡波内格罗（3,258公顷），并将该地区宣布为未来的工业核心。这允许有序增长和大型工业项目的分区。'
       },
       {
         question: '这个项目如何支持智利的氢经济？',
@@ -92,20 +56,8 @@ const getFAQs = (locale: string) => {
     ],
     fr: [
       {
-        question: 'Quelle est la structure d\'investissement pour le Terminal Cabo Negro?',
-        answer: 'Le projet suit un calendrier de développement structuré en 3 phases conçu pour minimiser les risques tout en maximisant les rendements. La Phase 1 se concentre sur la levée de capitaux et les études initiales (6 mois), la Phase 2 implique l\'ingénierie complète et les approbations réglementaires (24 mois), et la Phase 3 couvre la vente du projet ou les partenariats de construction (12 mois). Cette approche par étapes permet aux investisseurs de participer à la transformation industrielle du Chili avec des jalons clairs et des opportunités de sortie.'
-      },
-      {
-        question: 'Qui sont les partenaires clés de ce projet?',
-        answer: 'Le projet est développé par J&P S.A. (propriétaires fonciers), PPG S.A. (titulaires de concession maritime), et Compas Marine (coentreprise et expertise en terminaux). Ces partenariats fournissent les terres nécessaires, les approbations réglementaires et l\'expertise maritime.'
-      },
-      {
         question: 'Qu\'est-ce qui rend Cabo Negro stratégiquement important?',
         answer: 'Cabo Negro est positionné comme la porte d\'entrée principale vers l\'Antarctique et sert de route alternative au Canal de Panama, sans péages et sans risques géopolitiques. Il est situé au cœur de la Région de Magallanes, reliant les océans Atlantique et Pacifique.'
-      },
-      {
-        question: 'Quel est le statut réglementaire du projet?',
-        answer: 'Le nouveau Plan Régulateur 2024-2026 étend les limites urbaines pour inclure Cabo Negro (3 258 hectares) et déclare la zone comme le futur noyau industriel. Cela permet une croissance ordonnée et un zonage pour les projets industriels à grande échelle.'
       },
       {
         question: 'Comment ce projet soutient-il l\'économie de l\'hydrogène du Chili?',

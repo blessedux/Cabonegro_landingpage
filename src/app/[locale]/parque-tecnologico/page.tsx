@@ -1,21 +1,30 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, usePathname } from 'next/navigation'
 import { ArrowLeft, Download, Calendar, Mail } from 'lucide-react'
 import Image from 'next/image'
-import Navbar from '@/components/sections/Navbar'
-import NavbarEs from '@/components/sections/Navbar-es'
-import NavbarZh from '@/components/sections/Navbar-zh'
-import Footer from '@/components/sections/Footer'
-import CookieBanner from '@/components/sections/CookieBanner'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 
+// Code-split navigation components - only load when needed
+const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
+const NavbarEs = dynamic(() => import('@/components/sections/Navbar-es'), { ssr: false })
+const NavbarZh = dynamic(() => import('@/components/sections/Navbar-zh'), { ssr: false })
+
+// Code-split footer and cookie banner - only load when needed
+const Footer = dynamic(() => import('@/components/sections/Footer'), { 
+  ssr: false,
+  loading: () => <div className="min-h-[200px]" />
+})
+const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
+
 export default function ParqueTecnologicoPage() {
   const params = useParams()
   const router = useRouter()
-  const locale = params?.locale as string || 'en'
+  const pathname = usePathname()
+  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -27,26 +36,39 @@ export default function ParqueTecnologicoPage() {
           subtitle: 'Technological & Logistics Park'
         },
         vision: {
-          title: 'Vision and Advantages',
-          description: 'Patagon Valley offers unique connectivity advantages in the southernmost region of the world:',
+          title: 'Technological Ecosystem of the Southernmost End of the World',
+          subtitle: 'For energy-intensive companies, satellite connectivity and advanced industrial operations',
+          description: 'Patagon Valley has available land, ideal for companies seeking to develop their projects in an area with excellent connectivity in every sense. The land has a strategic location in terms of:',
           items: [
-            'Austral Fiber Optic: High-speed connectivity infrastructure',
-            'Route 9 North: Direct access to main transportation corridor',
-            'LEO Orbit: Strategic location for satellite and space technology',
-            'Port Proximity: Close connection to maritime terminal'
+            {
+              title: 'Direct Connection to Austral Fiber Optic',
+              description: 'Allowing high-capacity and low-latency data transmission.'
+            },
+            {
+              title: 'Immediate Access to Route 9 North',
+              description: 'International highway connecting the southern end of Chile with Argentina and the rest of Patagonia.'
+            },
+            {
+              title: 'Privileged Satellite Connection',
+              description: 'Taking advantage of the polar LEO (Low Earth Orbit), which offers greater communication stability and speed in data transfer thanks to the proximity of satellites to the Earth\'s surface.'
+            },
+            {
+              title: 'Logistics Connectivity with Port Project',
+              description: 'Since Patagon Valley land is located X km from the Cabo Negro Maritime Terminal area, making it an ideal alternative for technological and logistics projects requiring operational proximity to the port.'
+            }
           ]
         },
         commercial: {
           title: 'Commercial Focus',
-          description: 'Patagon Valley is designed for cutting-edge technology sectors:',
+          description: 'We are open to receiving any company or institution interested in developing their projects within our areas, promoting the natural synergy generated in this port, technological and logistics hub. Considering the characteristics of the different pillars of Cabo Negro, we identify as potential interested parties companies linked to:',
           sectors: [
             'Artificial Intelligence',
             'Marine Robotics',
-            'Green Hydrogen',
-            'Satellite and Space Technology',
-            'Data Centers',
-            'Telecommunications',
-            'Logistics and Industry'
+            'Energy and industries associated with green hydrogen',
+            'Satellite and space sector',
+            'Data centers and high energy demand services',
+            'Telecommunications and advanced connectivity',
+            'Logistics and industrial development'
           ]
         },
         clients: {
@@ -68,26 +90,39 @@ export default function ParqueTecnologicoPage() {
           subtitle: 'Parque Tecnológico & Logístico'
         },
         vision: {
-          title: 'Visión y Ventajas',
-          description: 'Patagon Valley ofrece ventajas únicas de conectividad en el extremo sur del mundo:',
+          title: 'Ecosistema tecnológico del extremo sur del mundo',
+          subtitle: 'Para empresas intensivas en energía, conectividad satelital y operaciones industriales avanzadas',
+          description: 'Patagon Valley cuenta con terrenos disponibles, ideales para empresas que busquen desarrollar sus proyectos en una zona con excelente conectividad en todo sentido. Los terrenos cuentan con una ubicación estratégica en cuanto:',
           items: [
-            'Fibra Óptica Austral: Infraestructura de conectividad de alta velocidad',
-            'Ruta 9 Norte: Acceso directo al corredor principal de transporte',
-            'Órbita LEO: Ubicación estratégica para tecnología satelital y espacial',
-            'Proximidad al puerto: Conexión cercana al terminal marítimo'
+            {
+              title: 'Conexión directa a Fibra Óptica Austral',
+              description: 'Permitiendo transmisión de datos de alta capacidad y baja latencia.'
+            },
+            {
+              title: 'Acceso inmediato a Ruta 9 Norte',
+              description: 'Carretera internacional que conecta el extremo sur de Chile con Argentina y el resto de la Patagonia.'
+            },
+            {
+              title: 'Conexión satelital privilegiada',
+              description: 'Aprovechando la órbita polar LEO (Low Earth Orbit), que ofrece mayor estabilidad en la comunicación y rapidez en el traspaso de datos gracias a la cercanía de los satélites a la superficie terrestre.'
+            },
+            {
+              title: 'Conectividad logística con el proyecto portuario',
+              description: 'Ya que los terrenos de Patagon Valley se encuentran a X km del área del Terminal Marítimo Cabo Negro, lo que los convierte en una alternativa ideal para proyectos tecnológicos y logísticos que requieran proximidad operativa al puerto.'
+            }
           ]
         },
         commercial: {
           title: 'Enfoque Comercial',
-          description: 'Patagon Valley está diseñado para sectores tecnológicos de vanguardia:',
+          description: 'Estamos abiertos a recibir a cualquier empresa o institución interesada en desarrollar sus proyectos dentro de nuestras áreas, promoviendo la sinergia natural que se genera en este polo portuario, tecnológico y logístico. Considerando las características de los distintos pilares de Cabo Negro, identificamos como potenciales interesados a empresas vinculadas con:',
           sectors: [
-            'Inteligencia Artificial',
-            'Robótica Marina',
-            'Hidrógeno Verde',
-            'Tecnología Satelital y Espacial',
-            'Centros de Datos',
-            'Telecomunicaciones',
-            'Logística e Industria'
+            'Inteligencia artificial',
+            'Robótica marina',
+            'Energía e industrias asociadas al hidrógeno verde',
+            'Sector satelital y espacial',
+            'Data centers y servicios de alta demanda energética',
+            'Telecomunicaciones y conectividad avanzada',
+            'Desarrollo logístico e industrial'
           ]
         },
         clients: {
@@ -109,26 +144,39 @@ export default function ParqueTecnologicoPage() {
           subtitle: '科技与物流园区'
         },
         vision: {
-          title: '愿景与优势',
-          description: 'Patagon Valley 在世界最南端提供独特的连接优势：',
+          title: '世界最南端的技术生态系统',
+          subtitle: '面向能源密集型公司、卫星连接和先进工业运营',
+          description: 'Patagon Valley 拥有可用土地，非常适合寻求在各方面连接性极佳的地区开发项目的公司。这些土地在以下方面具有战略位置：',
           items: [
-            '南方光纤：高速连接基础设施',
-            '9号公路北段：直接通往主要交通走廊',
-            '低地球轨道：卫星和空间技术的战略位置',
-            '港口邻近：与海运码头的紧密连接'
+            {
+              title: '直接连接南方光纤',
+              description: '允许高容量和低延迟的数据传输。'
+            },
+            {
+              title: '立即通往9号公路北段',
+              description: '连接智利南端与阿根廷和巴塔哥尼亚其他地区的国际高速公路。'
+            },
+            {
+              title: '特权卫星连接',
+              description: '利用极地低地球轨道（LEO），由于卫星靠近地球表面，提供更大的通信稳定性和数据传输速度。'
+            },
+            {
+              title: '与港口项目的物流连接',
+              description: '由于 Patagon Valley 的土地位于卡波内格罗海运码头区域 X 公里处，使其成为需要靠近港口运营的技术和物流项目的理想选择。'
+            }
           ]
         },
         commercial: {
           title: '商业重点',
-          description: 'Patagon Valley 专为前沿技术领域设计：',
+          description: '我们欢迎任何有兴趣在我们区域内开发项目的公司或机构，促进这个港口、技术和物流中心产生的自然协同效应。考虑到卡波内格罗不同支柱的特点，我们确定以下相关公司为潜在感兴趣方：',
           sectors: [
             '人工智能',
             '海洋机器人',
-            '绿色氢能',
-            '卫星与空间技术',
-            '数据中心',
-            '电信',
-            '物流与工业'
+            '能源和与绿色氢相关的产业',
+            '卫星和空间部门',
+            '数据中心和高能源需求服务',
+            '电信和先进连接',
+            '物流和工业发展'
           ]
         },
         clients: {
@@ -150,26 +198,39 @@ export default function ParqueTecnologicoPage() {
           subtitle: 'Parc Technologique & Logistique'
         },
         vision: {
-          title: 'Vision et Avantages',
-          description: 'Patagon Valley offre des avantages de connectivité uniques dans la région la plus méridionale du monde :',
+          title: 'Écosystème technologique de l\'extrémité la plus méridionale du monde',
+          subtitle: 'Pour les entreprises à forte intensité énergétique, la connectivité satellitaire et les opérations industrielles avancées',
+          description: 'Patagon Valley dispose de terrains disponibles, idéaux pour les entreprises cherchant à développer leurs projets dans une zone avec une excellente connectivité à tous égards. Les terrains ont un emplacement stratégique en termes de :',
           items: [
-            'Fibre Optique Australe : Infrastructure de connectivité haute vitesse',
-            'Route 9 Nord : Accès direct au corridor de transport principal',
-            'Orbite LEO : Emplacement stratégique pour la technologie satellitaire et spatiale',
-            'Proximité du port : Connexion étroite au terminal maritime'
+            {
+              title: 'Connexion directe à la Fibre Optique Australe',
+              description: 'Permettant la transmission de données à haute capacité et à faible latence.'
+            },
+            {
+              title: 'Accès immédiat à la Route 9 Nord',
+              description: 'Autoroute internationale reliant l\'extrémité sud du Chili à l\'Argentine et au reste de la Patagonie.'
+            },
+            {
+              title: 'Connexion satellitaire privilégiée',
+              description: 'Tirant parti de l\'orbite polaire LEO (Low Earth Orbit), qui offre une plus grande stabilité de communication et une vitesse de transfert de données grâce à la proximité des satellites à la surface de la Terre.'
+            },
+            {
+              title: 'Connectivité logistique avec le projet portuaire',
+              description: 'Étant donné que les terrains de Patagon Valley sont situés à X km de la zone du Terminal Maritime Cabo Negro, ce qui en fait une alternative idéale pour les projets technologiques et logistiques nécessitant une proximité opérationnelle au port.'
+            }
           ]
         },
         commercial: {
           title: 'Focus Commercial',
-          description: 'Patagon Valley est conçu pour les secteurs technologiques de pointe :',
+          description: 'Nous sommes ouverts à recevoir toute entreprise ou institution intéressée à développer ses projets dans nos zones, promouvant la synergie naturelle générée dans ce pôle portuaire, technologique et logistique. Compte tenu des caractéristiques des différents piliers de Cabo Negro, nous identifions comme parties potentiellement intéressées les entreprises liées à :',
           sectors: [
             'Intelligence Artificielle',
             'Robotique Marine',
-            'Hydrogène Vert',
-            'Technologie Satellitaire et Spatiale',
-            'Centres de Données',
-            'Télécommunications',
-            'Logistique et Industrie'
+            'Énergie et industries associées à l\'hydrogène vert',
+            'Secteur satellitaire et spatial',
+            'Centres de données et services à forte demande énergétique',
+            'Télécommunications et connectivité avancée',
+            'Développement logistique et industriel'
           ]
         },
         clients: {
@@ -217,10 +278,16 @@ export default function ParqueTecnologicoPage() {
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-black to-black z-0">
-          <div className="absolute inset-0 opacity-20">
-            <div className="w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
-          </div>
+        <div className="absolute inset-0 z-0">
+          <video
+            src="https://res.cloudinary.com/dezm9avsj/video/upload/v1764433255/cabonegro_slide3_ngbqi0.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-0" />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-4">
@@ -236,18 +303,22 @@ export default function ParqueTecnologicoPage() {
       <section className="py-20 px-6">
         <div className="container mx-auto max-w-6xl">
           <div className="mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
               {localizedText.vision.title}
             </h2>
-            <p className="text-xl text-gray-300 mb-8 max-w-3xl">
+            <p className="text-xl md:text-2xl text-blue-400 mb-6 font-semibold">
+              {localizedText.vision.subtitle}
+            </p>
+            <p className="text-xl text-gray-300 mb-8 max-w-4xl leading-relaxed">
               {localizedText.vision.description}
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
-            {localizedText.vision.items.map((item: string, index: number) => (
-              <Card key={index} className="bg-white/5 border-white/10">
+            {localizedText.vision.items.map((item: any, index: number) => (
+              <Card key={index} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
                 <CardContent className="p-6">
-                  <p className="text-lg">{item}</p>
+                  <h3 className="text-xl font-bold mb-3 text-blue-400">{item.title}</h3>
+                  <p className="text-gray-300 leading-relaxed">{item.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -263,23 +334,26 @@ export default function ParqueTecnologicoPage() {
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
                 {localizedText.commercial.title}
               </h2>
-              <p className="text-xl text-gray-300 mb-8">
+              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
                 {localizedText.commercial.description}
               </p>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-1 gap-4">
                 {localizedText.commercial.sectors.map((sector: string, index: number) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                    <span className="text-lg">{sector}</span>
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
+                    <span className="text-lg text-gray-300">{sector}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="relative h-[400px] rounded-lg overflow-hidden bg-gradient-to-br from-blue-900/20 to-purple-900/20 flex items-center justify-center">
-              <div className="text-center p-8">
-                <div className="text-6xl mb-4">🚀</div>
-                <p className="text-gray-400">Technological Innovation Hub</p>
-              </div>
+            <div className="relative h-[400px] rounded-lg overflow-hidden">
+              <Image
+                src="/patagon_valley.webp"
+                alt="Patagon Valley - Commercial Focus"
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 to-purple-900/30" />
             </div>
           </div>
         </div>
@@ -336,7 +410,7 @@ export default function ParqueTecnologicoPage() {
               </Link>
             </Button>
             <Button asChild variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8 py-6">
-              <Link href="#">
+              <Link href={`/downloads/patagon-valley-fact-sheet.pdf`} target="_blank" rel="noopener noreferrer">
                 <Download className="w-5 h-5 mr-2" />
                 {localizedText.contact.downloadBtn}
               </Link>

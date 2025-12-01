@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion'
+import { useEffect, useState, useRef, useLayoutEffect } from 'react'
+import { motion, useScroll, useTransform, useMotionValueEvent, useSpring, useMotionValue } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { Button } from '@/components/ui/button'
@@ -226,15 +226,24 @@ export default function Stats() {
   const scrollYProgress = aboutUsScrollProgress
 
   // Track when Partners section reaches 50% of viewport (center line)
-  // Use useEffect to find Partners section by data attribute
+  // Use statsRef as the target to avoid hydration errors - it's always attached to a valid element
+  // We'll manually find the Partners section for any future calculations if needed
   const partnersSectionRef = useRef<HTMLElement | null>(null)
   
+  // Find Partners section for potential future use (not used in useScroll to avoid hydration issues)
   useEffect(() => {
-    partnersSectionRef.current = document.querySelector('[data-partners-section="true"]') as HTMLElement
+    if (typeof window !== 'undefined') {
+      const element = document.querySelector('[data-partners-section="true"]') as HTMLElement
+      if (element) {
+        partnersSectionRef.current = element
+      }
+    }
   }, [])
   
+  // Use statsRef directly as target - it's always valid and attached to the motion.section element
+  // This prevents "Target ref is defined but not hydrated" errors
   const { scrollYProgress: partnersScrollProgress } = useScroll({
-    target: partnersSectionRef,
+    target: statsRef,
     offset: ["start center", "start start"]
   })
 

@@ -10,20 +10,8 @@ import { MagicText } from "@/components/ui/magic-text"
 
 const faqsEs = [
   {
-    question: '¿Cuál es la estructura de inversión para el Terminal Cabo Negro?',
-    answer: 'El proyecto sigue una línea de tiempo estructurada de desarrollo en 3 fases diseñada para minimizar riesgos mientras maximiza retornos. La Fase 1 se enfoca en recaudación de capital y estudios iniciales (6 meses), la Fase 2 involucra ingeniería integral y aprobaciones regulatorias (24 meses), y la Fase 3 cubre venta del proyecto o asociaciones de construcción (12 meses). Este enfoque por etapas permite a los inversionistas participar en la transformación industrial de Chile con hitos claros y oportunidades de salida.'
-  },
-  {
-    question: '¿Quiénes son los socios clave en este proyecto?',
-    answer: 'El proyecto es desarrollado por J&P S.A. (propietarios de tierras), PPG S.A. (titulares de concesión marítima), y Compas Marine (JV y experiencia en terminales). Estas asociaciones proporcionan la tierra necesaria, aprobaciones regulatorias y experiencia marítima.'
-  },
-  {
     question: '¿Qué hace estratégicamente importante a Cabo Negro?',
     answer: 'Cabo Negro está posicionado como la puerta de entrada principal a la Antártida y sirve como ruta alternativa al Canal de Panamá, libre de peajes y riesgos geopolíticos. Está ubicado en el corazón de la Región de Magallanes, conectando los Océanos Atlántico y Pacífico.'
-  },
-  {
-    question: '¿Cuál es el estado regulatorio del proyecto?',
-    answer: 'El nuevo Plan Regulador 2024-2026 extiende los límites urbanos para incluir Cabo Negro (3,258 hectáreas) y declara el área como el futuro núcleo industrial. Esto permite crecimiento ordenado y zonificación para proyectos industriales a gran escala.'
   },
   {
     question: '¿Cómo apoya este proyecto la economía del hidrógeno de Chile?',

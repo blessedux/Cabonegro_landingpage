@@ -4,9 +4,18 @@ import React, { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { GradientHeading } from '@/components/ui/gradient-heading'
-import { MagicText } from '@/components/ui/magic-text'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
+
+// Code-split UI components - only load when needed
+const GradientHeading = dynamic(() => import('@/components/ui/gradient-heading').then(mod => ({ default: mod.GradientHeading })), { 
+  ssr: false,
+  loading: () => <div className="h-12" />
+})
+const MagicText = dynamic(() => import('@/components/ui/magic-text').then(mod => ({ default: mod.MagicText })), { 
+  ssr: false,
+  loading: () => <div className="h-6" />
+})
 
 // Define the logos from your public/logos directory
 const partnerLogos = [
