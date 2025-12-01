@@ -11,6 +11,7 @@ import Link from 'next/link'
 
 // Type declaration for spline-viewer custom element
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
       'spline-viewer': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
