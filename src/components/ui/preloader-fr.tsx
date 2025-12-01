@@ -21,7 +21,7 @@ interface PreloaderProps {
 
 const TERMINAL_LINES_FR: TerminalLine[] = [
   // Main lines - Cabo Negro specific in French
-  { id: 'line-1', top: 0, text: 'Zone Industrielle Cabo Negro : Région de Magallanes', type: 'faded', scramble: true },
+  { id: 'line-1', top: 0, text: '300+ Hectares Disponibles pour l\'Achat de Terres en Patagonie - Cabo Negro', type: 'highlight', scramble: true },
   { id: 'line-2', top: 0, text: 'Porte d\'Entrée Stratégique vers l\'Antarctique Sécurisée', type: 'highlight', scramble: true },
   { id: 'line-3', top: 30, text: 'Analyse du Potentiel d\'Hydrogène Vert H₂V', type: 'faded', scramble: true },
   { id: 'line-4', top: 30, text: '13% de la Production Mondiale d\'Hydrogène Vert Détectée', type: 'highlight', scramble: true },
@@ -47,14 +47,16 @@ const TERMINAL_LINES_FR: TerminalLine[] = [
 // Track running scramble animations to prevent duplicates
 const runningScrambles = new WeakMap<HTMLElement, () => void>()
 
-// Custom scramble effect function - reveals letters one by one, never reverts
-// Now accepts onComplete callback to track when animation finishes
+// Custom scramble effect function - reveals letters one by one, then continues scrambling
+// Now accepts onComplete callback to track when initial reveal finishes
+// After reveal, continues with subtle continuous scrambling effect
 const scrambleText = (
   element: HTMLElement, 
   originalText: string, 
   chars: string = '▪', 
   speed: number = 0.1,
-  onComplete?: () => void
+  onComplete?: () => void,
+  continueScrambling: boolean = true // New parameter to continue scrambling after reveal
 ) => {
   if (!element || !originalText) {
     onComplete?.()
@@ -70,45 +72,127 @@ const scrambleText = (
   element.textContent = originalText.split('').map(() => chars[0]).join('')
   
   let iterations = 0
-  let isComplete = false
+  let isRevealComplete = false
+  let continuousScrambleInterval: number | null = null
+  let revealRafId: number | null = null
+  let lastRevealTime = performance.now()
+  const revealInterval = speed * 100 // Time between each letter reveal in ms
   
-  const interval = setInterval(() => {
-    if (!element || !element.parentElement || isComplete) {
-      clearInterval(interval)
+  // Use requestAnimationFrame for smooth, fluid reveal animation
+  const revealAnimation = (currentTime: number) => {
+    if (!element || !element.parentElement) {
+      if (continuousScrambleInterval !== null) {
+        cancelAnimationFrame(continuousScrambleInterval)
+      }
+      if (revealRafId !== null) {
+        cancelAnimationFrame(revealRafId)
+      }
       runningScrambles.delete(element)
       onComplete?.()
       return
     }
     
-    // Reveal letters one by one
-    element.textContent = originalText
-      .split('')
-      .map((char, index) => {
-        if (index < iterations) {
-          // This letter is already revealed - keep it
-          return originalText[index]
-        }
-        // This letter is not yet revealed - show dot
-        return chars[0]
-      })
-      .join('')
-    
-    // Once all letters are revealed, stop
-    if (iterations >= originalText.length) {
-      isComplete = true
-      clearInterval(interval)
+    // Check if enough time has passed to reveal next letter
+    if (currentTime - lastRevealTime >= revealInterval) {
+      lastRevealTime = currentTime
+      
+      // Reveal letters one by one
       element.textContent = originalText
-      runningScrambles.delete(element)
-      onComplete?.()
-      return
+        .split('')
+        .map((char, index) => {
+          if (index < iterations) {
+            // This letter is already revealed - keep it
+            return originalText[index]
+          }
+          // This letter is not yet revealed - show dot
+          return chars[0]
+        })
+        .join('')
+      
+      // Once all letters are revealed, start continuous scrambling
+      if (iterations >= originalText.length && !isRevealComplete) {
+        isRevealComplete = true
+        element.textContent = originalText
+        
+        // Call onComplete when reveal is done (for tracking purposes)
+        onComplete?.()
+        
+        // Start continuous subtle scrambling effect - keeps text moving
+        // Uses requestAnimationFrame for better performance and doesn't block DOM
+        if (continueScrambling) {
+          let lastScrambleTime = 0
+          const scrambleInterval = 200 + Math.random() * 300 // Random interval for organic feel
+          
+          const continuousScramble = (scrambleTime: number) => {
+            if (!element || !element.parentElement) {
+              return
+            }
+            
+            // Only scramble at intervals (not every frame) for performance
+            if (scrambleTime - lastScrambleTime >= scrambleInterval) {
+              lastScrambleTime = scrambleTime
+              
+              // Subtle continuous scramble - randomly replace 1-2 characters with dots briefly
+              const textArray = originalText.split('')
+              const numToScramble = Math.min(2, Math.floor(Math.random() * 2) + 1)
+              const indicesToScramble: number[] = []
+              
+              // Pick random indices to scramble
+              for (let i = 0; i < numToScramble; i++) {
+                const randomIndex = Math.floor(Math.random() * textArray.length)
+                if (!indicesToScramble.includes(randomIndex)) {
+                  indicesToScramble.push(randomIndex)
+                }
+              }
+              
+              // Apply scramble
+              const scrambledText = textArray.map((char, index) => {
+                if (indicesToScramble.includes(index)) {
+                  return chars[0]
+                }
+                return char
+              }).join('')
+              
+              element.textContent = scrambledText
+              
+              // Restore after brief moment using RAF for better performance
+              requestAnimationFrame(() => {
+                setTimeout(() => {
+                  if (element && element.parentElement) {
+                    element.textContent = originalText
+                  }
+                }, 50 + Math.random() * 100) // Random restore time for organic feel
+              })
+            }
+            
+            // Continue animation loop
+            continuousScrambleInterval = requestAnimationFrame(continuousScramble) as any
+          }
+          
+          continuousScrambleInterval = requestAnimationFrame(continuousScramble) as any
+        }
+        
+        return
+      }
+      
+      // Increment to reveal next letter
+      iterations += 1
     }
     
-    // Increment to reveal next letter
-    iterations += 1
-  }, speed * 100)
+    // Continue animation loop
+    revealRafId = requestAnimationFrame(revealAnimation)
+  }
+  
+  // Start the smooth reveal animation
+  revealRafId = requestAnimationFrame(revealAnimation)
   
   const cleanup = () => {
-    clearInterval(interval)
+    if (revealRafId !== null) {
+      cancelAnimationFrame(revealRafId)
+    }
+    if (continuousScrambleInterval !== null) {
+      cancelAnimationFrame(continuousScrambleInterval)
+    }
     runningScrambles.delete(element)
     onComplete?.()
   }
@@ -211,11 +295,12 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
       const maxProgress = Math.max(maxActualProgressRef.current, progress)
       maxActualProgressRef.current = maxProgress
       
-      // Only update if change is significant (reduce jumping) and it's forward
-      if (maxProgress > lastActualProgressRef.current && Math.abs(maxProgress - lastActualProgressRef.current) > 2) {
+      // Update smoothly - accept any forward progress, no threshold
+      // The interpolation will handle smoothness
+      if (maxProgress > lastActualProgressRef.current) {
         lastActualProgressRef.current = maxProgress
         actualProgressRef.current = maxProgress // Update ref for access without re-renders
-        setActualProgress(maxProgress)
+        // Don't set state here - let the RAF loop handle smooth updates
       }
     },
     minLoadingTime: 2000,
@@ -236,41 +321,26 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
     }
   }, [])
 
-  // Function to check if we can start fade out (both progress and animations complete)
+  // Function to check if we can start fade out - PROMPTLY when progress reaches 100%
+  // Scrambled text continues animating but doesn't block fade out
   const checkAndStartFadeOut = () => {
     if (fadeOutStartedRef.current) return // Already started
     
     const progressComplete = parseFloat(progressBarRef.current?.style.width || '0') >= 99.5
     
-    // Check if animations are complete
-    // Animations are complete ONLY when:
-    // 1. We have no running animations (size === 0) AND
-    // 2. We've marked them as complete OR there were no animations to begin with
-    const hasRunningAnimations = scrambleAnimationsRef.current.size > 0
-    const animationsComplete = !hasRunningAnimations && (allAnimationsCompleteRef.current || scrambleAnimationsRef.current.size === 0)
-    
-    // Only fade out when BOTH progress is complete AND all animations are finished
-    if (progressComplete && animationsComplete) {
+    // Fade out PROMPTLY when progress reaches 100%
+    // Scrambled text animations continue in background but don't block fade out
+    if (progressComplete) {
       fadeOutStartedRef.current = true
-      // Start fade out smoothly
+      // Start fade out immediately - no waiting for animations
       onFadeOutStart?.()
       setIsFadingOut(true)
       
-      // Hide preloader after fade completes
+      // Hide preloader after fade completes - faster transition
       setTimeout(() => {
         setIsVisible(false)
         onComplete?.()
-      }, 600) // Match fade duration
-    } else {
-      // If progress is complete but animations aren't, keep progress at 100% and wait
-      // This ensures the progress bar doesn't freeze mid-animation
-      if (progressComplete && hasRunningAnimations) {
-        // Keep progress at 100% while waiting for animations
-        if (progressBarRef.current) {
-          progressBarRef.current.style.width = '100%'
-          setProgress(100)
-        }
-      }
+      }, 400) // Faster fade duration for prompt transition
     }
   }
 
@@ -349,18 +419,20 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
               if (originalTextCheck) {
                 // Start scramble animation with completion callback
                 // This animation runs independently - like a video, it completes its full cycle
+                // Start scramble animation with completion callback
+                // This animation runs independently - like a video, it completes its full cycle
+                // Continue scrambling after reveal completes - text keeps moving even after 100%
                 scrambleText(span as HTMLElement, originalTextCheck, specialChars, 0.1, () => {
-                  // Remove from tracking when complete
+                  // Remove from tracking when reveal is complete (but scrambling continues)
                   scrambleAnimationsRef.current.delete(span as HTMLElement)
                   
-                  // Check if all animations are complete
+                  // Check if all reveal animations are complete
                   if (scrambleAnimationsRef.current.size === 0) {
                     allAnimationsCompleteRef.current = true
-                    // Trigger fade out if progress is also complete
-                    // But don't stop animations - they should complete naturally
-                    checkAndStartFadeOut()
+                    // Don't block fade out - scrambled text continues in background
+                    // Fade out happens promptly when progress reaches 100%
                   }
-                })
+                }, true) // Continue scrambling after reveal
               } else {
                 // No text, mark as complete immediately
                 scrambleAnimationsRef.current.delete(span as HTMLElement)
@@ -453,9 +525,10 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
           }
         }
         
-        // Smooth progress updates - always moves forward
+        // Smooth progress updates - always moves forward with easing
         // Uses ref to get latest actualProgress without causing animation re-runs
-        const updateProgressSmoothly = () => {
+        let lastUpdateTime = performance.now()
+        const updateProgressSmoothly = (currentTime: number = performance.now()) => {
           if (progressBarRef.current) {
             const currentProgress = parseFloat(progressBarRef.current.style.width) || 0
             const latestActualProgress = actualProgressRef.current // Get latest from ref
@@ -465,18 +538,35 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
             
             // Only update if we can move forward
             if (targetProgress > currentProgress) {
-              // Smooth interpolation towards target (but never backwards)
+              // Calculate delta time for frame-rate independent animation
+              const deltaTime = Math.min((currentTime - lastUpdateTime) / 16.67, 2) // Cap at 2 frames
+              lastUpdateTime = currentTime
+              
+              // Smooth easing interpolation - exponential ease-out for natural feel
               const diff = targetProgress - currentProgress
-              const step = diff * 0.2 // Smooth step size (20% of difference)
-              const newProgress = Math.min(100, currentProgress + step)
+              // Use smaller step for smoother animation (8% per frame at 60fps = smooth)
+              // Adjust based on deltaTime for frame-rate independence
+              const easingFactor = 0.08 * deltaTime
+              const step = diff * easingFactor
+              
+              // Ensure minimum step to prevent stalling
+              const minStep = 0.1
+              const actualStep = Math.max(step, minStep)
+              const newProgress = Math.min(100, currentProgress + actualStep)
               
               setProgressForward(newProgress)
             }
           }
         }
 
-        // Update progress smoothly every 100ms (less frequent = smoother)
-        const progressInterval = setInterval(updateProgressSmoothly, 100)
+        // Update progress smoothly using requestAnimationFrame for better performance
+        // This doesn't block the main thread and allows DOM to load beneath
+        let rafId: number | null = null
+        const updateProgressWithRAF = (currentTime: number) => {
+          updateProgressSmoothly(currentTime)
+          rafId = requestAnimationFrame(updateProgressWithRAF)
+        }
+        rafId = requestAnimationFrame(updateProgressWithRAF)
 
         // GSAP animation to ensure we reach 100% by the end of duration
         // This runs in parallel but respects the forward-only rule
@@ -499,27 +589,29 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
           },
           onComplete: () => {
             setProgressForward(100)
-            clearInterval(progressInterval)
+            if (rafId !== null) {
+              cancelAnimationFrame(rafId)
+            }
             // Ensure progress bar is at 100%
             if (progressBarRef.current) {
               progressBarRef.current.style.width = '100%'
               maxProgressReachedRef.current = 100
             }
             setProgress(100)
-            // Check if we can start fade out (wait for animations if needed)
-            // This will wait for animations to complete even if progress is 100%
+            // Fade out promptly when progress reaches 100%
             checkAndStartFadeOut()
           }
         })
 
         progressAnimationRef.current = ensureCompletion
 
-        // Check if progress reaches 100% and trigger fade out (after animations complete)
-        const checkComplete = setInterval(() => {
+        // Check if progress reaches 100% and trigger fade out promptly
+        const checkComplete = () => {
           const currentProgress = parseFloat(progressBarRef.current?.style.width || '0') || 0
           if (currentProgress >= 99.5) {
-            clearInterval(checkComplete)
-            clearInterval(progressInterval)
+            if (rafId !== null) {
+              cancelAnimationFrame(rafId)
+            }
             if (progressAnimationRef.current && 'kill' in progressAnimationRef.current) {
               progressAnimationRef.current.kill()
             }
@@ -530,30 +622,21 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
               maxProgressReachedRef.current = 100
             }
             setProgress(100)
-            // Check if we can start fade out (wait for animations if needed)
-            // This will NOT fade out if animations are still running
+            // Fade out promptly - no waiting
             checkAndStartFadeOut()
-            
-            // Continue checking periodically in case animations complete later
-            // This ensures we don't miss the completion if progress reached 100% first
-            const animationCheckInterval = setInterval(() => {
-              if (fadeOutStartedRef.current) {
-                clearInterval(animationCheckInterval)
-                return
-              }
-              checkAndStartFadeOut()
-            }, 100)
-            
-            // Clean up after a reasonable timeout (shouldn't be needed, but safety)
-            setTimeout(() => {
-              clearInterval(animationCheckInterval)
-            }, 10000) // 10 second max wait
+          } else {
+            // Continue checking using RAF for better performance
+            requestAnimationFrame(checkComplete)
           }
-        }, 100) // Check more frequently near completion
+        }
+        
+        // Start checking with RAF
+        requestAnimationFrame(checkComplete)
 
         return () => {
-          clearInterval(progressInterval)
-          clearInterval(checkComplete)
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId)
+          }
           if (progressAnimationRef.current && 'kill' in progressAnimationRef.current) {
             progressAnimationRef.current.kill()
           }
@@ -605,8 +688,9 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
       className={`fixed inset-0 z-50 bg-white flex items-center justify-center ${isFadingOut ? 'opacity-0' : 'opacity-100'} ${className}`}
       style={{ 
         clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
-        transition: isFadingOut ? 'opacity 0.6s ease-out' : 'none',
-        pointerEvents: isFadingOut ? 'none' : 'auto'
+        transition: isFadingOut ? 'opacity 0.4s ease-out' : 'none',
+        pointerEvents: isFadingOut ? 'none' : 'auto',
+        willChange: 'opacity' // Performance optimization
       }}
     >
       {/* Video Background */}
@@ -693,24 +777,35 @@ export default function PreloaderFr({ onComplete, onFadeOutStart, duration = 6, 
 
             {/* Progress Line - Fixed position at bottom */}
             <div className="mt-auto px-2 sm:px-2.5 flex-shrink-0">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-0">
-                <span className="font-normal text-xs sm:text-sm text-black uppercase tracking-widest font-primary">
-                  Initialisation
-                </span>
-                <div className="w-full sm:w-48 h-px bg-black/20 relative overflow-hidden">
-                  <div 
-                    ref={progressBarRef}
-                    className="h-full bg-black"
-                    style={{ width: '0%' }}
-                  />
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-0">
+                  <span className="font-normal text-xs sm:text-sm text-black uppercase tracking-widest font-primary">
+                    Initialisation
+                  </span>
+                  <div className="w-full sm:w-48 h-px bg-black/20 relative overflow-hidden">
+                    <div 
+                      ref={progressBarRef}
+                      className="h-full bg-black transition-all duration-75 ease-out"
+                      style={{ 
+                        width: '0%',
+                        transition: 'width 0.1s linear' // Smooth CSS transition for visual polish
+                      }}
+                    />
+                  </div>
+                  <span 
+                    className="text-black font-normal text-xs sm:text-sm uppercase tracking-widest font-primary" 
+                    data-scramble="true" 
+                    data-original-text="Infrastructure Cabo Negro"
+                  >
+                    Infrastructure Cabo Negro
+                  </span>
                 </div>
-                <span 
-                  className="text-black font-normal text-xs sm:text-sm uppercase tracking-widest font-primary" 
-                  data-scramble="true" 
-                  data-original-text="Infrastructure Cabo Negro"
-                >
-                  Infrastructure Cabo Negro
-                </span>
+                {/* Progress Counter - Shows 0-100 */}
+                <div className="flex items-center justify-center sm:justify-start">
+                  <span className="text-black font-normal text-xs sm:text-sm uppercase tracking-widest font-primary">
+                    {Math.round(progress)}%
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -1,11 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Mail, Phone, MapPin, Linkedin, Twitter, Globe, Send, Users, DollarSign, Handshake } from 'lucide-react'
+import { Send, DollarSign, Handshake } from 'lucide-react'
 
 export default function Contact() {
+  const t = useTranslations('contact')
+  const locale = useLocale()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,6 +19,17 @@ export default function Contact() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // WhatsApp message based on locale
+  const whatsappMessage = locale === 'es' 
+    ? 'Hola%2C%20estoy%20interesado%20en%20adquirir%20terrenos%20o%20programar%20una%20reuni%C3%B3n%20con%20el%20equipo%20inmobiliario%20de%20Cabo%20Negro.%20%C2%BFPodr%C3%ADan%20proporcionarme%20informaci%C3%B3n%20sobre%20lotes%20disponibles%2C%20parcelas%20industriales%20y%20oportunidades%20de%20desarrollo%3F%20Gracias.'
+    : locale === 'en'
+    ? 'Hello%2C%20I%27m%20interested%20in%20acquiring%20land%20or%20scheduling%20a%20meeting%20with%20the%20Cabo%20Negro%20real%20estate%20team.%20Could%20you%20please%20provide%20me%20with%20information%20about%20available%20lots%2C%20industrial%20parcels%2C%20and%20development%20opportunities%3F%20Thank%20you.'
+    : locale === 'fr'
+    ? 'Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20l%27acquisition%20de%20terrains%20ou%20la%20planification%20d%27une%20r%C3%A9union%20avec%20l%27%C3%A9quipe%20immobili%C3%A8re%20de%20Cabo%20Negro.%20Pourriez-vous%20me%20fournir%20des%20informations%20sur%20les%20parcelles%20disponibles%2C%20les%20parcelles%20industrielles%20et%20les%20opportunit%C3%A9s%20de%20d%C3%A9veloppement%20%3F%20Merci.'
+    : locale === 'zh'
+    ? '%E4%BD%A0%E5%A5%BD%2C%20%E6%88%91%E6%84%9F%E5%85%B4%E8%B6%A3%E4%BA%8E%E8%B4%AD%E4%B9%B0%E5%9C%9F%E5%9C%B0%E6%88%96%E5%AE%89%E6%8E%92%E4%B8%8E%E5%8D%A1%E6%B3%A2%E5%86%85%E6%A0%BC%E7%BD%97%E4%B8%8D%E5%8A%A8%E4%BA%A7%E5%9B%A2%E9%98%9F%E7%9A%84%E4%BC%9A%E8%AE%AE%E3%80%82%E8%83%BD%E5%90%A6%E6%8F%90%E4%BE%9B%E6%9C%89%E5%85%B3%E5%8F%AF%E7%94%A8%E5%9C%B0%E5%9D%97%E3%80%81%E5%B7%A5%E4%B8%9A%E5%9C%B0%E5%9D%97%E5%92%8C%E5%BC%80%E5%8F%91%E6%9C%BA%E4%BC%9A%E7%9A%84%E4%BF%A1%E6%81%AF%EF%BC%9F%E8%B0%A2%E8%B0%A2%E3%80%82'
+    : 'Hola%2C%20estoy%20interesado%20en%20adquirir%20terrenos%20o%20programar%20una%20reuni%C3%B3n%20con%20el%20equipo%20inmobiliario%20de%20Cabo%20Negro.%20%C2%BFPodr%C3%ADan%20proporcionarme%20informaci%C3%B3n%20sobre%20lotes%20disponibles%2C%20parcelas%20industriales%20y%20oportunidades%20de%20desarrollo%3F%20Gracias.'
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -44,43 +58,41 @@ export default function Contact() {
     setIsSubmitting(false)
     
     // Show success message (you can implement a toast notification here)
-    alert('Thank you for your message! We will get back to you soon.')
+    alert(t('successMessage'))
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen text-white">
       {/* Header */}
       <header className="pt-20 pb-20 px-6">
         <div className="container mx-auto">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Get in Touch
+              {t('title')}
             </h1>
-            <p className="text-gray-400 text-lg max-w-3xl mx-auto">
-              Ready to be part of Chile's hydrogen revolution? Contact us to learn more about 
-              investment opportunities and joint venture partnerships at Cabo Negro.
+            <p className="text-white text-lg max-w-3xl mx-auto">
+              {t('subtitle')}
             </p>
           </div>
           <div className="mt-6 flex justify-start px-6">
-            <Button asChild className="bg-white text-black hover:bg-gray-200 font-semibold px-8 py-4">
-              <a href="mailto:pyaconi@ylmv.cl">Mail us</a>
+            <Button asChild className="bg-white/10 text-white border border-white/20 hover:bg-white/20 font-semibold px-8 py-4">
+              <a href="mailto:pyaconi@ylmv.cl">{t('mailUs')}</a>
             </Button>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-6 pb-20">
-        <div className="grid lg:grid-cols-3 gap-12">
+        <div className="max-w-4xl mx-auto">
           {/* Contact Form */}
-          <div className="lg:col-span-2">
-            <Card className="bg-white/5 border-white/10">
-              <CardContent className="p-8">
-                <h2 className="text-3xl font-bold mb-6">Send us a Message</h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
+          <Card className="bg-white/5 border-white/10">
+            <CardContent className="p-8">
+              <h2 className="text-3xl font-bold mb-6 text-white">{t('sendMessage')}</h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium mb-2">
-                        Full Name *
+                      <label htmlFor="name" className="block text-sm font-medium mb-2 text-white">
+                        {t('form.fullName')} *
                       </label>
                       <input
                         type="text"
@@ -89,13 +101,13 @@ export default function Contact() {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors"
-                        placeholder="Your full name"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors text-white placeholder:text-white/60"
+                        placeholder={t('form.placeholders.fullName')}
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium mb-2">
-                        Email Address *
+                      <label htmlFor="email" className="block text-sm font-medium mb-2 text-white">
+                        {t('form.email')} *
                       </label>
                       <input
                         type="email"
@@ -104,16 +116,16 @@ export default function Contact() {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors"
-                        placeholder="your@email.com"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors text-white placeholder:text-white/60"
+                        placeholder={t('form.placeholders.email')}
                       />
                     </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="company" className="block text-sm font-medium mb-2">
-                        Company
+                      <label htmlFor="company" className="block text-sm font-medium mb-2 text-white">
+                        {t('form.company')}
                       </label>
                       <input
                         type="text"
@@ -121,13 +133,13 @@ export default function Contact() {
                         name="company"
                         value={formData.company}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors"
-                        placeholder="Your company name"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors text-white placeholder:text-white/60"
+                        placeholder={t('form.placeholders.company')}
                       />
                     </div>
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium mb-2">
-                        Phone Number
+                      <label htmlFor="phone" className="block text-sm font-medium mb-2 text-white">
+                        {t('form.phone')}
                       </label>
                       <input
                         type="tel"
@@ -135,34 +147,35 @@ export default function Contact() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors"
-                        placeholder="+1 (555) 123-4567"
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors text-white placeholder:text-white/60"
+                        placeholder={t('form.placeholders.phone')}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="interest" className="block text-sm font-medium mb-2">
-                      Area of Interest
+                    <label htmlFor="interest" className="block text-sm font-medium mb-2 text-white">
+                      {t('form.areaOfInterest')}
                     </label>
                     <select
                       id="interest"
                       name="interest"
                       value={formData.interest}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors text-white"
+                      style={{ color: 'white' }}
                     >
-                      <option value="general">General Inquiry</option>
-                      <option value="investment">Investment Opportunity</option>
-                      <option value="joint-venture">Joint Venture Partnership</option>
-                      <option value="technical">Technical Specifications</option>
-                      <option value="media">Media & Press</option>
+                      <option value="general" style={{ background: '#030526', color: 'white' }}>{t('form.interests.general')}</option>
+                      <option value="investment" style={{ background: '#030526', color: 'white' }}>{t('form.interests.investment')}</option>
+                      <option value="joint-venture" style={{ background: '#030526', color: 'white' }}>{t('form.interests.joint-venture')}</option>
+                      <option value="technical" style={{ background: '#030526', color: 'white' }}>{t('form.interests.technical')}</option>
+                      <option value="media" style={{ background: '#030526', color: 'white' }}>{t('form.interests.media')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium mb-2">
-                      Message *
+                    <label htmlFor="message" className="block text-sm font-medium mb-2 text-white">
+                      {t('form.message')} *
                     </label>
                     <textarea
                       id="message"
@@ -171,146 +184,52 @@ export default function Contact() {
                       onChange={handleInputChange}
                       required
                       rows={6}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors resize-none"
-                      placeholder="Tell us about your interest in Cabo Negro..."
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:border-white/40 transition-colors resize-none text-white placeholder:text-white/60"
+                      placeholder={t('form.placeholders.message')}
                     />
                   </div>
 
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-white text-black hover:bg-gray-200 font-semibold py-3"
+                    className="w-full bg-white/10 text-white border border-white/20 hover:bg-white/20 font-semibold py-3"
                   >
                     {isSubmitting ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                        Sending...
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        {t('form.sending')}
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <Send className="w-4 h-4" />
-                        Send Message
+                        {t('form.send')}
                       </div>
                     )}
                   </Button>
                 </form>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Contact Info & Socials */}
-          <div className="space-y-8">
-            {/* Contact Information */}
-            <Card className="bg-white/5 border-white/10">
-              <CardContent className="p-6">
-                <h3 className="text-2xl font-bold mb-6">Contact Information</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <Mail className="w-5 h-5 mt-1 text-blue-400" />
-                    <div>
-                      <p className="font-medium">Email</p>
-                      <p className="text-gray-400 text-sm">info@cabonegro.cl</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Phone className="w-5 h-5 mt-1 text-green-400" />
-                    <div>
-                      <p className="font-medium">Phone</p>
-                      <p className="text-gray-400 text-sm">+56 61 2 123 4567</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 mt-1 text-red-400" />
-                    <div>
-                      <p className="font-medium">Location</p>
-                      <p className="text-gray-400 text-sm">Punta Arenas, Magallanes Region<br />Chile</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Social Links */}
-            <Card className="bg-white/5 border-white/10">
-              <CardContent className="p-6">
-                <h3 className="text-2xl font-bold mb-6">Follow Us</h3>
-                <div className="space-y-3">
-                  <a href="#" className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-                    <Linkedin className="w-5 h-5 text-blue-400" />
-                    <span>LinkedIn</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-                    <Twitter className="w-5 h-5 text-blue-400" />
-                    <span>Twitter</span>
-                  </a>
-                  <a href="#" className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
-                    <Globe className="w-5 h-5 text-green-400" />
-                    <span>Website</span>
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
         {/* Joint Venture CTA */}
         <div className="mt-20">
           <div className="bg-gradient-to-r from-blue-900/20 to-green-900/20 rounded-2xl p-12 border border-white/10 text-center">
             <div className="max-w-4xl mx-auto">
-              <div className="flex justify-center mb-6">
-                <div className="p-4 bg-white/10 rounded-full">
-                  <Handshake className="w-12 h-12 text-white" />
-                </div>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Join the Joint Venture
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+                {t('jointVenture.title')}
               </h2>
-              <p className="text-gray-300 text-lg mb-8 max-w-3xl mx-auto">
-                Be part of Chile's most ambitious industrial and maritime project. 
-                We're seeking strategic partners to bring Cabo Negro Terminal to Ready-to-Build stage 
-                and capitalize on the massive hydrogen economy opportunity.
+              <p className="text-white text-lg mb-10 max-w-3xl mx-auto">
+                {t('jointVenture.description')}
               </p>
-              
-              <div className="grid md:grid-cols-3 gap-8 mb-10">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <DollarSign className="w-8 h-8 text-blue-400" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Investment Opportunity</h3>
-                  <p className="text-gray-400 text-sm">
-                    USD 2-5M initial capital for engineering and studies
-                  </p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-8 h-8 text-green-400" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Strategic Partnership</h3>
-                  <p className="text-gray-400 text-sm">
-                    Join J&P, PPG, and Compas Marine in this venture
-                  </p>
-                </div>
-                
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Globe className="w-8 h-8 text-purple-400" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Global Impact</h3>
-                  <p className="text-gray-400 text-sm">
-                    Gateway to Antarctica and alternative to Panama Canal
-                  </p>
-                </div>
-              </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-white text-black hover:bg-gray-200 font-semibold px-8 py-4">
+                <Button size="lg" className="bg-white/10 text-white border border-white/20 hover:bg-white/20 font-semibold px-8 py-4">
                   <Handshake className="w-5 h-5 mr-2" />
-                  Request Joint Venture Details
+                  {t('jointVenture.requestDetails')}
                 </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black font-semibold px-8 py-4">
+                <Button size="lg" className="bg-transparent text-white border border-white/20 hover:bg-white/20 font-semibold px-8 py-4">
                   <DollarSign className="w-5 h-5 mr-2" />
-                  Download Investment Deck
+                  {t('jointVenture.downloadDeck')}
                 </Button>
               </div>
             </div>

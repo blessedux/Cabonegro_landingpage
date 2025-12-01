@@ -34,6 +34,31 @@ export default function NavbarZh() {
       const navbarBottom = navbarRect.bottom
       const navbarCenterY = navbarRect.top + navbarRect.height / 2
       
+      // SPECIAL HANDLING FOR TERMINAL-MARITIMO PAGE
+      // Check if we're on the terminal-maritimo page
+      if (pathname.includes('/terminal-maritimo')) {
+        const heroSection = document.querySelector('[data-hero-section="true"]')
+        if (heroSection) {
+          const heroRect = heroSection.getBoundingClientRect()
+          // If navbar is over or within the hero section, use white text (dark background)
+          if (navbarBottom <= heroRect.bottom) {
+            setIsOverWhiteBackground(false)
+            return
+          }
+          // If navbar is below hero section, check if over white background sections
+          const whiteSections = document.querySelectorAll('[data-white-background="true"]')
+          let isOverWhite = false
+          whiteSections.forEach((section) => {
+            const rect = section.getBoundingClientRect()
+            if (navbarCenterY >= rect.top && navbarCenterY <= rect.bottom) {
+              isOverWhite = true
+            }
+          })
+          setIsOverWhiteBackground(isOverWhite)
+          return
+        }
+      }
+      
       // FIRST: Check if we've scrolled to or past the Partners section
       // Once at or past Partners, keep navbar black for the rest of the page
       const partnersSection = document.querySelector('[data-partners-section="true"]')
@@ -139,7 +164,7 @@ export default function NavbarZh() {
       }
       clearInterval(intervalId)
     }
-  }, [])
+  }, [pathname])
 
   // Close language dropdown when clicking outside
   useEffect(() => {
@@ -483,8 +508,7 @@ export default function NavbarZh() {
                 <Button
                   onClick={() => {
                     setMobileMenuOpen(false)
-                    showPreloaderB()
-                    // Navigate immediately without delay
+                    // Navigate immediately - usePageTransition will handle PreloaderB automatically
                     router.push('/zh/contact')
                   }}
                   variant="outline"

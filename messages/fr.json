@@ -105,6 +105,61 @@
   "footer": {
     "copyright": "© 2025 Développement Industriel Cabo Negro. Tous droits réservés.",
     "coordinates": "51.5074° N, 0.1278° W"
+  },
+  "contact": {
+    "title": "Contactez-nous",
+    "subtitle": "Prêt à faire partie de la révolution de l'hydrogène au Chili ? Contactez-nous pour en savoir plus sur les opportunités d'investissement et les partenariats de coentreprise à Cabo Negro.",
+    "mailUs": "Envoyez-nous un e-mail",
+    "sendMessage": "Envoyez-nous un Message",
+    "form": {
+      "fullName": "Nom Complet",
+      "email": "Adresse E-mail",
+      "company": "Entreprise",
+      "phone": "Numéro de Téléphone",
+      "areaOfInterest": "Domaine d'Intérêt",
+      "message": "Message",
+      "send": "Envoyer le Message",
+      "sending": "Envoi en cours...",
+      "placeholders": {
+        "fullName": "Votre nom complet",
+        "email": "votre@email.com",
+        "company": "Nom de votre entreprise",
+        "phone": "+33 1 23 45 67 89",
+        "message": "Parlez-nous de votre intérêt pour Cabo Negro..."
+      },
+      "interests": {
+        "general": "Demande Générale",
+        "investment": "Opportunité d'Investissement",
+        "joint-venture": "Partenariat de Coentreprise",
+        "technical": "Spécifications Techniques",
+        "media": "Médias et Presse"
+      }
+    },
+    "contactInfo": {
+      "title": "Informations de Contact",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "location": "Localisation"
+    },
+    "followUs": {
+      "title": "Suivez-nous",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter",
+      "website": "Site Web"
+    },
+    "jointVenture": {
+      "title": "Rejoignez le Joint Venture",
+      "description": "Faites partie du projet industriel et maritime le plus ambitieux du Chili. Nous recherchons des partenaires stratégiques pour amener le Terminal Cabo Negro au stade Prêt à Construire et capitaliser sur l'énorme opportunité de l'économie de l'hydrogène.",
+      "investmentOpportunity": "Opportunité d'Investissement",
+      "investmentDescription": "USD 2-5M de capital initial pour l'ingénierie et les études",
+      "strategicPartnership": "Partenariat Stratégique",
+      "partnershipDescription": "Rejoignez J&P, PPG et Compas Marine dans cette entreprise",
+      "globalImpact": "Impact Mondial",
+      "impactDescription": "Porte d'entrée vers l'Antarctique et alternative au Canal de Panama",
+      "requestDetails": "Demander les Détails de la Coentreprise",
+      "downloadDeck": "Télécharger la Présentation d'Investissement"
+    },
+    "successMessage": "Merci pour votre message ! Nous vous contacterons bientôt."
   }
 }
 

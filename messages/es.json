@@ -105,5 +105,60 @@
   "footer": {
     "copyright": "© 2025 Desarrollo Industrial Cabo Negro. Todos los derechos reservados.",
     "coordinates": "51.5074° N, 0.1278° W"
+  },
+  "contact": {
+    "title": "Contáctanos",
+    "subtitle": "¿Listo para ser parte de la revolución del hidrógeno en Chile? Contáctanos para conocer más sobre oportunidades de inversión y asociaciones de empresa conjunta en Cabo Negro.",
+    "mailUs": "Envíanos un correo",
+    "sendMessage": "Envíanos un Mensaje",
+    "form": {
+      "fullName": "Nombre Completo",
+      "email": "Correo Electrónico",
+      "company": "Empresa",
+      "phone": "Número de Teléfono",
+      "areaOfInterest": "Área de Interés",
+      "message": "Mensaje",
+      "send": "Enviar Mensaje",
+      "sending": "Enviando...",
+      "placeholders": {
+        "fullName": "Tu nombre completo",
+        "email": "tu@correo.com",
+        "company": "Nombre de tu empresa",
+        "phone": "+56 9 1234 5678",
+        "message": "Cuéntanos sobre tu interés en Cabo Negro..."
+      },
+      "interests": {
+        "general": "Consulta General",
+        "investment": "Oportunidad de Inversión",
+        "joint-venture": "Asociación de Empresa Conjunta",
+        "technical": "Especificaciones Técnicas",
+        "media": "Medios y Prensa"
+      }
+    },
+    "contactInfo": {
+      "title": "Información de Contacto",
+      "email": "Correo",
+      "phone": "Teléfono",
+      "location": "Ubicación"
+    },
+    "followUs": {
+      "title": "Síguenos",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter",
+      "website": "Sitio Web"
+    },
+    "jointVenture": {
+      "title": "Únete al Joint Venture",
+      "description": "Sé parte del proyecto industrial y marítimo más ambicioso de Chile. Buscamos socios estratégicos para llevar el Terminal Cabo Negro a la etapa de Listo para Construir y capitalizar la enorme oportunidad de la economía del hidrógeno.",
+      "investmentOpportunity": "Oportunidad de Inversión",
+      "investmentDescription": "USD 2-5M de capital inicial para ingeniería y estudios",
+      "strategicPartnership": "Asociación Estratégica",
+      "partnershipDescription": "Únete a J&P, PPG y Compas Marine en esta empresa",
+      "globalImpact": "Impacto Global",
+      "impactDescription": "Puerta de entrada a la Antártida y alternativa al Canal de Panamá",
+      "requestDetails": "Solicitar Detalles de Empresa Conjunta",
+      "downloadDeck": "Descargar Presentación de Inversión"
+    },
+    "successMessage": "¡Gracias por tu mensaje! Te contactaremos pronto."
   }
 }

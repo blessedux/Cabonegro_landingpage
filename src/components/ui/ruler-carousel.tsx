@@ -31,9 +31,11 @@ const createInfiniteItems = (originalItems: CarouselItem[]) => {
 const RulerLines = ({
   top = true,
   totalLines = 100,
+  lightMode = false,
 }: {
   top?: boolean;
   totalLines?: number;
+  lightMode?: boolean;
 }) => {
   const lines = [];
   const lineSpacing = 100 / (totalLines - 1);
@@ -43,14 +45,14 @@ const RulerLines = ({
     const isCenter = i === Math.floor(totalLines / 2);
 
     let height = "h-1.5";
-    let color = "bg-gray-500 dark:bg-gray-400";
+    let color = lightMode ? "bg-gray-400" : "bg-gray-500 dark:bg-gray-400";
 
     if (isCenter) {
       height = "h-4";
-      color = "bg-primary dark:bg-white";
+      color = lightMode ? "bg-gray-900" : "bg-primary dark:bg-white";
     } else if (isFifth) {
       height = "h-2";
-      color = "bg-primary dark:bg-white";
+      color = lightMode ? "bg-gray-700" : "bg-primary dark:bg-white";
     }
 
     const positionClass = top ? "" : "bottom-0";
@@ -69,8 +71,10 @@ const RulerLines = ({
 
 export function RulerCarousel({
   originalItems,
+  lightMode = false,
 }: {
   originalItems: CarouselItem[];
+  lightMode?: boolean;
 }) {
   const infiniteItems = createInfiniteItems(originalItems);
   const itemsPerSet = originalItems.length;
@@ -263,10 +267,10 @@ export function RulerCarousel({
   };
 
   return (
-    <div className="w-full h-[50vh] flex flex-col items-center justify-between bg-black py-6">
+    <div className={`w-full h-[50vh] flex flex-col items-center justify-between ${lightMode ? 'bg-white' : 'bg-black'} py-6`}>
       <div className="w-full h-[100px] flex flex-col justify-start relative mb-8">
         <div className="flex items-center justify-center">
-          <RulerLines top />
+          <RulerLines top lightMode={lightMode} />
         </div>
         <div className="flex items-center justify-center w-full h-full relative overflow-hidden">
           <motion.div
@@ -299,8 +303,8 @@ export function RulerCarousel({
                       : 'whitespace-nowrap'
                   } ${
                     isActive
-                      ? "text-primary dark:text-white"
-                      : "text-muted-foreground dark:text-gray-500 hover:text-foreground dark:hover:text-gray-400"
+                      ? lightMode ? "text-gray-900" : "text-primary dark:text-white"
+                      : lightMode ? "text-gray-500 hover:text-gray-700" : "text-muted-foreground dark:text-gray-500 hover:text-foreground dark:hover:text-gray-400"
                   }`}
                   animate={{
                     scale: isActive ? 1 : 0.75,
@@ -327,7 +331,7 @@ export function RulerCarousel({
         </div>
 
         <div className="flex items-center justify-center">
-          <RulerLines top={false} />
+          <RulerLines top={false} lightMode={lightMode} />
         </div>
       </div>
       
@@ -340,11 +344,13 @@ export function RulerCarousel({
           transition={{ duration: 0.5 }}
           className="text-center"
         >
-          <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+          <h3 className={`text-2xl md:text-3xl font-bold mb-4 ${lightMode ? 'text-gray-900' : 'text-white'}`}>
             {infiniteItems[activeIndex]?.phaseTitle || infiniteItems[activeIndex]?.title}
           </h3>
           <p
-            className={`text-lg text-gray-300 leading-relaxed mx-auto mb-4 max-w-3xl ${
+            className={`text-lg leading-relaxed mx-auto mb-4 max-w-3xl ${
+              lightMode ? 'text-gray-700' : 'text-gray-300'
+            } ${
               isFifthSlide
                 ? 'md:max-w-[60ch]'
                 : isSeventhSlide
@@ -355,7 +361,7 @@ export function RulerCarousel({
             {infiniteItems[activeIndex]?.description}
           </p>
           {infiniteItems[activeIndex]?.date && (
-            <div className="text-xl font-semibold text-white">
+            <div className={`text-xl font-semibold ${lightMode ? 'text-gray-900' : 'text-white'}`}>
               {infiniteItems[activeIndex]?.date}
             </div>
           )}
@@ -369,17 +375,17 @@ export function RulerCarousel({
           className="flex items-center justify-center cursor-pointer"
           aria-label="Previous item"
         >
-          <Rewind className="w-5 h-5 text-primary/80" />
+          <Rewind className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
         </button>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground dark:text-gray-400">
+          <span className={`text-sm font-medium ${lightMode ? 'text-gray-700' : 'text-muted-foreground dark:text-gray-400'}`}>
             {currentPage}
           </span>
-          <span className="text-sm text-muted-foreground dark:text-gray-500">
+          <span className={`text-sm ${lightMode ? 'text-gray-500' : 'text-muted-foreground dark:text-gray-500'}`}>
             /
           </span>
-          <span className="text-sm font-medium text-muted-foreground dark:text-gray-400">
+          <span className={`text-sm font-medium ${lightMode ? 'text-gray-700' : 'text-muted-foreground dark:text-gray-400'}`}>
             {totalPages}
           </span>
         </div>
@@ -390,7 +396,7 @@ export function RulerCarousel({
           className="flex items-center justify-center cursor-pointer"
           aria-label="Next item"
         >
-          <FastForward className="w-5 h-5 text-primary/80" />
+          <FastForward className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
         </button>
       </div>
 

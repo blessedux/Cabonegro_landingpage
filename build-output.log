@@ -1,0 +1,35 @@
+
+> nextjs-shadcn@0.1.0 build
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/JoaquinNam/pnpm-lock.yaml as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/JoaquinNam/Desktop/MENTE_MAESTRA/1CLIENTS/YMLV/Cabonegro_landingpage/package-lock.json
+
+   ▲ Next.js 15.5.4
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+(node:80333) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(Use `node --trace-warnings ...` to show where the warning was created)
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.0s
+   Linting and checking validity of types ...
+ ⨯ ESLint must be installed in order to run during builds: npm install --save-dev eslint
+Failed to compile.
+
+./src/components/ui/animated-video-on-scroll.tsx:113:7
+Type error: Expression produces a union type that is too complex to represent.
+
+[0m [90m 111 |[39m     
+ [90m 112 |[39m     [36mreturn[39m (
+[31m[1m>[22m[39m[90m 113 |[39m       [33m<[39m[33mmotion[39m[33m.[39mdiv
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 114 |[39m         ref[33m=[39m{ref}
+ [90m 115 |[39m         className[33m=[39m{cn([32m""[39m[33m,[39m className)}
+ [90m 116 |[39m         variants[33m=[39m{variants}[0m
+Next.js build worker exited with code: 1 and signal: null

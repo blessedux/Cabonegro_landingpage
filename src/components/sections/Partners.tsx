@@ -4,20 +4,14 @@ import React, { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { GradientHeading } from '@/components/ui/gradient-heading'
-import { LogoCarousel } from '@/components/ui/logo-carousel'
 import { MagicText } from '@/components/ui/magic-text'
+import Image from 'next/image'
 
-// Define the logos from your public/logos directory
+// Define the logos - only Cabo Negro, YLMV, and Patagon Valley
 const partnerLogos = [
   { name: "Cabo Negro", id: 1, src: "/logos/cabonegro_logo.png", alt: "Cabo Negro Logo" },
-  { name: "Armada", id: 2, src: "/logos/Armada_white.png", alt: "Armada Logo" },
-  { name: "CORFO", id: 3, src: "/logos/Logo_Corfo_white.png", alt: "CORFO Logo" },
-  { name: "H2 Chile", id: 4, src: "/logos/MARCA-H2CHILE-white.png", alt: "H2 Chile Logo" },
-  { name: "Patagon", id: 5, src: "/logos/patagon_white.png", alt: "Patagon Logo" },
-  { name: "UMAG", id: 6, src: "/logos/umag_logo.png", alt: "UMAG Logo" },
-  { name: "YLMV", id: 7, src: "/logos/ylmv_blanco.png", alt: "YLMV Logo" },
-  { name: "GTD", id: 8, src: "/gtd_white_logo.png", alt: "GTD Logo" },
-  { name: "Circular", id: 9, src: "/circular_white.png", alt: "Circular Logo" },
+  { name: "YLMV", id: 2, src: "/logos/ylmv_blanco.png", alt: "YLMV Logo" },
+  { name: "Patagon Valley", id: 3, src: "/logos/patagon_white.png", alt: "Patagon Valley Logo" },
 ]
 
 export default function Partners() {
@@ -143,8 +137,21 @@ export default function Partners() {
           </motion.div>
         </div>
 
-        <div className="flex justify-center mb-0">
-          <LogoCarousel columnCount={3} logos={partnerLogos} />
+        <div className="flex justify-center items-center gap-8 md:gap-12 mb-0">
+          {partnerLogos.map((logo) => (
+            <div
+              key={logo.id}
+              className="relative h-16 w-32 md:h-20 md:w-40 flex items-center justify-center"
+            >
+              <Image
+                src={logo.src}
+                alt={logo.alt}
+                width={120}
+                height={60}
+                className="h-12 w-auto max-h-[80%] max-w-[80%] object-contain md:h-16 md:w-auto filter brightness-0 opacity-80 hover:opacity-100 transition-opacity duration-300"
+              />
+            </div>
+          ))}
         </div>
       </div>
     </motion.section>

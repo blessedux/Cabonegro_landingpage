@@ -62,7 +62,7 @@ export const ContainerScroll: React.FC<
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: scrollRef,
-    offset: ["start start", "end start"] // Changed to keep sticky longer - starts when top hits viewport top, ends when bottom hits viewport top
+    offset: ["start start", "end end"] // Full scroll range for smooth sticky behavior
   })
 
   return (
@@ -138,7 +138,7 @@ export const ContainerSticky = React.forwardRef<
   return (
     <div
       ref={ref}
-      className={cn("sticky left-0 top-0 h-screen w-full flex flex-col items-center justify-center", className)}
+      className={cn("sticky left-0 top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden", className)}
       {...props}
     />
   )
@@ -151,7 +151,8 @@ export const HeroVideo = React.forwardRef<
   HTMLMotionProps<"video">
 >(({ style, className, transition, ...props }, ref) => {
   const { scrollYProgress } = useContainerScrollContext()
-  const scale = useTransform(scrollYProgress, [0, 0.8], [0.7, 1])
+  // Scale from 0.7 to 1 as video expands, matching the inset animation
+  const scale = useTransform(scrollYProgress, [0, 0.85], [0.7, 1])
 
   return (
     <motion.video
@@ -214,9 +215,11 @@ export const ContainerInset = React.forwardRef<
   ) => {
     const { scrollYProgress } = useContainerScrollContext()
 
-    const insetY = useTransform(scrollYProgress, [0, 0.8], insetYRange)
-    const insetX = useTransform(scrollYProgress, [0, 0.8], insetXRange)
-    const roundedness = useTransform(scrollYProgress, [0, 1], roundednessRange)
+    // Expand from 0 to 0.85 of scroll progress, then stay at full width
+    // This ensures the video expands while sticky, then allows scrolling to continue
+    const insetY = useTransform(scrollYProgress, [0, 0.85], insetYRange)
+    const insetX = useTransform(scrollYProgress, [0, 0.85], insetXRange)
+    const roundedness = useTransform(scrollYProgress, [0, 0.85], roundednessRange)
 
     const clipPath = useMotionTemplate`inset(${insetY}% ${insetX}% ${insetY}% ${insetX}% round ${roundedness}px)`
 

@@ -1,12 +1,24 @@
 'use client'
 
 import { useParams, useRouter, usePathname } from 'next/navigation'
-import { ArrowLeft, Download, Calendar, Mail, Ship, Shield, Navigation, MapPin, Zap, Factory } from 'lucide-react'
+import { Download, Calendar, Mail, Ship, Shield, Navigation, MapPin, Zap, Factory } from 'lucide-react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
+import Script from 'next/script'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+
+// Type declaration for spline-viewer custom element
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'spline-viewer': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
+        url?: string
+      }, HTMLElement>
+    }
+  }
+}
 import {
   ContainerScroll,
   ContainerSticky,
@@ -15,6 +27,7 @@ import {
   HeroVideo,
   HeroButton,
 } from '@/components/ui/animated-video-on-scroll'
+import { RulerCarousel, type CarouselItem } from '@/components/ui/ruler-carousel'
 
 // Code-split navigation components - only load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -310,20 +323,25 @@ export default function TerminalMaritimoPage() {
 
   const contactPath = `/${locale}/contact?from=terminal-maritimo`
 
-  // Timeline data - localized
-  const timelineData = [
-    { year: '2021', event: localizedText.timeline.events['2021'] },
-    { year: '2022', event: localizedText.timeline.events['2022'] },
-    { year: '2023', event: localizedText.timeline.events['2023'] },
-    { year: '2024', event: localizedText.timeline.events['2024'] },
-    { year: '2025', event: localizedText.timeline.events['2025'] },
-    { year: '2026', event: localizedText.timeline.events['2026'] },
-    { year: '2027', event: localizedText.timeline.events['2027'] },
-    { year: '2028', event: localizedText.timeline.events['2028'] }
+  // Timeline data for RulerCarousel - localized
+  const timelineCarouselItems: CarouselItem[] = [
+    { id: 1, title: '2021', date: '2021', description: localizedText.timeline.events['2021'] },
+    { id: 2, title: '2022', date: '2022', description: localizedText.timeline.events['2022'] },
+    { id: 3, title: '2023', date: '2023', description: localizedText.timeline.events['2023'] },
+    { id: 4, title: '2024', date: '2024', description: localizedText.timeline.events['2024'] },
+    { id: 5, title: '2025', date: '2025', description: localizedText.timeline.events['2025'] },
+    { id: 6, title: '2026', date: '2026', description: localizedText.timeline.events['2026'] },
+    { id: 7, title: '2027', date: '2027', description: localizedText.timeline.events['2027'] },
+    { id: 8, title: '2028', date: '2028', description: localizedText.timeline.events['2028'] }
   ]
 
+  // Light mode for Spanish version
+  const isLightMode = locale === 'es'
+  const mainBgClass = isLightMode ? 'bg-white' : 'bg-black'
+  const mainTextClass = isLightMode ? 'text-gray-900' : 'text-white'
+
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className={`min-h-screen ${mainBgClass} ${mainTextClass}`}>
       {/* Navigation - Fixed at top with high z-index, always visible on this page */}
       <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
         <div className="pointer-events-auto">
@@ -331,25 +349,16 @@ export default function TerminalMaritimoPage() {
         </div>
       </div>
 
-      {/* Back Button - Fixed above sticky content */}
-      <button
-        onClick={() => router.push(homePath)}
-        className="fixed top-24 left-6 z-[95] flex items-center gap-2 text-white hover:text-gray-300 transition-colors pointer-events-auto"
-        aria-label={localizedText.back}
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">{localizedText.back}</span>
-      </button>
-
       {/* Hero Section with Animated Video on Scroll */}
-      <section className="relative">
-        <ContainerScroll className="h-[350vh]">
+      <section data-hero-section="true" className="relative overflow-hidden mb-0">
+        <ContainerScroll className="h-[110vh] md:h-[110vh]">
           <ContainerSticky
             style={{
               background:
                 "radial-gradient(40% 40% at 50% 20%, #0e19ae 0%, #0b1387 22.92%, #080f67 42.71%, #030526 88.54%)",
+              height: '110vh',
             }}
-            className="bg-stone-900 px-6 py-10 text-slate-50 pointer-events-none"
+            className="px-6 py-10 text-slate-50 pointer-events-none"
           >
             <div className="pointer-events-auto">
               <ContainerAnimated 
@@ -357,7 +366,7 @@ export default function TerminalMaritimoPage() {
                 initial="visible"
                 animate="visible"
               >
-                <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4">
+                <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 mt-24 md:mt-28">
                   {localizedText.hero.title}
                 </h1>
                 <p className="mx-auto max-w-[42ch] text-xl md:text-2xl opacity-80">
@@ -393,109 +402,51 @@ export default function TerminalMaritimoPage() {
         </ContainerScroll>
       </section>
 
-      {/* Vision Section */}
-      <section className="py-20 px-6">
+      {/* Vision Section - Right after hero */}
+      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
             {localizedText.vision.title}
           </h2>
-          <p className="text-xl text-gray-300 max-w-4xl leading-relaxed">
+          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} max-w-4xl leading-relaxed`}>
             {localizedText.vision.description}
           </p>
         </div>
       </section>
 
-      {/* Developed By Section */}
-      <section className="py-20 px-6 bg-white/5">
+      {/* Timeline Section - RulerCarousel */}
+      <section data-white-background="true" className={`py-20 px-6 min-h-[150vh] ${isLightMode ? 'bg-white' : ''}`}>
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            {localizedText.developedBy.title}
-          </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            {localizedText.developedBy.description}
-          </p>
-          <div className="flex flex-wrap justify-start items-center gap-8">
-            <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
-              <span className="text-xl font-bold text-gray-300">J&P Ltda.</span>
-            </div>
-            <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
-              <span className="text-xl font-bold text-gray-300">PPG SpA</span>
-            </div>
-            <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
-              <a href="https://compasmarine.com" target="_blank" rel="noopener noreferrer" className="text-xl font-bold text-gray-300 hover:text-white transition-colors">
-                Compas Marine
-              </a>
-            </div>
-          </div>
-          <div className="mt-8 p-6 bg-white/5 rounded-lg">
-            <p className="text-gray-300 leading-relaxed">
-              {localizedText.developedBy.compasDescription}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Timeline Section */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
             {localizedText.timeline.title}
           </h2>
-          <p className="text-xl text-gray-300 mb-12">
+          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-12`}>
             {localizedText.timeline.description}
           </p>
-          <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-blue-500/50" />
-            <div className="space-y-12">
-              {timelineData.map((item, index) => (
-                <div key={index} className="relative pl-20">
-                  <div className="absolute left-6 top-0 w-4 h-4 bg-blue-500 rounded-full border-4 border-black" />
-                  <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-                    <div className="text-2xl font-bold text-blue-400 mb-2">{item.year}</div>
-                    <div className="text-lg text-gray-300">{item.event}</div>
-                    {item.year === '2028' && (
-                      <div className="mt-4 inline-block px-4 py-2 bg-blue-500/20 text-blue-400 rounded-full text-sm font-semibold">
-                        {localizedText.timeline.readyToBuild}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Map Section */}
-      <section className="py-20 px-6 bg-white/5">
-        <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center">
-            {localizedText.map.title}
-          </h2>
-          <div className="relative h-[400px] rounded-lg overflow-hidden bg-gradient-to-br from-blue-900/20 to-cyan-900/20 flex items-center justify-center">
-            <div className="text-center p-8">
-              <MapPin className="w-16 h-16 mx-auto mb-4 text-blue-400" />
-              <p className="text-gray-400 text-lg">{localizedText.map.comingSoon}</p>
-            </div>
+          <div className="min-h-[100vh]">
+            <RulerCarousel originalItems={timelineCarouselItems} lightMode={isLightMode} />
           </div>
         </div>
       </section>
 
       {/* Advantages Section */}
-      <section className="py-20 px-6">
+      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl md:text-5xl font-bold mb-12">
+          <h2 className={`text-4xl md:text-5xl font-bold mb-12 ${isLightMode ? 'text-gray-900' : ''}`}>
             {localizedText.advantages.title}
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {localizedText.advantages.items.map((item: any, index: number) => {
               const IconComponent = item.icon
               return (
-                <Card key={index} className="bg-white/5 border-white/10">
+                <Card 
+                  key={index} 
+                  className={`${isLightMode ? 'bg-gray-50 border-gray-200' : 'bg-white/5 border-white/10'}`}
+                >
                   <CardContent className="p-6">
-                    <IconComponent className="w-8 h-8 mb-4 text-blue-400" />
-                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                    <p className="text-gray-300">{item.description}</p>
+                    <IconComponent className={`w-8 h-8 mb-4 ${isLightMode ? 'text-blue-600' : 'text-blue-400'}`} />
+                    <h3 className={`text-xl font-bold mb-2 ${isLightMode ? 'text-gray-900' : ''}`}>{item.title}</h3>
+                    <p className={isLightMode ? 'text-gray-700' : 'text-gray-300'}>{item.description}</p>
                   </CardContent>
                 </Card>
               )
@@ -505,19 +456,22 @@ export default function TerminalMaritimoPage() {
       </section>
 
       {/* Commercial Focus Section */}
-      <section className="py-20 px-6 bg-white/5">
+      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-gray-50' : 'bg-white/5'}`}>
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
             {localizedText.commercial.title}
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-8`}>
             {localizedText.commercial.description}
           </p>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {localizedText.commercial.items.map((item: string, index: number) => (
-              <div key={index} className="flex items-center gap-3 p-4 bg-white/5 rounded-lg">
-                <Ship className="w-5 h-5 text-blue-400" />
-                <span className="text-lg">{item}</span>
+              <div 
+                key={index} 
+                className={`flex items-center gap-3 p-4 ${isLightMode ? 'bg-white border border-gray-200' : 'bg-white/5'} rounded-lg`}
+              >
+                <Ship className={`w-5 h-5 ${isLightMode ? 'text-blue-600' : 'text-blue-400'}`} />
+                <span className={`text-lg ${isLightMode ? 'text-gray-900' : ''}`}>{item}</span>
               </div>
             ))}
           </div>
@@ -525,28 +479,48 @@ export default function TerminalMaritimoPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-20 px-6">
+      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
             {localizedText.contact.title}
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-8`}>
             {localizedText.contact.description}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button asChild className="bg-white text-black hover:bg-gray-200 font-semibold px-8 py-6">
+            <Button 
+              asChild 
+              className={isLightMode 
+                ? "bg-blue-600 text-white hover:bg-blue-700 font-semibold px-8 py-6" 
+                : "bg-white text-black hover:bg-gray-200 font-semibold px-8 py-6"
+              }
+            >
               <Link href={contactPath}>
                 <Mail className="w-5 h-5 mr-2" />
                 {localizedText.contact.contactBtn}
               </Link>
             </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8 py-6">
+            <Button 
+              asChild 
+              variant="outline" 
+              className={isLightMode
+                ? "border-gray-900 text-gray-900 hover:bg-gray-100 font-semibold px-8 py-6"
+                : "border-white text-white hover:bg-white/10 font-semibold px-8 py-6"
+              }
+            >
               <Link href={`${contactPath}&action=schedule`}>
                 <Calendar className="w-5 h-5 mr-2" />
                 {localizedText.contact.scheduleBtn}
               </Link>
             </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8 py-6">
+            <Button 
+              asChild 
+              variant="outline" 
+              className={isLightMode
+                ? "border-gray-900 text-gray-900 hover:bg-gray-100 font-semibold px-8 py-6"
+                : "border-white text-white hover:bg-white/10 font-semibold px-8 py-6"
+              }
+            >
               <Link href="#">
                 <Download className="w-5 h-5 mr-2" />
                 {localizedText.contact.downloadBtn}

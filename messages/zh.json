@@ -105,5 +105,60 @@
   "footer": {
     "copyright": "© 2025 Cabo Negro Industrial Development. All rights reserved.",
     "coordinates": "51.5074° N, 0.1278° W"
+  },
+  "contact": {
+    "title": "联系我们",
+    "subtitle": "准备好成为智利氢能革命的一部分了吗？联系我们，了解更多关于卡波内格罗的投资机会和合资企业合作伙伴关系。",
+    "mailUs": "给我们发邮件",
+    "sendMessage": "给我们发消息",
+    "form": {
+      "fullName": "全名",
+      "email": "电子邮件地址",
+      "company": "公司",
+      "phone": "电话号码",
+      "areaOfInterest": "感兴趣的领域",
+      "message": "消息",
+      "send": "发送消息",
+      "sending": "发送中...",
+      "placeholders": {
+        "fullName": "您的全名",
+        "email": "your@email.com",
+        "company": "您的公司名称",
+        "phone": "+86 138 0013 8000",
+        "message": "告诉我们您对卡波内格罗的兴趣..."
+      },
+      "interests": {
+        "general": "一般咨询",
+        "investment": "投资机会",
+        "joint-venture": "合资企业合作伙伴关系",
+        "technical": "技术规格",
+        "media": "媒体和新闻"
+      }
+    },
+    "contactInfo": {
+      "title": "联系信息",
+      "email": "电子邮件",
+      "phone": "电话",
+      "location": "位置"
+    },
+    "followUs": {
+      "title": "关注我们",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter",
+      "website": "网站"
+    },
+    "jointVenture": {
+      "title": "加入 Joint Venture",
+      "description": "成为智利最具雄心的工业和海事项目的一部分。我们正在寻找战略合作伙伴，将卡波内格罗码头推进到准备建设阶段，并利用巨大的氢能经济机遇。",
+      "investmentOpportunity": "投资机会",
+      "investmentDescription": "USD 2-5M 初始资本用于工程和研究",
+      "strategicPartnership": "战略合作伙伴关系",
+      "partnershipDescription": "与 J&P、PPG 和 Compas Marine 一起参与这项事业",
+      "globalImpact": "全球影响",
+      "impactDescription": "通往南极的门户和巴拿马运河的替代方案",
+      "requestDetails": "请求合资企业详情",
+      "downloadDeck": "下载投资演示文稿"
+    },
+    "successMessage": "感谢您的消息！我们会尽快与您联系。"
   }
 }

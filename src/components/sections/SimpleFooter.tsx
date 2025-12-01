@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Mail, MapPin, ArrowRight } from 'lucide-react'
+import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react'
 
 interface SimpleFooterProps {
   locale?: 'en' | 'es' | 'zh' | 'fr'
@@ -34,13 +34,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         projects: 'Projects',
         viewDeck: 'View Deck'
       },
-      contactMenu: {
-        title: 'CONTACT',
-        faq: 'Frequently Asked Questions',
-        scheduleMeeting: 'Schedule Meeting',
-        contactForm: 'Contact Form'
-      },
-      email: 'contacto@cabonegro.cl'
+      email: 'info@cabonegro.cl'
     },
     es: {
       contact: {
@@ -65,13 +59,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         projects: 'Proyectos',
         viewDeck: 'Ver Deck'
       },
-      contactMenu: {
-        title: 'CONTACTO',
-        faq: 'Preguntas frecuentes',
-        scheduleMeeting: 'Agenda reunion',
-        contactForm: 'Formulario contacto'
-      },
-      email: 'contacto@cabonegro.cl'
+      email: 'info@cabonegro.cl'
     },
     zh: {
       contact: {
@@ -96,13 +84,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         projects: '项目',
         viewDeck: '查看甲板'
       },
-      contactMenu: {
-        title: '联系',
-        faq: '常见问题',
-        scheduleMeeting: '安排会议',
-        contactForm: '联系表单'
-      },
-      email: 'contacto@cabonegro.cl'
+      email: 'info@cabonegro.cl'
     },
     fr: {
       contact: {
@@ -127,13 +109,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         projects: 'Projets',
         viewDeck: 'Voir le Deck'
       },
-      contactMenu: {
-        title: 'CONTACT',
-        faq: 'Questions fréquentes',
-        scheduleMeeting: 'Planifier une réunion',
-        contactForm: 'Formulaire de contact'
-      },
-      email: 'contacto@cabonegro.cl'
+      email: 'info@cabonegro.cl'
     }
   }
 
@@ -258,12 +234,14 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
                 {content.location.virtualTour}
               </Link>
               {/* Map placeholder - clickable */}
-              <Link 
-                href={`${basePath}/explore`}
+              <a 
+                href="https://www.google.com/maps?q=-52.9479,-70.8056"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block w-full h-32 bg-gray-700 rounded-lg mt-4 flex items-center justify-center hover:bg-gray-600 transition-colors"
               >
                 <MapPin className="w-8 h-8 text-gray-400" />
-              </Link>
+              </a>
             </div>
 
             {/* Column 2: SOBRE NOSOTROS */}
@@ -310,46 +288,31 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
             {/* Column 4: CONTACTO */}
             <div>
               <h3 className="text-black font-bold text-lg mb-4 uppercase">
-                {content.contactMenu.title}
+                {content.contact.title}
               </h3>
-              <ul className="space-y-2 mb-4">
-                <li>
-                  <Link 
-                    href={`${basePath}#FAQ`}
-                    className="text-gray-700 hover:text-black transition-colors block"
+              <div className="space-y-3">
+                {/* Email */}
+                <div className="flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-black" />
+                  <a 
+                    href={`mailto:${content.email}`}
+                    className="text-gray-700 hover:text-black transition-colors"
                   >
-                    {content.contactMenu.faq}
-                  </Link>
-                </li>
-                <li>
+                    {content.email}
+                  </a>
+                </div>
+                {/* Phone */}
+                <div className="flex items-center gap-2">
+                  <Phone className="w-5 h-5 text-black" />
                   <a
                     href={`https://wa.me/56993091951?text=${whatsappMessage}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-black transition-colors block"
+                    className="text-gray-700 hover:text-black transition-colors"
                   >
-                    {content.contactMenu.scheduleMeeting}
+                    +56 9 9309 1951
                   </a>
-                </li>
-                <li>
-                  <Link 
-                    href={`${basePath}/contact`}
-                    className="text-gray-700 hover:text-black transition-colors block"
-                  >
-                    {content.contactMenu.contactForm}
-                  </Link>
-                </li>
-              </ul>
-              
-              {/* Email */}
-              <div className="flex items-center gap-2 mt-4">
-                <Mail className="w-5 h-5 text-black" />
-                <a 
-                  href={`mailto:${content.email}`}
-                  className="text-yellow-600 hover:text-yellow-700 transition-colors"
-                >
-                  {content.email}
-                </a>
+                </div>
               </div>
             </div>
           </div>

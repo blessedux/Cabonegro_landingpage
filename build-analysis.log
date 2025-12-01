@@ -1,0 +1,178 @@
+
+> nextjs-shadcn@0.1.0 build
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/JoaquinNam/pnpm-lock.yaml as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/JoaquinNam/Desktop/MENTE_MAESTRA/1CLIENTS/YMLV/Cabonegro_landingpage/package-lock.json
+
+   ▲ Next.js 15.5.4
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+(node:82451) Warning: Setting the NODE_TLS_REJECT_UNAUTHORIZED environment variable to '0' makes TLS connections and HTTPS requests insecure by disabling certificate verification.
+(Use `node --trace-warnings ...` to show where the warning was created)
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 2.4s
+   Linting and checking validity of types ...
+ ⨯ ESLint must be installed in order to run during builds: npm install --save-dev eslint
+   Collecting page data ...
+   Generating static pages (0/63) ...
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+Please gsap.registerPlugin(CustomEase)
+Please gsap.registerPlugin(CustomEase)
+Please gsap.registerPlugin(CustomEase)
+Please gsap.registerPlugin(CustomEase)
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+   Generating static pages (15/63) 
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+   Generating static pages (31/63) 
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+   Generating static pages (47/63) 
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+Please gsap.registerPlugin(CustomEase)
+Please gsap.registerPlugin(CustomEase)
+Please gsap.registerPlugin(CustomEase)
+Please gsap.registerPlugin(CustomEase)
+⚠️  No locale detected in getRequestConfig, using defaultLocale
+ ✓ Generating static pages (63/63)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /_not-found                            998 B         104 kB
+├ ● /[locale]                            6.21 kB         147 kB
+├   ├ /en
+├   ├ /es
+├   ├ /zh
+├   └ /fr
+├ ● /[locale]/contact                    1.83 kB         149 kB
+├   ├ /en/contact
+├   ├ /es/contact
+├   ├ /zh/contact
+├   └ /fr/contact
+├ ● /[locale]/deck                        3.2 kB         131 kB
+├   ├ /en/deck
+├   ├ /es/deck
+├   ├ /zh/deck
+├   └ /fr/deck
+├ ● /[locale]/explore                    1.73 kB         111 kB
+├   ├ /en/explore
+├   ├ /es/explore
+├   ├ /zh/explore
+├   └ /fr/explore
+├ ● /[locale]/footer2                    1.79 kB         111 kB
+├   ├ /en/footer2
+├   ├ /es/footer2
+├   ├ /zh/footer2
+├   └ /fr/footer2
+├ ● /[locale]/gallery                      131 B         148 kB
+├   ├ /en/gallery
+├   ├ /es/gallery
+├   ├ /zh/gallery
+├   └ /fr/gallery
+├ ● /[locale]/gallery-backup               131 B         148 kB
+├   ├ /en/gallery-backup
+├   ├ /es/gallery-backup
+├   ├ /zh/gallery-backup
+├   └ /fr/gallery-backup
+├ ● /[locale]/layout-preloader-test      16.2 kB         148 kB
+├   ├ /en/layout-preloader-test
+├   ├ /es/layout-preloader-test
+├   ├ /zh/layout-preloader-test
+├   └ /fr/layout-preloader-test
+├ ● /[locale]/parque-logistico             13 kB         141 kB
+├   ├ /en/parque-logistico
+├   ├ /es/parque-logistico
+├   ├ /zh/parque-logistico
+├   └ /fr/parque-logistico
+├ ● /[locale]/parque-tecnologico         8.63 kB         130 kB
+├   ├ /en/parque-tecnologico
+├   ├ /es/parque-tecnologico
+├   ├ /zh/parque-tecnologico
+├   └ /fr/parque-tecnologico
+├ ● /[locale]/partners                   2.91 kB         172 kB
+├   ├ /en/partners
+├   ├ /es/partners
+├   ├ /zh/partners
+├   └ /fr/partners
+├ ● /[locale]/preloader-test             3.63 kB         135 kB
+├   ├ /en/preloader-test
+├   ├ /es/preloader-test
+├   ├ /zh/preloader-test
+├   └ /fr/preloader-test
+├ ● /[locale]/terminal-maritimo          10.9 kB         170 kB
+├   ├ /en/terminal-maritimo
+├   ├ /es/terminal-maritimo
+├   ├ /zh/terminal-maritimo
+├   └ /fr/terminal-maritimo
+├ ƒ /api/download-deck                     134 B         103 kB
+├ ○ /basic                                 134 B         103 kB
+├ ○ /contact                               168 B         118 kB
+├ ○ /deck                                3.15 kB         131 kB
+├ ○ /explore                               134 B         103 kB
+├ ○ /investors-deck                        908 B         105 kB
+├ ○ /scene-3d                            4.37 kB         108 kB
+└ ○ /test                                  631 B         105 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/1255-1622f43a1c0ebec5.js      45.7 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)          2.88 kB
+
+
+ƒ Middleware                             45.4 kB
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

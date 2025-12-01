@@ -25,10 +25,10 @@ export default async function LocaleLayout({
 
   // Providing all messages to the client
   // side is the easiest way to get started
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages}>
       <LocaleHtmlLang />
       <WebVitals debug={process.env.NODE_ENV === 'development'} />
       <PageTransitionWrapper>

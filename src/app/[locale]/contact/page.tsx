@@ -1,34 +1,44 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { NextIntlClientProvider } from 'next-intl'
-import { usePreloader } from '@/contexts/PreloaderContext'
+import { usePathname } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import Navbar from '@/components/sections/Navbar'
+import NavbarEs from '@/components/sections/Navbar-es'
+import NavbarZh from '@/components/sections/Navbar-zh'
 import Contact from '@/components/sections/Contact'
-import Footer from '@/components/sections/Footer'
-import CookieBanner from '@/components/sections/CookieBanner'
 
-const messages = {
-  "contact": {
-    "title": "Contact Us",
-    "subtitle": "Get more information"
+// Code-split footer and cookie banner - only load when needed
+const Footer = dynamic(() => import('@/components/sections/Footer'), { 
+  ssr: false,
+  loading: () => <div className="min-h-[200px]" />
+})
+const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
+
+export default function ContactPage() {
+  const pathname = usePathname()
+  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
+
+  // Get appropriate Navbar component
+  const getNavbar = () => {
+    if (locale === 'es') return <NavbarEs />
+    if (locale === 'zh') return <NavbarZh />
+    if (locale === 'fr') return <Navbar /> // French uses default Navbar for now
+    return <Navbar />
   }
-}
-
-function ContactContent() {
-  const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
-  const { isPreloaderVisible, isPreloaderComplete } = usePreloader()
-
-  // Bypass preloader for contact page
-  useEffect(() => {
-    setPreloaderFadeComplete(true)
-  }, [])
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div 
+      className="min-h-screen text-white"
+      style={{
+        background: "radial-gradient(40% 40% at 50% 20%, #0e19ae 0%, #0b1387 22.92%, #080f67 42.71%, #030526 88.54%)",
+      }}
+    >
       {/* Navigation */}
-        <Navbar />
+      <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
+        <div className="pointer-events-auto">
+          {getNavbar()}
+        </div>
+      </div>
       
       {/* Main Content */}
       <main className="pt-32 pb-20 px-6">
@@ -41,13 +51,5 @@ function ContactContent() {
       {/* Cookie Banner */}
       <CookieBanner />
     </div>
-  )
-}
-
-export default function EnglishContact() {
-  return (
-    <NextIntlClientProvider messages={messages} locale="en">
-      <ContactContent />
-    </NextIntlClientProvider>
   )
 }
