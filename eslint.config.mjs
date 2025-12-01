@@ -23,6 +23,7 @@ const eslintConfig = [
       "@next/next/no-img-element": "off",
       "jsx-a11y/alt-text": "off",
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-namespace": ["error", { allowDeclarations: true }],
     },
   },
 ];
