@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { WorldMap } from "@/components/ui/world-map";
 
 export function WorldMapDemoZh() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [captionActive, setCaptionActive] = useState(false);
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
@@ -23,25 +22,6 @@ export function WorldMapDemoZh() {
   // Side margins increase (map width decreases) as user scrolls
   const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const element = containerRef.current;
-    let hasTriggered = false;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && !hasTriggered) {
-          hasTriggered = true;
-          setCaptionActive(true);
-          observer.unobserve(element);
-        }
-      },
-      { rootMargin: "0px 0px 200px 0px", threshold: 0.01 }
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <div 
       ref={containerRef} 
@@ -51,7 +31,7 @@ export function WorldMapDemoZh() {
     >
       {/* Mobile map - simple flow, no sticky, no wrapper */}
       <motion.div
-        className="md:hidden relative w-full bg-white mt-24"
+        className="md:hidden relative w-full bg-white mt-40"
         style={{
           y: mapY,
           x: 0,
@@ -136,78 +116,6 @@ export function WorldMapDemoZh() {
           </div>
         </motion.div>
       </motion.div>
-      
-      {/* Text below the map frame - positioned right after the map */}
-      <TerminalCaptionZh active={captionActive} />
-    </div>
-  );
-}
-
-function TerminalCaptionZh({ active }: { active: boolean }) {
-  const lines = [
-    "麦哲伦联通扩展太平洋—大西洋运力",
-    "选择性航线：运输时间缩短10–15%",
-    "为受巴拿马运河限制的贸易流增加冗余"
-  ];
-  const [displayLines, setDisplayLines] = useState<string[]>(Array(lines.length).fill(""));
-  const [dots, setDots] = useState(0);
-
-  useEffect(() => {
-    if (!active) return;
-    const chars = "▪";
-    const timers: number[] = [];
-    lines.forEach((text, idx) => {
-      const startDelay = idx * 400;
-      const timer = window.setTimeout(() => {
-        let iterations = 0;
-        const max = text.length * 2;
-        const interval = window.setInterval(() => {
-          const next = text
-            .split("")
-            .map((ch, i) => (i < iterations / 2 ? text[i] : chars[Math.floor(Math.random() * chars.length)]))
-            .join("");
-          setDisplayLines((prev) => {
-            const copy = [...prev];
-            copy[idx] = next;
-            return copy;
-          });
-          iterations += 1;
-          if (iterations >= max) {
-            window.clearInterval(interval);
-            setDisplayLines((prev) => {
-              const copy = [...prev];
-              copy[idx] = text;
-              return copy;
-            });
-          }
-        }, 35);
-        timers.push(interval);
-      }, startDelay);
-      timers.push(timer);
-    });
-    return () => {
-      timers.forEach((t) => window.clearTimeout(t));
-    };
-  }, [active]);
-
-  useEffect(() => {
-    if (!active) return;
-    const id = window.setInterval(() => setDots((d) => (d + 1) % 4), 700);
-    return () => window.clearInterval(id);
-  }, [active]);
-
-  return (
-    <div className="px-4 md:px-8 lg:px-12 pt-0 pb-4 md:pb-12 text-center relative z-30 bg-white">
-      <div className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed">
-        {displayLines.map((line, i) => (
-          <div key={i} className={i < displayLines.length - 1 ? "mb-2" : ""}>
-            {line}
-            {i === displayLines.length - 1 && (
-              <span className="inline-block w-6 text-left">{".".repeat(dots)}</span>
-            )}
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

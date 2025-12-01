@@ -16,6 +16,7 @@ export default function Navbar() {
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const navbarRef = useRef<HTMLElement>(null)
   const languageDropdownRef = useRef<HTMLDivElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
   const { isNavbarHidden, setIsNavbarHidden } = useAnimation()
@@ -182,6 +183,26 @@ export default function Navbar() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [languageDropdownOpen])
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      // Also listen for touch events on mobile
+      document.addEventListener('touchstart', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [mobileMenuOpen])
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -439,7 +460,7 @@ export default function Navbar() {
               : '-translate-y-full opacity-0')
     }`}>
       <nav className="container mx-auto">
-        <div className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
+        <div ref={mobileMenuRef} className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
               <Link 

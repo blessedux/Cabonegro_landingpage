@@ -1,18 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
+import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { usePreloader } from '@/contexts/PreloaderContext'
 import { useAnimation } from '@/contexts/AnimationContext'
+import { usePreloader } from '@/contexts/PreloaderContext'
 import CookieBanner from '@/components/sections/CookieBanner'
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
-
-// Code-split preloaders - only load when needed
-const PreloaderEn = dynamic(() => import('@/components/ui/preloader-en'), { ssr: false })
-const PreloaderEs = dynamic(() => import('@/components/ui/preloader-es'), { ssr: false })
-const PreloaderZh = dynamic(() => import('@/components/ui/preloader-zh'), { ssr: false })
-const PreloaderFr = dynamic(() => import('@/components/ui/preloader-fr'), { ssr: false })
+import PreloaderSimple from '@/components/ui/preloader-simple'
 
 // Code-split world maps - only load when needed (named exports)
 const WorldMapDemo = dynamic(() => import('@/components/ui/world-map-demo').then(mod => ({ default: mod.WorldMapDemo })), { ssr: false })
@@ -78,20 +72,27 @@ interface LocaleHomePageProps {
 }
 
 export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
-  const [assetsPreloaded, setAssetsPreloaded] = useState(false)
-  const [preloaderFadeComplete, setPreloaderFadeComplete] = useState(false)
-  const [contentReady, setContentReady] = useState(false)
-  const [contentPreRendered, setContentPreRendered] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderVisible, hasSeenPreloader, setPreloaderVisible, setPreloaderComplete, isPreloaderBVisible, isLanguageSwitch, setLanguageSwitch } = usePreloader()
+  const { isPreloaderSimpleVisible, showPreloaderSimple, hidePreloaderSimple } = usePreloader()
+
+  // Check if it's the first visit and show simple preloader
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
+      if (!hasVisited) {
+        showPreloaderSimple()
+        // Mark as visited after showing preloader
+        localStorage.setItem('cabonegro-homepage-visited', 'true')
+      }
+    }
+  }, [showPreloaderSimple])
 
   // Get locale-specific components
   const getLocaleComponents = () => {
     switch (locale) {
       case 'es':
         return {
-          Preloader: PreloaderEs,
           Hero: HeroEs,
           Navbar: NavbarEs,
           Partners: PartnersEs,
@@ -100,7 +101,6 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         }
       case 'zh':
         return {
-          Preloader: PreloaderZh,
           Hero: HeroZh,
           Navbar: NavbarZh,
           Partners: Partners,
@@ -109,7 +109,6 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         }
       case 'fr':
         return {
-          Preloader: PreloaderFr,
           Hero: HeroFr,
           Navbar: Navbar,
           Partners: Partners,
@@ -118,7 +117,6 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         }
       default: // 'en'
         return {
-          Preloader: PreloaderEn,
           Hero: Hero,
           Navbar: Navbar,
           Partners: Partners,
@@ -128,20 +126,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
     }
   }
 
-  const { Preloader, Hero: HeroComponent, Navbar: NavbarComponent, Partners: PartnersComponent, FAQ: FAQComponent, WorldMap: WorldMapComponent } = getLocaleComponents()
+  const { Hero: HeroComponent, Navbar: NavbarComponent, Partners: PartnersComponent, FAQ: FAQComponent, WorldMap: WorldMapComponent } = getLocaleComponents()
 
-  // Reset language switch flag after locale change completes
-  useEffect(() => {
-    if (isLanguageSwitch && contentPreRendered && preloaderFadeComplete) {
-      // Reset flag after a short delay to ensure everything is rendered
-      const resetTimer = setTimeout(() => {
-        setLanguageSwitch(false)
-      }, 100)
-      return () => clearTimeout(resetTimer)
-    }
-  }, [isLanguageSwitch, contentPreRendered, preloaderFadeComplete, setLanguageSwitch])
-
-  // Preload critical assets
+  // Preload critical assets in background (non-blocking)
   useEffect(() => {
     const preloadAssets = async () => {
       try {
@@ -160,107 +147,17 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         fontLink.type = 'font/woff2'
         fontLink.crossOrigin = 'anonymous'
         document.head.appendChild(fontLink)
-
-        setAssetsPreloaded(true)
       } catch (error) {
         console.warn('Asset preloading failed:', error)
-        setAssetsPreloaded(true)
       }
     }
 
     preloadAssets()
   }, [])
 
-  // Pre-render content early when preloader is visible
-  useEffect(() => {
-    // On language switch, render immediately for instant switching
-    if (isLanguageSwitch) {
-      setContentPreRendered(true)
-      return
-    }
-    
-    // If PreloaderB is visible, wait for it to complete before rendering
-    // PreloaderB completion is handled by PageTransitionWrapper
-    if (isPreloaderBVisible) {
-      // Still pre-render content but keep it hidden until PreloaderB completes
-      setContentPreRendered(true)
-      return
-    }
-    
-    // If PreloaderB is NOT visible (e.g., coming from project pages), render immediately
-    // This makes navigation from project pages to home instant
-    if (!isPreloaderBVisible) {
-      setContentPreRendered(true)
-      return
-    }
-    
-    if (isPreloaderVisible && !isPreloaderBVisible) {
-      // Pre-render immediately - no delay needed
-      setContentPreRendered(true)
-    } else if (!isPreloaderVisible) {
-      setContentPreRendered(true)
-    }
-  }, [isPreloaderVisible, isPreloaderBVisible, isLanguageSwitch])
-
-  // Handle preloader visibility logic
-  useEffect(() => {
-    // Skip preloader entirely on language switches for instant switching
-    if (isLanguageSwitch) {
-      setPreloaderVisible(false)
-      setPreloaderFadeComplete(true)
-      setContentReady(true)
-      setContentPreRendered(true)
-      return
-    }
-    
-    const assetsCached = localStorage.getItem('cabonegro-assets-cached') === 'true'
-    
-    // When PreloaderB is visible, wait for it to complete (handled by PageTransitionWrapper)
-    // Don't set preloaderFadeComplete until PreloaderB is hidden
-    if (isPreloaderBVisible) {
-      setPreloaderVisible(false)
-      // Keep content hidden until PreloaderB completes
-      setPreloaderFadeComplete(false)
-      setContentReady(false)
-      // But still pre-render content
-      setContentPreRendered(true)
-      return
-    }
-    
-    // FAST PATH: If PreloaderB is NOT visible (e.g., navigating from project pages)
-    // AND user has seen preloader OR assets are cached, show content immediately
-    // This makes navigation from project pages to home instant
-    if (!isPreloaderBVisible && !isPreloaderVisible && (hasSeenPreloader || assetsCached)) {
-      setPreloaderVisible(false)
-      setPreloaderFadeComplete(true)
-      setContentReady(true)
-      setContentPreRendered(true)
-      return
-    }
-    
-    // Once PreloaderB is hidden and content is pre-rendered, show it immediately
-    if (!isPreloaderBVisible && contentPreRendered && !preloaderFadeComplete) {
-      setPreloaderFadeComplete(true)
-      setContentReady(true)
-      return
-    }
-    
-    if (isPreloaderVisible) {
-      setPreloaderFadeComplete(false)
-      return
-    }
-    
-    // Fallback: If user has seen preloader and no preloaders are visible, show content
-    if (hasSeenPreloader && !isPreloaderVisible && !isPreloaderBVisible) {
-      setPreloaderFadeComplete(true)
-      setContentReady(true)
-      setContentPreRendered(true)
-    }
-  }, [hasSeenPreloader, isPreloaderBVisible, isPreloaderVisible, isLanguageSwitch, setPreloaderVisible, contentPreRendered, preloaderFadeComplete])
-
   // Handle hash navigation
   useEffect(() => {
-    if (preloaderFadeComplete && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       const hash = window.location.hash
       if (hash) {
         const timer = setTimeout(() => {
@@ -274,138 +171,50 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         return () => clearTimeout(timer)
       }
     }
-  }, [preloaderFadeComplete])
-
-  // Handle content fade-in animation
-  useEffect(() => {
-    if (preloaderFadeComplete && contentRef.current && contentPreRendered) {
-      // Skip animation for instant display when:
-      // 1. Language switch
-      // 2. Coming from project pages (no PreloaderB)
-      const skipAnimation = isLanguageSwitch || (!isPreloaderBVisible && !isPreloaderVisible && hasSeenPreloader)
-      
-      if (skipAnimation) {
-        gsap.set(contentRef.current, { opacity: 1 })
-      } else {
-        gsap.to(contentRef.current, { 
-          opacity: 1, 
-          duration: 0.6,
-          ease: 'power2.out',
-          delay: 0
-        })
-      }
-    }
-  }, [preloaderFadeComplete, contentPreRendered, isLanguageSwitch, isPreloaderBVisible, isPreloaderVisible, hasSeenPreloader])
-
-  // Ensure contentReady is set
-  useEffect(() => {
-    if (preloaderFadeComplete && !contentReady) {
-      setContentReady(true)
-    }
-  }, [preloaderFadeComplete, contentReady])
-
-  // Watch for PreloaderB completion - when it hides, show content immediately
-  useEffect(() => {
-    if (!isPreloaderBVisible && contentPreRendered && !preloaderFadeComplete) {
-      // PreloaderB just completed, show content immediately
-      setPreloaderFadeComplete(true)
-      setContentReady(true)
-    }
-  }, [isPreloaderBVisible, contentPreRendered, preloaderFadeComplete])
-
-
-  // Safety fallback - skip on language switches
-  useEffect(() => {
-    if (isLanguageSwitch) return // Skip safety fallback on language switches
-    
-    if (isPreloaderVisible && !isPreloaderBVisible) {
-      const duration = isLanguageSwitch ? 1.5 : 6
-      const safetyTimeout = setTimeout(() => {
-        setPreloaderFadeComplete(true)
-        setContentReady(true)
-        setPreloaderVisible(false)
-        setPreloaderComplete(true)
-      }, (duration + 1) * 1000)
-
-      return () => clearTimeout(safetyTimeout)
-    }
-  }, [isPreloaderVisible, isPreloaderBVisible, isLanguageSwitch, setPreloaderVisible, setPreloaderComplete])
-
-  const handlePreloaderFadeOutStart = () => {
-    setContentPreRendered(true)
-    setContentReady(true)
-    setPreloaderFadeComplete(true)
-  }
-
-  const handlePreloaderComplete = () => {
-    setPreloaderComplete(true)
-    setPreloaderVisible(false)
-    setPreloaderFadeComplete(true)
-    setContentReady(true)
-  }
+  }, [])
 
   return (
     <>
-      {/* Preloader - Code split, only loads when needed */}
-      {isPreloaderVisible && !isPreloaderBVisible && (
-        <Preloader 
-          onComplete={handlePreloaderComplete}
-          onFadeOutStart={handlePreloaderFadeOutStart}
-          duration={isLanguageSwitch ? 1.5 : 6}
+      {/* Simple Preloader - Show on first load */}
+      {isPreloaderSimpleVisible && (
+        <PreloaderSimple 
+          onComplete={hidePreloaderSimple}
+          duration={2}
         />
       )}
 
-      {/* Hero - Pre-render early but keep hidden until preloader fades */}
-      {contentPreRendered && (
-        <div 
-          style={{ 
-            opacity: preloaderFadeComplete ? 1 : 0,
-            pointerEvents: preloaderFadeComplete ? 'auto' : 'none',
-            // Skip transition when coming from project pages for instant display
-            transition: (preloaderFadeComplete && !isPreloaderBVisible && !isPreloaderVisible && hasSeenPreloader) ? 'none' : (preloaderFadeComplete ? 'opacity 0.6s ease-out' : 'none'),
-            position: 'relative',
-            zIndex: preloaderFadeComplete ? 1 : 0
-          }}
-        >
-          <HeroComponent />
-        </div>
-      )}
+      {/* Hero - Render immediately */}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <HeroComponent />
+      </div>
 
-      {/* Main Content - Pre-render early but hidden, fade in when ready */}
-      {contentPreRendered && (
-        <div 
-          ref={contentRef}
-          className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
-          style={{ 
-            opacity: preloaderFadeComplete ? 1 : 0,
-            pointerEvents: preloaderFadeComplete ? 'auto' : 'none',
-            // Skip transition when coming from project pages for instant display
-            transition: (preloaderFadeComplete && !isPreloaderBVisible && !isPreloaderVisible && hasSeenPreloader) ? 'none' : (preloaderFadeComplete ? 'opacity 0.6s ease-out' : 'none')
-          }}
-        >
-          {/* Navigation */}
-          <NavbarComponent />
-        
-          {/* Main Sections */}
-          <main style={{ pointerEvents: 'auto' }}>
-            <AboutUs />
-            <Stats />
-            <PartnersComponent />
-            <WorldMapComponent />
-            <Press />
-            <FAQComponent />
-          </main>
+      {/* Main Content - Render immediately, content loads progressively */}
+      <div 
+        ref={contentRef}
+        className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
+      >
+        {/* Navigation */}
+        <NavbarComponent />
+      
+        {/* Main Sections */}
+        <main style={{ pointerEvents: 'auto' }}>
+          <AboutUs />
+          <Stats />
+          <PartnersComponent />
+          <WorldMapComponent />
+          <Press />
+          <FAQComponent />
+        </main>
 
-          {/* Footer */}
-          <Footer />
+        {/* Footer */}
+        <Footer />
 
-          {/* Cookie Banner */}
-          <CookieBanner />
+        {/* Cookie Banner */}
+        <CookieBanner />
 
-          {/* Scroll to Top Button */}
-          <ScrollToTopButton />
-        </div>
-      )}
+        {/* Scroll to Top Button */}
+        <ScrollToTopButton />
+      </div>
     </>
   )
 }

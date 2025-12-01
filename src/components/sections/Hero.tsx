@@ -13,9 +13,10 @@ export default function Hero() {
   const h1Ref = useRef<HTMLHeadingElement>(null)
   const paragraphRef = useRef<HTMLParagraphElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const { showPreloaderB } = usePreloader()
+  const { showPreloaderB, isPreloaderComplete } = usePreloader()
 
   // Single hero video (first video - logistics)
   const heroVideo = 'https://res.cloudinary.com/dezm9avsj/video/upload/v1763931613/cabonegro_pjk8im.mp4'
@@ -78,6 +79,45 @@ export default function Hero() {
     setIsVisible(true)
   }, [])
 
+  // Programmatically play video on mobile after user interaction
+  // iOS Safari requires user interaction before videos can autoplay
+  useEffect(() => {
+    const playVideo = async () => {
+      if (videoRef.current) {
+        try {
+          // Ensure video is muted and has playsInline for mobile
+          videoRef.current.muted = true
+          await videoRef.current.play()
+        } catch (error) {
+          // Silently handle autoplay errors (browser policies)
+          // Video will still show first frame
+        }
+      }
+    }
+
+    // Try to play after preloader completes (user interaction)
+    if (isPreloaderComplete) {
+      // Small delay to ensure video element is ready
+      setTimeout(playVideo, 100)
+    }
+
+    // Also try on first user interaction (touch/scroll) as fallback
+    const handleUserInteraction = () => {
+      playVideo()
+      // Remove listeners after first interaction
+      document.removeEventListener('touchstart', handleUserInteraction)
+      document.removeEventListener('scroll', handleUserInteraction, true)
+    }
+
+    document.addEventListener('touchstart', handleUserInteraction, { once: true, passive: true })
+    document.addEventListener('scroll', handleUserInteraction, { once: true, passive: true })
+
+    return () => {
+      document.removeEventListener('touchstart', handleUserInteraction)
+      document.removeEventListener('scroll', handleUserInteraction, true)
+    }
+  }, [isPreloaderComplete])
+
   // Auto-rotate word every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -132,6 +172,7 @@ export default function Hero() {
           }}
         >
           <video
+            ref={videoRef}
             autoPlay
             loop
             muted

@@ -151,12 +151,53 @@ export const HeroVideo = React.forwardRef<
   HTMLMotionProps<"video">
 >(({ style, className, transition, ...props }, ref) => {
   const { scrollYProgress } = useContainerScrollContext()
+  const internalVideoRef = React.useRef<HTMLVideoElement | null>(null) as React.MutableRefObject<HTMLVideoElement | null>
   // Scale from 0.7 to 1 as video expands, matching the inset animation
   const scale = useTransform(scrollYProgress, [0, 0.85], [0.7, 1])
 
+  // Combine refs
+  const combinedRef = React.useCallback((node: HTMLVideoElement | null) => {
+    internalVideoRef.current = node
+    if (typeof ref === 'function') {
+      ref(node)
+    } else if (ref && 'current' in ref) {
+      (ref as React.MutableRefObject<HTMLVideoElement | null>).current = node
+    }
+  }, [ref])
+
+  // Programmatically play video on mobile after user interaction
+  React.useEffect(() => {
+    const playVideo = async () => {
+      const video = internalVideoRef.current
+      if (video) {
+        try {
+          video.muted = true
+          await video.play()
+        } catch (error) {
+          // Silently handle autoplay errors (browser policies)
+        }
+      }
+    }
+
+    // Try on first user interaction
+    const handleUserInteraction = () => {
+      playVideo()
+      document.removeEventListener('touchstart', handleUserInteraction)
+      document.removeEventListener('scroll', handleUserInteraction, true)
+    }
+
+    document.addEventListener('touchstart', handleUserInteraction, { once: true, passive: true })
+    document.addEventListener('scroll', handleUserInteraction, { once: true, passive: true })
+
+    return () => {
+      document.removeEventListener('touchstart', handleUserInteraction)
+      document.removeEventListener('scroll', handleUserInteraction, true)
+    }
+  }, [])
+
   return (
     <motion.video
-      ref={ref}
+      ref={combinedRef}
       className={cn(
         "relative z-10 size-auto max-h-full max-w-full ",
         className

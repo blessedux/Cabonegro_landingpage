@@ -7,6 +7,7 @@ interface PreloaderContextType {
   isPreloaderComplete: boolean
   hasSeenPreloader: boolean
   isPreloaderBVisible: boolean
+  isPreloaderSimpleVisible: boolean
   isLanguageSwitch: boolean
   setPreloaderVisible: (visible: boolean) => void
   setPreloaderComplete: (complete: boolean) => void
@@ -15,50 +16,28 @@ interface PreloaderContextType {
   completePreloader: () => void
   showPreloaderB: () => void
   hidePreloaderB: () => void
+  showPreloaderSimple: () => void
+  hidePreloaderSimple: () => void
   setLanguageSwitch: (isSwitch: boolean) => void
 }
 
 const PreloaderContext = createContext<PreloaderContextType | undefined>(undefined)
 
 export function PreloaderProvider({ children }: { children: ReactNode }) {
+  // Always skip preloader - render content immediately
   const [isPreloaderVisible, setIsPreloaderVisible] = useState(false)
-  const [isPreloaderComplete, setIsPreloaderComplete] = useState(false)
-  const [hasSeenPreloader, setHasSeenPreloader] = useState(false)
+  const [isPreloaderComplete, setIsPreloaderComplete] = useState(true)
+  const [hasSeenPreloader, setHasSeenPreloader] = useState(true)
   const [isPreloaderBVisible, setIsPreloaderBVisible] = useState(false)
+  const [isPreloaderSimpleVisible, setIsPreloaderSimpleVisible] = useState(false)
   const [isLanguageSwitch, setIsLanguageSwitch] = useState(false)
 
-  // Check if user has seen preloader before and if assets are cached
+  // Preloader is disabled - content loads immediately
   useEffect(() => {
-    const hasSeenBefore = localStorage.getItem('cabonegro-preloader-seen')
-    const assetsCached = localStorage.getItem('cabonegro-assets-cached')
-    
-    // Check if critical assets are likely cached by checking if fonts are loaded
-    const checkAssetsCached = () => {
-      if (typeof window !== 'undefined' && document.fonts) {
-        try {
-          return document.fonts.check('1em Inter') || assetsCached === 'true'
-        } catch {
-          return assetsCached === 'true'
-        }
-      }
-      return assetsCached === 'true'
-    }
-
-    if (hasSeenBefore === 'true' && checkAssetsCached()) {
-      // User has seen preloader and assets are cached - skip preloader
-      setHasSeenPreloader(true)
-      setIsPreloaderVisible(false)
-      setIsPreloaderComplete(true)
-    } else if (!hasSeenBefore) {
-      // First visit - show preloader to load assets
-      setIsLanguageSwitch(false) // Explicitly ensure it's false on first load
-      setIsPreloaderVisible(true)
-    } else {
-      // Has seen before but assets might not be cached - show briefly or skip
-      setHasSeenPreloader(true)
-      setIsPreloaderVisible(false)
-      setIsPreloaderComplete(true)
-    }
+    // Mark as seen and complete immediately
+    setHasSeenPreloader(true)
+    setIsPreloaderVisible(false)
+    setIsPreloaderComplete(true)
   }, [])
 
   const showPreloader = () => {
@@ -98,6 +77,15 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
     setIsPreloaderBVisible(false)
   }
 
+  const showPreloaderSimple = () => {
+    console.log('🟢 showPreloaderSimple called - setting isPreloaderSimpleVisible to true')
+    setIsPreloaderSimpleVisible(true)
+  }
+
+  const hidePreloaderSimple = () => {
+    setIsPreloaderSimpleVisible(false)
+  }
+
   return (
     <PreloaderContext.Provider
       value={{
@@ -105,6 +93,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         isPreloaderComplete,
         hasSeenPreloader,
         isPreloaderBVisible,
+        isPreloaderSimpleVisible,
         isLanguageSwitch,
         setPreloaderVisible: setIsPreloaderVisible,
         setPreloaderComplete: setIsPreloaderComplete,
@@ -113,6 +102,8 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         completePreloader,
         showPreloaderB,
         hidePreloaderB,
+        showPreloaderSimple,
+        hidePreloaderSimple,
         setLanguageSwitch: setIsLanguageSwitch,
       }}
     >

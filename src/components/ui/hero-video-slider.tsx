@@ -353,14 +353,24 @@ export function HeroVideoSlider({
                 videoRefs.current[displayIndex] = el;
                 // Ensure video plays when it becomes visible
                 if (el) {
+                  // Ensure muted and playsInline for mobile autoplay
+                  el.muted = true
                   // For slow connections, wait for video to be ready
                   if (connectionType === 'slow') {
                     el.addEventListener('canplay', () => {
                       el.play().catch(() => {});
                     }, { once: true });
                   } else {
+                    // Try to play immediately, with retry on user interaction
                     el.play().catch(() => {
-                      // Ignore play errors (browser autoplay policies)
+                      // If autoplay fails, try again on user interaction
+                      const handleInteraction = () => {
+                        el.play().catch(() => {});
+                        document.removeEventListener('touchstart', handleInteraction)
+                        document.removeEventListener('scroll', handleInteraction, true)
+                      }
+                      document.addEventListener('touchstart', handleInteraction, { once: true, passive: true })
+                      document.addEventListener('scroll', handleInteraction, { once: true, passive: true })
                     });
                   }
                 }

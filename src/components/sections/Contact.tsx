@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Send, DollarSign, Handshake } from 'lucide-react'
+import { Send } from 'lucide-react'
 
 export default function Contact() {
   const t = useTranslations('contact')
@@ -73,11 +73,6 @@ export default function Contact() {
             <p className="text-white text-lg max-w-3xl mx-auto">
               {t('subtitle')}
             </p>
-          </div>
-          <div className="mt-6 flex justify-start px-6">
-            <Button asChild className="bg-white/10 text-white border border-white/20 hover:bg-white/20 font-semibold px-8 py-4">
-              <a href="mailto:pyaconi@ylmv.cl">{t('mailUs')}</a>
-            </Button>
           </div>
         </div>
       </header>
@@ -209,31 +204,6 @@ export default function Contact() {
                 </form>
               </CardContent>
             </Card>
-        </div>
-
-        {/* Joint Venture CTA */}
-        <div className="mt-20">
-          <div className="bg-gradient-to-r from-blue-900/20 to-green-900/20 rounded-2xl p-12 border border-white/10 text-center">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-                {t('jointVenture.title')}
-              </h2>
-              <p className="text-white text-lg mb-10 max-w-3xl mx-auto">
-                {t('jointVenture.description')}
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="bg-white/10 text-white border border-white/20 hover:bg-white/20 font-semibold px-8 py-4">
-                  <Handshake className="w-5 h-5 mr-2" />
-                  {t('jointVenture.requestDetails')}
-                </Button>
-                <Button size="lg" className="bg-transparent text-white border border-white/20 hover:bg-white/20 font-semibold px-8 py-4">
-                  <DollarSign className="w-5 h-5 mr-2" />
-                  {t('jointVenture.downloadDeck')}
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

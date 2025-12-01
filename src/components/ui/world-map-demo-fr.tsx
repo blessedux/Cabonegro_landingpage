@@ -3,89 +3,9 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { WorldMap } from "@/components/ui/world-map";
-import { MagicText } from "@/components/ui/magic-text";
-
-// Word component that uses useTransform hook
-function AnimatedWord({ 
-  word, 
-  index, 
-  totalWords, 
-  scrollYProgress 
-}: { 
-  word: string
-  index: number
-  totalWords: number
-  scrollYProgress: any
-}) {
-  const start = index / totalWords;
-  const end = Math.min(start + 1 / totalWords, 0.99);
-  // Once opacity reaches 1, it stays at 1 (no fade out) - use clamp and ensure it never goes below the max reached value
-  const opacity = useTransform(
-    scrollYProgress, 
-    [start, end, 1], 
-    [0, 1, 1], // Third value ensures it stays at 1
-    { clamp: true }
-  );
-
-  return (
-    <span className="relative mr-1">
-      <span className="absolute opacity-20">{word}</span>
-      <motion.span style={{ opacity: opacity }}>{word}</motion.span>
-    </span>
-  );
-}
-
-// Custom wrapper for MagicText with earlier scroll trigger - stays visible once animated
-function MagicTextWrapper({ text, className }: { text: string; className?: string }) {
-  const container = useRef<HTMLParagraphElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: container,
-    offset: ["start 1.2", "start 0.4"], // Start earlier, finish earlier
-  });
-  
-  // Split by newlines first to preserve line breaks, then split each line by spaces
-  const lines = text.split("\n");
-  const allWords: Array<{ word: string; lineIndex: number; wordIndex: number }> = [];
-  
-  lines.forEach((line, lineIdx) => {
-    const words = line.split(" ").filter(w => w.length > 0);
-    words.forEach((word, wordIdx) => {
-      allWords.push({ word, lineIndex: lineIdx, wordIndex: wordIdx });
-    });
-  });
-
-  return (
-    <p ref={container} className={`flex flex-col leading-relaxed ${className}`}>
-      {lines.map((line, lineIdx) => {
-        const words = line.split(" ").filter(w => w.length > 0);
-        const lineStartIndex = lines.slice(0, lineIdx).reduce((acc, l) => acc + l.split(" ").filter(w => w.length > 0).length, 0);
-        
-        return (
-          <span key={lineIdx} className="flex flex-wrap">
-            {words.map((word, wordIdx) => {
-              const globalIndex = lineStartIndex + wordIdx;
-              return (
-                <AnimatedWord 
-                  key={`${lineIdx}-${wordIdx}`}
-                  word={word}
-                  index={globalIndex}
-                  totalWords={allWords.length}
-                  scrollYProgress={scrollYProgress}
-                />
-              );
-            })}
-          </span>
-        );
-      })}
-    </p>
-  );
-}
 
 export function WorldMapDemoFr() {
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  // French text with line breaks
-  const mapText = 'La liaison de Magellan élargit la capacité Pacifique-Atlantique.\nRoutes sélectives : réduction de 10 à 15 % du temps de transit.\nAjoute de la redondance aux flux commerciaux contraints par Panama.';
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
@@ -115,7 +35,7 @@ export function WorldMapDemoFr() {
     >
       {/* Mobile map - simple flow, no sticky, no wrapper */}
       <motion.div
-        className="md:hidden relative w-full bg-white mt-24"
+        className="md:hidden relative w-full bg-white mt-40"
         style={{
           y: mapY,
           x: 0,
@@ -254,14 +174,6 @@ export function WorldMapDemoFr() {
           </div>
         </motion.div>
       </motion.div>
-      
-      {/* Animated text below the map frame - positioned right after the map */}
-      <div className="px-4 md:px-8 lg:px-12 pt-0 pb-4 md:pb-12 text-center relative z-30 bg-white">
-        <MagicTextWrapper 
-          text={mapText}
-          className="text-black text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-relaxed"
-        />
-      </div>
     </div>
   );
 }

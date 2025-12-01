@@ -315,6 +315,7 @@ export default function AboutUs() {
       
       {/* AboutUs section */}
       <section 
+        id="about"
         data-aboutus-section="true"
         className="relative bg-transparent z-[4] py-24"
       >

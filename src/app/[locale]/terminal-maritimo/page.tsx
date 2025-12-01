@@ -1,13 +1,11 @@
 'use client'
 
-import { useParams, useRouter, usePathname } from 'next/navigation'
-import { Download, Calendar, Mail, Ship, Shield, Navigation, MapPin, Zap, Factory } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Shield, Navigation, MapPin, Zap, Factory, Calendar } from 'lucide-react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import Script from 'next/script'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import Link from 'next/link'
 
 // Type declaration for spline-viewer custom element
 declare global {
@@ -20,14 +18,6 @@ declare global {
     }
   }
 }
-import {
-  ContainerScroll,
-  ContainerSticky,
-  ContainerAnimated,
-  ContainerInset,
-  HeroVideo,
-  HeroButton,
-} from '@/components/ui/animated-video-on-scroll'
 import { RulerCarousel, type CarouselItem } from '@/components/ui/ruler-carousel'
 
 // Code-split navigation components - only load when needed
@@ -43,8 +33,6 @@ const Footer = dynamic(() => import('@/components/sections/Footer'), {
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
 
 export default function TerminalMaritimoPage() {
-  const params = useParams()
-  const router = useRouter()
   const pathname = usePathname()
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
 
@@ -75,17 +63,6 @@ export default function TerminalMaritimoPage() {
             { icon: Factory, title: 'Outside Urban Area', description: 'Industrial zone with room for expansion' },
             { icon: Zap, title: 'Suitable for Energy Projects', description: 'Ideal location for green hydrogen infrastructure' },
             { icon: Factory, title: 'Regulatory Update Zone', description: 'Industrial area under regulatory modernization' }
-          ]
-        },
-        commercial: {
-          title: 'Commercial Focus',
-          description: 'The terminal is designed to handle various types of cargo and operations:',
-          items: [
-            'Project Cargo',
-            'Containers',
-            'Bulk Cargo',
-            'H2V Logistics',
-            'Antarctic Operations'
           ]
         },
         timeline: {
@@ -135,21 +112,7 @@ export default function TerminalMaritimoPage() {
           items: [
             { icon: Shield, title: 'Puerto Protegido', description: 'Ubicación estratégica con protección natural' },
             { icon: MapPin, title: 'Áreas de Respaldo', description: 'Amplio espacio para operaciones logísticas' },
-            { icon: Navigation, title: 'Acceso Ruta 9', description: 'Conexión directa al corredor principal de transporte' },
-            { icon: Factory, title: 'Fuera del Área Urbana', description: 'Zona industrial con espacio para expansión' },
-            { icon: Zap, title: 'Apto para Proyectos Energéticos', description: 'Ubicación ideal para infraestructura de hidrógeno verde' },
-            { icon: Factory, title: 'Zona en Actualización Regulatoria', description: 'Área industrial bajo modernización regulatoria' }
-          ]
-        },
-        commercial: {
-          title: 'Enfoque Comercial',
-          description: 'El terminal está diseñado para manejar diversos tipos de carga y operaciones:',
-          items: [
-            'Carga de Proyectos',
-            'Contenedores',
-            'Graneles',
-            'Logística H2V',
-            'Operación Antártica'
+            { icon: Navigation, title: 'Acceso Ruta 9', description: 'Conexión directa al corredor principal de transporte' }
           ]
         },
         timeline: {
@@ -157,14 +120,14 @@ export default function TerminalMaritimoPage() {
           description: 'Hitos clave desde 2021 hasta 2028',
           readyToBuild: 'Listo para Construir',
           events: {
-            '2021': 'Inicio del Proyecto',
-            '2022': 'Estudios de Factibilidad',
-            '2023': 'Fase de Diseño',
-            '2024': 'Permisos y Aprobaciones',
-            '2025': 'Inicio de Construcción',
-            '2026': 'Finalización Fase 1',
-            '2027': 'Desarrollo Fase 2',
-            '2028': 'Listo para Construir (RtB)'
+            '2021': 'Mayo: Fijación de línea de playa\nJulio: Solicitud de concesión marítima',
+            '2022': 'Marzo: Admisibilidad tramitación CM61260\nSeptiembre: Estudios oceanográficos (UMAG)\nNoviembre: Conglomerado e Informe Técnico',
+            '2023': 'Enero: Ingeniería Conceptual PRDW\nMayo: Pronunciamiento favorable DIFROL',
+            '2024': 'Junio: Informe cartográfico favorable',
+            '2025': 'Abril: Aprobación Unánime CRUBC\nAbril: Pronunciamiento favorable DOP\nJulio: Pronunciamiento favorable MTT\nAgosto: Decreto otorgamiento Concesión Marítima',
+            '2026': 'Estudios ambientales\nTramitación RCA\nIngeniería básica y de detalle\nEstudios de maniobrabilidad',
+            '2027': 'Continuación de estudios y tramitación',
+            '2028': 'Ready-to-Build (RtB)'
           }
         },
         map: {
@@ -203,17 +166,6 @@ export default function TerminalMaritimoPage() {
             { icon: Factory, title: '城市外区域', description: '有扩展空间的工业区' },
             { icon: Zap, title: '适合能源项目', description: '绿色氢能基础设施的理想位置' },
             { icon: Factory, title: '监管更新区', description: '正在监管现代化的工业区' }
-          ]
-        },
-        commercial: {
-          title: '商业重点',
-          description: '该码头设计用于处理各种类型的货物和运营：',
-          items: [
-            '项目货物',
-            '集装箱',
-            '散货',
-            'H2V物流',
-            '南极运营'
           ]
         },
         timeline: {
@@ -269,17 +221,6 @@ export default function TerminalMaritimoPage() {
             { icon: Factory, title: 'Zone de Mise à Jour Réglementaire', description: 'Zone industrielle sous modernisation réglementaire' }
           ]
         },
-        commercial: {
-          title: 'Focus Commercial',
-          description: 'Le terminal est conçu pour gérer divers types de cargaison et d\'opérations :',
-          items: [
-            'Fret de Projet',
-            'Conteneurs',
-            'Vrac',
-            'Logistique H2V',
-            'Opérations Antarctiques'
-          ]
-        },
         timeline: {
           title: 'Calendrier du Projet',
           description: 'Jalons clés de 2021 à 2028',
@@ -312,7 +253,6 @@ export default function TerminalMaritimoPage() {
   }
 
   const localizedText = getLocalizedText()
-  const homePath = locale === 'en' ? '/en' : `/${locale}`
 
   // Get appropriate Navbar component
   const getNavbar = () => {
@@ -322,19 +262,76 @@ export default function TerminalMaritimoPage() {
     return <Navbar />
   }
 
-  const contactPath = `/${locale}/contact?from=terminal-maritimo`
-
   // Timeline data for RulerCarousel - localized
-  const timelineCarouselItems: CarouselItem[] = [
-    { id: 1, title: '2021', date: '2021', description: localizedText.timeline.events['2021'] },
-    { id: 2, title: '2022', date: '2022', description: localizedText.timeline.events['2022'] },
-    { id: 3, title: '2023', date: '2023', description: localizedText.timeline.events['2023'] },
-    { id: 4, title: '2024', date: '2024', description: localizedText.timeline.events['2024'] },
-    { id: 5, title: '2025', date: '2025', description: localizedText.timeline.events['2025'] },
-    { id: 6, title: '2026', date: '2026', description: localizedText.timeline.events['2026'] },
-    { id: 7, title: '2027', date: '2027', description: localizedText.timeline.events['2027'] },
-    { id: 8, title: '2028', date: '2028', description: localizedText.timeline.events['2028'] }
-  ]
+  const getTimelineItems = (): CarouselItem[] => {
+    if (locale === 'es') {
+      // Spanish version with detailed milestones
+      return [
+        { 
+          id: 1, 
+          title: '2021', 
+          date: '2021', 
+          phaseTitle: '2021 - Inicio del Proyecto',
+          description: 'Mayo: Fijación de línea de playa\nJulio: Solicitud de concesión marítima'
+        },
+        { 
+          id: 2, 
+          title: '2022', 
+          date: '2022', 
+          phaseTitle: '2022 - Estudios y Tramitación',
+          description: 'Marzo: Admisibilidad tramitación CM61260\nSeptiembre: Estudios oceanográficos (UMAG)\nNoviembre: Conglomerado e Informe Técnico'
+        },
+        { 
+          id: 3, 
+          title: '2023', 
+          date: '2023', 
+          phaseTitle: '2023 - Ingeniería y Pronunciamientos',
+          description: 'Enero: Ingeniería Conceptual PRDW\nMayo: Pronunciamiento favorable DIFROL'
+        },
+        { 
+          id: 4, 
+          title: '2024', 
+          date: '2024', 
+          phaseTitle: '2024 - Informe Cartográfico',
+          description: 'Junio: Informe cartográfico favorable'
+        },
+        { 
+          id: 5, 
+          title: '2025', 
+          date: '2025', 
+          phaseTitle: '2025 - Aprobaciones y Concesión',
+          description: 'Abril: Aprobación Unánime CRUBC\nAbril: Pronunciamiento favorable DOP\nJulio: Pronunciamiento favorable MTT\nAgosto: Decreto otorgamiento Concesión Marítima'
+        },
+        { 
+          id: 6, 
+          title: '2026-2028', 
+          date: '2026-2028', 
+          phaseTitle: '2026-2028 - Estudios y Desarrollo',
+          description: 'Estudios ambientales\nTramitación RCA\nIngeniería básica y de detalle\nEstudios de maniobrabilidad'
+        },
+        { 
+          id: 7, 
+          title: '2028', 
+          date: '2028', 
+          phaseTitle: '2028 - Ready-to-Build',
+          description: 'Ready-to-Build (RtB): 2028'
+        }
+      ]
+    }
+    // Default for other languages
+    return [
+      { id: 1, title: '2021', date: '2021', description: localizedText.timeline.events['2021'] },
+      { id: 2, title: '2022', date: '2022', description: localizedText.timeline.events['2022'] },
+      { id: 3, title: '2023', date: '2023', description: localizedText.timeline.events['2023'] },
+      { id: 4, title: '2024', date: '2024', description: localizedText.timeline.events['2024'] },
+      { id: 5, title: '2025', date: '2025', description: localizedText.timeline.events['2025'] },
+      { id: 6, title: '2026', date: '2026', description: localizedText.timeline.events['2026'] },
+      { id: 7, title: '2027', date: '2027', description: localizedText.timeline.events['2027'] },
+      { id: 8, title: '2028', date: '2028', description: localizedText.timeline.events['2028'] }
+    ]
+  }
+
+  const timelineCarouselItems: CarouselItem[] = getTimelineItems()
 
   // Light mode for Spanish version
   const isLightMode = locale === 'es'
@@ -350,57 +347,55 @@ export default function TerminalMaritimoPage() {
         </div>
       </div>
 
-      {/* Hero Section with Animated Video on Scroll */}
-      <section data-hero-section="true" className="relative overflow-hidden mb-0">
-        <ContainerScroll className="h-[110vh] md:h-[110vh]">
-          <ContainerSticky
-            style={{
-              background:
-                "radial-gradient(40% 40% at 50% 20%, #0e19ae 0%, #0b1387 22.92%, #080f67 42.71%, #030526 88.54%)",
-              height: '110vh',
-            }}
-            className="px-6 py-10 text-slate-50 pointer-events-none"
-          >
-            <div className="pointer-events-auto">
-              <ContainerAnimated 
-                className="space-y-4 text-center"
-                initial="visible"
-                animate="visible"
-              >
-                <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 mt-24 md:mt-28">
-                  {localizedText.hero.title}
-                </h1>
-                <p className="mx-auto max-w-[42ch] text-xl md:text-2xl opacity-80">
-                  {localizedText.hero.subtitle}
-                </p>
-              </ContainerAnimated>
-
-              <ContainerInset className="max-h-[450px] w-auto py-6">
-                <HeroVideo
-                  src="https://res.cloudinary.com/dezm9avsj/video/upload/v1764433234/cabonegro_slide2_vktkza.mp4"
-                  className="w-full h-auto"
-                />
-              </ContainerInset>
-
-              <ContainerAnimated
-                transition={{ delay: 0 }}
-                outputRange={[-120, 0]}
-                inputRange={[0, 0.7]}
-                className="mx-auto mt-2 w-fit"
-                initial="visible"
-                animate="visible"
-              >
-                <HeroButton
-                  onClick={() => router.push(contactPath)}
-                  className="border-blue-400 bg-gray-950/10 px-6 py-3 shadow-[0px_4px_24px_rgba(59,130,246,0.5)] hover:bg-slate-950/50 text-white"
-                >
-                  <Mail className="w-5 h-5 mr-2 inline" />
-                  {localizedText.contact.contactBtn}
-                </HeroButton>
-              </ContainerAnimated>
-            </div>
-          </ContainerSticky>
-        </ContainerScroll>
+      {/* Hero Section with Full Background Video */}
+      <section data-hero-section="true" className="relative h-screen w-full overflow-hidden">
+        {/* Background Video */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: 0 }}
+        >
+          <source src="https://res.cloudinary.com/dezm9avsj/video/upload/v1764433234/cabonegro_slide2_vktkza.mp4" type="video/mp4" />
+        </video>
+        
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" style={{ zIndex: 1 }} />
+        
+        {/* Content */}
+        <div className="relative h-full flex flex-col items-center justify-center px-6 text-center text-white" style={{ zIndex: 2 }}>
+          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4">
+            {localizedText.hero.title}
+          </h1>
+          <p className="mx-auto max-w-[42ch] text-xl md:text-2xl opacity-90 mb-6">
+            {localizedText.hero.subtitle}
+          </p>
+          {/* COMPAS Marine Logo */}
+          <div className="mt-24">
+            <a
+              href="https://compasmarine.cl/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block transition-opacity hover:opacity-80"
+            >
+              <Image
+                src="/logos/COMPAS_MARINE.png"
+                alt="COMPAS Marine"
+                width={220}
+                height={110}
+                className="object-contain"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
+            </a>
+            {locale === 'es' && (
+              <p className="mt-4 text-sm italic text-white/70">
+                Conoce mas sobre nuestros socios estrategicos. 
+              </p>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* Vision Section - Right after hero */}
@@ -415,20 +410,76 @@ export default function TerminalMaritimoPage() {
         </div>
       </section>
 
-      {/* Timeline Section - RulerCarousel */}
-      <section data-white-background="true" className={`py-20 px-6 min-h-[150vh] ${isLightMode ? 'bg-white' : ''}`}>
-        <div className="container mx-auto max-w-6xl">
-          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
-            {localizedText.timeline.title}
-          </h2>
-          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-12`}>
-            {localizedText.timeline.description}
-          </p>
-          <div className="min-h-[100vh]">
-            <RulerCarousel originalItems={timelineCarouselItems} lightMode={isLightMode} />
+      {/* Strategic Collaboration Section - Compas Marine */}
+      {locale === 'es' && (
+        <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
+          <div className="container mx-auto max-w-6xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+              {/* Left Side: Image and Logo */}
+              <div className="flex flex-col items-start gap-6">
+                {/* Image Container for Project Manager */}
+                <div className="w-full max-w-[300px] aspect-square">
+                  <Image
+                    src="/felipe_morales_perfil.jpeg"
+                    alt="Felipe Morales - Jefe de Proyecto Compas Marine"
+                    width={300}
+                    height={300}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
+                {/* Felipe Morales Name and Title */}
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    Felipe Morales
+                  </h3>
+                  <p className="text-lg text-gray-600">
+                    Gerente General <br></br> Terminal Maritimo <br></br> Cabo Negro
+                  </p>
+                </div>
+                {/* CTA Button - Schedule Meeting */}
+                <a
+                  href="https://calendly.com/fmorales-cabonegro/30min"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg w-full"
+                >
+                  <Calendar className="w-5 h-5" />
+                  Agendar Reunión
+                </a>
+              </div>
+              
+              {/* Right Side: Title and Paragraph */}
+              <div className="flex flex-col">
+                <div className="flex items-center gap-4 mb-6">
+                 
+                  {/* Compas Marine Logo */}
+                  <a
+                    href="https://compasmarine.cl/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block transition-opacity hover:opacity-80 flex-shrink-0"
+                  >
+                    <Image
+                      src="/logos/COMPAS_MARINE.png"
+                      alt="COMPAS Marine"
+                      width={240}
+                      height={120}
+                      className="object-contain"
+                      style={{ filter: 'brightness(0)', alignItems: 'right' }}
+                    />
+                  </a>
+                </div>
+                <h3 className={`text-xl md:text-2xl font-semibold mb-4 ${isLightMode ? 'text-gray-900' : ''}`}>
+                  Socio Estratégico del Proyecto Portuario
+                </h3>
+                <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
+                  Compas Marine es el socio responsable de la gestión y desarrollo del Terminal Marítimo Cabo Negro. Con una amplia trayectoria en el diseño, construcción, operación y administración de terminales marítimos en la Patagonia Chilena, la compañía aporta experiencia técnica, estándares operacionales de alto nivel y un enfoque sólido en eficiencia, seguridad e innovación portuaria. Su participación garantiza un desarrollo alineado con las mejores prácticas de la industria y con las necesidades logísticas y energéticas de la región.
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Advantages Section */}
       <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
@@ -456,77 +507,17 @@ export default function TerminalMaritimoPage() {
         </div>
       </section>
 
-      {/* Commercial Focus Section */}
-      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-gray-50' : 'bg-white/5'}`}>
+      {/* Timeline Section - RulerCarousel */}
+      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
         <div className="container mx-auto max-w-6xl">
           <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
-            {localizedText.commercial.title}
+            {localizedText.timeline.title}
           </h2>
-          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-8`}>
-            {localizedText.commercial.description}
+          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-12`}>
+            {localizedText.timeline.description}
           </p>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {localizedText.commercial.items.map((item: string, index: number) => (
-              <div 
-                key={index} 
-                className={`flex items-center gap-3 p-4 ${isLightMode ? 'bg-white border border-gray-200' : 'bg-white/5'} rounded-lg`}
-              >
-                <Ship className={`w-5 h-5 ${isLightMode ? 'text-blue-600' : 'text-blue-400'}`} />
-                <span className={`text-lg ${isLightMode ? 'text-gray-900' : ''}`}>{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
-            {localizedText.contact.title}
-          </h2>
-          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-8`}>
-            {localizedText.contact.description}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button 
-              asChild 
-              className={isLightMode 
-                ? "bg-blue-600 text-white hover:bg-blue-700 font-semibold px-8 py-6" 
-                : "bg-white text-black hover:bg-gray-200 font-semibold px-8 py-6"
-              }
-            >
-              <Link href={contactPath}>
-                <Mail className="w-5 h-5 mr-2" />
-                {localizedText.contact.contactBtn}
-              </Link>
-            </Button>
-            <Button 
-              asChild 
-              variant="outline" 
-              className={isLightMode
-                ? "border-gray-900 text-gray-900 hover:bg-gray-100 font-semibold px-8 py-6"
-                : "border-white text-white hover:bg-white/10 font-semibold px-8 py-6"
-              }
-            >
-              <Link href={`${contactPath}&action=schedule`}>
-                <Calendar className="w-5 h-5 mr-2" />
-                {localizedText.contact.scheduleBtn}
-              </Link>
-            </Button>
-            <Button 
-              asChild 
-              variant="outline" 
-              className={isLightMode
-                ? "border-gray-900 text-gray-900 hover:bg-gray-100 font-semibold px-8 py-6"
-                : "border-white text-white hover:bg-white/10 font-semibold px-8 py-6"
-              }
-            >
-              <Link href="#">
-                <Download className="w-5 h-5 mr-2" />
-                {localizedText.contact.downloadBtn}
-              </Link>
-            </Button>
+          <div>
+            <RulerCarousel originalItems={timelineCarouselItems} lightMode={isLightMode} />
           </div>
         </div>
       </section>

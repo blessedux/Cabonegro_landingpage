@@ -372,12 +372,6 @@ export default function Stats() {
   
   const statBox3Opacity = useTransform(scrollYProgress, [0.24, 0.34], [0, 1], { clamp: true })
   const statBox3Y = useTransform(scrollYProgress, [0.24, 0.34], [30, 0], { clamp: true })
-  
-  const statBox4Opacity = useTransform(scrollYProgress, [0.26, 0.36], [0, 1], { clamp: true })
-  const statBox4Y = useTransform(scrollYProgress, [0.26, 0.36], [30, 0], { clamp: true })
-  
-  const statBox5Opacity = useTransform(scrollYProgress, [0.28, 0.40], [0, 1], { clamp: true })
-  const statBox5Y = useTransform(scrollYProgress, [0.28, 0.40], [30, 0], { clamp: true })
 
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(false)
@@ -397,6 +391,7 @@ export default function Stats() {
     <>
       {/* Stats section - sticky positioning to allow scrolling */}
       <motion.section 
+        id="stats"
         ref={statsRef} 
         className="sticky top-0 left-0 right-0 h-[100vh] z-[3] pointer-events-none"
         style={{
@@ -500,202 +495,131 @@ export default function Stats() {
                 </div>
               </div>
 
-            {/* Company/Area Breakdown - Reorganized Layout */}
-            {/* Desktop: Top 300+, Middle PPG/A&J, Bottom 3 cards */}
+            {/* Company/Area Breakdown - 3 Cards Layout: 1 top, 2 bottom */}
             <div className="space-y-6">
-              {/* Middle Row: PPG and A&J (2 cards) - Desktop only */}
-              <div className="hidden lg:grid lg:grid-cols-2 gap-6">
-                {/* PPG */}
+              {/* Top Row: Patagon Valley (centered) */}
+              <div className="flex justify-center">
                 <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl text-center"
+                  className="relative w-full max-w-md rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox1Opacity,
                     y: statBox1Y
                   }}
+                  onClick={handlePatagonValleyClick}
+                  onMouseEnter={() => router.prefetch(`/${locale}/parque-tecnologico`)}
                 >
-                  <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
-                  <p className="text-gray-400 text-xs mb-3">
-                    {locale === 'es' ? 'Inversiones PPG SpA' : locale === 'zh' ? 'PPG投资公司' : locale === 'fr' ? 'Investissements PPG SpA' : 'Inversiones PPG SpA'}
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Solicitud de concesión marítima en trámite' : locale === 'zh' ? '海事特许申请处理中' : locale === 'fr' ? 'Demande de concession maritime en cours' : 'Maritime concession application in process'}
+                  {/* Background Image */}
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: 'url(/Patagon_Valley_v2.webp)'
+                    }}
+                  />
+                  {/* Overlay for better text readability */}
+                  <div className="absolute inset-0 bg-black/40" />
+                  
+                  {/* Content */}
+                  <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
+                    {/* Logo Icon */}
+                    <div className="mb-6">
+                      <img 
+                        src="/logos/patagon_white.png" 
+                        alt="Patagon Valley Logo" 
+                        className="w-20 h-20 mx-auto object-contain"
+                      />
+                    </div>
+                    
+                    {/* Title */}
+                    <h3 className="text-white font-bold text-2xl mb-2">Patagon Valley</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      {locale === 'es' ? 'Inmobiliaria Patagon Valley SpA' : locale === 'zh' ? '巴塔哥尼亚谷房地产公司' : locale === 'fr' ? 'Immobilier Patagon Valley SpA' : 'Inmobiliaria Patagon Valley SpA'}
                     </p>
-                    <p className="text-blue-400 text-xs font-mono">CM61260</p>
-                    <p className="text-gray-400 text-xs mt-3">
-                      {locale === 'es' ? 'Desarrollo de zona portuaria con J&P' : locale === 'zh' ? '与J&P合作开发港口区' : locale === 'fr' ? 'Développement de zone portuaire avec J&P' : 'Port zone development with J&P'}
-                    </p>
-                  </div>
-                </motion.div>
-
-                {/* A&J */}
-                <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl text-center"
-                  style={{
-                    opacity: statBox3Opacity,
-                    y: statBox3Y
-                  }}
-                >
-                  <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
-                  <p className="text-gray-400 text-xs mb-3">
-                    {locale === 'es' ? 'Inversiones A&J Limitada' : locale === 'zh' ? 'A&J投资有限公司' : locale === 'fr' ? 'Investissements A&J Limitée' : 'Inversiones A&J Limitada'}
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Lotes subdivididos disponibles' : locale === 'zh' ? '可用的细分地块' : locale === 'fr' ? 'Lots subdivisés disponibles' : 'Subdivided lots available'}
-                    </p>
-                    <p className="text-2xl font-bold text-white mb-2">5,000 m²+</p>
-                    <p className="text-gray-400 text-xs">
-                      {locale === 'es' ? 'Tamaño mínimo de lote' : locale === 'zh' ? '最小地块面积' : locale === 'fr' ? 'Taille minimale du lot' : 'Minimum lot size'}
-                    </p>
+                    <div className="text-3xl font-bold text-white mb-2">
+                      <AnimatedCounter end={33} suffix=" ha" />
+                    </div>
                   </div>
                 </motion.div>
               </div>
 
-              {/* Bottom Row: Patagon Valley, Port Zone, Cabo Negro Dos (3 cards) */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Patagon Valley */}
+              {/* Bottom Row: Terminal Marítimo and Cabo Negro Dos (2 cards) */}
+              <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {/* Terminal Marítimo */}
                 <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl cursor-pointer hover:bg-black/50 transition-colors text-center"
+                  className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox2Opacity,
                     y: statBox2Y
                   }}
-                  onClick={handlePatagonValleyClick}
-                  onMouseEnter={() => router.prefetch(`/${locale}/parque-tecnologico`)}
-                >
-                  <h3 className="text-white font-bold text-lg mb-3">Patagon Valley</h3>
-                  <p className="text-gray-400 text-xs mb-3">
-                    {locale === 'es' ? 'Inmobiliaria Patagon Valley SpA' : locale === 'zh' ? '巴塔哥尼亚谷房地产公司' : locale === 'fr' ? 'Immobilier Patagon Valley SpA' : 'Inmobiliaria Patagon Valley SpA'}
-                  </p>
-                  <div className="mb-3">
-                    <div className="text-3xl font-bold text-white mb-1">
-                      <AnimatedCounter end={33} suffix=" ha" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Propiedad de fondo de inversión privado' : locale === 'zh' ? '由私人投资基金拥有' : locale === 'fr' ? 'Propriété d\'un fonds d\'investissement privé' : 'Owned by private investment fund'}
-                    </p>
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Instalado: AWS y GTD' : locale === 'zh' ? '已安装：AWS和GTD' : locale === 'fr' ? 'Installé : AWS et GTD' : 'Installed: AWS and GTD'}
-                    </p>
-                    <p className="text-gray-400 text-xs mt-2">
-                      {locale === 'es' ? 'Originalmente planificado como parque tecnológico' : locale === 'zh' ? '最初规划为科技园' : locale === 'fr' ? 'Initialement prévu comme parc technologique' : 'Originally planned as tech park'}
-                    </p>
-                  </div>
-                </motion.div>
-
-                {/* J&P Port Zone */}
-                <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl cursor-pointer hover:bg-black/50 transition-colors text-center"
-                  style={{
-                    opacity: statBox4Opacity,
-                    y: statBox4Y
-                  }}
                   onClick={handlePortZoneClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/terminal-maritimo`)}
                 >
-                  <h3 className="text-white font-bold text-lg mb-3">
-                    {locale === 'es' ? 'Zona Portuaria J&P' : locale === 'zh' ? 'J&P港口区' : locale === 'fr' ? 'Zone Portuaire J&P' : 'J&P Port Zone'}
-                  </h3>
-                  <p className="text-gray-400 text-xs mb-3">
-                    {locale === 'es' ? 'Inversiones J&P Limitada' : locale === 'zh' ? 'J&P投资有限公司' : locale === 'fr' ? 'Investissements J&P Limitée' : 'Inversiones J&P Limitada'}
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Desarrollo de zona portuaria' : locale === 'zh' ? '港口区开发' : locale === 'fr' ? 'Développement de zone portuaire' : 'Port zone development'}
-                    </p>
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Vinculado al proyecto portuario PPG' : locale === 'zh' ? '与PPG港口项目相关' : locale === 'fr' ? 'Lié au projet portuaire PPG' : 'Linked to PPG port project'}
-                    </p>
-                    <p className="text-gray-400 text-xs mt-3">
-                      {locale === 'es' ? 'Dividido en sociedades separadas:' : locale === 'zh' ? '分为独立公司：' : locale === 'fr' ? 'Divisé en sociétés séparées :' : 'Divided into separate companies:'}
-                    </p>
-                    <p className="text-gray-300 text-xs">
-                      {locale === 'es' ? '• J&P (continuadora) - Desarrollo portuario' : locale === 'zh' ? '• J&P（继续者）- 港口开发' : locale === 'fr' ? '• J&P (continuatrice) - Développement portuaire' : '• J&P (continuadora) - Port development'}
-                    </p>
-                    <p className="text-gray-300 text-xs">
-                      {locale === 'es' ? '• J&P 2 y J&P 3 - Opciones de ampliación' : locale === 'zh' ? '• J&P 2和J&P 3 - 扩展选项' : locale === 'fr' ? '• J&P 2 et J&P 3 - Options d\'expansion' : '• J&P 2 & J&P 3 - Expansion options'}
-                    </p>
+                  {/* Background Image */}
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: 'url(/maritime_terminal.png)'
+                    }}
+                  />
+                  {/* Overlay for better text readability */}
+                  <div className="absolute inset-0 bg-black/40" />
+                  
+                  {/* Content */}
+                  <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
+                    {/* Logo Icon */}
+                    <div className="mb-6">
+                      <img 
+                        src="/cabonegro_logo.png" 
+                        alt="Cabo Negro Logo" 
+                        className="w-20 h-20 mx-auto object-contain filter brightness-0 invert"
+                      />
+                    </div>
+                    
+                    {/* Title */}
+                    <h3 className="text-white font-bold text-2xl mb-2">
+                      {locale === 'es' ? 'Terminal Marítimo Cabo Negro' : locale === 'zh' ? '卡波内格罗海运码头' : locale === 'fr' ? 'Terminal Maritime Cabo Negro' : 'Terminal Marítimo Cabo Negro'}
+                    </h3>
                   </div>
                 </motion.div>
 
                 {/* Cabo Negro Dos */}
                 <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl cursor-pointer hover:bg-black/50 transition-colors text-center"
-                  style={{
-                    opacity: statBox5Opacity,
-                    y: statBox5Y
-                  }}
-                  onClick={handleCaboNegroDosClick}
-                  onMouseEnter={() => router.prefetch(`/${locale}/parque-logistico`)}
-                >
-                  <h3 className="text-white font-bold text-lg mb-3">Cabo Negro Dos</h3>
-                  <p className="text-gray-400 text-xs mb-3">
-                    {locale === 'es' ? 'Inmobiliaria Cabo Negro Dos' : locale === 'zh' ? '卡波内格罗二号房地产公司' : locale === 'fr' ? 'Immobilier Cabo Negro Dos' : 'Inmobiliaria Cabo Negro Dos'}
-                  </p>
-                  <div className="mb-3">
-                    <div className="text-3xl font-bold text-white mb-1">
-                      <AnimatedCounter end={173} suffix=" ha" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Resultante de la subdivisión de J&P' : locale === 'zh' ? '来自J&P细分' : locale === 'fr' ? 'Résultant de la subdivision de J&P' : 'Resulting from J&P subdivision'}
-                    </p>
-                    <p className="text-gray-400 text-xs">
-                      {locale === 'es' ? 'Área única unificada (sin subdivisión)' : locale === 'zh' ? '单一统一区域（无细分）' : locale === 'fr' ? 'Zone unique unifiée (sans subdivision)' : 'Single unified area (no subdivision)'}
-                    </p>
-                  </div>
-                </motion.div>
-              </div>
-
-              {/* Mobile/Tablet: Show PPG and A&J in grid below */}
-              <div className="grid md:grid-cols-2 lg:hidden gap-6">
-                {/* PPG */}
-                <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl text-center"
-                  style={{
-                    opacity: statBox1Opacity,
-                    y: statBox1Y
-                  }}
-                >
-                  <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
-                  <p className="text-gray-400 text-xs mb-3">
-                    {locale === 'es' ? 'Inversiones PPG SpA' : locale === 'zh' ? 'PPG投资公司' : locale === 'fr' ? 'Investissements PPG SpA' : 'Inversiones PPG SpA'}
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Solicitud de concesión marítima en trámite' : locale === 'zh' ? '海事特许申请处理中' : locale === 'fr' ? 'Demande de concession maritime en cours' : 'Maritime concession application in process'}
-                    </p>
-                    <p className="text-blue-400 text-xs font-mono">CM61260</p>
-                    <p className="text-gray-400 text-xs mt-3">
-                      {locale === 'es' ? 'Desarrollo de zona portuaria con J&P' : locale === 'zh' ? '与J&P合作开发港口区' : locale === 'fr' ? 'Développement de zone portuaire avec J&P' : 'Port zone development with J&P'}
-                    </p>
-                  </div>
-                </motion.div>
-
-                {/* A&J */}
-                <motion.div 
-                  className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl text-center"
+                  className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox3Opacity,
                     y: statBox3Y
                   }}
+                  onClick={handleCaboNegroDosClick}
+                  onMouseEnter={() => router.prefetch(`/${locale}/parque-logistico`)}
                 >
-                  <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
-                  <p className="text-gray-400 text-xs mb-3">
-                    {locale === 'es' ? 'Inversiones A&J Limitada' : locale === 'zh' ? 'A&J投资有限公司' : locale === 'fr' ? 'Investissements A&J Limitée' : 'Inversiones A&J Limitada'}
-                  </p>
-                  <div className="space-y-2">
-                    <p className="text-gray-300 text-sm">
-                      {locale === 'es' ? 'Lotes subdivididos disponibles' : locale === 'zh' ? '可用的细分地块' : locale === 'fr' ? 'Lots subdivisés disponibles' : 'Subdivided lots available'}
+                  {/* Background Image */}
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center"
+                    style={{
+                      backgroundImage: 'url(/cabo_negro1.webp)'
+                    }}
+                  />
+                  {/* Overlay for better text readability */}
+                  <div className="absolute inset-0 bg-black/40" />
+                  
+                  {/* Content */}
+                  <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
+                    {/* Logo Icon */}
+                    <div className="mb-6">
+                      <img 
+                        src="/cabonegro_logo.png" 
+                        alt="Cabo Negro Logo" 
+                        className="w-20 h-20 mx-auto object-contain filter brightness-0 invert"
+                      />
+                    </div>
+                    
+                    {/* Title */}
+                    <h3 className="text-white font-bold text-2xl mb-2">Cabo Negro Dos</h3>
+                    <p className="text-gray-300 text-sm mb-4">
+                      {locale === 'es' ? 'Inmobiliaria Cabo Negro Dos' : locale === 'zh' ? '卡波内格罗二号房地产公司' : locale === 'fr' ? 'Immobilier Cabo Negro Dos' : 'Inmobiliaria Cabo Negro Dos'}
                     </p>
-                    <p className="text-2xl font-bold text-white mb-2">5,000 m²+</p>
-                    <p className="text-gray-400 text-xs">
-                      {locale === 'es' ? 'Tamaño mínimo de lote' : locale === 'zh' ? '最小地块面积' : locale === 'fr' ? 'Taille minimale du lot' : 'Minimum lot size'}
-                    </p>
+                    <div className="text-3xl font-bold text-white mb-2">
+                      <AnimatedCounter end={173} suffix=" ha" />
+                    </div>
                   </div>
                 </motion.div>
               </div>

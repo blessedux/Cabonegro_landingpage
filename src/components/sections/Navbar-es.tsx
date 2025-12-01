@@ -16,6 +16,7 @@ export default function NavbarEs() {
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const navbarRef = useRef<HTMLElement>(null)
   const languageDropdownRef = useRef<HTMLDivElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
   const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
@@ -183,6 +184,26 @@ export default function NavbarEs() {
     }
   }, [languageDropdownOpen])
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      // Also listen for touch events on mobile
+      document.addEventListener('touchstart', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('touchstart', handleClickOutside)
+    }
+  }, [mobileMenuOpen])
+
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Español', flag: '🇨🇱' },
@@ -308,10 +329,51 @@ export default function NavbarEs() {
     router.push(`/${currentLocale}${route}`)
   }
 
+  // Get localized text based on current locale
+  const getLocalizedText = () => {
+    const texts = {
+      en: {
+        maritimeTerminal: 'Maritime Terminal',
+        technologyPark: 'Technology Park',
+        logisticsPark: 'Logistics Park',
+        faq: 'FAQ',
+        contactUs: 'Contact Us',
+        language: 'Language:'
+      },
+      es: {
+        maritimeTerminal: 'Terminal Marítimo',
+        technologyPark: 'Parque Tecnológico',
+        logisticsPark: 'Parque Logístico',
+        faq: 'FAQ',
+        contactUs: 'Contáctanos',
+        language: 'Idioma:'
+      },
+      zh: {
+        maritimeTerminal: '海运码头',
+        technologyPark: '科技园',
+        logisticsPark: '物流园',
+        faq: '常见问题',
+        contactUs: '联系我们',
+        language: '语言:'
+      },
+      fr: {
+        maritimeTerminal: 'Terminal Maritime',
+        technologyPark: 'Parc Technologique',
+        logisticsPark: 'Parc Logistique',
+        faq: 'FAQ',
+        contactUs: 'Nous Contacter',
+        language: 'Langue:'
+      }
+    }
+    return texts[currentLocale] || texts.en
+  }
+
+  const localizedText = getLocalizedText()
+
   // Handle Home navigation (logo click)
   const handleHomeClick = (e: React.MouseEvent) => {
     // If on homepage, scroll to top
-    const isOnHomePage = pathname === '/es' || pathname === '/'
+    const isOnHomePage = pathname === '/es' || pathname === '/' || pathname === '/en' || pathname === '/zh' || pathname === '/fr'
     if (isOnHomePage) {
       e.preventDefault()
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -336,8 +398,12 @@ export default function NavbarEs() {
       showPreloaderB()
     }
     
+    const homePath = currentLocale === 'en' ? '/en' : 
+                    currentLocale === 'es' ? '/es' :
+                    currentLocale === 'zh' ? '/zh' :
+                    currentLocale === 'fr' ? '/fr' : '/es'
     // Navigate immediately without delay
-    router.push('/es')
+    router.push(homePath)
   }
 
   // Handle FAQ click
@@ -347,7 +413,8 @@ export default function NavbarEs() {
                            pathname.includes('/contact')
     
     // If on homepage, just scroll to FAQ
-    if (!isOnSpecialPage && (pathname === '/es' || pathname === '/')) {
+    const isOnHomePage = pathname === '/es' || pathname === '/' || pathname === '/en' || pathname === '/zh' || pathname === '/fr'
+    if (!isOnSpecialPage && isOnHomePage) {
       e.preventDefault()
       const faqElement = document.getElementById('FAQ')
       if (faqElement) {
@@ -365,7 +432,11 @@ export default function NavbarEs() {
     setMobileMenuOpen(false)
     
     setTimeout(() => {
-      router.push('/es#FAQ')
+      const homePath = currentLocale === 'en' ? '/en#FAQ' : 
+                      currentLocale === 'es' ? '/es#FAQ' :
+                      currentLocale === 'zh' ? '/zh#FAQ' :
+                      currentLocale === 'fr' ? '/fr#FAQ' : '/es#FAQ'
+      router.push(homePath)
     }, 100)
   }
 
@@ -378,8 +449,8 @@ export default function NavbarEs() {
     <header 
       ref={navbarRef}
       className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck, explore, contact, and terminal-maritimo routes, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact') || pathname.includes('/terminal-maritimo')
+      // For deck, explore, and terminal-maritimo routes, only hide if navbar is explicitly hidden
+      pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/terminal-maritimo')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
         : (isNavbarHidden || isPreloaderVisible
             ? '-translate-y-full opacity-0' 
@@ -388,14 +459,23 @@ export default function NavbarEs() {
               : '-translate-y-full opacity-0')
     }`}>
       <nav className="container mx-auto">
-        <div className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
+        <div ref={mobileMenuRef} className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
               <Link 
-                href="/es" 
+                href={currentLocale === 'en' ? '/en' : 
+                      currentLocale === 'es' ? '/es' :
+                      currentLocale === 'zh' ? '/zh' :
+                      currentLocale === 'fr' ? '/fr' : '/es'} 
                 className="cursor-pointer"
                 onClick={handleHomeClick}
-                onMouseEnter={() => router.prefetch('/es')}
+                onMouseEnter={() => {
+                  const homePath = currentLocale === 'en' ? '/en' : 
+                                  currentLocale === 'es' ? '/es' :
+                                  currentLocale === 'zh' ? '/zh' :
+                                  currentLocale === 'fr' ? '/fr' : '/es'
+                  router.prefetch(homePath)
+                }}
               >
                 <img 
                   src="/cabonegro_logo.png" 
@@ -481,40 +561,47 @@ export default function NavbarEs() {
                     setMobileMenuOpen(false)
                     handleProjectNavigation('/terminal-maritimo')
                   }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/terminal-maritimo`)}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  Terminal Marítimo
+                  {localizedText.maritimeTerminal}
                 </button>
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false)
                     handleProjectNavigation('/parque-tecnologico')
                   }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/parque-tecnologico`)}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  Parque Tecnológico
+                  {localizedText.technologyPark}
                 </button>
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false)
                     handleProjectNavigation('/parque-logistico')
                   }}
+                  onMouseEnter={() => router.prefetch(`/${currentLocale}/parque-logistico`)}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  Parque Logístico
+                  {localizedText.logisticsPark}
                 </button>
                 <button 
                   onClick={handleFAQClick}
                   className={`text-sm ${hoverColor} transition-colors uppercase py-2 text-left ${textColor}`}
                 >
-                  FAQ
+                  {localizedText.faq}
                 </button>
 
                 <Button
                   onClick={() => {
                     setMobileMenuOpen(false)
+                    const contactPath = currentLocale === 'en' ? '/en/contact' : 
+                                       currentLocale === 'es' ? '/es/contact' :
+                                       currentLocale === 'zh' ? '/zh/contact' :
+                                       currentLocale === 'fr' ? '/fr/contact' : '/es/contact'
                     // Navigate immediately - usePageTransition will handle PreloaderB automatically
-                    router.push('/es/contact')
+                    router.push(contactPath)
                   }}
                   variant="outline"
                   className={`uppercase transition-all duration-300 w-full mt-2 ${
@@ -523,7 +610,7 @@ export default function NavbarEs() {
                       : 'border-white text-white bg-transparent hover:bg-white hover:text-black'
                   }`}
                 >
-                  Contáctanos
+                  {localizedText.contactUs}
                 </Button>
               </div>
             </div>

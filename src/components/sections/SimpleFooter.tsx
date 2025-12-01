@@ -2,13 +2,63 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter, usePathname } from 'next/navigation'
 import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface SimpleFooterProps {
   locale?: 'en' | 'es' | 'zh' | 'fr'
 }
 
 export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Smooth scroll handler for homepage sections
+  const handleSmoothScroll = (sectionId: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    
+    // Check if we're on the homepage
+    const isHomePage = pathname === '/' || 
+                       pathname === `/${locale}` || 
+                       pathname === '/en' || 
+                       pathname === '/es' || 
+                       pathname === '/zh' || 
+                       pathname === '/fr'
+    
+    if (isHomePage) {
+      // If on homepage, scroll directly
+      setTimeout(() => {
+        const element = document.getElementById(sectionId)
+        if (element) {
+          const elementPosition = element.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.pageYOffset - 80 // Offset for navbar
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+        }
+      }, 50)
+    } else {
+      // If not on homepage, navigate to homepage with hash
+      const homePath = locale === 'en' ? '/en' : `/${locale}`
+      router.push(`${homePath}#${sectionId}`)
+      
+      // Wait for navigation and then scroll
+      // Use a longer timeout to ensure page has loaded
+      setTimeout(() => {
+        const scrollToSection = () => {
+          const element = document.getElementById(sectionId)
+          if (element) {
+            const elementPosition = element.getBoundingClientRect().top
+            const offsetPosition = elementPosition + window.pageYOffset - 80
+            window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+          } else {
+            // Retry if element not found yet
+            setTimeout(scrollToSection, 100)
+          }
+        }
+        scrollToSection()
+      }, 300)
+    }
+  }
 
   const footerContent = {
     en: {
@@ -20,9 +70,6 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         formButton: 'Subscribe',
         meetingButton: 'Schedule Meeting',
         newsletter: 'Get informed about all our news'
-      },
-      partners: {
-        title: 'PARTNERS AND ASSOCIATED ENTITIES'
       },
       location: {
         title: 'LOCATION',
@@ -46,9 +93,6 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         meetingButton: 'Agenda Reunión',
         newsletter: 'Infórmate sobre todas nuestras novedades'
       },
-      partners: {
-        title: 'PARTNERS Y ENTIDADES ASOCIADAS'
-      },
       location: {
         title: 'UBICACIÓN',
         virtualTour: 'Recorrido virtual'
@@ -70,9 +114,6 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         formButton: '订阅',
         meetingButton: '安排会议',
         newsletter: '了解我们的所有新闻'
-      },
-      partners: {
-        title: '合作伙伴和关联实体'
       },
       location: {
         title: '位置',
@@ -96,9 +137,6 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         meetingButton: 'Planifier une Réunion',
         newsletter: 'Restez informé de toutes nos nouveautés'
       },
-      partners: {
-        title: 'PARTENAIRES ET ENTITÉS ASSOCIÉES'
-      },
       location: {
         title: 'EMPLACEMENT',
         virtualTour: 'Visite virtuelle'
@@ -116,103 +154,52 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
   const content = footerContent[locale]
   const basePath = locale === 'en' ? '' : `/${locale}`
   const whatsappMessage = locale === 'es' 
-    ? 'Hola%2C%20estoy%20interesado%20en%20adquirir%20terrenos%20o%20programar%20una%20reuni%C3%B3n%20con%20el%20equipo%20inmobiliario%20de%20Cabo%20Negro.%20%C2%BFPodr%C3%ADan%20proporcionarme%20informaci%C3%B3n%20sobre%20lotes%20disponibles%2C%20parcelas%20industriales%20y%20oportunidades%20de%20desarrollo%3F%20Gracias.'
+    ? 'Hola%2C%20estoy%20interesado%20en%20programar%20una%20reuni%C3%B3n%20con%20el%20equipo%20del%20proyecto%20Cabo%20Negro.%20Gracias.'
     : locale === 'en'
-    ? 'Hello%2C%20I%27m%20interested%20in%20acquiring%20land%20or%20scheduling%20a%20meeting%20with%20the%20Cabo%20Negro%20real%20estate%20team.%20Could%20you%20please%20provide%20me%20with%20information%20about%20available%20lots%2C%20industrial%20parcels%2C%20and%20development%20opportunities%3F%20Thank%20you.'
-    : 'Hola%2C%20estoy%20interesado%20en%20adquirir%20terrenos%20o%20programar%20una%20reuni%C3%B3n%20con%20el%20equipo%20inmobiliario%20de%20Cabo%20Negro.%20%C2%BFPodr%C3%ADan%20proporcionarme%20informaci%C3%B3n%20sobre%20lotes%20disponibles%2C%20parcelas%20industriales%20y%20oportunidades%20de%20desarrollo%3F%20Gracias.'
+    ? 'Hello%2C%20I%27m%20interested%20in%20scheduling%20a%20meeting%20with%20the%20Cabo%20Negro%20project%20team.%20Thank%20you.'
+    : locale === 'fr'
+    ? 'Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20%C3%A0%20planifier%20une%20r%C3%A9union%20avec%20l%27%C3%A9quipe%20du%20projet%20Cabo%20Negro.%20Merci.'
+    : locale === 'zh'
+    ? '%E4%BD%A0%E5%A5%BD%2C%20%E6%88%91%E6%84%9F%E5%85%B4%E8%B6%A3%E4%BA%8E%E5%AE%89%E6%8E%92%E4%B8%8E%E5%8D%A1%E6%B3%A2%E5%86%85%E6%A0%BC%E7%BD%97%E9%A1%B9%E7%9B%AE%E5%9B%A2%E9%98%9F%E7%9A%84%E4%BC%9A%E8%AE%AE%E3%80%82%E8%B0%A2%E8%B0%A2%E3%80%82'
+    : 'Hola%2C%20estoy%20interesado%20en%20programar%20una%20reuni%C3%B3n%20con%20el%20equipo%20del%20proyecto%20Cabo%20Negro.%20Gracias.'
 
 
   return (
     <footer className="w-full bg-white relative z-30" data-keep-navbar-black="true">
-      {/* Top Section - Contact Form & Meeting Button (White Background) */}
-      <section className="bg-white py-12 md:py-16 px-6">
+      {/* CTA Section - Above Footer Navigation */}
+      <section className="bg-white py-12 md:py-16 px-6 border-b border-gray-200">
         <div className="container mx-auto max-w-7xl">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              {content.contact.title}
-            </h2>
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-              {/* Paragraph Section */}
-              <div className="flex-1">
-                <p className="text-lg text-gray-600 italic mb-2">
-                  {content.contact.question}
-                </p>
-                <p className="text-lg text-gray-600 italic">
-                  {content.contact.description}
-                </p>
-              </div>
-              {/* CTA Button */}
-              <div className="flex md:items-start">
-                <a
-                  href={`https://wa.me/56993091951?text=${whatsappMessage}`}
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6 md:gap-8">
+            {/* Left Side - Contact Heading and Description */}
+            <div className="flex-1">
+              <h3 className="text-black font-bold text-xl md:text-2xl mb-3 uppercase">
+                {content.contact.title}
+              </h3>
+              <p className="text-gray-600 italic text-base md:text-lg leading-relaxed">
+                {content.contact.question}
+              </p>
+              <p className="text-gray-600 italic text-base md:text-lg leading-relaxed">
+                {content.contact.description}
+              </p>
+            </div>
+            
+            {/* Right Side - Schedule Meeting Button */}
+            <div className="flex-shrink-0">
+              <Button
+                asChild
+                size="lg"
+                className="bg-black text-white hover:bg-gray-800 transition-colors font-semibold px-8 py-6 rounded-md shadow-lg"
+              >
+                <a 
+                  href={`https://wa.me/56974766174?text=${whatsappMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-neutral-900 hover:bg-neutral-950 shadow-lg shadow-neutral-900 border border-neutral-700 flex w-fit gap-2 hover:gap-4 transition-all duration-300 ease-in-out text-white px-5 py-3 rounded-lg cursor-pointer font-semibold"
+                  className="flex items-center gap-2"
                 >
-                  {content.contact.meetingButton} <ArrowRight className="w-5 h-5" />
+                  {content.contact.meetingButton}
+                  <ArrowRight className="w-5 h-5" />
                 </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Middle Section - Partners (Grey Background) */}
-      <section className="bg-gray-100 py-12 md:py-16 px-6">
-        <div className="container mx-auto max-w-7xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-black mb-8 text-center uppercase">
-            {content.partners.title}
-          </h2>
-          
-          {/* Partner Logos */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 items-center justify-items-center">
-            {/* COMPAS marine */}
-            <div className="flex flex-col items-center">
-              <Image
-                src="/logos/COMPAS_MARINE.png"
-                alt="COMPAS marine"
-                width={120}
-                height={60}
-                className="mb-2"
-                style={{ filter: 'brightness(0)' }}
-              />
-            </div>
-
-            {/* PATAGON VALLEY */}
-            <div className="flex flex-col items-center">
-              <Image
-                src="/logos/patagon_white.png"
-                alt="PATAGON VALLEY"
-                width={100}
-                height={100}
-                className="mb-3"
-                style={{ filter: 'brightness(0)' }}
-              />
-            </div>
-
-            {/* yLMV ABOGADOS */}
-            <div className="flex flex-col items-center">
-              <Image
-                src="/logos/ylmv_blanco.png"
-                alt="yLMV ABOGADOS"
-                width={120}
-                height={60}
-                className="mb-2"
-                style={{ filter: 'brightness(0)' }}
-              />
-              <div className="text-gray-700 text-sm uppercase">ABOGADOS</div>
-            </div>
-
-            {/* CaboNegro Logo */}
-            <div className="flex flex-col items-center">
-              <Image
-                src="/cabonegro_logo.png"
-                alt="Cabo Negro"
-                width={140}
-                height={60}
-                className="mb-2"
-                style={{ filter: 'brightness(0)' }}
-              />
+              </Button>
             </div>
           </div>
         </div>
@@ -233,14 +220,20 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
               >
                 {content.location.virtualTour}
               </Link>
-              {/* Map placeholder - clickable */}
+              {/* Map image - clickable */}
               <a 
-                href="https://www.google.com/maps?q=-52.9479,-70.8056"
+                href="https://www.google.com/maps?q=-52.937139,-70.849639"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full h-32 bg-gray-700 rounded-lg mt-4 flex items-center justify-center hover:bg-gray-600 transition-colors"
+                className="block w-full h-32 rounded-lg mt-4 overflow-hidden hover:opacity-90 transition-opacity cursor-pointer relative"
               >
-                <MapPin className="w-8 h-8 text-gray-400" />
+                <Image
+                  src="/Screenshot.webp"
+                  alt="Cabo Negro Location Map"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 300px"
+                />
               </a>
             </div>
 
@@ -251,35 +244,28 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
               </h3>
               <ul className="space-y-2">
                 <li>
-                  <Link 
+                  <a 
                     href={`${basePath}#about`}
-                    className="text-gray-700 hover:text-black transition-colors block"
+                    onClick={(e) => handleSmoothScroll('about', e)}
+                    className="text-gray-700 hover:text-black transition-colors block cursor-pointer"
                   >
                     {content.about.whoWeAre}
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link 
-                    href={`${basePath}/industrial-park`}
-                    className="text-gray-700 hover:text-black transition-colors block"
+                  <a 
+                    href={`${basePath}#stats`}
+                    onClick={(e) => handleSmoothScroll('stats', e)}
+                    className="text-gray-700 hover:text-black transition-colors block cursor-pointer"
                   >
                     {content.about.projects}
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    href={`${basePath}/deck`}
-                    className="text-gray-700 hover:text-black transition-colors block"
-                  >
-                    {content.about.viewDeck}
-                  </Link>
+                  </a>
                 </li>
               </ul>
             </div>
 
             {/* Column 3: NEWSLETTER */}
             <div>
-              <h3 className="text-black font-bold text-lg mb-4 uppercase">NEWSLETTER</h3>
               <p className="text-gray-700 text-sm leading-relaxed">
                 {content.contact.newsletter}
               </p>
@@ -305,12 +291,12 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
                 <div className="flex items-center gap-2">
                   <Phone className="w-5 h-5 text-black" />
                   <a
-                    href={`https://wa.me/56993091951?text=${whatsappMessage}`}
+                    href={`https://wa.me/56974766174?text=${whatsappMessage}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-700 hover:text-black transition-colors"
                   >
-                    +56 9 9309 1951
+                    +56 9 7476 6174
                   </a>
                 </div>
               </div>

@@ -1,7 +1,7 @@
 "use client" 
 
 import * as React from "react"
-import { HTMLMotionProps, MotionConfig, motion } from "framer-motion"
+import { HTMLMotionProps, MotionConfig, motion } from "motion/react"
 import { cn } from "@/lib/utils"
 
 interface TextStaggerHoverProps {
@@ -12,10 +12,7 @@ interface HoverSliderImageProps {
   index: number
   imageUrl: string
 }
-interface HoverSliderProps {
-  className?: string;
-  children?: React.ReactNode;
-}
+interface HoverSliderProps {}
 interface HoverSliderContextValue {
   activeSlide: number
   changeSlide: (index: number) => void

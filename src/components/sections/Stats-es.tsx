@@ -133,74 +133,104 @@ export default function StatsEs() {
           </div>
         </div>
 
-        {/* Company/Area Breakdown */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* PPG */}
-          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-            <h3 className="text-white font-bold text-lg mb-3">PPG</h3>
-            <p className="text-gray-400 text-xs mb-3">Inversiones PPG SpA</p>
-            <div className="space-y-2">
-              <p className="text-gray-300 text-sm">Solicitud de concesión marítima en trámite</p>
-              <p className="text-blue-400 text-xs font-mono">CM61260</p>
-              <p className="text-gray-400 text-xs mt-3">Desarrollo de zona portuaria con J&P</p>
-            </div>
-          </div>
-
-          {/* Patagon Valley */}
-          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-            <h3 className="text-white font-bold text-lg mb-3">Patagon Valley</h3>
-            <p className="text-gray-400 text-xs mb-3">Inmobiliaria Patagon Valley SpA</p>
-            <div className="mb-3">
-              <div className="text-3xl font-bold text-white mb-1">
-                <AnimatedCounter end={33} suffix=" ha" />
+        {/* Company/Area Breakdown - 3 Cards Layout: 1 top, 2 bottom */}
+        <div className="space-y-6">
+          {/* Top Row: Patagon Valley (centered) */}
+          <div className="flex justify-center">
+            <div className="relative w-full max-w-md rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl">
+              {/* Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: 'url(/Patagon_Valley_v2.webp)'
+                }}
+              />
+              {/* Overlay for better text readability */}
+              <div className="absolute inset-0 bg-black/40" />
+              
+              {/* Content */}
+              <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
+                {/* Logo Icon */}
+                <div className="mb-6">
+                  <img 
+                    src="/logos/patagon_white.png" 
+                    alt="Patagon Valley Logo" 
+                    className="w-20 h-20 mx-auto object-contain"
+                  />
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-white font-bold text-2xl mb-2">Patagon Valley</h3>
+                <p className="text-gray-300 text-sm mb-4">Inmobiliaria Patagon Valley SpA</p>
+                <div className="text-3xl font-bold text-white mb-2">
+                  <AnimatedCounter end={33} suffix=" ha" />
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <p className="text-gray-300 text-sm">Propiedad de fondo de inversión privado</p>
-              <p className="text-gray-300 text-sm">Instalado: AWS y GTD</p>
-              <p className="text-gray-400 text-xs mt-2">Originalmente planificado como parque tecnológico</p>
-            </div>
           </div>
 
-          {/* A&J */}
-          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-            <h3 className="text-white font-bold text-lg mb-3">A&J</h3>
-            <p className="text-gray-400 text-xs mb-3">Inversiones A&J Limitada</p>
-            <div className="space-y-2">
-              <p className="text-gray-300 text-sm">Lotes subdivididos disponibles</p>
-              <p className="text-2xl font-bold text-white mb-2">5,000 m²+</p>
-              <p className="text-gray-400 text-xs">Tamaño mínimo de lote</p>
-            </div>
-          </div>
-
-          {/* J&P */}
-          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-            <h3 className="text-white font-bold text-lg mb-3">Zona Portuaria J&P</h3>
-            <p className="text-gray-400 text-xs mb-3">Inversiones J&P Limitada</p>
-            <div className="space-y-2">
-              <p className="text-gray-300 text-sm">Desarrollo de zona portuaria</p>
-              <p className="text-gray-300 text-sm">Vinculado al proyecto portuario PPG</p>
-              <p className="text-gray-400 text-xs mt-3">Dividido en sociedades separadas:</p>
-              <p className="text-gray-300 text-xs">• J&P (continuadora) - Desarrollo portuario</p>
-              <p className="text-gray-300 text-xs">• J&P 2 y J&P 3 - Opciones de ampliación</p>
-            </div>
-          </div>
-
-          {/* CN2 */}
-          <div className="p-6 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-            <h3 className="text-white font-bold text-lg mb-3">Cabo Negro Dos</h3>
-            <p className="text-gray-400 text-xs mb-3">Inmobiliaria Cabo Negro Dos</p>
-            <div className="mb-3">
-              <div className="text-3xl font-bold text-white mb-1">
-                <AnimatedCounter end={173} suffix=" ha" />
+          {/* Bottom Row: Terminal Marítimo and Cabo Negro Dos (2 cards) */}
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Terminal Marítimo */}
+            <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl">
+              {/* Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: 'url(/maritime_terminal.png)'
+                }}
+              />
+              {/* Overlay for better text readability */}
+              <div className="absolute inset-0 bg-black/40" />
+              
+              {/* Content */}
+              <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
+                {/* Logo Icon */}
+                <div className="mb-6">
+                  <img 
+                    src="/cabonegro_logo.png" 
+                    alt="Cabo Negro Logo" 
+                    className="w-20 h-20 mx-auto object-contain filter brightness-0 invert"
+                  />
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-white font-bold text-2xl mb-2">Terminal Marítimo Cabo Negro</h3>
               </div>
             </div>
-            <div className="space-y-2">
-              <p className="text-gray-300 text-sm">Resultante de la subdivisión de J&P</p>
-              <p className="text-gray-400 text-xs">Área única unificada (sin subdivisión)</p>
+
+            {/* Cabo Negro Dos */}
+            <div className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl">
+              {/* Background Image */}
+              <div 
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: 'url(/cabo_negro1.webp)'
+                }}
+              />
+              {/* Overlay for better text readability */}
+              <div className="absolute inset-0 bg-black/40" />
+              
+              {/* Content */}
+              <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
+                {/* Logo Icon */}
+                <div className="mb-6">
+                  <img 
+                    src="/cabonegro_logo.png" 
+                    alt="Cabo Negro Logo" 
+                    className="w-20 h-20 mx-auto object-contain filter brightness-0 invert"
+                  />
+                </div>
+                
+                {/* Title */}
+                <h3 className="text-white font-bold text-2xl mb-2">Cabo Negro Dos</h3>
+                <p className="text-gray-300 text-sm mb-4">Inmobiliaria Cabo Negro Dos</p>
+                <div className="text-3xl font-bold text-white mb-2">
+                  <AnimatedCounter end={173} suffix=" ha" />
+                </div>
+              </div>
             </div>
           </div>
-
         </div>
       </div>
     </section>

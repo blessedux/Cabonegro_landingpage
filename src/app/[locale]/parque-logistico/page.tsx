@@ -1,8 +1,9 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Download, Calendar, Mail, Warehouse, Truck, Factory, Zap, Wrench } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { Download, Calendar, Mail, Warehouse, Truck, Factory, Zap, Wrench } from 'lucide-react'
 import Image from 'next/image'
+import { useRef, useState } from 'react'
 import Navbar from '@/components/sections/Navbar'
 import NavbarEs from '@/components/sections/Navbar-es'
 import NavbarZh from '@/components/sections/Navbar-zh'
@@ -14,8 +15,9 @@ import Link from 'next/link'
 
 export default function ParqueLogisticoPage() {
   const params = useParams()
-  const router = useRouter()
   const locale = params?.locale as string || 'en'
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [expandedCard, setExpandedCard] = useState<number | null>(null)
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -29,7 +31,8 @@ export default function ParqueLogisticoPage() {
         terrain: {
           title: 'Available Terrain',
           description: 'The Cabo Negro II Logistics Park offers extensive industrial terrain ready for development. The area provides strategic advantages for logistics operations, industrial facilities, and support services for the maritime terminal and surrounding projects.',
-          size: 'Extensive hectares available for development'
+          size: 'Extensive hectares available for development',
+          readyText: 'Ready for immediate development and investment'
         },
         uses: {
           title: 'Recommended Uses',
@@ -48,6 +51,17 @@ export default function ParqueLogisticoPage() {
           contactBtn: 'Contact',
           scheduleBtn: 'Schedule Meeting',
           downloadBtn: 'Download Fact Sheet'
+        },
+        strategicLocation: {
+          title: 'Strategic Location',
+          description: 'The logistics park is strategically positioned to serve as a support hub for the maritime terminal and surrounding industrial projects. Its proximity to Route 9 and the port provides excellent connectivity for logistics operations.',
+          items: [
+            'Direct access to Route 9 North',
+            'Close proximity to maritime terminal',
+            'Industrial zone with expansion potential',
+            'Supporting infrastructure ready'
+          ],
+          imageAlt: 'Patagon Valley - Industrial Development Zone'
         }
       },
       es: {
@@ -59,7 +73,8 @@ export default function ParqueLogisticoPage() {
         terrain: {
           title: 'Terreno Disponible',
           description: 'El Parque Logístico Cabo Negro II ofrece extenso terreno industrial listo para desarrollo. El área proporciona ventajas estratégicas para operaciones logísticas, instalaciones industriales y servicios de apoyo para el terminal marítimo y proyectos circundantes.',
-          size: 'Extensas hectáreas disponibles para desarrollo'
+          size: 'Extensas hectáreas disponibles para desarrollo',
+          readyText: 'Listo para desarrollo e inversión inmediata'
         },
         uses: {
           title: 'Usos Recomendados',
@@ -78,6 +93,17 @@ export default function ParqueLogisticoPage() {
           contactBtn: 'Contacto',
           scheduleBtn: 'Agendar Reunión',
           downloadBtn: 'Descargar Fact Sheet'
+        },
+        strategicLocation: {
+          title: 'Ubicación Estratégica',
+          description: 'El parque logístico está estratégicamente posicionado para servir como centro de apoyo para el terminal marítimo y proyectos industriales circundantes. Su proximidad a la Ruta 9 y al puerto proporciona excelente conectividad para operaciones logísticas.',
+          items: [
+            'Acceso directo a la Ruta 9 Norte',
+            'Cercanía al terminal marítimo',
+            'Zona industrial con potencial de expansión',
+            'Infraestructura de apoyo lista'
+          ],
+          imageAlt: 'Valle Patagónico - Zona de Desarrollo Industrial'
         }
       },
       zh: {
@@ -89,7 +115,8 @@ export default function ParqueLogisticoPage() {
         terrain: {
           title: '可用土地',
           description: '卡波内格罗二期物流园区提供大量可供开发的工业用地。该区域为物流运营、工业设施以及海运码头和周边项目的支持服务提供战略优势。',
-          size: '大量公顷土地可供开发'
+          size: '大量公顷土地可供开发',
+          readyText: '准备立即开发和投资'
         },
         uses: {
           title: '推荐用途',
@@ -108,6 +135,17 @@ export default function ParqueLogisticoPage() {
           contactBtn: '联系',
           scheduleBtn: '安排会议',
           downloadBtn: '下载概况表'
+        },
+        strategicLocation: {
+          title: '战略位置',
+          description: '物流园区战略定位为海运码头和周边工业项目的支持中心。靠近9号公路和港口，为物流运营提供了出色的连通性。',
+          items: [
+            '直接通往9号公路北段',
+            '靠近海运码头',
+            '具有扩展潜力的工业区',
+            '支持基础设施已就绪'
+          ],
+          imageAlt: '巴塔哥尼亚山谷 - 工业开发区'
         }
       },
       fr: {
@@ -119,7 +157,8 @@ export default function ParqueLogisticoPage() {
         terrain: {
           title: 'Terrain Disponible',
           description: 'Le Parc Logistique Cabo Negro II offre un vaste terrain industriel prêt pour le développement. La zone offre des avantages stratégiques pour les opérations logistiques, les installations industrielles et les services de soutien pour le terminal maritime et les projets environnants.',
-          size: 'Vastes hectares disponibles pour le développement'
+          size: 'Vastes hectares disponibles pour le développement',
+          readyText: 'Prêt pour le développement et l\'investissement immédiats'
         },
         uses: {
           title: 'Utilisations Recommandées',
@@ -138,6 +177,17 @@ export default function ParqueLogisticoPage() {
           contactBtn: 'Contact',
           scheduleBtn: 'Planifier une Réunion',
           downloadBtn: 'Télécharger la Fiche Technique'
+        },
+        strategicLocation: {
+          title: 'Emplacement Stratégique',
+          description: 'Le parc logistique est stratégiquement positionné pour servir de centre de soutien pour le terminal maritime et les projets industriels environnants. Sa proximité de la Route 9 et du port offre une excellente connectivité pour les opérations logistiques.',
+          items: [
+            'Accès direct à la Route 9 Nord',
+            'Proximité du terminal maritime',
+            'Zone industrielle avec potentiel d\'expansion',
+            'Infrastructure de soutien prête'
+          ],
+          imageAlt: 'Vallée de Patagonie - Zone de Développement Industriel'
         }
       }
     }
@@ -145,7 +195,6 @@ export default function ParqueLogisticoPage() {
   }
 
   const localizedText = getLocalizedText()
-  const homePath = locale === 'en' ? '/en' : `/${locale}`
 
   // Get appropriate Navbar component
   const getNavbar = () => {
@@ -160,16 +209,6 @@ export default function ParqueLogisticoPage() {
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
       {getNavbar()}
-
-      {/* Back Button */}
-      <button
-        onClick={() => router.push(homePath)}
-        className="fixed top-24 left-6 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
-        aria-label={localizedText.back}
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">{localizedText.back}</span>
-      </button>
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
@@ -213,7 +252,7 @@ export default function ParqueLogisticoPage() {
                   {localizedText.terrain.size}
                 </p>
                 <p className="text-gray-400">
-                  Ready for immediate development and investment
+                  {localizedText.terrain.readyText}
                 </p>
               </div>
             </div>
@@ -233,16 +272,51 @@ export default function ParqueLogisticoPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {localizedText.uses.items.map((item: any, index: number) => {
               const IconComponent = item.icon
+              const isExpanded = expandedCard === index
               return (
-                <Card key={index} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
-                  <CardContent className="p-6">
-                    <IconComponent className="w-10 h-10 mb-4 text-green-400" />
-                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                    <p className="text-gray-300">{item.description}</p>
+                <Card 
+                  key={index} 
+                  className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer relative overflow-hidden"
+                  onClick={() => setExpandedCard(isExpanded ? null : index)}
+                >
+                  <CardContent className="p-6 min-h-[200px] flex flex-col items-center justify-center">
+                    {/* Icon - fades out when expanded */}
+                    <div 
+                      className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+                        isExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                      }`}
+                    >
+                      <IconComponent className="w-16 h-16 text-green-400" />
+                    </div>
+                    {/* Text - fades in when expanded */}
+                    <div 
+                      className={`text-center transition-opacity duration-300 ${
+                        isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                      <p className="text-gray-300">{item.description}</p>
+                    </div>
                   </CardContent>
                 </Card>
               )
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Map Placeholder Section */}
+      <section className="py-20 px-6 bg-white/5">
+        <div className="container mx-auto max-w-6xl">
+          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-white/10">
+            <div className="absolute inset-0 scale-110">
+              <Image
+                src="/Patagon_Valley_v2.webp"
+                alt="Parque Logístico Cabo Negro II"
+                fill
+                className="object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -252,67 +326,27 @@ export default function ParqueLogisticoPage() {
         <div className="container mx-auto max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h3 className="text-3xl font-bold mb-6">Strategic Location</h3>
+              <h3 className="text-3xl font-bold mb-6">{localizedText.strategicLocation.title}</h3>
               <p className="text-lg text-gray-300 mb-4 leading-relaxed">
-                The logistics park is strategically positioned to serve as a support hub for the maritime terminal and surrounding industrial projects. Its proximity to Route 9 and the port provides excellent connectivity for logistics operations.
+                {localizedText.strategicLocation.description}
               </p>
               <ul className="space-y-3 text-gray-300">
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                  <span>Direct access to Route 9 North</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                  <span>Close proximity to maritime terminal</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                  <span>Industrial zone with expansion potential</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                  <span>Supporting infrastructure ready</span>
-                </li>
+                {localizedText.strategicLocation.items.map((item: string, index: number) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
-            <div className="relative h-[400px] rounded-lg overflow-hidden bg-gradient-to-br from-green-900/20 to-emerald-900/20 flex items-center justify-center">
-              <div className="text-center p-8">
-                <Truck className="w-16 h-16 mx-auto mb-4 text-green-400" />
-                <p className="text-gray-400 text-lg">Industrial Development Zone</p>
-              </div>
+            <div className="relative h-[400px] rounded-lg overflow-hidden">
+              <Image
+                src="/patagon_valley.webp"
+                alt={localizedText.strategicLocation.imageAlt}
+                fill
+                className="object-cover"
+              />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="py-20 px-6 bg-white/5">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            {localizedText.contact.title}
-          </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            {localizedText.contact.description}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button asChild className="bg-white text-black hover:bg-gray-200 font-semibold px-8 py-6">
-              <Link href={contactPath}>
-                <Mail className="w-5 h-5 mr-2" />
-                {localizedText.contact.contactBtn}
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8 py-6">
-              <Link href={`${contactPath}&action=schedule`}>
-                <Calendar className="w-5 h-5 mr-2" />
-                {localizedText.contact.scheduleBtn}
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8 py-6">
-              <Link href="#">
-                <Download className="w-5 h-5 mr-2" />
-                {localizedText.contact.downloadBtn}
-              </Link>
-            </Button>
           </div>
         </div>
       </section>

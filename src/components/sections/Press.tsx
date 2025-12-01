@@ -277,7 +277,7 @@ export default function Press() {
   }, [currentArticle])
 
   return (
-    <section className="py-8 px-4 bg-white relative z-[10] min-h-screen md:mb-0 mb-4" ref={heroRef} data-keep-navbar-black="true">
+    <section className="py-8 px-4 bg-white relative z-[30] min-h-screen md:mb-0 mb-4" ref={heroRef} data-keep-navbar-black="true">
       <div className="max-w-6xl mx-auto">
         <div className="relative">
           {/* Header */}
@@ -289,7 +289,7 @@ export default function Press() {
                 animationNum={0}
                 timelineRef={heroRef}
                 customVariants={revealVariants}
-                className="text-sm font-medium text-gray-600"
+                className="text-2xl sm:text-sm font-medium text-gray-600"
               >
                 {pressLabel}
               </TimelineContent>

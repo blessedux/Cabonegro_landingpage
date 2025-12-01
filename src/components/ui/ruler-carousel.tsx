@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Rewind, FastForward } from "lucide-react";
 
 export interface CarouselItem {
@@ -170,101 +169,8 @@ export function RulerCarousel({
   // Get current page info
   const currentPage = (activeIndex % itemsPerSet) + 1;
   const totalPages = itemsPerSet;
-  const isFirstSlide = currentPage === 1;
-  const isSecondSlide = currentPage === 2;
-  const isThirdSlide = currentPage === 3;
-  const isFourthSlide = currentPage === 4;
   const isFifthSlide = currentPage === 5;
-  const isSixthSlide = currentPage === 6;
   const isSeventhSlide = currentPage === 7;
-  const isEighthSlide = currentPage === 8;
-  const isNinthSlide = currentPage === 9;
-
-  // Helper to select current media node
-  const renderMedia = () => {
-    if (isFirstSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/lots_model.png" alt="Cabo Negro lots model" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    } else if (isSecondSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/stage2.png" alt="Stage 2 development render" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    } else if (isThirdSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/h2v.png" alt="Green hydrogen hub illustration" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    } else if (isFourthSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/wind_turbine.png" alt="Wind energy integration" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    } else if (isFifthSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/maritime_terminal.png" alt="Maritime terminal expansion" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    } else if (isSixthSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/logistics.png" alt="Logistics network development" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    } else if (isSeventhSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/certification.png" alt="Regulatory compliance certification" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    } else if (isEighthSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/opeartional_launch.png" alt="Operational launch" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    } else if (isNinthSlide) {
-      return (
-        <div className="w-full aspect-video max-w-3xl mx-auto rounded-lg overflow-hidden bg-black">
-          <div className="relative w-full h-full">
-            <Image src="/global_expansion.png" alt="Global expansion" fill className="object-cover" priority />
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="w-full aspect-video max-w-3xl mx-auto border-2 border-dashed border-gray-400 dark:border-gray-600 rounded-lg flex items-center justify-center bg-black">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          <div className="text-lg font-medium mb-2">Media Placeholder</div>
-          <div className="text-sm">Image/Video will go here</div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className={`w-full h-[50vh] flex flex-col items-center justify-between ${lightMode ? 'bg-white' : 'bg-black'} py-6`}>
@@ -348,7 +254,7 @@ export function RulerCarousel({
             {infiniteItems[activeIndex]?.phaseTitle || infiniteItems[activeIndex]?.title}
           </h3>
           <p
-            className={`text-lg leading-relaxed mx-auto mb-4 max-w-3xl ${
+            className={`text-lg leading-relaxed mx-auto mb-4 max-w-3xl whitespace-pre-line ${
               lightMode ? 'text-gray-700' : 'text-gray-300'
             } ${
               isFifthSlide
@@ -398,21 +304,6 @@ export function RulerCarousel({
         >
           <FastForward className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
         </button>
-      </div>
-
-      {/* Media area with smooth crossfade */}
-      <div className="w-full max-w-5xl px-4 mt-8">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeIndex}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            {renderMedia()}
-          </motion.div>
-        </AnimatePresence>
       </div>
     </div>
   );

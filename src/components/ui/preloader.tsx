@@ -98,6 +98,38 @@ export default function Preloader({ onComplete, onFadeOutStart, duration = 6, cl
     }
   }, [])
 
+  // Programmatically play video on mobile after user interaction
+  useEffect(() => {
+    const playVideo = async () => {
+      if (videoRef.current) {
+        try {
+          videoRef.current.muted = true
+          await videoRef.current.play()
+        } catch (error) {
+          // Silently handle autoplay errors (browser policies)
+        }
+      }
+    }
+
+    // Try to play on first user interaction
+    const handleUserInteraction = () => {
+      playVideo()
+      document.removeEventListener('touchstart', handleUserInteraction)
+      document.removeEventListener('click', handleUserInteraction)
+    }
+
+    // Preloader is shown first, so try to play immediately
+    // But also listen for user interaction as fallback
+    setTimeout(playVideo, 100)
+    document.addEventListener('touchstart', handleUserInteraction, { once: true, passive: true })
+    document.addEventListener('click', handleUserInteraction, { once: true, passive: true })
+
+    return () => {
+      document.removeEventListener('touchstart', handleUserInteraction)
+      document.removeEventListener('click', handleUserInteraction)
+    }
+  }, [])
+
   useEffect(() => {
     if (!preloaderRef.current) return
 

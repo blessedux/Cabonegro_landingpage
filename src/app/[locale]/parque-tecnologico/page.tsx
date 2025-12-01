@@ -1,12 +1,13 @@
 'use client'
 
 import { useParams, useRouter, usePathname } from 'next/navigation'
-import { ArrowLeft, Download, Calendar, Mail } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Download, Calendar, Mail, Network, Route } from 'lucide-react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import Icon from '@mdi/react'
+import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
 
 // Code-split navigation components - only load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -86,7 +87,7 @@ export default function ParqueTecnologicoPage() {
       es: {
         back: 'Volver',
         hero: {
-          title: 'Patagon Valley',
+          title: 'Parque Tecnológico & Logístico',
           subtitle: 'Parque Tecnológico & Logístico'
         },
         vision: {
@@ -108,7 +109,7 @@ export default function ParqueTecnologicoPage() {
             },
             {
               title: 'Conectividad logística con el proyecto portuario',
-              description: 'Ya que los terrenos de Patagon Valley se encuentran a X km del área del Terminal Marítimo Cabo Negro, lo que los convierte en una alternativa ideal para proyectos tecnológicos y logísticos que requieran proximidad operativa al puerto.'
+              description: 'Ya que los terrenos de Patagon Valley colindan con el área del Terminal Marítimo Cabo Negro, lo que los convierte en una alternativa ideal para proyectos tecnológicos y logísticos que requieran proximidad operativa al puerto.'
             }
           ]
         },
@@ -261,20 +262,97 @@ export default function ParqueTecnologicoPage() {
 
   const contactPath = `/${locale}/contact?from=patagon-valley`
 
+  // Card hover/click state management (similar to AboutUs)
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null)
+  const iconsContainerRef = useRef<HTMLDivElement>(null)
+  const [iconOpacities, setIconOpacities] = useState<number[]>([0, 0, 0, 0])
+  const maxOpacitiesRef = useRef<number[]>([0, 0, 0, 0])
+
+  // Icon fade-in animation on scroll (similar to AboutUs)
+  useEffect(() => {
+    const handleIconScroll = () => {
+      if (!iconsContainerRef.current) return
+      
+      const rect = iconsContainerRef.current.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+      const triggerPoint = viewportHeight * 0.8
+      
+      const icons = iconsContainerRef.current.children
+      const newOpacities: number[] = []
+      
+      if (rect.bottom > 0) {
+        for (let i = 0; i < icons.length; i++) {
+          const iconRect = icons[i].getBoundingClientRect()
+          const iconTop = iconRect.top
+          const iconCenter = iconTop + iconRect.height / 2
+          
+          const iconTriggerPoint = triggerPoint - (i * 50)
+          const distance = iconCenter - iconTriggerPoint
+          
+          let opacity = 0
+          if (distance < 0) {
+            opacity = Math.min(1, 1 + (distance / 80))
+          } else if (distance < 80) {
+            opacity = Math.max(0, 1 - (distance / 80))
+          }
+          
+          opacity = Math.max(0, Math.min(1, opacity))
+          
+          if (opacity > maxOpacitiesRef.current[i]) {
+            maxOpacitiesRef.current[i] = opacity
+          }
+          
+          if (maxOpacitiesRef.current[i] >= 1 && rect.top < viewportHeight * 1.5) {
+            opacity = 1
+          } else if (maxOpacitiesRef.current[i] >= 1 && rect.top > viewportHeight * 1.5) {
+            opacity = Math.max(0, opacity)
+          } else {
+            opacity = Math.max(maxOpacitiesRef.current[i], opacity)
+          }
+          
+          newOpacities.push(opacity)
+        }
+      } else {
+        for (let i = 0; i < icons.length; i++) {
+          if (maxOpacitiesRef.current[i] >= 1 && rect.top < viewportHeight * 2) {
+            newOpacities.push(1)
+          } else {
+            newOpacities.push(0)
+          }
+        }
+      }
+      
+      setIconOpacities(newOpacities)
+    }
+    
+    window.addEventListener('scroll', handleIconScroll, { passive: true })
+    handleIconScroll()
+    
+    return () => {
+      window.removeEventListener('scroll', handleIconScroll)
+    }
+  }, [])
+
+  // Icon components for each vision item
+  const getIcon = (index: number) => {
+    switch (index) {
+      case 0: // Fiber Optic
+        return <Network className="w-full h-full text-white" />
+      case 1: // Route 9
+        return <Route className="w-full h-full text-white" />
+      case 2: // Satellite
+        return <Icon path={mdiSatelliteVariant} size={80} className="text-white w-full h-full" />
+      case 3: // Port/Logistics
+        return <Icon path={mdiGantryCrane} size={80} className="text-white w-full h-full" />
+      default:
+        return null
+    }
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Navigation */}
       {getNavbar()}
-
-      {/* Back Button */}
-      <button
-        onClick={() => router.push(homePath)}
-        className="fixed top-24 left-6 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition-colors"
-        aria-label={localizedText.back}
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm font-medium">{localizedText.back}</span>
-      </button>
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
@@ -290,12 +368,26 @@ export default function ParqueTecnologicoPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-0" />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4">
-            {localizedText.hero.title}
+          <h1 className="text-5xl md:text-7xl font-bold mt-16 mb-4">
+            {localizedText.hero.title.includes('&') ? (
+              <>
+                {localizedText.hero.title.split(' & ')[0]}
+                <br className="hidden md:block" />
+                & {localizedText.hero.title.split(' & ')[1]}
+              </>
+            ) : (
+              localizedText.hero.title
+            )}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300">
-            {localizedText.hero.subtitle}
-          </p>
+          <div className="flex justify-center mt-6">
+            <Image
+              src="/logos/patagon_white.png"
+              alt="Patagon Valley Logo"
+              width={160}
+              height={64}
+              className="object-contain"
+            />
+          </div>
         </div>
       </section>
 
@@ -313,47 +405,81 @@ export default function ParqueTecnologicoPage() {
               {localizedText.vision.description}
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {localizedText.vision.items.map((item: any, index: number) => (
-              <Card key={index} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-3 text-blue-400">{item.title}</h3>
-                  <p className="text-gray-300 leading-relaxed">{item.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full items-start">
+            {localizedText.vision.items.map((item: any, index: number) => {
+              const isHovered = hoveredCard === index
+              return (
+                <div
+                  key={index}
+                  className="relative flex flex-col items-start text-left p-6 rounded-lg border border-white/20 backdrop-blur-md transition-all duration-300 hover:border-white/30 self-start cursor-pointer overflow-hidden"
+                  style={{ 
+                    opacity: iconOpacities[index] || 0,
+                    transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,
+                    transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.stopPropagation()
+                    setHoveredCard(index)
+                  }}
+                  onMouseLeave={(e) => {
+                    e.stopPropagation()
+                    setHoveredCard(null)
+                  }}
+                  onClick={() => {
+                    setHoveredCard(hoveredCard === index ? null : index)
+                  }}
+                >
+                  {/* Background Image */}
+                  <div className="absolute inset-0 z-0">
+                    <Image
+                      src="/patagon_valley.webp"
+                      alt="Patagon Valley"
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/70" />
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="relative z-10 w-full">
+                    <div className="w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mb-4">
+                      {getIcon(index)}
+                    </div>
+                    <h3 className="text-lg lg:text-xl text-white font-semibold mb-2">{item.title}</h3>
+                    <div 
+                      className="overflow-hidden transition-all duration-300"
+                      style={{
+                        maxHeight: isHovered ? '24rem' : '0',
+                        minHeight: isHovered ? 'auto' : '0',
+                      }}
+                    >
+                      <p 
+                        className={`text-sm lg:text-base text-white/90 leading-relaxed transition-opacity duration-300 ${
+                          isHovered ? 'opacity-100' : 'opacity-0'
+                        }`}
+                      >
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* Commercial Focus Section */}
+      {/* Interactive Map Placeholder Section */}
       <section className="py-20 px-6 bg-white/5">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                {localizedText.commercial.title}
-              </h2>
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                {localizedText.commercial.description}
-              </p>
-              <div className="grid sm:grid-cols-1 gap-4">
-                {localizedText.commercial.sectors.map((sector: string, index: number) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0" />
-                    <span className="text-lg text-gray-300">{sector}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="relative h-[400px] rounded-lg overflow-hidden">
+          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-white/10">
+            <div className="absolute inset-0 scale-110">
               <Image
-                src="/patagon_valley.webp"
-                alt="Patagon Valley - Commercial Focus"
+                src="/Patagon_Valley_v2.webp"
+                alt="Patagon Valley"
                 fill
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 to-purple-900/30" />
             </div>
           </div>
         </div>
@@ -372,7 +498,13 @@ export default function ParqueTecnologicoPage() {
           </div>
           <div className="flex flex-wrap justify-center items-center gap-12">
             <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
-              <span className="text-2xl font-bold text-gray-300">AWS</span>
+              <Image
+                src="/logos/aws.png"
+                alt="AWS"
+                width={120}
+                height={60}
+                className="object-contain"
+              />
             </div>
             <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
               <Image
@@ -383,38 +515,6 @@ export default function ParqueTecnologicoPage() {
                 className="object-contain"
               />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="py-20 px-6 bg-white/5">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            {localizedText.contact.title}
-          </h2>
-          <p className="text-xl text-gray-300 mb-8">
-            {localizedText.contact.description}
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button asChild className="bg-white text-black hover:bg-gray-200 font-semibold px-8 py-6">
-              <Link href={contactPath}>
-                <Mail className="w-5 h-5 mr-2" />
-                {localizedText.contact.contactBtn}
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8 py-6">
-              <Link href={`${contactPath}&action=schedule`}>
-                <Calendar className="w-5 h-5 mr-2" />
-                {localizedText.contact.scheduleBtn}
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8 py-6">
-              <Link href={`/downloads/patagon-valley-fact-sheet.pdf`} target="_blank" rel="noopener noreferrer">
-                <Download className="w-5 h-5 mr-2" />
-                {localizedText.contact.downloadBtn}
-              </Link>
-            </Button>
           </div>
         </div>
       </section>

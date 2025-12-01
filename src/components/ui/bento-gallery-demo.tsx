@@ -22,7 +22,7 @@ const mediaItems = [
     type: "image",
     title: "Forest Path",
     desc: "Mystical forest trail",
-    url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=600&fit=crop&crop=center",
+    url: "/cabo_negro1.webp",
     span: "md:col-span-1 md:row-span-3 sm:col-span-2 sm:row-span-2",
   },
   {
