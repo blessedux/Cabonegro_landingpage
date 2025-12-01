@@ -161,7 +161,10 @@ export default function TerminalMaritimoPage() {
           items: [
             { icon: Shield, title: '受保护港口', description: '具有自然保护的战略位置' },
             { icon: MapPin, title: '备用区域', description: '充足的物流运营空间' },
-            { icon: Navigation, title: '9号公路通道', description: '直接连接主要交通走廊' }
+            { icon: Navigation, title: '9号公路通道', description: '直接连接主要交通走廊' },
+            { icon: Factory, title: '城市外区域', description: '有扩展空间的工业区' },
+            { icon: Zap, title: '适合能源项目', description: '绿色氢能基础设施的理想位置' },
+            { icon: Factory, title: '监管更新区', description: '正在监管现代化的工业区' }
           ]
         },
         timeline: {
@@ -169,13 +172,13 @@ export default function TerminalMaritimoPage() {
           description: '2021年至2028年的关键里程碑',
           readyToBuild: '准备建设',
           events: {
-            '2021': '五月：确定海岸线\n七月：申请海运特许权',
-            '2022': '三月：CM61260处理受理\n九月：海洋学研究（UMAG）\n十一月：综合报告和技术报告',
-            '2023': '一月：PRDW概念工程\n五月：DIFROL有利声明',
-            '2024': '六月：有利的制图报告',
-            '2025': '四月：CRUBC一致批准\n四月：DOP有利声明\n七月：MTT有利声明\n八月：授予海运特许权法令',
-            '2026': '环境研究\nRCA处理\n基础和详细工程\n可操作性研究',
-            '2027': '继续研究和处理',
+            '2021': '项目启动',
+            '2022': '可行性研究',
+            '2023': '设计阶段',
+            '2024': '许可和批准',
+            '2025': '建设开始',
+            '2026': '第一阶段完成',
+            '2027': '第二阶段开发',
             '2028': '准备建设 (RtB)'
           }
         },
@@ -314,60 +317,6 @@ export default function TerminalMaritimoPage() {
         }
       ]
     }
-    if (locale === 'zh') {
-      // Chinese version with detailed milestones matching Spanish structure
-      return [
-        { 
-          id: 1, 
-          title: '2021', 
-          date: '2021', 
-          phaseTitle: '2021 - 项目启动',
-          description: '五月：确定海岸线\n七月：申请海运特许权'
-        },
-        { 
-          id: 2, 
-          title: '2022', 
-          date: '2022', 
-          phaseTitle: '2022 - 研究和处理',
-          description: '三月：CM61260处理受理\n九月：海洋学研究（UMAG）\n十一月：综合报告和技术报告'
-        },
-        { 
-          id: 3, 
-          title: '2023', 
-          date: '2023', 
-          phaseTitle: '2023 - 工程和声明',
-          description: '一月：PRDW概念工程\n五月：DIFROL有利声明'
-        },
-        { 
-          id: 4, 
-          title: '2024', 
-          date: '2024', 
-          phaseTitle: '2024 - 制图报告',
-          description: '六月：有利的制图报告'
-        },
-        { 
-          id: 5, 
-          title: '2025', 
-          date: '2025', 
-          phaseTitle: '2025 - 批准和特许权',
-          description: '四月：CRUBC一致批准\n四月：DOP有利声明\n七月：MTT有利声明\n八月：授予海运特许权法令'
-        },
-        { 
-          id: 6, 
-          title: '2026-2028', 
-          date: '2026-2028', 
-          phaseTitle: '2026-2028 - 研究和开发',
-          description: '环境研究\nRCA处理\n基础和详细工程\n可操作性研究'
-        },
-        { 
-          id: 7, 
-          title: '2028', 
-          date: '2028', 
-          phaseTitle: '2028 - 准备建设',
-          description: '准备建设 (RtB): 2028'
-        }
-      ]
-    }
     // Default for other languages
     return [
       { id: 1, title: '2021', date: '2021', description: localizedText.timeline.events['2021'] },
@@ -383,8 +332,8 @@ export default function TerminalMaritimoPage() {
 
   const timelineCarouselItems: CarouselItem[] = getTimelineItems()
 
-  // Light mode for Spanish and Chinese versions
-  const isLightMode = locale === 'es' || locale === 'zh'
+  // Light mode for Spanish version
+  const isLightMode = locale === 'es'
   const mainBgClass = isLightMode ? 'bg-white' : 'bg-black'
   const mainTextClass = isLightMode ? 'text-gray-900' : 'text-white'
 
@@ -444,11 +393,6 @@ export default function TerminalMaritimoPage() {
                 Conoce mas sobre nuestros socios estrategicos. 
               </p>
             )}
-            {locale === 'zh' && (
-              <p className="mt-4 text-sm italic text-white/70">
-                了解更多关于我们的战略合作伙伴。
-              </p>
-            )}
           </div>
         </div>
       </section>
@@ -466,7 +410,7 @@ export default function TerminalMaritimoPage() {
       </section>
 
       {/* Strategic Collaboration Section - Compas Marine */}
-      {(locale === 'es' || locale === 'zh') && (
+      {locale === 'es' && (
         <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
           <div className="container mx-auto max-w-6xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -476,7 +420,7 @@ export default function TerminalMaritimoPage() {
                 <div className="w-full max-w-[300px] aspect-square">
                   <Image
                     src="/felipe_morales_perfil.jpeg"
-                    alt={locale === 'zh' ? 'Felipe Morales - 卡波内格罗海运码头总经理' : 'Felipe Morales - Jefe de Proyecto Compas Marine'}
+                    alt="Felipe Morales - Jefe de Proyecto Compas Marine"
                     width={300}
                     height={300}
                     className="w-full h-full object-cover rounded-full"
@@ -488,15 +432,7 @@ export default function TerminalMaritimoPage() {
                     Felipe Morales
                   </h3>
                   <p className="text-lg text-gray-600">
-                    {locale === 'zh' ? (
-                      <>
-                        总经理 <br></br> 海运码头 <br></br> 卡波内格罗
-                      </>
-                    ) : (
-                      <>
-                        Gerente General <br></br> Terminal Maritimo <br></br> Cabo Negro
-                      </>
-                    )}
+                    Gerente General <br></br> Terminal Maritimo <br></br> Cabo Negro
                   </p>
                 </div>
                 {/* CTA Button - Schedule Meeting */}
@@ -507,7 +443,7 @@ export default function TerminalMaritimoPage() {
                   className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg w-full"
                 >
                   <Calendar className="w-5 h-5" />
-                  {locale === 'zh' ? '安排会议' : 'Agendar Reunión'}
+                  Agendar Reunión
                 </a>
               </div>
               
@@ -533,14 +469,10 @@ export default function TerminalMaritimoPage() {
                   </a>
                 </div>
                 <h3 className={`text-xl md:text-2xl font-semibold mb-4 ${isLightMode ? 'text-gray-900' : ''}`}>
-                  {locale === 'zh' ? '港口项目的战略合作伙伴' : 'Socio Estratégico del Proyecto Portuario'}
+                  Socio Estratégico del Proyecto Portuario
                 </h3>
                 <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
-                  {locale === 'zh' ? (
-                    'Compas Marine是负责卡波内格罗海运码头管理和开发的合作伙伴。凭借在智利巴塔哥尼亚地区海运码头的设计、建设、运营和管理方面的丰富经验，该公司提供技术专长、高水平的运营标准以及对效率、安全和港口创新的坚定承诺。其参与确保了与行业最佳实践以及该地区物流和能源需求相一致的发展。'
-                  ) : (
-                    'Compas Marine es el socio responsable de la gestión y desarrollo del Terminal Marítimo Cabo Negro. Con una amplia trayectoria en el diseño, construcción, operación y administración de terminales marítimos en la Patagonia Chilena, la compañía aporta experiencia técnica, estándares operacionales de alto nivel y un enfoque sólido en eficiencia, seguridad e innovación portuaria. Su participación garantiza un desarrollo alineado con las mejores prácticas de la industria y con las necesidades logísticas y energéticas de la región.'
-                  )}
+                  Compas Marine es el socio responsable de la gestión y desarrollo del Terminal Marítimo Cabo Negro. Con una amplia trayectoria en el diseño, construcción, operación y administración de terminales marítimos en la Patagonia Chilena, la compañía aporta experiencia técnica, estándares operacionales de alto nivel y un enfoque sólido en eficiencia, seguridad e innovación portuaria. Su participación garantiza un desarrollo alineado con las mejores prácticas de la industria y con las necesidades logísticas y energéticas de la región.
                 </p>
               </div>
             </div>

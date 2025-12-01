@@ -19,18 +19,8 @@ export default function NavbarZh() {
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
+  const { isNavbarHidden, setIsNavbarHidden } = useAnimation()
   const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete, setLanguageSwitch } = usePreloader()
-
-  // Handle Explore Terrain click
-  const handleExploreTerrain = () => {
-    startFadeOut()
-    
-    // Navigate to explore route after animations
-    setTimeout(() => {
-      router.push('/zh/explore')
-    }, 1000)
-  }
 
   // Detect when navbar is over white background sections
   useEffect(() => {
