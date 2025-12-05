@@ -27,13 +27,18 @@ export function usePageTransition() {
       setNavigating(true)
 
       // Show preloader for ALL route changes (navigation)
-      // Only show if not already visible to prevent double showing
+      // If preloader was already shown by a component (like Stats), that's fine
+      // Otherwise, show it here to ensure consistent transitions
       // This handles navigation preloaders, first load is handled by LocaleHomePage
       if (!isPreloaderBVisible) {
         if (process.env.NODE_ENV === 'development') {
           console.log('🔄 usePageTransition: Showing preloader for navigation')
         }
         showPreloaderB()
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 usePageTransition: Preloader already visible, setting up hide logic')
+        }
       }
 
       // Wait for page to actually load before hiding preloader

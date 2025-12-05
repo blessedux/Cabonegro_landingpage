@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence, useMotionTemplate } from 'framer-motion'
 import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
+import Image from 'next/image'
 
 export default function HeroFr() {
   const [isVisible, setIsVisible] = useState(false)
@@ -230,9 +231,10 @@ export default function HeroFr() {
     setShowProjectOptions(false)
   }
 
-  // Handle project navigation - optimized for speed
+  // Handle project navigation - show preloader for consistent transitions
   const handleProjectNavigation = (route: string) => {
-    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Show preloader immediately before navigation for consistent UX
+    showPreloaderB()
     // Navigate immediately without delay
     router.push(`/${currentLocale}${route}`)
   }
@@ -273,7 +275,6 @@ export default function HeroFr() {
               muted
               playsInline
               preload="metadata"
-              poster="/cabonegro_frame1.webp"
               className="absolute inset-0 w-full h-full object-cover"
               style={{
                 willChange: 'transform',
@@ -300,14 +301,18 @@ export default function HeroFr() {
             </video>
           ) : (
             // Show poster image: (1) while video is not loaded, OR (2) on mobile when video isn't playing
-            <div 
-              className="absolute inset-0 w-full h-full object-cover bg-black"
-              style={{
-                backgroundImage: 'url(/cabonegro_frame1.webp)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundColor: '#000000'
-              }}
+            // Optimized with Next.js Image component for better performance
+            <Image
+              src="/cabonegro_frame1.webp"
+              alt="Cabo Negro Hero"
+              fill
+              priority
+              fetchPriority="high"
+              className="object-cover"
+              sizes="100vw"
+              quality={85}
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             />
           )}
         </motion.div>

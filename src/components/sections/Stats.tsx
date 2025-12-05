@@ -9,56 +9,6 @@ import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import Image from 'next/image'
 
-// Word component that uses useTransform hook
-function AnimatedWord({ 
-  word, 
-  index, 
-  totalWords, 
-  scrollYProgress 
-}: { 
-  word: string
-  index: number
-  totalWords: number
-  scrollYProgress: any
-}) {
-  const start = index / totalWords;
-  const end = start + 1 / totalWords;
-  const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
-
-  return (
-    <span className="relative mr-1">
-      <span className="absolute opacity-20">{word}</span>
-      <motion.span style={{ opacity: opacity }}>{word}</motion.span>
-    </span>
-  );
-}
-
-// Custom MagicText wrapper that animates earlier (when element enters from bottom of viewport)
-function EarlyMagicText({ text, className = "" }: { text: string; className?: string }) {
-  const container = useRef<HTMLParagraphElement>(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: container,
-    offset: ["start 1.5", "start 0.8"], // Start as soon as possible (1.5 viewport heights away), complete early (0.8 viewport heights)
-  });
-  
-  const words = text.split(" ");
-
-  return (
-    <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`} style={{ color: '#ffffff' }}>
-      {words.map((word, i) => (
-        <AnimatedWord 
-          key={i}
-          word={word}
-          index={i}
-          totalWords={words.length}
-          scrollYProgress={scrollYProgress}
-        />
-      ))}
-    </p>
-  );
-}
-
 interface AnimatedCounterProps {
   end: number
   duration?: number
@@ -196,9 +146,10 @@ export default function Stats() {
   })
   
   
-  // Navigation handlers
+  // Navigation handlers - explicitly show preloader for consistent transitions
   const handlePatagonValleyClick = () => {
-    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Show preloader immediately before navigation for consistent UX
+    showPreloaderB()
     // Use startTransition for non-blocking navigation
     startTransition(() => {
       router.push(`/${locale}/parque-tecnologico`)
@@ -206,7 +157,8 @@ export default function Stats() {
   }
   
   const handlePortZoneClick = () => {
-    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Show preloader immediately before navigation for consistent UX
+    showPreloaderB()
     // Use startTransition for non-blocking navigation
     startTransition(() => {
       router.push(`/${locale}/terminal-maritimo`)
@@ -214,7 +166,8 @@ export default function Stats() {
   }
   
   const handleCaboNegroDosClick = () => {
-    // No PreloaderB needed - project pages are fast, usePageTransition handles it
+    // Show preloader immediately before navigation for consistent UX
+    showPreloaderB()
     // Use startTransition for non-blocking navigation
     startTransition(() => {
       router.push(`/${locale}/parque-logistico`)
@@ -336,12 +289,15 @@ export default function Stats() {
   
   // Background zoom effect - scales from 1 to 1.1 (10% zoom) as we scroll from top to bottom
   // Only apply zoom when background starts appearing
-  const backgroundScale = useTransform(
+  // Always call hooks unconditionally - use static value for mobile, transform for desktop
+  const backgroundScaleStatic = useMotionValue(1) // No zoom effect on mobile
+  const backgroundScaleTransform = useTransform(
     scrollYProgress, 
     [0, 0.20, 1], 
     [1, 1, 1.1], 
     { clamp: true }
   )
+  const backgroundScale = isMobile ? backgroundScaleStatic : backgroundScaleTransform
   
   // Black overlay opacity - starts when background starts fading in (40% to 60%)
   const blackOverlayOpacity = useTransform(
@@ -351,20 +307,23 @@ export default function Stats() {
     { clamp: true }
   )
   
-  // Title fade in - starts when background starts fading in (40%)
-  // Content should be visible as soon as background appears
+  // Title fade in - starts when background and content start fading in (20%)
+  // On mobile, title should appear at the same time as cards for better UX
   const titleOpacity = useTransform(
     scrollYProgress, 
-    [0, 0.40, 0.50], 
+    [0, 0.20, 0.30], 
     [0, 0, 1],
     { clamp: true }
   )
-  const titleY = useTransform(
+  // Always call hooks unconditionally - use static value for mobile, transform for desktop
+  const titleYStatic = useMotionValue(0) // No parallax on mobile
+  const titleYTransform = useTransform(
     scrollYProgress, 
-    [0, 0.40, 0.50], 
+    [0, 0.20, 0.30], 
     [0, 0, 0],
     { clamp: true }
   )
+  const titleY = isMobile ? titleYStatic : titleYTransform
   
   // Content fade in - start earlier to match stat cards (0.20 when background starts)
   const contentOpacity = useTransform(
@@ -373,27 +332,15 @@ export default function Stats() {
     [0, 0, 1],
     { clamp: true }
   )
-  const contentY = useTransform(
+  // Always call hooks unconditionally - use static value for mobile, transform for desktop
+  const contentYStatic = useMotionValue(0) // No parallax on mobile
+  const contentYTransform = useTransform(
     scrollYProgress, 
     [0, 0.20, 0.30], 
     [0, 0, 0],
     { clamp: true }
   )
-  
-  // Vision text fade in - starts when background appears (40%)
-  // Title and subtitle fade in together
-  const visionTitleOpacity = useTransform(
-    scrollYProgress, 
-    [0, 0.40, 0.50], 
-    [0, 0, 1],
-    { clamp: true }
-  )
-  const visionSubtitleOpacity = useTransform(
-    scrollYProgress, 
-    [0, 0.40, 0.50], 
-    [0, 0, 1],
-    { clamp: true }
-  )
+  const contentY = isMobile ? contentYStatic : contentYTransform
   
   // Position orange container at the very top, close to AboutUs component
   // At 0%: container at top (top: 0, y: 0)
@@ -405,12 +352,15 @@ export default function Stats() {
     ['0%', '0%', '0%'], 
     { clamp: true }
   )
-  const containerY = useTransform(
+  // Always call hooks unconditionally - use static value for mobile, transform for desktop
+  const containerYStatic = useMotionValue('0%') // Static positioning on mobile
+  const containerYTransform = useTransform(
     scrollYProgress, 
     [0, 0.40, 0.60], 
     ['0%', '-50%', '-50%'], 
     { clamp: true }
   )
+  const containerY = isMobile ? containerYStatic : containerYTransform
   
   // Overall Stats section visibility - hide completely until AboutUs is in view
   // This ensures Stats doesn't show before AboutUs section is reached
@@ -537,7 +487,8 @@ export default function Stats() {
   // On mobile: animate all boxes simultaneously (no stagger) for better performance
   // On desktop: use staggered animation for visual interest
   // Reduced motion: disable Y transform and use simpler fade-in
-  const yTransformDistance = prefersReducedMotion ? 0 : (isMobile ? 15 : 30)
+  // Mobile: no Y transforms at all - only opacity fade-in
+  const yTransformDistance = prefersReducedMotion ? 0 : (isMobile ? 0 : 30)
   
   // Mobile: all boxes use same range [0.20, 0.30] (no stagger)
   // Desktop: staggered ranges [0.20, 0.30], [0.22, 0.32], [0.24, 0.34]
@@ -546,13 +497,20 @@ export default function Stats() {
   const statBox3Range: [number, number] = isMobile ? [0.20, 0.30] : [0.24, 0.34]
   
   const statBox1Opacity = useTransform(scrollYProgress, statBox1Range, [0, 1], { clamp: true })
-  const statBox1Y = useTransform(scrollYProgress, statBox1Range, [yTransformDistance, 0], { clamp: true })
+  // Always call hooks unconditionally - use static value for mobile, transform for desktop
+  const statBox1YStatic = useMotionValue(0) // Static value for mobile
+  const statBox1YTransform = useTransform(scrollYProgress, statBox1Range, [yTransformDistance, 0], { clamp: true })
+  const statBox1Y = isMobile ? statBox1YStatic : statBox1YTransform
   
   const statBox2Opacity = useTransform(scrollYProgress, statBox2Range, [0, 1], { clamp: true })
-  const statBox2Y = useTransform(scrollYProgress, statBox2Range, [yTransformDistance, 0], { clamp: true })
+  const statBox2YStatic = useMotionValue(0) // Static value for mobile
+  const statBox2YTransform = useTransform(scrollYProgress, statBox2Range, [yTransformDistance, 0], { clamp: true })
+  const statBox2Y = isMobile ? statBox2YStatic : statBox2YTransform
   
   const statBox3Opacity = useTransform(scrollYProgress, statBox3Range, [0, 1], { clamp: true })
-  const statBox3Y = useTransform(scrollYProgress, statBox3Range, [yTransformDistance, 0], { clamp: true })
+  const statBox3YStatic = useMotionValue(0) // Static value for mobile
+  const statBox3YTransform = useTransform(scrollYProgress, statBox3Range, [yTransformDistance, 0], { clamp: true })
+  const statBox3Y = isMobile ? statBox3YStatic : statBox3YTransform
 
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(false)
@@ -574,7 +532,7 @@ export default function Stats() {
       <motion.section 
         id="stats"
         ref={statsRef} 
-        className="sticky top-0 left-0 right-0 h-[100vh] z-[3] pointer-events-none"
+        className="sticky top-0 left-0 right-0 z-[3] pointer-events-none"
         style={{
           zIndex: 3,
           opacity: (() => {
@@ -598,10 +556,10 @@ export default function Stats() {
           })(),
           pointerEvents: (!isPreloaderBVisible && isPreloaderComplete && (shouldShowStats || forceVisible || isInView || hasScrolled || statsSectionOpacity.get() > 0.1)) ? 'auto' : 'none',
           visibility: (!isPreloaderBVisible && isPreloaderComplete) ? 'visible' : 'hidden', // Prevent FCP from showing this - hide if preloader is visible
-          // Fix mobile viewport height issues
-          minHeight: '100vh',
-          height: '100vh',
-          maxHeight: '100vh'
+          // Fix mobile viewport height issues - add extra height on mobile to prevent Partners from covering last card
+          minHeight: isMobile ? 'calc(100vh + 250px)' : '100vh',
+          height: isMobile ? 'calc(100vh + 250px)' : '100vh',
+          maxHeight: isMobile ? 'calc(100vh + 250px)' : '100vh'
         }}
       >
         {/* Content container - positioned at top, centers in viewport when background fades in (40% scroll) */}
@@ -611,47 +569,36 @@ export default function Stats() {
           style={{
             pointerEvents: shouldBlockPointer ? 'auto' : 'none',
             top: containerTop,
-            y: containerY,
+            y: isMobile ? 0 : containerY, // Only apply Y transform on desktop
             zIndex: 7 // Above AboutUs content (z-[6]) so Stats content appears on top when visible
           }}
         >
           
           {/* Content wrapper - no margins, matches section positioning, content at top */}
           <div className="w-full max-w-7xl mx-auto px-4 md:px-6 pt-0">
-            {/* Our Vision - only visible in Stats section, fades in when background appears */}
-            <motion.div
-              className="w-full mb-[20vh] md:mb-[30vh]"
+            {/* Land Development Structure Title - moved to top position */}
+            <motion.div 
+              className="text-center mb-[20vh] md:mb-[30vh] relative"
+              style={{
+                opacity: titleOpacity,
+                y: isMobile ? 0 : titleY, // Only apply Y transform on desktop
+                willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
+              }}
             >
-              <div className="text-center">
-                <motion.h3 
-                  className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 lg:mb-6 text-white" 
-                  style={{ 
-                    opacity: visionTitleOpacity,
-                    color: '#ffffff', 
-                    textShadow: '0 0 0 rgba(255,255,255,1)',
-                    willChange: 'opacity'
-                  }}
-                >
-                  {locale === 'es' ? 'Nuestra Visión' : locale === 'zh' ? '我们的愿景' : locale === 'fr' ? 'Notre Vision' : 'Our Vision'}
-                </motion.h3>
-                <motion.div
-                  style={{ 
-                    opacity: visionSubtitleOpacity,
-                    willChange: 'opacity'
-                  }}
-                  className="max-w-5xl mx-auto"
-                >
-                  <EarlyMagicText 
-                    text={locale === 'es'
-                      ? 'Establecer Cabo Negro como el principal centro industrial y marítimo del Hemisferio Sur, sirviendo como puerta de entrada principal a la Antártida y un nodo esencial en las rutas comerciales globales mientras se apoya la transición de Chile hacia una economía de hidrógeno verde.'
-                      : locale === 'zh'
-                      ? '将卡波内格罗确立为南半球首屈一指的工业和海事中心，作为通往南极洲的主要门户和全球贸易路线的重要节点，同时支持智利向绿色氢经济的转型。'
-                      : locale === 'fr'
-                      ? 'Établir Cabo Negro comme le principal centre industriel et maritime de l\'Hémisphère Sud, servant de porte d\'entrée principale vers l\'Antarctique et de nœud essentiel dans les routes commerciales mondiales tout en soutenant la transition du Chili vers une économie de l\'hydrogène vert.'
-                      : 'To establish Cabo Negro as the premier industrial and maritime hub of the Southern Hemisphere, serving as the primary gateway to Antarctica and an essential node in global trade routes while supporting Chile\'s transition to a green hydrogen economy.'}
-                    className="text-white leading-relaxed text-lg lg:text-xl"
-                  />
-                </motion.div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-2 text-white">
+                {locale === 'es' ? 'Estructura de Desarrollo de Tierras' : locale === 'zh' ? '土地开发结构' : locale === 'fr' ? 'Structure de Développement des Terres' : 'Land Development Structure'}
+              </h2>
+              <div className="max-w-3xl mx-auto mb-2">
+                <MagicText 
+                  text={locale === 'es'
+                    ? 'Desglose completo del desarrollo de tierras en la zona industrial y marítima estratégica de Cabo Negro'
+                    : locale === 'zh'
+                    ? '卡波内格罗战略工业和海事区土地开发的全面细分'
+                    : locale === 'fr'
+                    ? 'Répartition complète du développement des terres dans la zone industrielle et maritime stratégique de Cabo Negro'
+                    : 'Comprehensive land development breakdown across Cabo Negro\'s strategic industrial and maritime zone'}
+                  className="text-gray-300 text-lg"
+                />
               </div>
             </motion.div>
             
@@ -660,35 +607,10 @@ export default function Stats() {
               className="relative"
               style={{
                 opacity: contentOpacity,
-                y: contentY,
-                willChange: 'transform, opacity'
+                y: isMobile ? 0 : contentY, // Only apply Y transform on desktop
+                willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
               }}
             >
-              {/* Title section - fades in when background appears (11%) */}
-              <motion.div 
-                className="text-center mb-2 relative"
-                style={{
-                  opacity: titleOpacity,
-                  y: titleY,
-                  willChange: 'transform, opacity'
-                }}
-              >
-                <h2 className="text-4xl md:text-5xl font-bold mb-2 text-white">
-                  {locale === 'es' ? 'Estructura de Desarrollo de Tierras' : locale === 'zh' ? '土地开发结构' : locale === 'fr' ? 'Structure de Développement des Terres' : 'Land Development Structure'}
-                </h2>
-                <div className="max-w-3xl mx-auto mb-2">
-                  <MagicText 
-                    text={locale === 'es'
-                      ? 'Desglose completo del desarrollo de tierras en la zona industrial y marítima estratégica de Cabo Negro'
-                      : locale === 'zh'
-                      ? '卡波内格罗战略工业和海事区土地开发的全面细分'
-                      : locale === 'fr'
-                      ? 'Répartition complète du développement des terres dans la zone industrielle et maritime stratégique de Cabo Negro'
-                      : 'Comprehensive land development breakdown across Cabo Negro\'s strategic industrial and maritime zone'}
-                    className="text-gray-300 text-lg"
-                  />
-                </div>
-              </motion.div>
 
               {/* Total Hectares - Featured */}
               <div className="max-w-4xl mx-auto mb-8">
@@ -713,8 +635,8 @@ export default function Stats() {
                   className="relative w-full max-w-md rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox1Opacity,
-                    y: statBox1Y,
-                    willChange: 'transform, opacity'
+                    y: isMobile ? 0 : statBox1Y, // Only apply Y transform on desktop
+                    willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
                   }}
                   onClick={handlePatagonValleyClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/parque-tecnologico`)}
@@ -758,8 +680,8 @@ export default function Stats() {
                   className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox2Opacity,
-                    y: statBox2Y,
-                    willChange: 'transform, opacity'
+                    y: isMobile ? 0 : statBox2Y, // Only apply Y transform on desktop
+                    willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
                   }}
                   onClick={handlePortZoneClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/terminal-maritimo`)}
@@ -800,8 +722,8 @@ export default function Stats() {
                   className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox3Opacity,
-                    y: statBox3Y,
-                    willChange: 'transform, opacity'
+                    y: isMobile ? 0 : statBox3Y, // Only apply Y transform on desktop
+                    willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
                   }}
                   onClick={handleCaboNegroDosClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/parque-logistico`)}

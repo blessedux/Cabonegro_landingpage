@@ -66,9 +66,9 @@
 
 ### 🎬 Animations
 
-- [ ] Animate planet scene transition
-- [ ] Animate actual location in 3D map
-- [ ] Improve section transitions
+- [x] Animate planet scene transition
+- [x] Animate actual location in 3D map
+- [x] Improve section transitions
 
 ### 📋 Plan Implementation
 

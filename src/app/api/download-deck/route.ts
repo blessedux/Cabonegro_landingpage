@@ -81,7 +81,7 @@ INVESTOR DECK CONTENTS:
 - Regulatory Advantages
 - Wind Power Potential
 
-For more information, visit: https://cabonegro.com
+For more information, visit: https://www.cabonegro.cl
 
 © 2025 Cabo Negro. All rights reserved.`,
       'es': `CABO NEGRO - INVERSIÓN ESTRATÉGICA EN HIDRÓGENO VERDE Y COMERCIO GLOBAL
@@ -117,7 +117,7 @@ CONTENIDO DEL DECK DE INVERSIONISTAS:
 - Ventajas Regulatorias
 - Potencial de Energía Eólica
 
-Para más información, visite: https://cabonegro.com
+Para más información, visite: https://www.cabonegro.cl
 
 © 2025 Cabo Negro. Todos los derechos reservados.`,
       'fr': `CABO NEGRO - INVESTISSEMENT STRATÉGIQUE DANS L'HYDROGÈNE VERT ET LE COMMERCE MONDIAL
@@ -151,7 +151,7 @@ CONTENU DU DECK D'INVESTISSEURS:
 - Avantages réglementaires
 - Potentiel éolien
 
-Pour plus d'informations, visitez: https://cabonegro.com
+Pour plus d'informations, visitez: https://www.cabonegro.cl
 
 © 2025 Cabo Negro. Tous droits réservés.`,
       'zh': `卡波内格罗 - 绿色氢气和全球贸易的战略投资
@@ -185,7 +185,7 @@ Inmobiliaria Cabo Negro Dos (CN2)：J&P细分的产物。约173公顷，
 - 监管优势
 - 风力发电潜力
 
-更多信息，请访问：https://cabonegro.com
+更多信息，请访问：https://www.cabonegro.cl
 
 © 2025 卡波内格罗。保留所有权利。`
     }

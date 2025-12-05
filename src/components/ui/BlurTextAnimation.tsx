@@ -75,7 +75,7 @@ export default function BlurTextAnimation({
 
   return (
     <div className={`${className}`} style={{ color: '#ffffff' }}>
-      <p className={`${textColor} ${fontSize} ${fontFamily} font-light leading-relaxed tracking-wide`} style={{ color: '#ffffff' }}>
+      <p className={`${textColor} ${fontSize} ${fontFamily} font-bold leading-relaxed tracking-wide`} style={{ color: '#ffffff' }}>
         {textWords.map((word, index) => (
           <span
             key={index}

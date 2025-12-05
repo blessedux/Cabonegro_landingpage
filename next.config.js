@@ -10,7 +10,7 @@ const nextConfig = {
   allowedDevOrigins: ["*.preview.same-app.com"],
   // Enable experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion', '@mdi/react', 'react-icons'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@mdi/react', 'react-icons', 'd3', 'three', 'leaflet'],
   },
   // Reduce bundle size
   // Note: swcMinify is enabled by default in Next.js 15, no need to specify
@@ -68,7 +68,7 @@ const nextConfig = {
           },
           {
             key: 'Link',
-            value: '<https://fonts.cdnfonts.com>; rel=preconnect; crossorigin, <https://fonts.googleapis.com>; rel=preconnect; crossorigin, <https://fonts.gstatic.com>; rel=preconnect; crossorigin'
+            value: '<https://fonts.cdnfonts.com>; rel=preconnect; crossorigin, <https://fonts.googleapis.com>; rel=preconnect; crossorigin'
           }
         ]
       }

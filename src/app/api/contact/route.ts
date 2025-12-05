@@ -124,7 +124,7 @@ Nuevo mensaje de contacto desde el sitio web de Cabo Negro
 ${body.message}
 
 ---
-Este mensaje fue enviado desde el formulario de contacto de cabonegro.com
+Este mensaje fue enviado desde el formulario de contacto de www.cabonegro.cl
       `.trim(),
     }
 

@@ -97,7 +97,7 @@ The contact form sends emails using **EmailJS**, a free email service that doesn
   <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;" />
   <p style="color: #666; font-size: 12px;">
     Este mensaje fue enviado desde el formulario de contacto de
-    <a href="https://cabonegro.com">cabonegro.com</a>
+    <a href="https://www.cabonegro.cl">www.cabonegro.cl</a>
   </p>
 </div>
 ```
