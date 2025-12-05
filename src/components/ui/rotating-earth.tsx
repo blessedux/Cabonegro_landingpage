@@ -126,10 +126,13 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
         }
       }
 
-      console.log(
-        `[v0] Generated ${pointsGenerated} points for land feature:`,
-        feature.properties?.featurecla || "Land",
-      )
+      // Only log in development mode to reduce console spam
+      if (process.env.NODE_ENV === 'development' && pointsGenerated > 100) {
+        console.log(
+          `[RotatingEarth] Generated ${pointsGenerated} points for land feature:`,
+          feature.properties?.featurecla || "Land",
+        )
+      }
       return dots
     }
 
@@ -255,17 +258,20 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
 
         landFeatures = await response.json()
 
-        // Generate dots for all land features
+        // Generate dots for all land features with optimized step size
+        // Increased step size from 16 to 24 to reduce point count by ~40%
         let totalDots = 0
         landFeatures.features.forEach((feature: any) => {
-          const dots = generateDotsInPolygon(feature, 16)
+          const dots = generateDotsInPolygon(feature, 24) // Increased from 16 to 24 for better performance
           dots.forEach(([lng, lat]) => {
             allDots.push({ lng, lat, visible: true })
             totalDots++
           })
         })
 
-        console.log(`[v0] Total dots generated: ${totalDots} across ${landFeatures.features.length} land features`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[RotatingEarth] Total dots generated: ${totalDots} across ${landFeatures.features.length} land features`)
+        }
 
         render()
         setIsLoading(false)

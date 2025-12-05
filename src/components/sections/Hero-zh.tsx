@@ -79,9 +79,46 @@ export default function HeroZh() {
     setIsVisible(true)
   }, [])
 
+  // Track video loading state
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
+  const [videoInViewport, setVideoInViewport] = useState(false)
+
+  // Lazy load video using Intersection Observer - only load when hero is in viewport
+  useEffect(() => {
+    if (!heroRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVideoInViewport(true)
+            // Load video after a short delay to ensure page is interactive
+            setTimeout(() => {
+              setShouldLoadVideo(true)
+            }, 500)
+          }
+        })
+      },
+      {
+        rootMargin: '50px', // Start loading slightly before it's fully visible
+        threshold: 0.1
+      }
+    )
+
+    observer.observe(heroRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
   // Programmatically play video on mobile after user interaction
   // iOS Safari requires user interaction before videos can autoplay
   useEffect(() => {
+    if (!shouldLoadVideo) return
+
     const playVideo = async () => {
       if (videoRef.current) {
         try {
@@ -91,6 +128,9 @@ export default function HeroZh() {
         } catch (error) {
           // Silently handle autoplay errors (browser policies)
           // Video will still show first frame
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('Video autoplay error:', error)
+          }
         }
       }
     }
@@ -116,7 +156,7 @@ export default function HeroZh() {
       document.removeEventListener('touchstart', handleUserInteraction)
       document.removeEventListener('scroll', handleUserInteraction, true)
     }
-  }, [isPreloaderComplete])
+  }, [isPreloaderComplete, shouldLoadVideo])
 
   // Auto-rotate word every 4 seconds
   useEffect(() => {
@@ -150,7 +190,7 @@ export default function HeroZh() {
       ref={heroRef}
       className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[1]"
       style={{
-        backgroundColor: 'transparent',
+        backgroundColor: videoLoaded ? 'transparent' : '#000000', // Black background while video loads
         pointerEvents: 'auto',
         height: '100vh',
         maxHeight: '100vh',
@@ -171,20 +211,51 @@ export default function HeroZh() {
             height: '100%'
           }}
         >
-          <video
-            ref={videoRef}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{
-              willChange: 'transform',
-              transform: 'translateZ(0)', // Force GPU acceleration
-            }}
-          >
-            <source src={heroVideo} type="video/mp4" />
-          </video>
+          {shouldLoadVideo ? (
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              poster="/cabonegro_frame1.webp"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                willChange: 'transform',
+                transform: 'translateZ(0)', // Force GPU acceleration
+                backgroundColor: videoLoaded ? 'transparent' : '#000000', // Black background while loading
+              }}
+              onLoadedData={() => {
+                setVideoLoaded(true)
+              }}
+              onCanPlay={() => {
+                setVideoLoaded(true)
+              }}
+              onError={(e) => {
+                if (process.env.NODE_ENV === 'development') {
+                  console.error('Video loading error:', e)
+                }
+                setVideoError(true)
+              }}
+              onLoadStart={() => {
+                setVideoLoaded(false)
+              }}
+            >
+              <source src={heroVideo} type="video/mp4" />
+            </video>
+          ) : (
+            // Show poster image while video is not loaded
+            <div 
+              className="absolute inset-0 w-full h-full object-cover bg-black"
+              style={{
+                backgroundImage: 'url(/cabonegro_frame1.webp)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundColor: '#000000'
+              }}
+            />
+          )}
         </motion.div>
         {/* Dark overlay that fades in as AboutUs comes into view */}
         <motion.div

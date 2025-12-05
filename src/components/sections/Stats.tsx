@@ -7,6 +7,7 @@ import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { Button } from '@/components/ui/button'
 import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
+import Image from 'next/image'
 
 // Word component that uses useTransform hook
 function AnimatedWord({ 
@@ -156,7 +157,7 @@ export default function Stats() {
   const statsRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const { showPreloaderB } = usePreloader()
+  const { showPreloaderB, isPreloaderComplete, isPreloaderBVisible } = usePreloader()
   
   // Determine locale from pathname for button text
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
@@ -396,8 +397,9 @@ export default function Stats() {
         className="sticky top-0 left-0 right-0 h-[100vh] z-[3] pointer-events-none"
         style={{
           zIndex: 3,
-          opacity: statsSectionOpacity,
-          pointerEvents: shouldShowStats ? 'auto' : 'none'
+          opacity: (!isPreloaderBVisible && isPreloaderComplete) ? statsSectionOpacity : 0, // Hide until preloader completes
+          pointerEvents: (!isPreloaderBVisible && isPreloaderComplete && shouldShowStats) ? 'auto' : 'none',
+          visibility: (!isPreloaderBVisible && isPreloaderComplete) ? 'visible' : 'hidden' // Prevent FCP from showing this - hide if preloader is visible
         }}
       >
         {/* Content container - positioned at top, centers in viewport when background fades in (40% scroll) */}
@@ -521,11 +523,14 @@ export default function Stats() {
                   {/* Content */}
                   <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
                     {/* Logo Icon */}
-                    <div className="mb-6">
-                      <img 
+                    <div className="mb-6 relative w-20 h-20 mx-auto">
+                      <Image 
                         src="/logos/patagon_white.png" 
                         alt="Patagon Valley Logo" 
-                        className="w-20 h-20 mx-auto object-contain"
+                        fill
+                        className="object-contain"
+                        loading="lazy"
+                        sizes="80px"
                       />
                     </div>
                     
@@ -566,11 +571,14 @@ export default function Stats() {
                   {/* Content */}
                   <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
                     {/* Logo Icon */}
-                    <div className="mb-6">
-                      <img 
+                    <div className="mb-6 relative w-20 h-20 mx-auto">
+                      <Image 
                         src="/cabonegro_logo.png" 
                         alt="Cabo Negro Logo" 
-                        className="w-20 h-20 mx-auto object-contain filter brightness-0 invert"
+                        fill
+                        className="object-contain filter brightness-0 invert"
+                        loading="lazy"
+                        sizes="80px"
                       />
                     </div>
                     
@@ -604,11 +612,14 @@ export default function Stats() {
                   {/* Content */}
                   <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
                     {/* Logo Icon */}
-                    <div className="mb-6">
-                      <img 
+                    <div className="mb-6 relative w-20 h-20 mx-auto">
+                      <Image 
                         src="/cabonegro_logo.png" 
                         alt="Cabo Negro Logo" 
-                        className="w-20 h-20 mx-auto object-contain filter brightness-0 invert"
+                        fill
+                        className="object-contain filter brightness-0 invert"
+                        loading="lazy"
+                        sizes="80px"
                       />
                     </div>
                     

@@ -135,6 +135,8 @@
         "media": "Médias et Presse"
       }
     },
+    "successMessage": "Merci ! Votre message a été envoyé avec succès. Nous vous contacterons bientôt.",
+    "errorMessage": "Désolé, une erreur s'est produite lors de l'envoi de votre message. Veuillez réessayer ou nous contacter directement.",
     "contactInfo": {
       "title": "Informations de Contact",
       "email": "E-mail",

@@ -81,7 +81,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         projects: 'Projects',
         viewDeck: 'View Deck'
       },
-      email: 'info@cabonegro.cl'
+      email: 'ventas@cabonegro.cl'
     },
     es: {
       contact: {
@@ -103,7 +103,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         projects: 'Proyectos',
         viewDeck: 'Ver Deck'
       },
-      email: 'info@cabonegro.cl'
+      email: 'ventas@cabonegro.cl'
     },
     zh: {
       contact: {
@@ -125,7 +125,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         projects: '项目',
         viewDeck: '查看甲板'
       },
-      email: 'info@cabonegro.cl'
+      email: 'ventas@cabonegro.cl'
     },
     fr: {
       contact: {
@@ -147,7 +147,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         projects: 'Projets',
         viewDeck: 'Voir le Deck'
       },
-      email: 'info@cabonegro.cl'
+      email: 'ventas@cabonegro.cl'
     }
   }
 

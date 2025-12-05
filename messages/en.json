@@ -135,6 +135,8 @@
         "media": "Media & Press"
       }
     },
+    "successMessage": "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+    "errorMessage": "Sorry, there was an error sending your message. Please try again or contact us directly.",
     "contactInfo": {
       "title": "Contact Information",
       "email": "Email",

@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react';
+import Image from 'next/image';
 
 
 // MediaItemType defines the structure of a media item
@@ -101,7 +102,7 @@ const MediaItem = ({ item, className, onClick }: { item: MediaItemType, classNam
                     playsInline
                     muted
                     loop
-                    preload="auto"
+                    preload="metadata"
                     style={{
                         opacity: isBuffering ? 0.8 : 1,
                         transition: 'opacity 0.2s',
@@ -121,14 +122,17 @@ const MediaItem = ({ item, className, onClick }: { item: MediaItemType, classNam
     }
 
     return (
-        <img
-            src={item.url} // Image source URL
-            alt={item.title} // Alt text for the image
-            className={`${className} object-cover cursor-pointer`} // Style the image
-            onClick={onClick} // Trigger onClick when the image is clicked
-            loading="lazy" // Lazy load the image for performance
-            decoding="async" // Decode the image asynchronously
-        />
+        <div className={`${className} relative`}>
+            <Image
+                src={item.url} // Image source URL
+                alt={item.title} // Alt text for the image
+                fill
+                className="object-cover cursor-pointer" // Style the image
+                onClick={onClick} // Trigger onClick when the image is clicked
+                loading="lazy" // Lazy load the image for performance
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+        </div>
     );
 };
 

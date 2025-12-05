@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import Image from "next/image"
 
 interface ImageGalleryProps {
   images: string[]
@@ -60,21 +61,18 @@ export default function ImageGallery({ images, className }: ImageGalleryProps) {
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
-              <img
-                className="h-full w-full"
+              <Image
+                src={src}
+                alt={`gallery-image-${idx}`}
+                fill
+                className="object-cover object-center"
                 style={{
-                  objectFit: 'cover',
-                  objectPosition: 'center',
-                  width: '100%',
-                  height: '100%',
-                  display: 'block',
                   transition: 'transform 800ms cubic-bezier(0.4, 0, 0.2, 1)',
                   transform: isExpanded ? 'scale(1.03)' : 'scale(1)',
                   willChange: 'transform',
                 }}
-                src={src}
-                alt={`gallery-image-${idx}`}
-                loading="lazy"
+                loading={idx === 0 ? "eager" : "lazy"}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
           )

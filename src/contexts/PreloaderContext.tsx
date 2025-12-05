@@ -9,6 +9,7 @@ interface PreloaderContextType {
   isPreloaderBVisible: boolean
   isPreloaderSimpleVisible: boolean
   isLanguageSwitch: boolean
+  isNavigating: boolean
   setPreloaderVisible: (visible: boolean) => void
   setPreloaderComplete: (complete: boolean) => void
   showPreloader: () => void
@@ -19,25 +20,39 @@ interface PreloaderContextType {
   showPreloaderSimple: () => void
   hidePreloaderSimple: () => void
   setLanguageSwitch: (isSwitch: boolean) => void
+  setNavigating: (navigating: boolean) => void
 }
 
 const PreloaderContext = createContext<PreloaderContextType | undefined>(undefined)
 
 export function PreloaderProvider({ children }: { children: ReactNode }) {
-  // Always skip preloader - render content immediately
+  // Check if first visit on initial state
   const [isPreloaderVisible, setIsPreloaderVisible] = useState(false)
-  const [isPreloaderComplete, setIsPreloaderComplete] = useState(true)
-  const [hasSeenPreloader, setHasSeenPreloader] = useState(true)
+  // Always initialize to false to prevent hydration mismatch
+  // We'll set the correct value in useEffect after hydration
+  const [isPreloaderComplete, setIsPreloaderComplete] = useState(false) // Start as false, will be set in useEffect
+  const [hasSeenPreloader, setHasSeenPreloader] = useState(false)
   const [isPreloaderBVisible, setIsPreloaderBVisible] = useState(false)
   const [isPreloaderSimpleVisible, setIsPreloaderSimpleVisible] = useState(false)
   const [isLanguageSwitch, setIsLanguageSwitch] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
 
-  // Preloader is disabled - content loads immediately
+  // Initialize preloader state on mount (after hydration)
   useEffect(() => {
-    // Mark as seen and complete immediately
-    setHasSeenPreloader(true)
-    setIsPreloaderVisible(false)
-    setIsPreloaderComplete(true)
+    if (typeof window !== 'undefined') {
+      const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
+      if (!hasVisited) {
+        // First visit - show preloader
+        setHasSeenPreloader(false)
+        setIsPreloaderComplete(false)
+        setIsPreloaderBVisible(true) // Show preloader on first visit
+      } else {
+        // Not first visit - hide preloader and mark as complete
+        setHasSeenPreloader(true)
+        setIsPreloaderComplete(true)
+        setIsPreloaderBVisible(false)
+      }
+    }
   }, [])
 
   const showPreloader = () => {
@@ -69,12 +84,19 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   }
 
   const showPreloaderB = () => {
-    console.log('🔵 showPreloaderB called - setting isPreloaderBVisible to true')
     setIsPreloaderBVisible(true)
+    setIsNavigating(true)
   }
 
   const hidePreloaderB = () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 hidePreloaderB called')
+    }
     setIsPreloaderBVisible(false)
+    // Delay resetting navigation state to prevent white screen flash
+    setTimeout(() => {
+      setIsNavigating(false)
+    }, 100)
   }
 
   const showPreloaderSimple = () => {
@@ -95,6 +117,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         isPreloaderBVisible,
         isPreloaderSimpleVisible,
         isLanguageSwitch,
+        isNavigating,
         setPreloaderVisible: setIsPreloaderVisible,
         setPreloaderComplete: setIsPreloaderComplete,
         showPreloader,
@@ -105,6 +128,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         showPreloaderSimple,
         hidePreloaderSimple,
         setLanguageSwitch: setIsLanguageSwitch,
+        setNavigating: setIsNavigating,
       }}
     >
       {children}

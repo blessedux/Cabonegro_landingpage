@@ -5,6 +5,9 @@ import { useParams } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 
+// Force dynamic rendering for client component
+export const dynamic = 'force-dynamic'
+
 export default function ExplorePage() {
   const router = useRouter()
   const params = useParams()

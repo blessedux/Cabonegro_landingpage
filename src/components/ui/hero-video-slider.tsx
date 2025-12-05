@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useScroll } from 'framer-motion';
+import Image from 'next/image';
 
 interface HeroVideoSliderProps {
   videos: string[];
@@ -291,10 +292,13 @@ export function HeroVideoSlider({
       {previousIndex !== displayIndex && (
         <div className="absolute inset-0 z-0">
           {images[previousIndex] ? (
-            <img
+            <Image
               src={images[previousIndex]}
               alt={`Hero background ${previousIndex + 1}`}
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              fill
+              className="object-cover object-center"
+              loading="lazy"
+              sizes="100vw"
             />
           ) : (
             <video
@@ -340,11 +344,14 @@ export function HeroVideoSlider({
       >
           {images[displayIndex] ? (
             // Use image if available (better performance)
-            <img
+            <Image
               src={images[displayIndex]}
               alt={`Hero background ${displayIndex + 1}`}
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              fill
+              className="object-cover object-center"
+              priority={displayIndex === 0}
               loading={displayIndex === 0 ? 'eager' : 'lazy'}
+              sizes="100vw"
             />
           ) : (
             // Fallback to video - optimized loading

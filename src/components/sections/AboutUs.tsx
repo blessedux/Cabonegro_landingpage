@@ -15,6 +15,52 @@ const RotatingEarth = dynamic(() => import('@/components/ui/rotating-earth'), {
   loading: () => <div className="w-full h-[400px] flex items-center justify-center"><div className="text-white">Loading globe...</div></div>
 })
 
+// Lazy load wrapper using Intersection Observer - only loads when component is about to enter viewport
+function LazyRotatingEarth({ width = 600, height = 400, className = "" }: { width?: number; height?: number; className?: string }) {
+  const [shouldLoad, setShouldLoad] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Start loading when element is 200px away from viewport (rootMargin)
+          if (entry.isIntersecting && !shouldLoad) {
+            console.log('🌍 [LazyRotatingEarth] Component entering viewport - loading RotatingEarth')
+            setShouldLoad(true)
+            // Disconnect observer once we've triggered the load
+            observer.disconnect()
+          }
+        })
+      },
+      {
+        rootMargin: '200px', // Start loading 200px before it enters viewport
+        threshold: 0.01
+      }
+    )
+
+    observer.observe(containerRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shouldLoad])
+
+  return (
+    <div ref={containerRef} className={className} style={{ width, height, minHeight: height }}>
+      {shouldLoad ? (
+        <RotatingEarth width={width} height={height} className={className} />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-black/20 rounded-lg">
+          <div className="text-white/60 text-sm">Globe will load when visible</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface TextSection {
   label: string
   title: string
@@ -344,9 +390,9 @@ export default function AboutUs() {
               </div>
             </div>
             
-            {/* Right column - Globe */}
+            {/* Right column - Globe - Lazy loaded */}
             <div className="flex-1 w-full lg:w-1/2">
-              <RotatingEarth width={600} height={400} className="w-full h-full" />
+              <LazyRotatingEarth width={600} height={400} className="w-full h-full" />
             </div>
           </div>
           

@@ -6,7 +6,7 @@ import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import CookieBanner from '@/components/sections/CookieBanner'
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
-import PreloaderSimple from '@/components/ui/preloader-simple'
+import PreloaderB from '@/components/ui/preloader-b'
 
 // Code-split world maps - only load when needed (named exports)
 const WorldMapDemo = dynamic(() => import('@/components/ui/world-map-demo').then(mod => ({ default: mod.WorldMapDemo })), { ssr: false })
@@ -74,19 +74,69 @@ interface LocaleHomePageProps {
 export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderSimpleVisible, showPreloaderSimple, hidePreloaderSimple } = usePreloader()
+  const { isPreloaderBVisible, hidePreloaderB, hasSeenPreloader, isNavigating } = usePreloader()
+  // Always initialize to false to prevent hydration mismatch
+  // We'll set the correct value in useEffect after hydration
+  const [shouldShowContent, setShouldShowContent] = useState(false)
+  const [isFirstLoad, setIsFirstLoad] = useState(false) // Track if this is the first load (not navigation)
 
-  // Check if it's the first visit and show simple preloader
+  // Initialize content visibility after hydration
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
       if (!hasVisited) {
-        showPreloaderSimple()
-        // Mark as visited after showing preloader
+        // First visit - mark as first load
+        setIsFirstLoad(true)
+      } else {
+        // User has visited before - show content immediately (even during navigation)
+        // This prevents white screen when navigating back to homescreen
+        setShouldShowContent(true)
+        setIsFirstLoad(false) // Ensure first load flag is false
+      }
+    }
+  }, []) // Only run once on mount
+
+  // Mark as visited when preloader shows (first load)
+  useEffect(() => {
+    if (isPreloaderBVisible && typeof window !== 'undefined') {
+      const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
+      if (!hasVisited) {
         localStorage.setItem('cabonegro-homepage-visited', 'true')
       }
     }
-  }, [showPreloaderSimple])
+  }, [isPreloaderBVisible])
+
+  // Handle preloader completion - show content after preloader finishes (first load only)
+  useEffect(() => {
+    if (!isPreloaderBVisible && !shouldShowContent && isFirstLoad) {
+      // First load preloader completed, now show content
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setShouldShowContent(true)
+        setIsFirstLoad(false) // Mark first load as complete
+      }, 150) // Slightly longer delay to ensure preloader is fully hidden
+      return () => clearTimeout(timer)
+    }
+    // For navigation back to homescreen, ensure content is visible immediately
+    // This prevents white screen after navigation preloader completes
+    if (!isPreloaderBVisible && !isNavigating && !isFirstLoad && !shouldShowContent) {
+      setShouldShowContent(true)
+    }
+  }, [isPreloaderBVisible, shouldShowContent, isNavigating, isFirstLoad])
+
+  // Safety: If preloader is stuck, show content after max time
+  useEffect(() => {
+    if (isPreloaderBVisible && !shouldShowContent) {
+      const safetyTimer = setTimeout(() => {
+        if (isPreloaderBVisible) {
+          // Preloader stuck, force show content
+          hidePreloaderB()
+          setShouldShowContent(true)
+        }
+      }, 3000) // Max 3 seconds
+      return () => clearTimeout(safetyTimer)
+    }
+  }, [isPreloaderBVisible, shouldShowContent, hidePreloaderB])
 
   // Get locale-specific components
   const getLocaleComponents = () => {
@@ -143,8 +193,10 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         const fontLink = document.createElement('link')
         fontLink.rel = 'preload'
         fontLink.href = '/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2'
+        fontLink.rel = 'preload'
         fontLink.as = 'font'
         fontLink.type = 'font/woff2'
+        fontLink.crossOrigin = 'anonymous'
         fontLink.crossOrigin = 'anonymous'
         document.head.appendChild(fontLink)
       } catch (error) {
@@ -153,6 +205,18 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
     }
 
     preloadAssets()
+  }, [])
+
+  // Remove console logs in production
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') {
+      // Suppress console logs in production
+      const originalLog = console.log
+      console.log = () => {}
+      return () => {
+        console.log = originalLog
+      }
+    }
   }, [])
 
   // Handle hash navigation
@@ -175,24 +239,44 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
 
   return (
     <>
-      {/* Simple Preloader - Show on first load */}
-      {isPreloaderSimpleVisible && (
-        <PreloaderSimple 
-          onComplete={hidePreloaderSimple}
+      {/* Preloader - ONLY show on first load, NOT during navigation */}
+      {/* PageTransitionWrapper handles navigation preloaders */}
+      {isPreloaderBVisible && isFirstLoad && !isNavigating && (
+        <PreloaderB 
+          key="preloader-first-load" // Key to ensure it remounts on first load
+          onComplete={() => {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ LocaleHomePage PreloaderB onComplete called (first load)')
+            }
+            setIsFirstLoad(false) // Mark first load as complete
+            hidePreloaderB()
+            // Ensure content shows after preloader completes
+            setTimeout(() => {
+              if (!shouldShowContent) {
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('✅ Showing content after first load preloader')
+                }
+                setShouldShowContent(true)
+              }
+            }, 100) // Slightly longer delay to ensure state updates
+          }}
           duration={2}
         />
       )}
 
-      {/* Hero - Render immediately */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <HeroComponent />
-      </div>
+      {/* Content - Only show after preloader completes on first load */}
+      {shouldShowContent && (
+        <>
+          {/* Hero - Render after preloader */}
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <HeroComponent />
+          </div>
 
-      {/* Main Content - Render immediately, content loads progressively */}
-      <div 
-        ref={contentRef}
-        className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
-      >
+          {/* Main Content - Render after preloader, content loads progressively */}
+          <div 
+            ref={contentRef}
+            className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
+          >
         {/* Navigation */}
         <NavbarComponent />
       
@@ -214,7 +298,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
 
         {/* Scroll to Top Button */}
         <ScrollToTopButton />
-      </div>
+          </div>
+        </>
+      )}
     </>
   )
 }

@@ -3,20 +3,22 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import { routing } from '@/i18n/routing'
 
 export default function UnifiedNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
-  const [isHidden, setIsHidden] = useState(false)
+  const [isVisible, setIsVisible] = useState(true) // Always visible after mount
   const router = useRouter()
   const pathname = usePathname()
-  const { startFadeOut, isNavbarHidden } = useAnimation()
-  const { isPreloaderVisible, isPreloaderComplete, setPreloaderComplete, setPreloaderVisible } = usePreloader()
+  const locale = useLocale()
+  const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
+  const { showPreloaderB, isPreloaderBVisible } = usePreloader()
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -24,8 +26,8 @@ export default function UnifiedNavbar() {
     { code: 'zh', name: '中文', flag: '🇨🇳' }
   ]
 
-  // Determine current language from pathname
-  const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : 'en'
+  // Use next-intl's useLocale hook instead of pathname parsing
+  const currentLocale = locale as string
 
   // Get localized content based on current locale
   const getLocalizedContent = () => {
@@ -62,41 +64,56 @@ export default function UnifiedNavbar() {
 
   const content = getLocalizedContent()
 
-  // Dropdown animation only after preloader completes
+  // Navbar always visible after mount and on pathname/locale changes - reliable
   useEffect(() => {
-    // Check if we're on the deck route - show navbar immediately
-    if (pathname.includes('/deck')) {
+    setIsVisible(true)
+    // Reset navbar hidden state on locale/pathname change to ensure it shows
+    setIsNavbarHidden(false)
+  }, [pathname, locale, setIsNavbarHidden]) // Reset visibility on pathname or locale change
+
+  // Ensure navbar is visible after navigation completes and preloader hides
+  useEffect(() => {
+    // When preloader hides, ensure navbar is visible and slides down
+    if (!isPreloaderBVisible) {
+      setIsVisible(true)
+      setIsNavbarHidden(false) // Force navbar to show
+      
+      // Small delay to ensure smooth slide-down animation
       const timer = setTimeout(() => {
         setIsVisible(true)
-      }, 100) // Quick delay for deck route
+        setIsNavbarHidden(false)
+      }, 50)
+      
       return () => clearTimeout(timer)
     }
-    
-    // Normal preloader logic for other routes
-    if (isPreloaderComplete && !isPreloaderVisible) {
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 500) // Delay for smooth entrance after preloader
+  }, [isPreloaderBVisible, setIsNavbarHidden])
 
-      return () => clearTimeout(timer)
-    }
-  }, [isPreloaderComplete, isPreloaderVisible, pathname])
-
-  // Handle language change with smooth transition
-  const handleLanguageChange = (newLocale: string) => {
-    if (newLocale === currentLocale) return
+  // Ensure navbar is visible after navigation completes
+  useEffect(() => {
+    // Reset navbar state immediately on pathname/locale change
+    setIsVisible(true)
+    setIsNavbarHidden(false)
     
-    // Remove current locale prefix from pathname
+    // Also ensure it's visible after a short delay to handle any race conditions
+    const timer = setTimeout(() => {
+      setIsVisible(true)
+      setIsNavbarHidden(false)
+    }, 150)
+
+    return () => clearTimeout(timer)
+  }, [pathname, locale, setIsNavbarHidden])
+
+  // Prefetch language route on hover for instant switching
+  const prefetchLanguageRoute = (newLocale: string) => {
+    if (newLocale === currentLocale || !routing.locales.includes(newLocale as any)) return
+    
+    // Get path without locale prefix
     let pathWithoutLocale = pathname
-    if (pathname.startsWith('/es')) {
-      pathWithoutLocale = pathname.substring(3) // Remove '/es'
-    } else if (pathname.startsWith('/zh')) {
-      pathWithoutLocale = pathname.substring(3) // Remove '/zh'
-    }
-    
-    // Ensure path starts with '/'
-    if (!pathWithoutLocale.startsWith('/')) {
-      pathWithoutLocale = '/' + pathWithoutLocale
+    for (const loc of routing.locales) {
+      if (pathname.startsWith(`/${loc}`)) {
+        pathWithoutLocale = pathname.substring(loc.length + 1) || ''
+        break
+      }
     }
     
     // Handle empty path (root)
@@ -104,79 +121,87 @@ export default function UnifiedNavbar() {
       pathWithoutLocale = ''
     }
     
-    // Construct target path
-    let targetPath = ''
-    if (newLocale === 'en') {
-      targetPath = pathWithoutLocale || '/'
-    } else if (newLocale === 'es') {
-      targetPath = '/es' + pathWithoutLocale
-    } else if (newLocale === 'zh') {
-      targetPath = '/zh' + pathWithoutLocale
+    // Build target path and prefetch
+    const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
+    router.prefetch(targetPath)
+  }
+
+  // Handle language change with next/navigation router
+  const handleLanguageChange = (newLocale: string) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🌐 [UnifiedNavbar] Language change initiated:', {
+        from: currentLocale,
+        to: newLocale,
+        currentPath: pathname
+      })
     }
 
-    // Navigate immediately without complex transitions
-    router.push(targetPath)
+    if (newLocale === currentLocale || !routing.locales.includes(newLocale as any)) {
+      return
+    }
+    
+    // Get path without locale prefix
+    let pathWithoutLocale = pathname
+    for (const loc of routing.locales) {
+      if (pathname.startsWith(`/${loc}`)) {
+        pathWithoutLocale = pathname.substring(loc.length + 1) || ''
+        break
+      }
+    }
+    
+    // Handle empty path (root)
+    if (pathWithoutLocale === '/') {
+      pathWithoutLocale = ''
+    }
+    
+    // Build target path
+    const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
+    
+    // Show preloader IMMEDIATELY - no delay, synchronous state update
+    showPreloaderB()
+    
+    // Navigate immediately - preloader will overlay everything
+    // Use microtask to ensure preloader state is set before navigation
+    Promise.resolve().then(() => {
+      router.push(targetPath)
+    })
   }
 
   // Handle Explore Terrain click
   const handleExploreTerrain = () => {
     startFadeOut()
     
-    // Navigate to explore route after animations
+    // Navigate to explore route after animations using next-intl router
     setTimeout(() => {
-      if (currentLocale === 'es') {
-        router.push('/es/explore')
-      } else if (currentLocale === 'zh') {
-        router.push('/zh/explore')
-      } else {
-        router.push('/explore')
-      }
+      router.push('/explore')
     }, 1000)
   }
 
-  // Get home link based on current locale
-  const getHomeLink = () => {
-    switch (currentLocale) {
-      case 'es': return '/es'
-      case 'zh': return '/zh'
-      default: return '/'
+  // Log visibility state for debugging (development only)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('👁️ [UnifiedNavbar] Visibility state:', {
+        isVisible,
+        isNavbarHidden,
+        pathname,
+        locale
+      })
     }
-  }
-
-  // Get deck link based on current locale
-  const getDeckLink = () => {
-    switch (currentLocale) {
-      case 'es': return '/es/deck'
-      case 'zh': return '/zh/deck'
-      default: return '/deck'
-    }
-  }
-
-  // Get contact link based on current locale
-  const getContactLink = () => {
-    switch (currentLocale) {
-      case 'es': return '/es/contact'
-      case 'zh': return '/zh/contact'
-      default: return '/contact'
-    }
-  }
+  }, [isVisible, isNavbarHidden, pathname, locale])
 
   return (
     <header className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
-      // For deck route, only hide if navbar is explicitly hidden
-      pathname.includes('/deck') 
-        ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
-        : (isNavbarHidden || isPreloaderVisible
-            ? '-translate-y-full opacity-0' 
-            : isVisible 
-              ? 'top-0 translate-y-0 opacity-100' 
-              : '-translate-y-full opacity-0')
+      // Simple visibility logic - always show unless explicitly hidden
+      // Force visible on pathname/locale change to ensure reliability
+      isNavbarHidden 
+        ? '-translate-y-full opacity-0' 
+        : 'top-0 translate-y-0 opacity-100'
     }`}>
       <nav className="container mx-auto">
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center">
-              <Link href={getHomeLink()} className="cursor-pointer">
+              <Link href={`/${currentLocale}`} className="cursor-pointer">
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
@@ -193,14 +218,14 @@ export default function UnifiedNavbar() {
               >
                 {content.explore}
               </button>
-              <Link href={getDeckLink()} className="text-sm hover:text-gray-300 transition-colors uppercase">
+              <Link href={`/${currentLocale}/deck`} className="text-sm hover:text-gray-300 transition-colors uppercase">
                 {content.deck}
               </Link>
               <a href="#FAQ" className="text-sm hover:text-gray-300 transition-colors uppercase">
                 {content.faq}
               </a>
               
-              {/* Language Toggle */}
+              {/* Language Toggle with prefetching */}
               <div className="flex items-center gap-2">
                 {languages.map((lang) => (
                   <button
@@ -209,6 +234,7 @@ export default function UnifiedNavbar() {
                       e.preventDefault()
                       handleLanguageChange(lang.code)
                     }}
+                    onMouseEnter={() => prefetchLanguageRoute(lang.code)}
                     className={`text-xs px-2 py-1 rounded transition-colors ${
                       currentLocale === lang.code
                         ? 'text-white bg-white/20'
@@ -220,7 +246,7 @@ export default function UnifiedNavbar() {
                 ))}
               </div>
 
-              <Link href={getContactLink()}>
+              <Link href={`/${currentLocale}/contact`}>
                 <Button variant="outline" className="uppercase border-white text-white hover:bg-white hover:text-black">
                   {content.contact}
                 </Button>
@@ -262,7 +288,7 @@ export default function UnifiedNavbar() {
                       {content.explore}
                     </button>
                     <Link 
-                      href={getDeckLink()} 
+                      href={`/${currentLocale}/deck`} 
                       className="text-sm hover:text-gray-300 transition-colors uppercase py-2"
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -276,7 +302,7 @@ export default function UnifiedNavbar() {
                       {content.faq}
                     </a>
                     
-                    {/* Mobile Language Toggle */}
+                    {/* Mobile Language Toggle with prefetching */}
                     <div className="flex items-center gap-2 py-2">
                       <span className="text-sm text-gray-400 uppercase">{content.language}</span>
                       {languages.map((lang) => (
@@ -287,6 +313,7 @@ export default function UnifiedNavbar() {
                             handleLanguageChange(lang.code)
                             setMobileMenuOpen(false)
                           }}
+                          onMouseEnter={() => prefetchLanguageRoute(lang.code)}
                           className={`text-xs px-2 py-1 rounded transition-colors ${
                             currentLocale === lang.code
                               ? 'text-white bg-white/20'
@@ -298,7 +325,7 @@ export default function UnifiedNavbar() {
                       ))}
                     </div>
 
-                    <Link href={getContactLink()} className="w-full mt-2">
+                    <Link href={`/${currentLocale}/contact`} className="w-full mt-2">
                       <Button
                         variant="outline"
                         className="uppercase border-white text-white hover:bg-white hover:text-black w-full"

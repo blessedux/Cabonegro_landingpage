@@ -135,6 +135,8 @@
         "media": "媒体和新闻"
       }
     },
+    "successMessage": "谢谢！您的消息已成功发送。我们会尽快与您联系。",
+    "errorMessage": "抱歉，发送消息时出错。请重试或直接联系我们。",
     "contactInfo": {
       "title": "联系信息",
       "email": "电子邮件",

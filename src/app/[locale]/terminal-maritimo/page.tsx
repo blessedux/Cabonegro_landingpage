@@ -58,10 +58,7 @@ export default function TerminalMaritimoPage() {
           items: [
             { icon: Shield, title: 'Protected Port', description: 'Strategic location with natural protection' },
             { icon: MapPin, title: 'Backup Areas', description: 'Ample space for logistics operations' },
-            { icon: Navigation, title: 'Route 9 Access', description: 'Direct connection to main transportation corridor' },
-            { icon: Factory, title: 'Outside Urban Area', description: 'Industrial zone with room for expansion' },
-            { icon: Zap, title: 'Suitable for Energy Projects', description: 'Ideal location for green hydrogen infrastructure' },
-            { icon: Factory, title: 'Regulatory Update Zone', description: 'Industrial area under regulatory modernization' }
+            { icon: Navigation, title: 'Route 9 Access', description: 'Direct connection to main transportation corridor' }
           ]
         },
         timeline: {
@@ -69,14 +66,14 @@ export default function TerminalMaritimoPage() {
           description: 'Key milestones from 2021 to 2028',
           readyToBuild: 'Ready to Build',
           events: {
-            '2021': 'Project Initiation',
-            '2022': 'Feasibility Studies',
-            '2023': 'Design Phase',
-            '2024': 'Permits and Approvals',
-            '2025': 'Construction Start',
-            '2026': 'Phase 1 Completion',
-            '2027': 'Phase 2 Development',
-            '2028': 'Ready to Build (RtB)'
+            '2021': 'May: Beach line fixation\nJuly: Maritime concession application',
+            '2022': 'March: Admissibility processing CM61260\nSeptember: Oceanographic studies (UMAG)\nNovember: Conglomerate and Technical Report',
+            '2023': 'January: Conceptual Engineering PRDW\nMay: Favorable pronouncement DIFROL',
+            '2024': 'June: Favorable cartographic report',
+            '2025': 'April: Unanimous Approval CRUBC\nApril: Favorable pronouncement DOP\nJuly: Favorable pronouncement MTT\nAugust: Decree granting Maritime Concession',
+            '2026': 'Environmental studies\nRCA processing\nBasic and detailed engineering\nManeuverability studies',
+            '2027': 'Continuation of studies and processing',
+            '2028': 'Ready-to-Build (RtB)'
           }
         },
         map: {
@@ -89,6 +86,13 @@ export default function TerminalMaritimoPage() {
           contactBtn: 'Contact',
           scheduleBtn: 'Schedule Meeting',
           downloadBtn: 'Download Fact Sheet'
+        },
+        strategicCollaboration: {
+          name: 'Felipe Morales',
+          title: 'General Manager\nMaritime Terminal\nCabo Negro',
+          scheduleBtn: 'Schedule Meeting',
+          partnerTitle: 'Strategic Partner of the Port Project',
+          description: 'Compas Marine is the partner responsible for the management and development of the Cabo Negro Maritime Terminal. With extensive experience in the design, construction, operation, and administration of maritime terminals in Chilean Patagonia, the company brings technical expertise, high-level operational standards, and a solid focus on efficiency, safety, and port innovation. Their participation ensures development aligned with industry best practices and the logistical and energy needs of the region.'
         }
       },
       es: {
@@ -139,6 +143,13 @@ export default function TerminalMaritimoPage() {
           contactBtn: 'Contacto',
           scheduleBtn: 'Agendar Reunión',
           downloadBtn: 'Descargar Fact Sheet'
+        },
+        strategicCollaboration: {
+          name: 'Felipe Morales',
+          title: 'Gerente General\nTerminal Maritimo\nCabo Negro',
+          scheduleBtn: 'Agendar Reunión',
+          partnerTitle: 'Socio Estratégico del Proyecto Portuario',
+          description: 'Compas Marine es el socio responsable de la gestión y desarrollo del Terminal Marítimo Cabo Negro. Con una amplia trayectoria en el diseño, construcción, operación y administración de terminales marítimos en la Patagonia Chilena, la compañía aporta experiencia técnica, estándares operacionales de alto nivel y un enfoque sólido en eficiencia, seguridad e innovación portuaria. Su participación garantiza un desarrollo alineado con las mejores prácticas de la industria y con las necesidades logísticas y energéticas de la región.'
         }
       },
       zh: {
@@ -161,10 +172,7 @@ export default function TerminalMaritimoPage() {
           items: [
             { icon: Shield, title: '受保护港口', description: '具有自然保护的战略位置' },
             { icon: MapPin, title: '备用区域', description: '充足的物流运营空间' },
-            { icon: Navigation, title: '9号公路通道', description: '直接连接主要交通走廊' },
-            { icon: Factory, title: '城市外区域', description: '有扩展空间的工业区' },
-            { icon: Zap, title: '适合能源项目', description: '绿色氢能基础设施的理想位置' },
-            { icon: Factory, title: '监管更新区', description: '正在监管现代化的工业区' }
+            { icon: Navigation, title: '9号公路通道', description: '直接连接主要交通走廊' }
           ]
         },
         timeline: {
@@ -172,13 +180,13 @@ export default function TerminalMaritimoPage() {
           description: '2021年至2028年的关键里程碑',
           readyToBuild: '准备建设',
           events: {
-            '2021': '项目启动',
-            '2022': '可行性研究',
-            '2023': '设计阶段',
-            '2024': '许可和批准',
-            '2025': '建设开始',
-            '2026': '第一阶段完成',
-            '2027': '第二阶段开发',
+            '2021': '5月：海滩线固定\n7月：海事特许权申请',
+            '2022': '3月：CM61260处理受理\n9月：海洋学研究（UMAG）\n11月：集合体和技术报告',
+            '2023': '1月：概念工程设计 PRDW\n5月：DIFROL 有利声明',
+            '2024': '6月：有利制图报告',
+            '2025': '4月：CRUBC 一致批准\n4月：DOP 有利声明\n7月：MTT 有利声明\n8月：授予海事特许权法令',
+            '2026': '环境研究\nRCA 处理\n基础和详细工程设计\n可操作性研究',
+            '2027': '研究和处理的继续',
             '2028': '准备建设 (RtB)'
           }
         },
@@ -192,6 +200,13 @@ export default function TerminalMaritimoPage() {
           contactBtn: '联系',
           scheduleBtn: '安排会议',
           downloadBtn: '下载概况表'
+        },
+        strategicCollaboration: {
+          name: 'Felipe Morales',
+          title: '总经理\n海运码头\n卡波内格罗',
+          scheduleBtn: '安排会议',
+          partnerTitle: '港口项目的战略合作伙伴',
+          description: 'Compas Marine 是负责卡波内格罗海运码头管理和开发的合作伙伴。该公司在智利巴塔哥尼亚地区海运码头的设计、建设、运营和管理方面拥有丰富经验，提供专业技术、高水平的运营标准，并专注于效率、安全和港口创新。他们的参与确保了与行业最佳实践以及该地区物流和能源需求相一致的发展。'
         }
       },
       fr: {
@@ -214,10 +229,7 @@ export default function TerminalMaritimoPage() {
           items: [
             { icon: Shield, title: 'Port Protégé', description: 'Emplacement stratégique avec protection naturelle' },
             { icon: MapPin, title: 'Zones de Repli', description: 'Espace ample pour les opérations logistiques' },
-            { icon: Navigation, title: 'Accès Route 9', description: 'Connexion directe au corridor de transport principal' },
-            { icon: Factory, title: 'Hors Zone Urbaine', description: 'Zone industrielle avec espace d\'expansion' },
-            { icon: Zap, title: 'Adapté aux Projets Énergétiques', description: 'Emplacement idéal pour l\'infrastructure d\'hydrogène vert' },
-            { icon: Factory, title: 'Zone de Mise à Jour Réglementaire', description: 'Zone industrielle sous modernisation réglementaire' }
+            { icon: Navigation, title: 'Accès Route 9', description: 'Connexion directe au corridor de transport principal' }
           ]
         },
         timeline: {
@@ -225,14 +237,14 @@ export default function TerminalMaritimoPage() {
           description: 'Jalons clés de 2021 à 2028',
           readyToBuild: 'Prêt à Construire',
           events: {
-            '2021': 'Initiation du Projet',
-            '2022': 'Études de Faisabilité',
-            '2023': 'Phase de Conception',
-            '2024': 'Permis et Approbations',
-            '2025': 'Début de la Construction',
-            '2026': 'Finalisation Phase 1',
-            '2027': 'Développement Phase 2',
-            '2028': 'Prêt à Construire (RtB)'
+            '2021': 'Mai : Fixation de la ligne de plage\nJuillet : Demande de concession maritime',
+            '2022': 'Mars : Admissibilité du traitement CM61260\nSeptembre : Études océanographiques (UMAG)\nNovembre : Conglomérat et Rapport Technique',
+            '2023': 'Janvier : Ingénierie Conceptuelle PRDW\nMai : Prononcé favorable DIFROL',
+            '2024': 'Juin : Rapport cartographique favorable',
+            '2025': 'Avril : Approbation Unanime CRUBC\nAvril : Prononcé favorable DOP\nJuillet : Prononcé favorable MTT\nAoût : Décret d\'octroi de la Concession Maritime',
+            '2026': 'Études environnementales\nTraitement RCA\nIngénierie de base et détaillée\nÉtudes de maniabilité',
+            '2027': 'Poursuite des études et du traitement',
+            '2028': 'Ready-to-Build (RtB)'
           }
         },
         map: {
@@ -245,6 +257,13 @@ export default function TerminalMaritimoPage() {
           contactBtn: 'Contact',
           scheduleBtn: 'Planifier une Réunion',
           downloadBtn: 'Télécharger la Fiche Technique'
+        },
+        strategicCollaboration: {
+          name: 'Felipe Morales',
+          title: 'Directeur Général\nTerminal Maritime\nCabo Negro',
+          scheduleBtn: 'Planifier une Réunion',
+          partnerTitle: 'Partenaire Stratégique du Projet Portuaire',
+          description: 'Compas Marine est le partenaire responsable de la gestion et du développement du Terminal Maritime Cabo Negro. Avec une vaste expérience dans la conception, la construction, l\'exploitation et l\'administration de terminaux maritimes en Patagonie chilienne, l\'entreprise apporte une expertise technique, des normes opérationnelles de haut niveau et un solide focus sur l\'efficacité, la sécurité et l\'innovation portuaire. Leur participation garantit un développement aligné avec les meilleures pratiques de l\'industrie et les besoins logistiques et énergétiques de la région.'
         }
       }
     }
@@ -263,70 +282,156 @@ export default function TerminalMaritimoPage() {
 
   // Timeline data for RulerCarousel - localized
   const getTimelineItems = (): CarouselItem[] => {
+    const phaseTitles: Record<string, Record<string, string>> = {
+      es: {
+        '2021': '2021 - Inicio del Proyecto',
+        '2022': '2022 - Estudios y Tramitación',
+        '2023': '2023 - Ingeniería y Pronunciamientos',
+        '2024': '2024 - Informe Cartográfico',
+        '2025': '2025 - Aprobaciones y Concesión',
+        '2026': '2026-2028 - Estudios y Desarrollo',
+        '2027': '2026-2028 - Estudios y Desarrollo',
+        '2028': '2028 - Ready-to-Build'
+      },
+      en: {
+        '2021': '2021 - Project Initiation',
+        '2022': '2022 - Studies and Processing',
+        '2023': '2023 - Engineering and Pronouncements',
+        '2024': '2024 - Cartographic Report',
+        '2025': '2025 - Approvals and Concession',
+        '2026': '2026-2028 - Studies and Development',
+        '2027': '2026-2028 - Studies and Development',
+        '2028': '2028 - Ready-to-Build'
+      },
+      fr: {
+        '2021': '2021 - Initiation du Projet',
+        '2022': '2022 - Études et Traitement',
+        '2023': '2023 - Ingénierie et Prononcés',
+        '2024': '2024 - Rapport Cartographique',
+        '2025': '2025 - Approbations et Concession',
+        '2026': '2026-2028 - Études et Développement',
+        '2027': '2026-2028 - Études et Développement',
+        '2028': '2028 - Ready-to-Build'
+      },
+      zh: {
+        '2021': '2021 - 项目启动',
+        '2022': '2022 - 研究和处理',
+        '2023': '2023 - 工程和声明',
+        '2024': '2024 - 制图报告',
+        '2025': '2025 - 批准和特许权',
+        '2026': '2026-2028 - 研究和开发',
+        '2027': '2026-2028 - 研究和开发',
+        '2028': '2028 - 准备建设'
+      }
+    }
+
+    const titles = phaseTitles[locale] || phaseTitles.en
+
     if (locale === 'es') {
-      // Spanish version with detailed milestones
       return [
         { 
           id: 1, 
           title: '2021', 
           date: '2021', 
-          phaseTitle: '2021 - Inicio del Proyecto',
-          description: 'Mayo: Fijación de línea de playa\nJulio: Solicitud de concesión marítima'
+          phaseTitle: titles['2021'],
+          description: localizedText.timeline.events['2021']
         },
         { 
           id: 2, 
           title: '2022', 
           date: '2022', 
-          phaseTitle: '2022 - Estudios y Tramitación',
-          description: 'Marzo: Admisibilidad tramitación CM61260\nSeptiembre: Estudios oceanográficos (UMAG)\nNoviembre: Conglomerado e Informe Técnico'
+          phaseTitle: titles['2022'],
+          description: localizedText.timeline.events['2022']
         },
         { 
           id: 3, 
           title: '2023', 
           date: '2023', 
-          phaseTitle: '2023 - Ingeniería y Pronunciamientos',
-          description: 'Enero: Ingeniería Conceptual PRDW\nMayo: Pronunciamiento favorable DIFROL'
+          phaseTitle: titles['2023'],
+          description: localizedText.timeline.events['2023']
         },
         { 
           id: 4, 
           title: '2024', 
           date: '2024', 
-          phaseTitle: '2024 - Informe Cartográfico',
-          description: 'Junio: Informe cartográfico favorable'
+          phaseTitle: titles['2024'],
+          description: localizedText.timeline.events['2024']
         },
         { 
           id: 5, 
           title: '2025', 
           date: '2025', 
-          phaseTitle: '2025 - Aprobaciones y Concesión',
-          description: 'Abril: Aprobación Unánime CRUBC\nAbril: Pronunciamiento favorable DOP\nJulio: Pronunciamiento favorable MTT\nAgosto: Decreto otorgamiento Concesión Marítima'
+          phaseTitle: titles['2025'],
+          description: localizedText.timeline.events['2025']
         },
         { 
           id: 6, 
           title: '2026-2028', 
           date: '2026-2028', 
-          phaseTitle: '2026-2028 - Estudios y Desarrollo',
-          description: 'Estudios ambientales\nTramitación RCA\nIngeniería básica y de detalle\nEstudios de maniobrabilidad'
+          phaseTitle: titles['2026'],
+          description: localizedText.timeline.events['2026']
         },
         { 
           id: 7, 
           title: '2028', 
           date: '2028', 
-          phaseTitle: '2028 - Ready-to-Build',
-          description: 'Ready-to-Build (RtB): 2028'
+          phaseTitle: titles['2028'],
+          description: localizedText.timeline.events['2028']
         }
       ]
     }
-    // Default for other languages
+    
+    // For other languages, use the same structure as Spanish
     return [
-      { id: 1, title: '2021', date: '2021', description: localizedText.timeline.events['2021'] },
-      { id: 2, title: '2022', date: '2022', description: localizedText.timeline.events['2022'] },
-      { id: 3, title: '2023', date: '2023', description: localizedText.timeline.events['2023'] },
-      { id: 4, title: '2024', date: '2024', description: localizedText.timeline.events['2024'] },
-      { id: 5, title: '2025', date: '2025', description: localizedText.timeline.events['2025'] },
-      { id: 6, title: '2026', date: '2026', description: localizedText.timeline.events['2026'] },
-      { id: 7, title: '2027', date: '2027', description: localizedText.timeline.events['2027'] },
-      { id: 8, title: '2028', date: '2028', description: localizedText.timeline.events['2028'] }
+      { 
+        id: 1, 
+        title: '2021', 
+        date: '2021', 
+        phaseTitle: titles['2021'],
+        description: localizedText.timeline.events['2021']
+      },
+      { 
+        id: 2, 
+        title: '2022', 
+        date: '2022', 
+        phaseTitle: titles['2022'],
+        description: localizedText.timeline.events['2022']
+      },
+      { 
+        id: 3, 
+        title: '2023', 
+        date: '2023', 
+        phaseTitle: titles['2023'],
+        description: localizedText.timeline.events['2023']
+      },
+      { 
+        id: 4, 
+        title: '2024', 
+        date: '2024', 
+        phaseTitle: titles['2024'],
+        description: localizedText.timeline.events['2024']
+      },
+      { 
+        id: 5, 
+        title: '2025', 
+        date: '2025', 
+        phaseTitle: titles['2025'],
+        description: localizedText.timeline.events['2025']
+      },
+      { 
+        id: 6, 
+        title: '2026-2028', 
+        date: '2026-2028', 
+        phaseTitle: titles['2026'],
+        description: localizedText.timeline.events['2026']
+      },
+      { 
+        id: 7, 
+        title: '2028', 
+        date: '2028', 
+        phaseTitle: titles['2028'],
+        description: localizedText.timeline.events['2028']
+      }
     ]
   }
 
@@ -388,11 +493,12 @@ export default function TerminalMaritimoPage() {
                 style={{ filter: 'brightness(0) invert(1)' }}
               />
             </a>
-            {locale === 'es' && (
-              <p className="mt-4 text-sm italic text-white/70">
-                Conoce mas sobre nuestros socios estrategicos. 
-              </p>
-            )}
+            <p className="mt-4 text-sm italic text-white/70">
+              {locale === 'es' && 'Conoce mas sobre nuestros socios estrategicos.'}
+              {locale === 'en' && 'Learn more about our strategic partners.'}
+              {locale === 'fr' && 'En savoir plus sur nos partenaires stratégiques.'}
+              {locale === 'zh' && '了解更多关于我们的战略合作伙伴。'}
+            </p>
           </div>
         </div>
       </section>
@@ -410,75 +516,78 @@ export default function TerminalMaritimoPage() {
       </section>
 
       {/* Strategic Collaboration Section - Compas Marine */}
-      {locale === 'es' && (
-        <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
-          <div className="container mx-auto max-w-6xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-              {/* Left Side: Image and Logo */}
-              <div className="flex flex-col items-start gap-6">
-                {/* Image Container for Project Manager */}
-                <div className="w-full max-w-[300px] aspect-square">
-                  <Image
-                    src="/felipe_morales_perfil.jpeg"
-                    alt="Felipe Morales - Jefe de Proyecto Compas Marine"
-                    width={300}
-                    height={300}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                </div>
-                {/* Felipe Morales Name and Title */}
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Felipe Morales
-                  </h3>
-                  <p className="text-lg text-gray-600">
-                    Gerente General <br></br> Terminal Maritimo <br></br> Cabo Negro
-                  </p>
-                </div>
-                {/* CTA Button - Schedule Meeting */}
-                <a
-                  href="https://calendly.com/fmorales-cabonegro/30min"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg w-full"
-                >
-                  <Calendar className="w-5 h-5" />
-                  Agendar Reunión
-                </a>
+      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            {/* Left Side: Image and Logo */}
+            <div className="flex flex-col items-start gap-6">
+              {/* Image Container for Project Manager */}
+              <div className="w-full max-w-[300px] aspect-square">
+                <Image
+                  src="/felipe_morales_perfil.jpeg"
+                  alt={`${localizedText.strategicCollaboration.name} - ${locale === 'es' ? 'Jefe de Proyecto Compas Marine' : locale === 'en' ? 'Project Manager Compas Marine' : locale === 'fr' ? 'Chef de Projet Compas Marine' : '项目经理 Compas Marine'}`}
+                  width={300}
+                  height={300}
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
-              
-              {/* Right Side: Title and Paragraph */}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-4 mb-6">
-                 
-                  {/* Compas Marine Logo */}
-                  <a
-                    href="https://compasmarine.cl/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block transition-opacity hover:opacity-80 flex-shrink-0"
-                  >
-                    <Image
-                      src="/logos/COMPAS_MARINE.png"
-                      alt="COMPAS Marine"
-                      width={240}
-                      height={120}
-                      className="object-contain"
-                      style={{ filter: 'brightness(0)', alignItems: 'right' }}
-                    />
-                  </a>
-                </div>
-                <h3 className={`text-xl md:text-2xl font-semibold mb-4 ${isLightMode ? 'text-gray-900' : ''}`}>
-                  Socio Estratégico del Proyecto Portuario
+              {/* Felipe Morales Name and Title */}
+              <div className="flex flex-col gap-1">
+                <h3 className={`text-2xl font-bold ${isLightMode ? 'text-gray-900' : 'text-white'}`}>
+                  {localizedText.strategicCollaboration.name}
                 </h3>
-                <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
-                  Compas Marine es el socio responsable de la gestión y desarrollo del Terminal Marítimo Cabo Negro. Con una amplia trayectoria en el diseño, construcción, operación y administración de terminales marítimos en la Patagonia Chilena, la compañía aporta experiencia técnica, estándares operacionales de alto nivel y un enfoque sólido en eficiencia, seguridad e innovación portuaria. Su participación garantiza un desarrollo alineado con las mejores prácticas de la industria y con las necesidades logísticas y energéticas de la región.
+                <p className={`text-lg ${isLightMode ? 'text-gray-600' : 'text-gray-300'}`}>
+                  {localizedText.strategicCollaboration.title.split('\n').map((line: string, i: number) => (
+                    <span key={i}>
+                      {line}
+                      {i < localizedText.strategicCollaboration.title.split('\n').length - 1 && <br />}
+                    </span>
+                  ))}
                 </p>
               </div>
+              {/* CTA Button - Schedule Meeting */}
+              <a
+                href="https://calendly.com/fmorales-cabonegro/30min"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg w-full"
+              >
+                <Calendar className="w-5 h-5" />
+                {localizedText.strategicCollaboration.scheduleBtn}
+              </a>
+            </div>
+            
+            {/* Right Side: Title and Paragraph */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-4 mb-6">
+               
+                {/* Compas Marine Logo */}
+                <a
+                  href="https://compasmarine.cl/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block transition-opacity hover:opacity-80 flex-shrink-0"
+                >
+                  <Image
+                    src="/logos/COMPAS_MARINE.png"
+                    alt="COMPAS Marine"
+                    width={240}
+                    height={120}
+                    className="object-contain"
+                    style={{ filter: isLightMode ? 'brightness(0)' : 'brightness(0) invert(1)', alignItems: 'right' }}
+                  />
+                </a>
+              </div>
+              <h3 className={`text-xl md:text-2xl font-semibold mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>
+                {localizedText.strategicCollaboration.partnerTitle}
+              </h3>
+              <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
+                {localizedText.strategicCollaboration.description}
+              </p>
             </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* Advantages Section */}
       <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>

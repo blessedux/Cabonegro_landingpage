@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import Navbar from '@/components/sections/Navbar'
@@ -42,7 +43,9 @@ export default function ContactPage() {
       
       {/* Main Content */}
       <main className="pt-32 pb-20 px-6">
-        <Contact />
+        <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div></div>}>
+          <Contact />
+        </Suspense>
       </main>
       
       {/* Footer */}

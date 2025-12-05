@@ -1,4 +1,7 @@
 const createNextIntlPlugin = require('next-intl/plugin');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
@@ -7,7 +10,14 @@ const nextConfig = {
   allowedDevOrigins: ["*.preview.same-app.com"],
   // Enable experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@mdi/react', 'react-icons'],
+  },
+  // Reduce bundle size
+  // Note: swcMinify is enabled by default in Next.js 15, no need to specify
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
   },
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -40,6 +50,11 @@ const nextConfig = {
         hostname: "ugc.same-assets.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
     ],
   },
   async headers() {
@@ -61,4 +76,4 @@ const nextConfig = {
   }
 };
 
-module.exports = withNextIntl(nextConfig);
+module.exports = withBundleAnalyzer(withNextIntl(nextConfig));

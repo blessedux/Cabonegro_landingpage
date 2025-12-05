@@ -1,14 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Send } from 'lucide-react'
+import { Send, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function Contact() {
   const t = useTranslations('contact')
   const locale = useLocale()
+  const searchParams = useSearchParams()
+  
+  // Read origin from query params (e.g., ?from=patagon-valley)
+  const origin = searchParams.get('from') || undefined
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,6 +25,8 @@ export default function Contact() {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState<string>('')
 
   // WhatsApp message based on locale
   const whatsappMessage = locale === 'es' 
@@ -42,24 +50,61 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setSubmitStatus('idle')
+    setErrorMessage('')
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      company: '',
-      phone: '',
-      message: '',
-      interest: 'general'
-    })
-    setIsSubmitting(false)
-    
-    // Show success message (you can implement a toast notification here)
-    alert(t('successMessage'))
+    try {
+      // Send form data to API with origin information
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          origin, // Include origin from query params
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || t('errorMessage'))
+      }
+
+      // Success - reset form and show success message
+      setFormData({
+        name: '',
+        email: '',
+        company: '',
+        phone: '',
+        message: '',
+        interest: 'general'
+      })
+      setSubmitStatus('success')
+      
+      // Scroll to top to show success message
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      
+    } catch (error) {
+      console.error('Contact form error:', error)
+      setSubmitStatus('error')
+      setErrorMessage(error instanceof Error ? error.message : t('errorMessage'))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
+  // Clear status messages after 5 seconds
+  useEffect(() => {
+    if (submitStatus !== 'idle') {
+      const timer = setTimeout(() => {
+        setSubmitStatus('idle')
+        setErrorMessage('')
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [submitStatus])
 
   return (
     <div className="min-h-screen text-white">
@@ -79,10 +124,37 @@ export default function Contact() {
 
       <div className="container mx-auto px-6 pb-20">
         <div className="max-w-4xl mx-auto">
+          {/* Success/Error Messages */}
+          {submitStatus === 'success' && (
+            <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+              <p className="text-green-100">{t('successMessage')}</p>
+            </div>
+          )}
+          
+          {submitStatus === 'error' && (
+            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+              <p className="text-red-100">{errorMessage || t('errorMessage')}</p>
+            </div>
+          )}
+
           {/* Contact Form */}
           <Card className="bg-white/5 border-white/10">
             <CardContent className="p-8">
               <h2 className="text-3xl font-bold mb-6 text-white">{t('sendMessage')}</h2>
+              {origin && (
+                <p className="text-sm text-white/70 mb-4">
+                  {locale === 'es' && 'Origen: '}
+                  {locale === 'en' && 'Source: '}
+                  {locale === 'fr' && 'Source: '}
+                  {locale === 'zh' && '来源: '}
+                  {origin === 'patagon-valley' && (locale === 'es' ? 'Patagon Valley' : locale === 'zh' ? '巴塔哥尼亚谷' : 'Patagon Valley')}
+                  {origin === 'terminal-maritimo' && (locale === 'es' ? 'Terminal Marítimo' : locale === 'zh' ? '海上码头' : 'Maritime Terminal')}
+                  {origin === 'parque-logistico' && (locale === 'es' ? 'Parque Logístico' : locale === 'zh' ? '物流园区' : 'Logistics Park')}
+                  {origin === 'macro-lote' && (locale === 'es' ? 'Parque Logístico (Macro Lote)' : locale === 'zh' ? '物流园区（大地块）' : 'Logistics Park (Macro Lot)')}
+                </p>
+              )}
               <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
