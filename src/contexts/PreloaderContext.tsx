@@ -42,15 +42,28 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
       if (!hasVisited) {
-        // First visit - show preloader
+        // First visit - show preloader to cover content loading
         setHasSeenPreloader(false)
         setIsPreloaderComplete(false)
         setIsPreloaderBVisible(true) // Show preloader on first visit
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 PreloaderContext: First visit detected, showing preloader')
+        }
       } else {
-        // Not first visit - hide preloader and mark as complete
+        // Not first visit - still show preloader briefly to cover content
+        // This ensures smooth loading experience
         setHasSeenPreloader(true)
-        setIsPreloaderComplete(true)
-        setIsPreloaderBVisible(false)
+        setIsPreloaderComplete(false) // Keep as false until content loads
+        setIsPreloaderBVisible(true) // Show preloader briefly even on return visits
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 PreloaderContext: Return visit, showing preloader to cover content')
+        }
+        // Hide after brief moment to allow content to load
+        const timer = setTimeout(() => {
+          setIsPreloaderBVisible(false)
+          setIsPreloaderComplete(true)
+        }, 500) // Brief preloader to cover initial content load
+        return () => clearTimeout(timer)
       }
     }
   }, [])

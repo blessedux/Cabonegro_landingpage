@@ -297,13 +297,7 @@ export default function Press() {
           </div>
 
           {/* Image Frame with Slider */}
-          <TimelineContent
-            as="figure"
-            animationNum={4}
-            timelineRef={heroRef}
-            customVariants={scaleVariants}
-            className="relative group pt-12 md:pt-0"
-          >
+          <figure className="relative group pt-12 md:pt-0">
             <div
               className="relative w-full overflow-visible"
               onTouchStart={handleTouchStart}
@@ -376,7 +370,7 @@ export default function Press() {
                 ))}
               </div>
             </div>
-          </TimelineContent>
+          </figure>
 
           {/* Article Info */}
           <div className="flex flex-wrap lg:justify-start justify-between items-center py-3 text-sm">

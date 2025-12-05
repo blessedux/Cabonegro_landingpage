@@ -18,6 +18,10 @@ declare global {
   }
 }
 import { RulerCarousel, type CarouselItem } from '@/components/ui/ruler-carousel'
+import { MagicText } from '@/components/ui/magic-text'
+import { motion } from 'framer-motion'
+import { useRef } from 'react'
+import { useScroll, useTransform } from 'framer-motion'
 
 // Code-split navigation components - only load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -30,6 +34,118 @@ const Footer = dynamic(() => import('@/components/sections/Footer'), {
   loading: () => <div className="min-h-[200px]" />
 })
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
+
+// Word component with bold support - must be separate component to use hooks
+function BoldWord({ word, progress, range, isBold }: { word: string; progress: any; range: number[]; isBold: boolean }) {
+  const opacity = useTransform(progress, range, [0, 1])
+  
+  return (
+    <span className="relative mr-1">
+      <span className="absolute opacity-20">{isBold ? <strong>{word}</strong> : word}</span>
+      <motion.span style={{ opacity: opacity }}>
+        {isBold ? <strong>{word}</strong> : word}
+      </motion.span>
+    </span>
+  )
+}
+
+// Custom MagicText component with bold words support
+function MagicTextWithBold({ text, className = "", boldWords = [] }: { text: string; className?: string; boldWords?: string[] }) {
+  const container = useRef<HTMLParagraphElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: container,
+    offset: ["start 0.9", "start 0.3"],
+  })
+  
+  const words = text.split(" ")
+  
+  const isBold = (word: string, index: number) => {
+    const cleanWord = word.replace(/[.,;:!?]/g, '').toLowerCase()
+    
+    // Check each bold word/phrase
+    for (const boldPhrase of boldWords) {
+      const phraseWords = boldPhrase.toLowerCase().split(' ')
+      
+      // For single words like "Chile" or "Patagonia" - exact match only
+      if (phraseWords.length === 1) {
+        if (cleanWord === phraseWords[0]) {
+          return true
+        }
+      }
+      // For multi-word phrases like "Cabo Negro Maritime Terminal"
+      else if (phraseWords.length > 1) {
+        // Check if current word is part of the phrase and we're in the right position
+        const phraseStartIndex = index
+        let matches = true
+        for (let i = 0; i < phraseWords.length; i++) {
+          const checkIndex = phraseStartIndex + i
+          if (checkIndex >= words.length) {
+            matches = false
+            break
+          }
+          const checkWord = words[checkIndex].replace(/[.,;:!?]/g, '').toLowerCase()
+          if (checkWord !== phraseWords[i]) {
+            matches = false
+            break
+          }
+        }
+        if (matches) {
+          return true
+        }
+      }
+    }
+    
+    return false
+  }
+  
+  // Pre-process to identify which words should be bold
+  const boldIndices = new Set<number>()
+  const wordsLower = words.map(w => w.replace(/[.,;:!?]/g, '').toLowerCase())
+  
+  // Check for "Cabo Negro Maritime Terminal" phrase
+  const terminalPhrase = ['cabo', 'negro', 'maritime', 'terminal']
+  for (let i = 0; i <= wordsLower.length - terminalPhrase.length; i++) {
+    let matches = true
+    for (let j = 0; j < terminalPhrase.length; j++) {
+      if (wordsLower[i + j] !== terminalPhrase[j]) {
+        matches = false
+        break
+      }
+    }
+    if (matches) {
+      for (let j = 0; j < terminalPhrase.length; j++) {
+        boldIndices.add(i + j)
+      }
+    }
+  }
+  
+  // Check for exact matches: "Chile" and "Patagonia"
+  wordsLower.forEach((word, i) => {
+    if (word === 'chile' || word === 'patagonia') {
+      boldIndices.add(i)
+    }
+  })
+  
+  return (
+    <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`}>
+      {words.map((word, i) => {
+        const start = i / words.length
+        const end = start + 1 / words.length
+        const shouldBeBold = boldIndices.has(i)
+        
+        return (
+          <BoldWord 
+            key={i}
+            word={word}
+            progress={scrollYProgress}
+            range={[start, end]}
+            isBold={shouldBeBold}
+          />
+        )
+      })}
+    </p>
+  )
+}
 
 export default function TerminalMaritimoPage() {
   const pathname = usePathname()
@@ -437,10 +553,10 @@ export default function TerminalMaritimoPage() {
 
   const timelineCarouselItems: CarouselItem[] = getTimelineItems()
 
-  // Light mode for Spanish version
-  const isLightMode = locale === 'es'
-  const mainBgClass = isLightMode ? 'bg-white' : 'bg-black'
-  const mainTextClass = isLightMode ? 'text-gray-900' : 'text-white'
+  // Light mode for all language versions - white background across all locales
+  const isLightMode = true // Always use white background for all languages
+  const mainBgClass = 'bg-white'
+  const mainTextClass = 'text-gray-900'
 
   return (
     <div className={`min-h-screen ${mainBgClass} ${mainTextClass}`}>
@@ -506,12 +622,19 @@ export default function TerminalMaritimoPage() {
       {/* Vision Section - Right after hero */}
       <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
         <div className="container mx-auto max-w-6xl">
-          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
+          <motion.h2 
+            initial={{ x: -50, opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ margin: "-10% 0px -10% 0px" }}
+            className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}
+          >
             {localizedText.vision.title}
-          </h2>
-          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} max-w-4xl leading-relaxed`}>
-            {localizedText.vision.description}
-          </p>
+          </motion.h2>
+          <MagicText 
+            text={localizedText.vision.description}
+            className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} max-w-4xl leading-relaxed`}
+          />
         </div>
       </section>
 
@@ -581,9 +704,20 @@ export default function TerminalMaritimoPage() {
               <h3 className={`text-xl md:text-2xl font-semibold mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>
                 {localizedText.strategicCollaboration.partnerTitle}
               </h3>
-              <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
-                {localizedText.strategicCollaboration.description}
-              </p>
+              {/* Use MagicText with bold words for English locale, regular paragraph for others */}
+              {locale === 'en' ? (
+                <div className="ml-8 md:ml-12">
+                  <MagicTextWithBold 
+                    text={localizedText.strategicCollaboration.description}
+                    className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}
+                    boldWords={[]}
+                  />
+                </div>
+              ) : (
+                <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
+                  {localizedText.strategicCollaboration.description}
+                </p>
+              )}
             </div>
           </div>
         </div>

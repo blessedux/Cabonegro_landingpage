@@ -84,6 +84,22 @@ export default function Hero() {
   const [videoError, setVideoError] = useState(false)
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
   const [videoInViewport, setVideoInViewport] = useState(false)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  
+  // Detect mobile device
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const checkMobile = () => {
+        const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
+                              (window.innerWidth <= 768)
+        setIsMobile(isMobileDevice)
+      }
+      checkMobile()
+      window.addEventListener('resize', checkMobile)
+      return () => window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   // Lazy load video using Intersection Observer - only load when hero is in viewport
   useEffect(() => {
@@ -125,9 +141,14 @@ export default function Hero() {
           // Ensure video is muted and has playsInline for mobile
           videoRef.current.muted = true
           await videoRef.current.play()
+          setIsVideoPlaying(true)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Video started playing')
+          }
         } catch (error) {
           // Silently handle autoplay errors (browser policies)
           // Video will still show first frame
+          setIsVideoPlaying(false)
           if (process.env.NODE_ENV === 'development') {
             console.warn('Video autoplay error:', error)
           }
@@ -157,6 +178,38 @@ export default function Hero() {
       document.removeEventListener('scroll', handleUserInteraction, true)
     }
   }, [isPreloaderComplete, shouldLoadVideo])
+  
+  // Monitor video playing state
+  useEffect(() => {
+    if (!videoRef.current) return
+    
+    const video = videoRef.current
+    
+    const handlePlay = () => {
+      setIsVideoPlaying(true)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Video play event fired')
+      }
+    }
+    
+    const handlePause = () => {
+      setIsVideoPlaying(false)
+    }
+    
+    const handlePlaying = () => {
+      setIsVideoPlaying(true)
+    }
+    
+    video.addEventListener('play', handlePlay)
+    video.addEventListener('pause', handlePause)
+    video.addEventListener('playing', handlePlaying)
+    
+    return () => {
+      video.removeEventListener('play', handlePlay)
+      video.removeEventListener('pause', handlePause)
+      video.removeEventListener('playing', handlePlaying)
+    }
+  }, [shouldLoadVideo])
 
   // Auto-rotate word every 4 seconds
   useEffect(() => {
@@ -211,7 +264,8 @@ export default function Hero() {
             height: '100%'
           }}
         >
-          {shouldLoadVideo ? (
+          {shouldLoadVideo && (!isMobile || isVideoPlaying) ? (
+            // Show video element only if: (1) video should load AND (2) either not mobile OR video is playing
             <video
               ref={videoRef}
               autoPlay
@@ -245,7 +299,7 @@ export default function Hero() {
               <source src={heroVideo} type="video/mp4" />
             </video>
           ) : (
-            // Show poster image while video is not loaded
+            // Show poster image: (1) while video is not loaded, OR (2) on mobile when video isn't playing
             <div 
               className="absolute inset-0 w-full h-full object-cover bg-black"
               style={{

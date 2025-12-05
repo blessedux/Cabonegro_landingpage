@@ -20,7 +20,7 @@ export default function NavbarZh() {
   const router = useRouter()
   const pathname = usePathname()
   const { isNavbarHidden, setIsNavbarHidden } = useAnimation()
-  const { isPreloaderVisible, isPreloaderComplete, showPreloaderB, setPreloaderVisible, setPreloaderComplete, setLanguageSwitch } = usePreloader()
+  const { isPreloaderVisible, isPreloaderComplete, isPreloaderBVisible, showPreloaderB, setPreloaderVisible, setPreloaderComplete, setLanguageSwitch } = usePreloader()
 
   // Detect when navbar is over white background sections
   useEffect(() => {
@@ -227,15 +227,19 @@ export default function NavbarZh() {
       return
     }
     
-    // Normal preloader logic for other routes
-    if (isPreloaderComplete && !isPreloaderVisible) {
+    // Check both old preloader system (isPreloaderComplete) and new preloader system (isPreloaderBVisible)
+    // On first load, isPreloaderBVisible is used, so we need to check when it becomes false
+    const preloaderComplete = (isPreloaderComplete && !isPreloaderVisible) || !isPreloaderBVisible
+    
+    if (preloaderComplete) {
       const timer = setTimeout(() => {
         setIsVisible(true)
-      }, 500) // Delay for smooth entrance after preloader
+        setIsNavbarHidden(false) // Ensure navbar is not hidden
+      }, 300) // Reduced delay for faster navbar appearance after preloader
 
       return () => clearTimeout(timer)
     }
-  }, [isPreloaderComplete, isPreloaderVisible, pathname, setIsNavbarHidden])
+  }, [isPreloaderComplete, isPreloaderVisible, isPreloaderBVisible, pathname, setIsNavbarHidden])
 
   // Prefetch language route on hover for instant navigation
   const prefetchLanguageRoute = (newLocale: string) => {

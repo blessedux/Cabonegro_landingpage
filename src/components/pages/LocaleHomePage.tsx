@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { usePathname } from 'next/navigation'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import CookieBanner from '@/components/sections/CookieBanner'
@@ -75,23 +76,34 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const { isFadingOut } = useAnimation()
   const { isPreloaderBVisible, hidePreloaderB, hasSeenPreloader, isNavigating } = usePreloader()
+  const pathname = usePathname()
   // Always initialize to false to prevent hydration mismatch
   // We'll set the correct value in useEffect after hydration
   const [shouldShowContent, setShouldShowContent] = useState(false)
   const [isFirstLoad, setIsFirstLoad] = useState(false) // Track if this is the first load (not navigation)
+  const [statsKey, setStatsKey] = useState(0) // Key to force Stats remount on navigation
 
   // Initialize content visibility after hydration
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
       if (!hasVisited) {
-        // First visit - mark as first load
+        // First visit - mark as first load and DON'T show content yet
+        // Preloader will cover content until it completes
         setIsFirstLoad(true)
+        setShouldShowContent(false) // Keep content hidden until preloader completes
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 LocaleHomePage: First visit detected, setting isFirstLoad=true')
+        }
       } else {
-        // User has visited before - show content immediately (even during navigation)
-        // This prevents white screen when navigating back to homescreen
-        setShouldShowContent(true)
-        setIsFirstLoad(false) // Ensure first load flag is false
+        // User has visited before - still show preloader briefly, then show content
+        // This ensures preloader covers content loading
+        setIsFirstLoad(false)
+        // Don't show content immediately - wait for preloader to show first
+        setShouldShowContent(false)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 LocaleHomePage: Return visit detected, will show preloader briefly')
+        }
       }
     }
   }, []) // Only run once on mount
@@ -106,7 +118,7 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
     }
   }, [isPreloaderBVisible])
 
-  // Handle preloader completion - show content after preloader finishes (first load only)
+  // Handle preloader completion - show content after preloader finishes
   useEffect(() => {
     if (!isPreloaderBVisible && !shouldShowContent && isFirstLoad) {
       // First load preloader completed, now show content
@@ -117,12 +129,23 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       }, 150) // Slightly longer delay to ensure preloader is fully hidden
       return () => clearTimeout(timer)
     }
-    // For navigation back to homescreen, ensure content is visible immediately
-    // This prevents white screen after navigation preloader completes
+    // For navigation back to homescreen, ensure content is visible after preloader
     if (!isPreloaderBVisible && !isNavigating && !isFirstLoad && !shouldShowContent) {
       setShouldShowContent(true)
     }
   }, [isPreloaderBVisible, shouldShowContent, isNavigating, isFirstLoad])
+  
+  // Force Stats component to remount on navigation to homepage
+  useEffect(() => {
+    const isHomePage = pathname === `/${locale}` || pathname === '/en' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
+    if (isHomePage) {
+      // Increment key to force Stats remount, which resets scroll tracking
+      setStatsKey(prev => prev + 1)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 LocaleHomePage: Navigation to homepage, forcing Stats remount', { statsKey })
+      }
+    }
+  }, [pathname, locale])
 
   // Safety: If preloader is stuck, show content after max time
   useEffect(() => {
@@ -239,30 +262,30 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
 
   return (
     <>
-      {/* Preloader - ONLY show on first load, NOT during navigation */}
-      {/* PageTransitionWrapper handles navigation preloaders */}
-      {isPreloaderBVisible && isFirstLoad && !isNavigating && (
+      {/* Preloader - Show on first load to cover content loading */}
+      {/* Show preloader if it's visible and content hasn't been shown yet */}
+      {isPreloaderBVisible && !shouldShowContent ? (
         <PreloaderB 
-          key="preloader-first-load" // Key to ensure it remounts on first load
+          key={isFirstLoad ? "preloader-first-load" : "preloader-content-loading"} // Key to ensure it remounts
           onComplete={() => {
             if (process.env.NODE_ENV === 'development') {
-              console.log('✅ LocaleHomePage PreloaderB onComplete called (first load)')
+              console.log('✅ LocaleHomePage PreloaderB onComplete called', { isFirstLoad, shouldShowContent })
             }
-            setIsFirstLoad(false) // Mark first load as complete
+            if (isFirstLoad) {
+              setIsFirstLoad(false) // Mark first load as complete
+            }
             hidePreloaderB()
             // Ensure content shows after preloader completes
             setTimeout(() => {
-              if (!shouldShowContent) {
-                if (process.env.NODE_ENV === 'development') {
-                  console.log('✅ Showing content after first load preloader')
-                }
-                setShouldShowContent(true)
+              if (process.env.NODE_ENV === 'development') {
+                console.log('✅ Showing content after preloader')
               }
-            }, 100) // Slightly longer delay to ensure state updates
+              setShouldShowContent(true)
+            }, 150) // Delay to ensure smooth transition
           }}
-          duration={2}
+          duration={isFirstLoad ? 2 : 1.5}
         />
-      )}
+      ) : null}
 
       {/* Content - Only show after preloader completes on first load */}
       {shouldShowContent && (
@@ -283,7 +306,7 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         {/* Main Sections */}
         <main style={{ pointerEvents: 'auto' }}>
           <AboutUs />
-          <Stats />
+          <Stats key={`stats-${locale}-${statsKey}`} />
           <PartnersComponent />
           <WorldMapComponent />
           <Press />

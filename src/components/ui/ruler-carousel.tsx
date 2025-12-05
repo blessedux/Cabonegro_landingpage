@@ -163,8 +163,9 @@ export function RulerCarousel({
   }, [isResetting]);
 
   // Calculate target position - center the active item
+  // Shift everything one step to the left (subtract 250px) so the centered item is the active one
   const centerPosition = 5; // We want item 5 (index 4) to be centered initially
-  const targetX = -250 + (centerPosition - (activeIndex % itemsPerSet)) * 250;
+  const targetX = -250 - 250 + (centerPosition - (activeIndex % itemsPerSet)) * 250;
 
   // Get current page info
   const currentPage = (activeIndex % itemsPerSet) + 1;
@@ -174,6 +175,39 @@ export function RulerCarousel({
 
   return (
     <div className={`w-full h-[50vh] flex flex-col items-center justify-between ${lightMode ? 'bg-white' : 'bg-black'} py-6`}>
+      {/* Navigation Arrows - Moved to top */}
+      <div className="flex items-center justify-center gap-4 mb-4">
+        <button
+          onClick={handlePrevious}
+          disabled={isResetting}
+          className="flex items-center justify-center cursor-pointer"
+          aria-label="Previous item"
+        >
+          <Rewind className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
+        </button>
+
+        <div className="flex items-center gap-2">
+          <span className={`text-sm font-medium ${lightMode ? 'text-gray-700' : 'text-muted-foreground dark:text-gray-400'}`}>
+            {currentPage}
+          </span>
+          <span className={`text-sm ${lightMode ? 'text-gray-500' : 'text-muted-foreground dark:text-gray-500'}`}>
+            /
+          </span>
+          <span className={`text-sm font-medium ${lightMode ? 'text-gray-700' : 'text-muted-foreground dark:text-gray-400'}`}>
+            {totalPages}
+          </span>
+        </div>
+
+        <button
+          onClick={handleNext}
+          disabled={isResetting}
+          className="flex items-center justify-center cursor-pointer"
+          aria-label="Next item"
+        >
+          <FastForward className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
+        </button>
+      </div>
+
       <div className="w-full h-[100px] flex flex-col justify-start relative mb-8">
         <div className="flex items-center justify-center">
           <RulerLines top lightMode={lightMode} />
@@ -272,38 +306,6 @@ export function RulerCarousel({
             </div>
           )}
         </motion.div>
-      </div>
-      
-      <div className="flex items-center justify-center gap-4 mt-6">
-        <button
-          onClick={handlePrevious}
-          disabled={isResetting}
-          className="flex items-center justify-center cursor-pointer"
-          aria-label="Previous item"
-        >
-          <Rewind className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
-        </button>
-
-        <div className="flex items-center gap-2">
-          <span className={`text-sm font-medium ${lightMode ? 'text-gray-700' : 'text-muted-foreground dark:text-gray-400'}`}>
-            {currentPage}
-          </span>
-          <span className={`text-sm ${lightMode ? 'text-gray-500' : 'text-muted-foreground dark:text-gray-500'}`}>
-            /
-          </span>
-          <span className={`text-sm font-medium ${lightMode ? 'text-gray-700' : 'text-muted-foreground dark:text-gray-400'}`}>
-            {totalPages}
-          </span>
-        </div>
-
-        <button
-          onClick={handleNext}
-          disabled={isResetting}
-          className="flex items-center justify-center cursor-pointer"
-          aria-label="Next item"
-        >
-          <FastForward className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
-        </button>
       </div>
     </div>
   );
