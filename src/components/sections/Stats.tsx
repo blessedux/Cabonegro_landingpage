@@ -184,6 +184,8 @@ export default function Stats() {
   
   // Track previous pathname to detect navigation
   const prevPathnameRef = useRef(pathname)
+  // Track previous locale to detect language changes
+  const prevLocaleRef = useRef(locale)
   
   // Track if Stats section is in view - resets on navigation
   // Use a more lenient margin to ensure it triggers when scrolling through the area
@@ -226,17 +228,20 @@ export default function Stats() {
   useEffect(() => {
     const isHomePage = pathname === `/${locale}` || pathname === '/en' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
     const wasHomePage = prevPathnameRef.current === `/${locale}` || prevPathnameRef.current === '/en' || prevPathnameRef.current === '/es' || prevPathnameRef.current === '/zh' || prevPathnameRef.current === '/fr'
+    const localeChanged = prevLocaleRef.current !== locale
     
-    if (isHomePage && !wasHomePage) {
+    // Force re-initialization on homepage navigation OR locale change
+    if ((isHomePage && !wasHomePage) || (isHomePage && localeChanged)) {
       // Force re-initialization by updating key
       setNavigationKey(prev => prev + 1)
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Stats: Navigation to homepage detected, resetting scroll tracking', { navigationKey })
+        console.log('🔄 Stats: Navigation to homepage or locale change detected, resetting scroll tracking', { navigationKey, localeChanged, locale })
       }
     }
     
     prevPathnameRef.current = pathname
-  }, [pathname, locale])
+    prevLocaleRef.current = locale
+  }, [pathname, locale, navigationKey])
   
   // Use navigationKey to force useScroll to re-initialize
   // This ensures scroll tracking resets properly after navigation
@@ -421,6 +426,15 @@ export default function Stats() {
   const [forceVisible, setForceVisible] = useState(false)
   const [hasScrolled, setHasScrolled] = useState(false)
   
+  // Reset state when locale changes to ensure animations work correctly
+  useEffect(() => {
+    setForceVisible(false)
+    setHasScrolled(false)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Stats: Locale changed, resetting visibility state', { locale })
+    }
+  }, [locale])
+  
   // Monitor scroll events to detect when user scrolls
   useEffect(() => {
     if (!isPreloaderComplete || isPreloaderBVisible) return
@@ -448,7 +462,7 @@ export default function Stats() {
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [isPreloaderComplete, isPreloaderBVisible, navigationKey]) // Include navigationKey to re-initialize on navigation
+  }, [isPreloaderComplete, isPreloaderBVisible, navigationKey, locale]) // Include locale to re-initialize on language change
   
   // Monitor in-view status - this is the primary trigger for visibility
   useEffect(() => {
@@ -458,7 +472,7 @@ export default function Stats() {
         console.log('✅ Stats: Section in view, forcing visibility')
       }
     }
-  }, [isInView, isPreloaderComplete, isPreloaderBVisible, navigationKey]) // Include navigationKey
+  }, [isInView, isPreloaderComplete, isPreloaderBVisible, navigationKey, locale]) // Include locale
   
   // Also monitor scroll progress as secondary trigger
   useMotionValueEvent(statsSectionOpacity, "change", (latest) => {

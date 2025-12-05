@@ -8,9 +8,10 @@ interface PreloaderBProps {
   duration?: number
   className?: string
   inline?: boolean // If true, uses absolute positioning instead of fixed
+  shouldAutoHide?: boolean // If false, preloader waits for explicit hide signal (default: false for language switches)
 }
 
-export default function PreloaderB({ onComplete, duration = 0.8, className = '', inline = false }: PreloaderBProps) {
+export default function PreloaderB({ onComplete, duration = 0.8, className = '', inline = false, shouldAutoHide = false }: PreloaderBProps) {
   const [isVisible, setIsVisible] = useState(true)
   const [isFadingOut, setIsFadingOut] = useState(false)
   const [shimmerPosition, setShimmerPosition] = useState(-100) // For skeleton shimmer effect
@@ -28,9 +29,10 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
   }, [])
 
   // Skeleton shimmer animation - smooth left-to-right shimmer effect
+  // Keep shimmer running until component is completely removed (isVisible = false)
   useEffect(() => {
-    if (isFadingOut) {
-      // Stop animation when fading out
+    if (!isVisible) {
+      // Stop animation only when component is completely removed
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
@@ -53,7 +55,7 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
       const position = -80 + (cycle * 260) // -80% to 180% for full sweep
       setShimmerPosition(position)
       
-      if (!isFadingOut) {
+      if (isVisible) {
         animationFrameRef.current = requestAnimationFrame(animate)
       }
     }
@@ -65,11 +67,11 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isFadingOut])
+  }, [isVisible])
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`🎬 PreloaderB mounted - duration: ${duration}s, inline: ${inline}`)
+      console.log(`🎬 PreloaderB mounted - duration: ${duration}s, inline: ${inline}, shouldAutoHide: ${shouldAutoHide}`)
     }
     
     // For inline mode, ensure minimum 2 seconds of visibility before allowing fade out
@@ -82,13 +84,41 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
       return
     }
     
-    // For full-screen mode, ensure minimum display time for smooth transition
+    // Only auto-hide if shouldAutoHide is true
+    // For language switches, shouldAutoHide is false, so preloader waits for explicit hide
+    if (!shouldAutoHide) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⏸️ PreloaderB: Auto-hide disabled, waiting for explicit hide signal')
+      }
+      // Don't set up auto-hide timer - parent will control when to hide
+      // Only set up safety timer to prevent getting stuck
+      const maxDuration = 5000 // 5 seconds max safety timer
+      const safetyTimer = setTimeout(() => {
+        if (!hasStartedFadeOutRef.current && onComplete) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚠️ PreloaderB: Safety timer triggered after 5s - calling onComplete')
+          }
+          // Call onComplete but don't hide - let parent decide
+          requestAnimationFrame(() => {
+            if (onComplete) {
+              onComplete()
+            }
+          })
+        }
+      }, maxDuration)
+      
+      return () => {
+        clearTimeout(safetyTimer)
+      }
+    }
+    
+    // Auto-hide mode: ensure minimum display time for smooth transition
     // Then fade out smoothly - this ensures users see the transition
     const minDisplayTime = 500 // Minimum 500ms to ensure smooth transition and prevent double pop-up
     const displayDuration = Math.max(minDisplayTime, duration * 1000)
     
     if (process.env.NODE_ENV === 'development') {
-      console.log(`⏱️ PreloaderB will fade out after ${displayDuration}ms`)
+      console.log(`⏱️ PreloaderB will fade out after ${displayDuration}ms (auto-hide mode)`)
     }
     
     const fadeOutTimer = setTimeout(() => {
@@ -100,16 +130,18 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
       }
       
       if (process.env.NODE_ENV === 'development') {
-        console.log('🎭 PreloaderB: Starting fade out')
+        console.log('🎭 PreloaderB: Starting fade out (auto-hide)')
       }
       hasStartedFadeOutRef.current = true
       setIsFadingOut(true)
       
       // Complete after fade out animation
+      // Background fades out, but logo stays visible until component is removed
       setTimeout(() => {
         if (process.env.NODE_ENV === 'development') {
           console.log('✅ PreloaderB: Fade out complete, calling onComplete')
         }
+        // Only remove component (and logo) after background has fully faded
         setIsVisible(false)
         // Ensure onComplete is called - use a small delay to ensure state updates
         if (onComplete) {
@@ -118,7 +150,7 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
             onComplete()
           })
         }
-      }, 300) // Smooth fade out (300ms)
+      }, 400) // Smooth fade out (400ms) - logo stays visible during this time
     }, displayDuration)
 
     // Safety mechanism: Force completion after maximum time to prevent getting stuck
@@ -146,92 +178,124 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
       clearTimeout(fadeOutTimer)
       clearTimeout(safetyTimer)
     }
-  }, [duration, onComplete, inline])
+  }, [duration, onComplete, inline, shouldAutoHide])
 
   if (!isVisible) return null
 
   return (
-    <div
-      className={`${inline ? 'absolute' : 'fixed'} inset-0 ${inline ? 'z-50' : 'z-[99999]'} bg-white flex items-center justify-center transition-opacity duration-400 ease-out ${
-        isFadingOut ? 'opacity-0' : 'opacity-100'
-      } ${className}`}
-      style={{ 
-        backgroundColor: '#ffffff', // White background to match original preloader
-        zIndex: 99999, // Ensure it's above everything including navbar and Stats section
-        pointerEvents: isFadingOut ? 'none' : 'auto', // Allow interactions when fading out
-        position: 'fixed', // Always fixed to block content
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0
-      }}
-    >
-      {/* Centered logo with skeleton shimmer animation */}
+    <>
+      {/* Background layer - fades out independently */}
       <div
-        className={`relative transition-opacity duration-400 ease-out ${
-          isFadingOut ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-        }`}
-        style={{ transition: 'opacity 400ms ease-out, transform 400ms ease-out' }}
+        className={`${inline ? 'absolute' : 'fixed'} inset-0 ${inline ? 'z-50' : 'z-[99999]'} bg-white transition-opacity duration-400 ease-out ${
+          isFadingOut ? 'opacity-0' : 'opacity-100'
+        } ${className}`}
+        style={{ 
+          backgroundColor: '#ffffff', // White background to match original preloader
+          zIndex: 99999, // Ensure it's above everything including navbar and Stats section
+          pointerEvents: isFadingOut ? 'none' : 'auto', // Allow interactions when fading out
+          position: 'fixed', // Always fixed to block content
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0
+        }}
       >
-        <div className="flex items-center justify-center relative">
-          {/* Logo container with skeleton shimmer overlay */}
-          <div className="relative" style={{ width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {/* Black logo with shimmer effect */}
-            <div className="relative overflow-hidden" style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Image
-                src="/cabonegro_logo.png"
-                alt="Cabo Negro"
-                width={200}
-                height={200}
-                className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-contain relative z-10"
-                priority
-                quality={100}
-                unoptimized={false}
-                style={{
-                  filter: 'brightness(0)', // Convert to black to match original preloader
-                  WebkitFilter: 'brightness(0)', // Safari support
-                }}
-              />
-              {/* Skeleton shimmer overlay - visible shimmer that sweeps across the logo */}
-              <div
-                className="absolute inset-0 z-20 pointer-events-none"
-                style={{
-                  overflow: 'hidden',
-                  width: '100%',
-                  height: '100%',
-                  borderRadius: '50%', // Match logo shape
-                }}
-              >
-                {/* Shimmer bar that moves across - highly visible skeleton effect */}
-                {/* Using bright white gradient for maximum visibility on black logo */}
-                <div
+        {/* Subtle circular gradient overlay for 3D effect */}
+        {/* Darker white on borders, brighter white in center */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.98) 30%, rgba(255, 255, 255, 0.95) 60%, rgba(250, 250, 250, 0.92) 100%)',
+            opacity: isFadingOut ? 0 : 1, // Fade with background
+            transition: 'opacity 400ms ease-out',
+          }}
+        />
+      </div>
+      
+      {/* Logo layer - stays visible until component is removed */}
+      {/* Positioned separately so it doesn't fade with background */}
+      <div
+        className={`${inline ? 'absolute' : 'fixed'} inset-0 ${inline ? 'z-50' : 'z-[99999]'} flex items-center justify-center pointer-events-none`}
+        style={{ 
+          zIndex: 100000, // Above background layer
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          opacity: 1, // Always fully visible - never fades
+        }}
+      >
+        {/* Centered logo with skeleton shimmer animation */}
+        {/* Logo stays visible until preloader is completely removed - no fade out */}
+        <div
+          className="relative"
+          style={{ 
+            opacity: 1, // Always visible - don't fade out logo
+            transform: 'scale(1)', // Keep scale constant
+          }}
+        >
+          <div className="flex items-center justify-center relative">
+            {/* Logo container with skeleton shimmer overlay */}
+            <div className="relative" style={{ width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* Black logo with shimmer effect */}
+              <div className="relative overflow-hidden" style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Image
+                  src="/cabonegro_logo.png"
+                  alt="Cabo Negro"
+                  width={200}
+                  height={200}
+                  className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-contain relative z-10"
+                  priority
+                  quality={100}
+                  unoptimized={false}
                   style={{
-                    position: 'absolute',
-                    top: '0',
-                    left: `${shimmerPosition}%`,
-                    width: '100%',
-                    height: '100%',
-                    background: `linear-gradient(
-                      90deg,
-                      transparent 0%,
-                      rgba(255, 255, 255, 0.2) 20%,
-                      rgba(255, 255, 255, 0.6) 40%,
-                      rgba(255, 255, 255, 1) 50%,
-                      rgba(255, 255, 255, 0.6) 60%,
-                      rgba(255, 255, 255, 0.2) 80%,
-                      transparent 100%
-                    )`,
-                    transform: 'skewX(-20deg)',
-                    mixBlendMode: 'lighten', // Lighten mode works better on black
-                    opacity: 1,
-                    willChange: 'left', // Optimize for animation
+                    filter: 'brightness(0)', // Convert to black to match original preloader
+                    WebkitFilter: 'brightness(0)', // Safari support
                   }}
                 />
+                {/* Skeleton shimmer overlay - visible shimmer that sweeps across the logo */}
+                {/* Keep shimmer animation running until preloader is removed */}
+                <div
+                  className="absolute inset-0 z-20 pointer-events-none"
+                  style={{
+                    overflow: 'hidden',
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%', // Match logo shape
+                  }}
+                >
+                  {/* Shimmer bar that moves across - highly visible skeleton effect */}
+                  {/* Using bright white gradient for maximum visibility on black logo */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '0',
+                      left: `${shimmerPosition}%`,
+                      width: '100%',
+                      height: '100%',
+                      background: `linear-gradient(
+                        90deg,
+                        transparent 0%,
+                        rgba(255, 255, 255, 0.2) 20%,
+                        rgba(255, 255, 255, 0.6) 40%,
+                        rgba(255, 255, 255, 1) 50%,
+                        rgba(255, 255, 255, 0.6) 60%,
+                        rgba(255, 255, 255, 0.2) 80%,
+                        transparent 100%
+                      )`,
+                      transform: 'skewX(-20deg)',
+                      mixBlendMode: 'lighten', // Lighten mode works better on black
+                      opacity: 1,
+                      willChange: 'left', // Optimize for animation
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

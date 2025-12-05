@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, startTransition } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -211,7 +211,7 @@ export default function Navbar() {
     { code: 'fr', name: 'Français', flag: '🇫🇷' }
   ]
 
-  // Determine current language from pathname
+  // Determine current language from pathname (extracted early for dependency tracking)
   const currentLocale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : pathname.startsWith('/en') ? 'en' : 'en'
   
   const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
@@ -287,7 +287,7 @@ export default function Navbar() {
 
       return () => clearTimeout(timer)
     }
-  }, [isPreloaderComplete, isPreloaderVisible, isPreloaderBVisible, pathname, setIsNavbarHidden])
+  }, [isPreloaderComplete, isPreloaderVisible, isPreloaderBVisible, pathname, currentLocale, setIsNavbarHidden])
 
   // Prefetch language route on hover for instant navigation
   const prefetchLanguageRoute = (newLocale: string) => {
@@ -323,11 +323,6 @@ export default function Navbar() {
     // Close dropdown immediately for instant UI feedback
     setLanguageDropdownOpen(false)
     
-    // Check if we're on a special page (explore, deck, contact)
-    const isOnSpecialPage = pathname.includes('/explore') || 
-                           pathname.includes('/deck') || 
-                           pathname.includes('/contact')
-    
     // Remove current locale prefix from pathname
     let pathWithoutLocale = pathname
     if (pathname.startsWith('/es')) {
@@ -353,23 +348,17 @@ export default function Navbar() {
     // Build target path
     const targetPath = `/${newLocale}${pathWithoutLocale}`
     
-    // For special pages, use PreloaderB
-    if (isOnSpecialPage) {
-      showPreloaderB()
-      // Navigate immediately without delay
-      router.push(targetPath)
-      return
-    }
+    // Prefetch route immediately before showing preloader for faster loading
+    router.prefetch(targetPath)
     
-    // For homepage and other pages, show main preloader INSTANTLY
-    // Set all preloader state synchronously before navigation
+    // Use PreloaderB for all language switches (unified preloader system)
+    // This ensures consistent behavior and proper state management
     setLanguageSwitch(true)
-    setPreloaderVisible(true)
-    setPreloaderComplete(false)
+    showPreloaderB()
     
-    // Navigate immediately - use microtask to ensure state updates are processed first
-    // This keeps the UI responsive
-    Promise.resolve().then(() => {
+    // Navigate immediately using startTransition for non-blocking navigation
+    // This keeps UI responsive during navigation
+    startTransition(() => {
       router.push(targetPath)
     })
   }

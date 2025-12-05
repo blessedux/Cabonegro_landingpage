@@ -40,6 +40,15 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   // Initialize preloader state on mount (after hydration)
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Skip preloader initialization if this is a language switch
+      // Language switches use showPreloaderB() directly, so we don't need the 500ms delay
+      if (isLanguageSwitch) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔄 PreloaderContext: Language switch detected, skipping initialization delay')
+        }
+        return
+      }
+
       const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
       if (!hasVisited) {
         // First visit - show preloader to cover content loading
@@ -66,7 +75,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         return () => clearTimeout(timer)
       }
     }
-  }, [])
+  }, [isLanguageSwitch])
 
   const showPreloader = () => {
     setIsPreloaderVisible(true)
