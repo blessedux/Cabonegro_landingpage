@@ -70,8 +70,8 @@ export function CaboNegroRulerCarousel() {
   ];
   
   return (
-    <div className="min-h-screen overflow-hidden flex items-start justify-center bg-black">
-      <div className="w-full">
+    <div className="min-h-screen overflow-hidden flex items-start justify-center bg-black" style={{ touchAction: 'pan-y', pointerEvents: 'auto' }}>
+      <div className="w-full" style={{ pointerEvents: 'auto' }}>
         <RulerCarousel originalItems={originalItems} />
       </div>
     </div>

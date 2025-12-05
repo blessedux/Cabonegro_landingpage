@@ -24,11 +24,24 @@ export function usePageTransition() {
       const navigationStart = Date.now()
       navigationStartRef.current = navigationStart
       
+      // Check if navigating from project page to home page
+      // Project pages: parque-tecnologico, parque-logistico, terminal-maritimo
+      // Home pages: /en, /es, /zh, /fr, / (with or without trailing slash)
+      const isFromProjectPage = prevPathnameRef.current.includes('/parque-tecnologico') || 
+                                prevPathnameRef.current.includes('/parque-logistico') || 
+                                prevPathnameRef.current.includes('/terminal-maritimo')
+      // Check if pathname is a home page (exact match or just locale)
+      const isToHomePage = pathname === '/' || 
+                          pathname === '/en' || pathname === '/es' || pathname === '/zh' || pathname === '/fr' ||
+                          pathname.match(/^\/(en|es|zh|fr)\/?$/)
+      const isProjectToHome = isFromProjectPage && isToHomePage
+      
       if (process.env.NODE_ENV === 'development') {
         console.log('🔄 usePageTransition: Pathname changed detected', {
           from: prevPathnameRef.current,
           to: pathname,
           isPreloaderBVisible,
+          isProjectToHome,
           timestamp: navigationStart
         })
       }
@@ -38,7 +51,31 @@ export function usePageTransition() {
       isNavigatingRef.current = true
       setNavigating(true)
 
-      // Show preloader for ALL route changes (navigation)
+      // Skip PreloaderB for project → home navigation (fast transitions)
+      // This matches the logic in Navbar.handleHomeClick
+      if (isProjectToHome) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚡ usePageTransition: Project → Home navigation detected, skipping PreloaderB for faster transition')
+        }
+        // Don't show preloader, but still set up hide logic in case it was already shown
+        // Reset navigation state immediately for instant navigation
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            if (isNavigatingRef.current) {
+              isNavigatingRef.current = false
+              hidePreloaderB()
+              setNavigating(false)
+              if (process.env.NODE_ENV === 'development') {
+                console.log('✅ usePageTransition: Project → Home navigation complete, navigation state reset')
+              }
+            }
+          }, 25) // Minimal delay for state updates
+        })
+        prevPathnameRef.current = pathname
+        return
+      }
+
+      // Show preloader for other route changes (navigation)
       // If preloader was already shown by a component (like Stats), that's fine
       // Otherwise, show it here to ensure consistent transitions
       // This handles navigation preloaders, first load is handled by LocaleHomePage
@@ -56,36 +93,37 @@ export function usePageTransition() {
       // Always set up hide timer when pathname changes
       // This ensures preloader gets hidden even if it was shown explicitly before pathname change
       const checkPageLoaded = () => {
+        // Use a single requestAnimationFrame for faster detection
         requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            // Give page time to render (2 frames + small delay)
-            setTimeout(() => {
-              if (isNavigatingRef.current) {
-                isNavigatingRef.current = false
-                hidePreloaderB()
-                setNavigating(false)
-                if (process.env.NODE_ENV === 'development') {
-                  console.log('✅ usePageTransition: Navigation complete, preloader hidden')
-                }
+          // Minimal delay to ensure page has started rendering
+          setTimeout(() => {
+            if (isNavigatingRef.current) {
+              isNavigatingRef.current = false
+              hidePreloaderB()
+              // CRITICAL: Reset navigation state immediately to re-enable navbar clicks
+              setNavigating(false)
+              if (process.env.NODE_ENV === 'development') {
+                console.log('✅ usePageTransition: Navigation complete, preloader hidden, navigation state reset')
               }
-            }, 150) // Slightly longer delay to ensure page is fully rendered
-          })
+            }
+          }, 25) // Reduced from 50ms to 25ms for faster response
         })
       }
 
       // Start checking after a minimum display time
-      // Reduced from 500ms to match preloader duration (0.5s = 500ms)
-      // Use shorter delay (400ms) since PreloaderB now has auto-hide as fallback
-      const minDisplayTimer = setTimeout(checkPageLoaded, 400) // Minimum 400ms display to ensure smooth transition
+      // Reduced delay to detect navigation faster - preloader will still display for its full duration
+      const minDisplayTimer = setTimeout(checkPageLoaded, 100) // Reduced from 200ms to 100ms for faster detection
 
       // Safety mechanism: Force hide after maximum time
+      // CRITICAL: Always reset navigation state to prevent navbar from being blocked
       const safetyTimer = setTimeout(() => {
         if (isNavigatingRef.current) {
           isNavigatingRef.current = false
           hidePreloaderB()
+          // CRITICAL: Always reset navigation state, even on safety timer
           setNavigating(false)
           if (process.env.NODE_ENV === 'development') {
-            console.log('⚠️ usePageTransition: Safety timer triggered, forcing preloader hide')
+            console.log('⚠️ usePageTransition: Safety timer triggered, forcing preloader hide and navigation reset')
           }
         }
       }, 2000) // Maximum 2 seconds

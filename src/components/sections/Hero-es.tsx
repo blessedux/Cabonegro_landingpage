@@ -1,7 +1,7 @@
 import { WordRotate } from '@/components/ui/word-rotate'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
-import { useState, useEffect, useRef, startTransition } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence, useMotionTemplate } from 'framer-motion'
 import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
@@ -57,12 +57,13 @@ export default function HeroEs() {
   // Create a template for the blur filter using the MotionValue
   const blurFilter = useMotionTemplate`blur(${backgroundBlur}px)`
   
-  // Track opacity to conditionally enable pointer events
+  // Always allow pointer events for buttons - don't block based on opacity
   const [shouldBlockPointer, setShouldBlockPointer] = useState(true)
   
   useMotionValueEvent(heroContentOpacity, "change", (latest) => {
-    // Only enable pointer events when opacity is above 0.1 (visible enough)
-    setShouldBlockPointer(latest > 0.1)
+    // Always allow pointer events - buttons should always be clickable
+    // Only disable if completely invisible (below 0.01)
+    setShouldBlockPointer(latest > 0.01)
   })
   
   // Video stays visible - no fade out. Stats background will cover it as it fades in
@@ -222,8 +223,18 @@ export default function HeroEs() {
   }, [rotatingWords.length])
 
   // Handle "Explorar Proyecto" button click - instant response
-  const handleExploreProject = () => {
-    setShowProjectOptions(true)
+  const handleExploreProject = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🎯 Hero: handleExploreProject called')
+    }
+    // Use requestAnimationFrame to ensure state update happens immediately
+    requestAnimationFrame(() => {
+      setShowProjectOptions(true)
+    })
   }
 
   // Handle back button click - instant response
@@ -238,30 +249,29 @@ export default function HeroEs() {
     }
     // Show preloader immediately before navigation for consistent UX
     showPreloaderB()
-    // Navigate immediately without delay
-    startTransition(() => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 HeroEs: Navigating to', `/${currentLocale}${route}`)
-      }
-      router.push(`/${currentLocale}${route}`)
-    })
+    // Navigate immediately - no startTransition to avoid delays
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 HeroEs: Navigating to', `/${currentLocale}${route}`)
+    }
+    router.push(`/${currentLocale}${route}`)
   }
 
   return (
     <>
     <section 
       ref={heroRef}
-      className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[1]"
+      className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[10]"
       style={{
         backgroundColor: videoLoaded ? 'transparent' : '#000000', // Black background while video loads
         pointerEvents: 'auto',
         height: '100vh',
         maxHeight: '100vh',
         width: '100vw',
-        zIndex: 1,
+        zIndex: 10, // Higher than Stats section (z-[3]) to ensure Hero is on top
         opacity: 1, // Ensure section itself is always visible
         visibility: 'visible', // Force visibility
-        display: 'flex' // Ensure it's displayed
+        display: 'flex', // Ensure it's displayed
+        isolation: 'isolate' // Create new stacking context to ensure Hero content is above Stats
       }}
     >
       {/* Background Video - static single video */}
@@ -342,7 +352,7 @@ export default function HeroEs() {
         style={{ 
           opacity: heroContentOpacity,
           y: heroContentY,
-          pointerEvents: shouldBlockPointer ? 'auto' : 'none',
+          pointerEvents: 'auto', // Always allow pointer events - buttons should always be clickable
           willChange: 'opacity, transform'
         }}
       >
@@ -419,7 +429,7 @@ export default function HeroEs() {
               <motion.div 
                 ref={ctaRef}
                 key="cta-button"
-                className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[40]"
+                className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[100]"
                 initial={{ opacity: 0, y: 20 }}
                 animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -428,13 +438,19 @@ export default function HeroEs() {
                   delay: 0.7, // Fade in after subtitle
                   ease: "easeOut" 
                 }}
-                style={{ pointerEvents: 'auto' }}
+                style={{ 
+                  pointerEvents: 'auto',
+                  position: 'relative',
+                  zIndex: 100, // Ensure button container is always on top
+                  isolation: 'isolate' // Create new stacking context
+                }}
               >
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[50] cursor-pointer transition-all duration-200"
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[100] cursor-pointer transition-all duration-200 touch-manipulation"
                   onClick={handleExploreProject}
+                  onTouchEnd={handleExploreProject}
                   style={{ 
                     userSelect: 'none', 
                     WebkitUserSelect: 'none', 
@@ -443,7 +459,13 @@ export default function HeroEs() {
                     pointerEvents: 'auto',
                     opacity: 1,
                     position: 'relative',
-                    zIndex: 50
+                    zIndex: 100, // Higher z-index to ensure it's always on top
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    minHeight: '44px',
+                    minWidth: '44px',
+                    cursor: 'pointer',
+                    isolation: 'isolate' // Create new stacking context
                   }}
                 >
                   Explorar Proyecto
@@ -456,7 +478,7 @@ export default function HeroEs() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                transition={{ duration: 0.1, ease: "easeOut" }}
                 style={{ pointerEvents: 'auto' }}
               >
                 {/* First Row: Back Button + First Project Button */}

@@ -303,7 +303,7 @@ export default function Navbar() {
     }
   }, [isPreloaderComplete, isPreloaderVisible, isPreloaderBVisible, pathname, currentLocale, setIsNavbarHidden])
 
-  // Periodic check to ensure navbar is always visible - safety mechanism
+  // Periodic check to ensure navbar is always visible and clickable - safety mechanism
   useEffect(() => {
     // Only check if preloader is not visible (page has loaded)
     if (isPreloaderBVisible) return // Don't check while preloader is showing
@@ -318,6 +318,18 @@ export default function Navbar() {
         setIsNavbarHidden(false)
         if (process.env.NODE_ENV === 'development') {
           console.log('⚠️ Navbar: Periodic check detected navbar not visible, forcing it to show')
+        }
+      }
+      
+      // CRITICAL: Ensure navbar element has pointer events enabled when visible
+      if (navbarRef.current && shouldBeVisible && isVisible) {
+        const computedStyle = window.getComputedStyle(navbarRef.current)
+        if (computedStyle.pointerEvents === 'none') {
+          // Force pointer events to be enabled
+          navbarRef.current.style.pointerEvents = 'auto'
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚠️ Navbar: Periodic check detected pointer events disabled, forcing them enabled')
+          }
         }
       }
     }, 500) // Check every 500ms
@@ -478,7 +490,7 @@ export default function Navbar() {
   return (
     <header 
       ref={navbarRef}
-      className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
+      className={`fixed left-0 right-0 z-[100] p-4 transition-all duration-500 ease-out ${
       // For deck, explore, and terminal-maritimo routes, only hide if navbar is explicitly hidden
       pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/terminal-maritimo')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
@@ -487,7 +499,12 @@ export default function Navbar() {
             : isVisible 
               ? 'top-0 translate-y-0 opacity-100' 
               : '-translate-y-full opacity-0')
-    }`}>
+    }`}
+      style={{
+        pointerEvents: (isNavbarHidden || isPreloaderVisible || !isVisible) ? 'none' : 'auto', // Always allow clicks when visible
+        zIndex: 100, // Higher z-index to ensure it's above most content (below preloaders at 99999)
+        isolation: 'isolate' // Create new stacking context
+      }}>
       <nav className="container mx-auto">
         <div ref={mobileMenuRef} className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
           <div className="flex items-center justify-between px-6 py-4">

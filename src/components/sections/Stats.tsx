@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useLayoutEffect, startTransition } from 'react'
+import { useEffect, useState, useRef, useLayoutEffect } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent, useSpring, useMotionValue, useInView, useReducedMotion } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
@@ -183,13 +183,11 @@ export default function Stats() {
     // Show preloader immediately before navigation for consistent UX
     // This must happen synchronously before router.push to prevent white screen
     showPreloaderB()
-    // Use startTransition for non-blocking navigation
-    startTransition(() => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Stats: Navigating to parque-tecnologico')
-      }
-      router.push(`/${locale}/parque-tecnologico`)
-    })
+    // Navigate immediately - no startTransition to avoid delays
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Stats: Navigating to parque-tecnologico')
+    }
+    router.push(`/${locale}/parque-tecnologico`)
   }
   
   const handlePortZoneClick = () => {
@@ -198,13 +196,11 @@ export default function Stats() {
     }
     // Show preloader immediately before navigation for consistent UX
     showPreloaderB()
-    // Use startTransition for non-blocking navigation
-    startTransition(() => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Stats: Navigating to terminal-maritimo')
-      }
-      router.push(`/${locale}/terminal-maritimo`)
-    })
+    // Navigate immediately - no startTransition to avoid delays
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Stats: Navigating to terminal-maritimo')
+    }
+    router.push(`/${locale}/terminal-maritimo`)
   }
   
   const handleCaboNegroDosClick = () => {
@@ -213,13 +209,11 @@ export default function Stats() {
     }
     // Show preloader immediately before navigation for consistent UX
     showPreloaderB()
-    // Use startTransition for non-blocking navigation
-    startTransition(() => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Stats: Navigating to parque-logistico')
-      }
-      router.push(`/${locale}/parque-logistico`)
-    })
+    // Navigate immediately - no startTransition to avoid delays
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Stats: Navigating to parque-logistico')
+    }
+    router.push(`/${locale}/parque-logistico`)
   }
   
   // Track scroll progress using statsRef (always defined, avoids hydration errors)
@@ -733,7 +727,9 @@ export default function Stats() {
             // Otherwise use scroll-based opacity
             return scrollOpacity
           })(),
-          pointerEvents: (!isPreloaderBVisible && (shouldShowStats || forceVisible || isInView || hasScrolled || statsSectionOpacity.get() > 0.1)) ? 'auto' : 'none',
+          // Only enable pointer events when Stats is significantly visible (opacity > 0.5)
+          // This prevents Stats from blocking Hero button clicks when Hero is still visible
+          pointerEvents: (!isPreloaderBVisible && (shouldShowStats || forceVisible || isInView || hasScrolled) && statsSectionOpacity.get() > 0.5) ? 'auto' : 'none',
           visibility: !isPreloaderBVisible ? 'visible' : 'hidden', // Only hide if PreloaderB is visible
           // Fix mobile viewport height issues - add extra height on mobile to prevent Partners from covering last card
           minHeight: isMobile ? 'calc(100vh + 250px)' : '100vh',
@@ -811,12 +807,17 @@ export default function Stats() {
               {/* Top Row: Patagon Valley (centered) */}
               <div className="flex justify-center">
                 <motion.div 
-                  className="relative w-full max-w-md rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
+                  className="relative w-full max-w-md rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
                   style={{
                     opacity: statBox1Opacity,
                     y: isMobile ? 0 : statBox1Y, // Only apply Y transform on desktop
-                    willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
+                    willChange: isMobile ? 'opacity' : 'transform, opacity', // Optimize for mobile
+                    transition: 'none', // Disable all CSS transitions
                   }}
+                  transition={{ duration: 0, ease: "linear" }}
+                  whileHover={{}}
+                  whileTap={{}}
+                  animate={{}}
                   onClick={handlePatagonValleyClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/parque-tecnologico`)}
                 >
@@ -856,12 +857,17 @@ export default function Stats() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
                 {/* Terminal Marítimo */}
                 <motion.div 
-                  className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
+                  className="relative rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
                   style={{
                     opacity: statBox2Opacity,
                     y: isMobile ? 0 : statBox2Y, // Only apply Y transform on desktop
-                    willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
+                    willChange: isMobile ? 'opacity' : 'transform, opacity', // Optimize for mobile
+                    transition: 'none', // Disable all CSS transitions
                   }}
+                  transition={{ duration: 0, ease: "linear" }}
+                  whileHover={{}}
+                  whileTap={{}}
+                  animate={{}}
                   onClick={handlePortZoneClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/terminal-maritimo`)}
                 >
@@ -898,12 +904,17 @@ export default function Stats() {
 
                 {/* Cabo Negro Dos */}
                 <motion.div 
-                  className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
+                  className="relative rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
                   style={{
                     opacity: statBox3Opacity,
                     y: isMobile ? 0 : statBox3Y, // Only apply Y transform on desktop
-                    willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
+                    willChange: isMobile ? 'opacity' : 'transform, opacity', // Optimize for mobile
+                    transition: 'none', // Disable all CSS transitions
                   }}
+                  transition={{ duration: 0, ease: "linear" }}
+                  whileHover={{}}
+                  whileTap={{}}
+                  animate={{}}
                   onClick={handleCaboNegroDosClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/parque-logistico`)}
                 >

@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
-import { ReactNode, MouseEvent, startTransition } from 'react'
+import { ReactNode, MouseEvent } from 'react'
 
 interface LinkWithPreloaderProps {
   href: string
@@ -25,10 +25,8 @@ export function LinkWithPreloader({ href, children, className, onClick }: LinkWi
     // Show preloader immediately
     showPreloaderB()
     
-    // Navigate immediately without delay - use startTransition for non-blocking navigation
-    startTransition(() => {
-      router.push(href)
-    })
+    // Navigate immediately - no startTransition to avoid delays
+    router.push(href)
   }
 
   return (

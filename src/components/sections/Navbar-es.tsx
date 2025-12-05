@@ -489,7 +489,7 @@ export default function NavbarEs() {
   return (
     <header 
       ref={navbarRef}
-      className={`fixed left-0 right-0 z-50 p-4 transition-all duration-500 ease-out ${
+      className={`fixed left-0 right-0 z-[100] p-4 transition-all duration-500 ease-out ${
       // For deck, explore, and terminal-maritimo routes, only hide if navbar is explicitly hidden
       pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/terminal-maritimo')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
@@ -498,7 +498,12 @@ export default function NavbarEs() {
             : isVisible 
               ? 'top-0 translate-y-0 opacity-100' 
               : '-translate-y-full opacity-0')
-    }`}>
+    }`}
+      style={{
+        pointerEvents: (isNavbarHidden || isPreloaderVisible || !isVisible) ? 'none' : 'auto', // Always allow clicks when visible
+        zIndex: 100, // Higher z-index to ensure it's above most content (below preloaders at 99999)
+        isolation: 'isolate' // Create new stacking context
+      }}>
       <nav className="container mx-auto">
         <div ref={mobileMenuRef} className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
           <div className="flex items-center justify-between px-6 py-4">

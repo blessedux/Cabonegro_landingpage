@@ -84,7 +84,16 @@ export function RulerCarousel({
   const previousIndexRef = useRef(itemsPerSet + 4);
 
   const handleItemClick = (newIndex: number) => {
-    if (isResetting) return;
+    if (isResetting) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚫 RulerCarousel: Click blocked - resetting in progress')
+      }
+      return;
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🖱️ RulerCarousel: Item clicked', { newIndex, currentIndex: activeIndex })
+    }
 
     // Find the original item index (0-8)
     const targetOriginalIndex = newIndex % itemsPerSet;
@@ -174,13 +183,24 @@ export function RulerCarousel({
   const isSeventhSlide = currentPage === 7;
 
   return (
-    <div className={`w-full h-[50vh] flex flex-col items-center justify-between ${lightMode ? 'bg-white' : 'bg-black'} py-6`}>
+    <div className={`w-full h-[50vh] flex flex-col items-center justify-between ${lightMode ? 'bg-white' : 'bg-black'} py-6`} style={{ touchAction: 'pan-y' }}>
       {/* Navigation Arrows - Moved to top */}
       <div className="flex items-center justify-center gap-4 mb-4">
         <button
           onClick={handlePrevious}
+          onTouchEnd={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            if (!isResetting) handlePrevious()
+          }}
           disabled={isResetting}
-          className="flex items-center justify-center cursor-pointer"
+          className="flex items-center justify-center cursor-pointer touch-manipulation"
+          style={{
+            minWidth: "44px",
+            minHeight: "44px",
+            touchAction: "manipulation",
+            WebkitTapHighlightColor: "transparent",
+          }}
           aria-label="Previous item"
         >
           <Rewind className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
@@ -200,8 +220,19 @@ export function RulerCarousel({
 
         <button
           onClick={handleNext}
+          onTouchEnd={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            if (!isResetting) handleNext()
+          }}
           disabled={isResetting}
-          className="flex items-center justify-center cursor-pointer"
+          className="flex items-center justify-center cursor-pointer touch-manipulation"
+          style={{
+            minWidth: "44px",
+            minHeight: "44px",
+            touchAction: "manipulation",
+            WebkitTapHighlightColor: "transparent",
+          }}
           aria-label="Next item"
         >
           <FastForward className={`w-5 h-5 ${lightMode ? 'text-gray-700' : 'text-primary/80'}`} />
@@ -212,7 +243,13 @@ export function RulerCarousel({
         <div className="flex items-center justify-center">
           <RulerLines top lightMode={lightMode} />
         </div>
-        <div className="flex items-center justify-center w-full h-full relative overflow-hidden">
+        <div 
+          className="flex items-center justify-center w-full h-full relative overflow-hidden" 
+          style={{ 
+            touchAction: "pan-y pinch-zoom", // Allow vertical scrolling and pinch zoom, but buttons handle their own touches
+            pointerEvents: "auto", // Ensure pointer events work
+          }}
+        >
           <motion.div
             className="flex items-center gap-[50px]"
             animate={{
@@ -228,6 +265,9 @@ export function RulerCarousel({
                     mass: 1,
                   }
             }
+            style={{
+              touchAction: "pan-y", // Allow vertical scrolling but prevent horizontal pan interference
+            }}
           >
             {infiniteItems.map((item, index) => {
               const isActive = index === activeIndex;
@@ -235,8 +275,32 @@ export function RulerCarousel({
               return (
                 <motion.button
                   key={item.id}
-                  onClick={() => handleItemClick(index)}
-                      className={`text-lg md:text-xl font-bold cursor-pointer flex items-center justify-center ${
+                  onClick={(e) => {
+                    // Handle click for desktop
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('🖱️ RulerCarousel: Click on item', { index, itemTitle: item.title })
+                    }
+                    handleItemClick(index)
+                  }}
+                  onTouchStart={(e) => {
+                    // Only handle touch on mobile - stop propagation to avoid conflicts
+                    e.stopPropagation()
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('📱 RulerCarousel: Touch start on item', { index, itemTitle: item.title })
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    // Handle touch end for mobile - prevent default to avoid double-tap zoom
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('📱 RulerCarousel: Touch end on item', { index, itemTitle: item.title })
+                    }
+                    handleItemClick(index)
+                  }}
+                  className={`text-lg md:text-xl font-bold cursor-pointer flex items-center justify-center touch-manipulation ${
                     // On desktop, allow 2-line wrap for slide 5 and 7 to align vertically
                     (item as any).originalIndex === 4 || (item as any).originalIndex === 6
                       ? 'md:whitespace-normal md:break-words whitespace-nowrap'
@@ -261,6 +325,17 @@ export function RulerCarousel({
                   }
                   style={{
                     width: "200px",
+                    minHeight: "48px", // Minimum touch target size for mobile (iOS/Android guidelines recommend 44-48px)
+                    minWidth: "48px", // Ensure minimum width for touch target
+                    padding: "12px 16px", // Add padding for better touch area on mobile
+                    touchAction: "manipulation", // Optimize touch interactions - allows single-finger pan and zoom
+                    WebkitTapHighlightColor: "transparent", // Remove tap highlight on mobile
+                    zIndex: isActive ? 10 : 1, // Ensure active button is above others
+                    position: "relative", // Ensure z-index works
+                    userSelect: "none", // Prevent text selection on mobile
+                    WebkitUserSelect: "none",
+                    pointerEvents: "auto", // Ensure pointer events are enabled
+                    cursor: "pointer", // Show pointer cursor
                   }}
                 >
                   {item.title}

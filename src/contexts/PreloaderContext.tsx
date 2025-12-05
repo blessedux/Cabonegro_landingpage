@@ -119,13 +119,12 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
       })
     }
     setIsPreloaderBVisible(false)
-    // Delay resetting navigation state to prevent white screen flash
-    setTimeout(() => {
-      setIsNavigating(false)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ PreloaderContext: Navigation state reset')
-      }
-    }, 100)
+    // CRITICAL: Reset navigation state immediately to re-enable navbar clicks
+    // Don't delay - navbar must be clickable as soon as preloader hides
+    setIsNavigating(false)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ PreloaderContext: Preloader hidden and navigation state reset immediately')
+    }
   }
 
   const showPreloaderSimple = () => {

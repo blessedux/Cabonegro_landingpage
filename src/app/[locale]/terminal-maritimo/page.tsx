@@ -704,8 +704,8 @@ export default function TerminalMaritimoPage() {
               <h3 className={`text-xl md:text-2xl font-semibold mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>
                 {localizedText.strategicCollaboration.partnerTitle}
               </h3>
-              {/* Use MagicText with bold words for English locale, regular paragraph for others */}
-              {locale === 'en' ? (
+              {/* Use MagicText with bold words for English and Spanish locales, regular paragraph for others */}
+              {locale === 'en' || locale === 'es' ? (
                 <div className="ml-8 md:ml-12">
                   <MagicTextWithBold 
                     text={localizedText.strategicCollaboration.description}
@@ -758,7 +758,7 @@ export default function TerminalMaritimoPage() {
           <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-12`}>
             {localizedText.timeline.description}
           </p>
-          <div>
+          <div style={{ pointerEvents: 'auto', touchAction: 'pan-y' }}>
             <RulerCarousel originalItems={timelineCarouselItems} lightMode={isLightMode} />
           </div>
         </div>

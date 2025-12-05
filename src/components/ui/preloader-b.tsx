@@ -114,7 +114,7 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
     
     // Auto-hide mode: ensure minimum display time for smooth transition
     // Then fade out smoothly - this ensures users see the transition
-    const minDisplayTime = 500 // Minimum 500ms to ensure smooth transition and prevent double pop-up
+    const minDisplayTime = 200 // Reduced from 500ms to 200ms for faster navigation transitions
     const displayDuration = Math.max(minDisplayTime, duration * 1000)
     
     if (process.env.NODE_ENV === 'development') {
@@ -192,12 +192,14 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
         style={{ 
           backgroundColor: '#ffffff', // White background to match original preloader
           zIndex: 99999, // Ensure it's above everything including navbar and Stats section
-          pointerEvents: isFadingOut ? 'none' : 'auto', // Allow interactions when fading out
+          pointerEvents: (isFadingOut || !isVisible) ? 'none' : 'auto', // Disable pointer events when fading out or not visible
           position: 'fixed', // Always fixed to block content
           top: 0,
           left: 0,
           right: 0,
-          bottom: 0
+          bottom: 0,
+          // Ensure it's completely removed from interaction when fading
+          visibility: (!isVisible || isFadingOut) ? 'hidden' : 'visible'
         }}
       >
         {/* Subtle circular gradient overlay for 3D effect */}

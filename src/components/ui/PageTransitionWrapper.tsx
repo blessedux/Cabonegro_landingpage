@@ -32,6 +32,7 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
   // Track previous pathname to detect navigation
   const prevPathnameRef = React.useRef(pathname)
   const isTransitioning = React.useRef(false)
+  const [showWhiteBlocker, setShowWhiteBlocker] = React.useState(false)
 
   React.useEffect(() => {
     if (prevPathnameRef.current !== pathname) {
@@ -48,6 +49,28 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
     }
   }, [pathname, isNavigating, isPreloaderBVisible])
 
+  // Control white blocker visibility with timeout for fast transitions
+  React.useEffect(() => {
+    // Show white blocker when navigating and PreloaderB not visible yet
+    if (isNavigating && !isPreloaderBVisible) {
+      setShowWhiteBlocker(true)
+      // Auto-hide after short timeout if PreloaderB doesn't appear (fast transition)
+      // This handles project → home navigation where PreloaderB is skipped
+      const timeout = setTimeout(() => {
+        if (!isPreloaderBVisible) {
+          setShowWhiteBlocker(false)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚡ PageTransitionWrapper: White blocker auto-hide (fast transition detected)')
+          }
+        }
+      }, 100) // Hide after 100ms if PreloaderB doesn't appear
+      return () => clearTimeout(timeout)
+    } else {
+      // Hide immediately when PreloaderB appears or navigation completes
+      setShowWhiteBlocker(false)
+    }
+  }, [isNavigating, isPreloaderBVisible])
+
   const handlePreloaderBComplete = () => {
     // Don't hide here - let usePageTransition handle it
     // This prevents double hiding and ensures proper timing
@@ -55,10 +78,6 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
       console.log('✅ PageTransitionWrapper: PreloaderB onComplete called, waiting for usePageTransition to hide')
     }
   }
-
-  // Show immediate white screen blocker when navigating (even before PreloaderB renders)
-  // This prevents any white screen flash during the gap between navigation start and preloader render
-  const showWhiteBlocker = isNavigating && !isPreloaderBVisible
 
   if (process.env.NODE_ENV === 'development' && isNavigating) {
     console.log('🎬 PageTransitionWrapper render:', {
@@ -73,11 +92,14 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
     <>
       {/* Immediate white screen blocker - shows instantly when navigation starts */}
       {/* This prevents white screen during the gap before PreloaderB renders */}
+      {/* CRITICAL: Must hide when navigation completes to prevent blocking navbar */}
       {showWhiteBlocker && (
         <div 
-          className="fixed inset-0 z-[99997] bg-white"
+          className="fixed inset-0 z-[99997] bg-white transition-opacity duration-200"
           style={{
-            pointerEvents: 'auto'
+            pointerEvents: showWhiteBlocker ? 'auto' : 'none', // Only block when actually showing
+            opacity: showWhiteBlocker ? 1 : 0,
+            visibility: showWhiteBlocker ? 'visible' : 'hidden' // Completely remove from interaction when hidden
           }}
         >
           <div className="absolute inset-0 flex items-center justify-center">
@@ -107,10 +129,11 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
       
       {/* Keep children visible during transition - overlay preloader on top */}
       {/* This ensures old page stays visible until new page is ready, preventing white screens */}
+      {/* CRITICAL: Re-enable pointer events as soon as navigation completes to allow navbar clicks */}
       <div 
         style={{
           opacity: 1, // Always keep visible - preloader overlays on top
-          pointerEvents: isNavigating ? 'none' : 'auto' // Disable interactions during navigation
+          pointerEvents: (isNavigating && isPreloaderBVisible) ? 'none' : 'auto' // Only disable when actively showing preloader
         }}
       >
         {/* Wrap children in Suspense to prevent white screen during route transitions */}
