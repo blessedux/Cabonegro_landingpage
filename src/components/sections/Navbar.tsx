@@ -264,6 +264,17 @@ export default function Navbar() {
 
   const localizedText = getLocalizedText()
 
+  // ALWAYS ensure navbar is visible on pathname change - critical for navigation
+  useEffect(() => {
+    // Immediately show navbar when pathname changes (navigation occurred)
+    setIsNavbarHidden(false)
+    setIsVisible(true)
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Navbar: Pathname changed, forcing navbar to show', { pathname })
+    }
+  }, [pathname])
+
   // Dropdown animation only after preloader completes
   useEffect(() => {
     // Check if we're on deck, explore, contact, or terminal-maritimo routes - show navbar immediately and reset hidden state
@@ -283,11 +294,36 @@ export default function Navbar() {
       const timer = setTimeout(() => {
         setIsVisible(true)
         setIsNavbarHidden(false) // Ensure navbar is not hidden
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Navbar: Preloader complete, showing navbar')
+        }
       }, 300) // Reduced delay for faster navbar appearance after preloader
 
       return () => clearTimeout(timer)
     }
   }, [isPreloaderComplete, isPreloaderVisible, isPreloaderBVisible, pathname, currentLocale, setIsNavbarHidden])
+
+  // Periodic check to ensure navbar is always visible - safety mechanism
+  useEffect(() => {
+    // Only check if preloader is not visible (page has loaded)
+    if (isPreloaderBVisible) return // Don't check while preloader is showing
+    
+    const checkInterval = setInterval(() => {
+      // Check if navbar should be visible but isn't
+      const shouldBeVisible = !isPreloaderBVisible && !isPreloaderVisible
+      
+      if (shouldBeVisible && !isVisible) {
+        // Navbar should be visible but isn't - force it to show
+        setIsVisible(true)
+        setIsNavbarHidden(false)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⚠️ Navbar: Periodic check detected navbar not visible, forcing it to show')
+        }
+      }
+    }, 500) // Check every 500ms
+    
+    return () => clearInterval(checkInterval)
+  }, [isVisible, isPreloaderBVisible, isPreloaderVisible])
 
   // Prefetch language route on hover for instant navigation
   const prefetchLanguageRoute = (newLocale: string) => {

@@ -116,8 +116,10 @@ The contact form sends emails using **EmailJS**, a free email service that doesn
 
 1. Go to **Account** → **General** in EmailJS dashboard
 2. Find your **Public Key** (User ID)
-3. Note your **Service ID** (from Step 2)
-4. Note your **Template ID** (from Step 3)
+3. Go to **Account** → **Security** in EmailJS dashboard
+4. Find your **Private Key** (required if EmailJS is in strict mode)
+5. Note your **Service ID** (from Step 2)
+6. Note your **Template ID** (from Step 3)
 
 ### Step 5: Configure Environment Variables
 
@@ -129,6 +131,7 @@ Create a `.env.local` file in the project root:
 EMAILJS_SERVICE_ID=service_xxxxxxxxx
 EMAILJS_TEMPLATE_ID=template_xxxxxxxxx
 EMAILJS_PUBLIC_KEY=xxxxxxxxxxxxxxxxxxxxx
+EMAILJS_PRIVATE_KEY=xxxxxxxxxxxxxxxxxxxxx  # Required if EmailJS is in strict mode
 
 # Optional: Default receiver email
 # Defaults to: ventas@cabonegro.cl
@@ -216,11 +219,44 @@ const DEFAULT_RECEIVER_EMAIL =
 
 ### Emails not sending
 
-1. Check that all EmailJS environment variables are set correctly
-2. Verify your EmailJS service is connected and active
-3. Check that the template ID matches your EmailJS template
-4. Check server logs for error messages
-5. Verify the API route is accessible (check network tab in browser)
+1. **Enable Server-Side API Calls (REQUIRED)**
+
+   - The most common issue is that EmailJS blocks server-side API calls by default
+   - **Solution**: Enable server-side API in EmailJS dashboard:
+     1. Go to [https://dashboard.emailjs.com/admin](https://dashboard.emailjs.com/admin)
+     2. Navigate to **Account** → **Security**
+     3. Enable **"Allow EmailJS API for non-browser applications"**
+   - This setting is required for Next.js API routes (server-side)
+
+2. Check that all EmailJS environment variables are set correctly
+3. Verify your EmailJS service is connected and active
+4. Check that the template ID matches your EmailJS template
+5. Check server logs for error messages
+6. Verify the API route is accessible (check network tab in browser)
+
+### Error: "API calls are disabled for non-browser applications"
+
+This error means server-side API calls are disabled in your EmailJS account. To fix:
+
+1. Log in to [EmailJS Dashboard](https://dashboard.emailjs.com/admin)
+2. Go to **Account** → **Security**
+3. Find the setting **"Allow EmailJS API for non-browser applications"**
+4. Enable it
+5. Try submitting the form again
+
+### Error: "API calls in strict mode, but no private key was passed"
+
+This error means EmailJS is in strict mode and requires a private key. To fix:
+
+1. Log in to [EmailJS Dashboard](https://dashboard.emailjs.com/admin)
+2. Go to **Account** → **Security**
+3. Find your **Private Key** (different from Public Key)
+4. Add it to your `.env.local` file:
+   ```bash
+   EMAILJS_PRIVATE_KEY=your_private_key_here
+   ```
+5. Restart your dev server
+6. Try submitting the form again
 
 ### Wrong email receiving submissions
 

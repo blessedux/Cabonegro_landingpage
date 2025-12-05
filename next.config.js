@@ -1,7 +1,16 @@
 const createNextIntlPlugin = require('next-intl/plugin');
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
+
+// Bundle analyzer is optional - only load if available
+let withBundleAnalyzer = (config) => config;
+try {
+  const bundleAnalyzer = require('@next/bundle-analyzer')({
+    enabled: process.env.ANALYZE === 'true',
+  });
+  withBundleAnalyzer = bundleAnalyzer;
+} catch (error) {
+  // Bundle analyzer not installed, skip it
+  console.warn('@next/bundle-analyzer not found, skipping bundle analysis');
+}
 
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
@@ -23,12 +32,7 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    domains: [
-      "source.unsplash.com",
-      "images.unsplash.com",
-      "ext.same-assets.com",
-      "ugc.same-assets.com",
-    ],
+    // Note: domains is deprecated, using remotePatterns instead
     remotePatterns: [
       {
         protocol: "https",

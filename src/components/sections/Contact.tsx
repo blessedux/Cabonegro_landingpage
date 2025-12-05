@@ -66,9 +66,43 @@ export default function Contact() {
         }),
       })
 
-      const data = await response.json()
+      // Parse response - handle both JSON and non-JSON responses
+      let data: any
+      try {
+        const contentType = response.headers.get('content-type') || ''
+        if (contentType.includes('application/json')) {
+          data = await response.json()
+        } else {
+          const text = await response.text()
+          // Try to parse as JSON if it looks like JSON
+          try {
+            data = JSON.parse(text)
+          } catch {
+            // If not JSON, create error object
+            data = { error: text || t('errorMessage') }
+          }
+        }
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError)
+        throw new Error(t('errorMessage'))
+      }
 
       if (!response.ok) {
+        // Always log error details in development
+        console.error('Contact form API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: data,
+        })
+        
+        // In development, log the full error details
+        if (data.details) {
+          console.error('Contact form API error details:', data.details)
+        }
+        if (data.debug) {
+          console.error('Contact form API debug info:', data.debug)
+        }
+        
         throw new Error(data.error || t('errorMessage'))
       }
 

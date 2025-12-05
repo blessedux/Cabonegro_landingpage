@@ -38,41 +38,36 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const [isNavigating, setIsNavigating] = useState(false)
 
   // Initialize preloader state on mount (after hydration)
+  // Only set initial state - let LocaleHomePage control PreloaderB visibility
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // Skip preloader initialization if this is a language switch
-      // Language switches use showPreloaderB() directly, so we don't need the 500ms delay
+      // Language switches use showPreloaderB() directly
       if (isLanguageSwitch) {
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 PreloaderContext: Language switch detected, skipping initialization delay')
+          console.log('🔄 PreloaderContext: Language switch detected, skipping initialization')
         }
         return
       }
 
       const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
       if (!hasVisited) {
-        // First visit - show preloader to cover content loading
+        // First visit - show PreloaderB (LocaleHomePage will handle visibility and auto-hide)
         setHasSeenPreloader(false)
         setIsPreloaderComplete(false)
-        setIsPreloaderBVisible(true) // Show preloader on first visit
+        setIsPreloaderBVisible(true) // Show PreloaderB on first visit
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 PreloaderContext: First visit detected, showing preloader')
+          console.log('🔄 PreloaderContext: First visit detected, showing PreloaderB (LocaleHomePage will control)')
         }
       } else {
-        // Not first visit - still show preloader briefly to cover content
-        // This ensures smooth loading experience
+        // Return visit - let LocaleHomePage decide when to show PreloaderB
+        // Don't auto-show or auto-hide - let component control it
         setHasSeenPreloader(true)
-        setIsPreloaderComplete(false) // Keep as false until content loads
-        setIsPreloaderBVisible(true) // Show preloader briefly even on return visits
+        setIsPreloaderComplete(false)
+        // Don't set isPreloaderBVisible here - let LocaleHomePage control it
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 PreloaderContext: Return visit, showing preloader to cover content')
+          console.log('🔄 PreloaderContext: Return visit, LocaleHomePage will control PreloaderB visibility')
         }
-        // Hide after brief moment to allow content to load
-        const timer = setTimeout(() => {
-          setIsPreloaderBVisible(false)
-          setIsPreloaderComplete(true)
-        }, 500) // Brief preloader to cover initial content load
-        return () => clearTimeout(timer)
       }
     }
   }, [isLanguageSwitch])
@@ -106,18 +101,30 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   }
 
   const showPreloaderB = () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 PreloaderContext: showPreloaderB called', {
+        wasVisible: isPreloaderBVisible,
+        wasNavigating: isNavigating
+      })
+    }
     setIsPreloaderBVisible(true)
     setIsNavigating(true)
   }
 
   const hidePreloaderB = () => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 hidePreloaderB called')
+      console.log('🔄 PreloaderContext: hidePreloaderB called', {
+        wasVisible: isPreloaderBVisible,
+        wasNavigating: isNavigating
+      })
     }
     setIsPreloaderBVisible(false)
     // Delay resetting navigation state to prevent white screen flash
     setTimeout(() => {
       setIsNavigating(false)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ PreloaderContext: Navigation state reset')
+      }
     }, 100)
   }
 

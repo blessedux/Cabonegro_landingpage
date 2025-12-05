@@ -12,6 +12,7 @@
     "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
+    "@emailjs/nodejs": "^5.0.2",
     "@mdi/js": "^7.4.47",
     "@mdi/react": "^1.6.1",
     "@radix-ui/react-slot": "^1.2.3",

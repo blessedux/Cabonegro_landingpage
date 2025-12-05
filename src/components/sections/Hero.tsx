@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { WordRotate } from '@/components/ui/word-rotate'
 import { ArrowLeft } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, startTransition } from 'react'
 import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence, useMotionTemplate } from 'framer-motion'
 import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
@@ -233,10 +233,19 @@ export default function Hero() {
 
   // Handle project navigation - show preloader for consistent transitions
   const handleProjectNavigation = (route: string) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Hero: handleProjectNavigation - showing preloader before navigation', { route })
+    }
     // Show preloader immediately before navigation for consistent UX
+    // This must happen synchronously before router.push to prevent white screen
     showPreloaderB()
     // Navigate immediately without delay
-    router.push(`/${currentLocale}${route}`)
+    startTransition(() => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Hero: Navigating to', `/${currentLocale}${route}`)
+      }
+      router.push(`/${currentLocale}${route}`)
+    })
   }
 
   return (

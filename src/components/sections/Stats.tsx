@@ -148,28 +148,47 @@ export default function Stats() {
   
   // Navigation handlers - explicitly show preloader for consistent transitions
   const handlePatagonValleyClick = () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Stats: handlePatagonValleyClick - showing preloader before navigation')
+    }
     // Show preloader immediately before navigation for consistent UX
+    // This must happen synchronously before router.push to prevent white screen
     showPreloaderB()
     // Use startTransition for non-blocking navigation
     startTransition(() => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Stats: Navigating to parque-tecnologico')
+      }
       router.push(`/${locale}/parque-tecnologico`)
     })
   }
   
   const handlePortZoneClick = () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Stats: handlePortZoneClick - showing preloader before navigation')
+    }
     // Show preloader immediately before navigation for consistent UX
     showPreloaderB()
     // Use startTransition for non-blocking navigation
     startTransition(() => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Stats: Navigating to terminal-maritimo')
+      }
       router.push(`/${locale}/terminal-maritimo`)
     })
   }
   
   const handleCaboNegroDosClick = () => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔄 Stats: handleCaboNegroDosClick - showing preloader before navigation')
+    }
     // Show preloader immediately before navigation for consistent UX
     showPreloaderB()
     // Use startTransition for non-blocking navigation
     startTransition(() => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Stats: Navigating to parque-logistico')
+      }
       router.push(`/${locale}/parque-logistico`)
     })
   }

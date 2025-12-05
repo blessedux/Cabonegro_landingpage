@@ -18,12 +18,24 @@ export function usePageTransition() {
       return
     }
 
-    // If pathname changed and we're not already navigating
-    if (prevPathnameRef.current !== pathname && !isNavigatingRef.current) {
+    // If pathname changed, always set up hide logic (even if preloader was already shown)
+    // This ensures the preloader always gets hidden, regardless of when it was shown
+    if (prevPathnameRef.current !== pathname) {
       const navigationStart = Date.now()
       navigationStartRef.current = navigationStart
-      isNavigatingRef.current = true
       
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 usePageTransition: Pathname changed detected', {
+          from: prevPathnameRef.current,
+          to: pathname,
+          isPreloaderBVisible,
+          timestamp: navigationStart
+        })
+      }
+      
+      // Reset navigation ref to ensure proper detection
+      // This handles cases where preloader was shown explicitly before pathname change
+      isNavigatingRef.current = true
       setNavigating(true)
 
       // Show preloader for ALL route changes (navigation)
@@ -41,8 +53,8 @@ export function usePageTransition() {
         }
       }
 
-      // Wait for page to actually load before hiding preloader
-      // Use requestAnimationFrame to wait for next paint cycle
+      // Always set up hide timer when pathname changes
+      // This ensures preloader gets hidden even if it was shown explicitly before pathname change
       const checkPageLoaded = () => {
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -63,7 +75,8 @@ export function usePageTransition() {
 
       // Start checking after a minimum display time
       // Reduced from 500ms to match preloader duration (0.5s = 500ms)
-      const minDisplayTimer = setTimeout(checkPageLoaded, 600) // Minimum 600ms display to ensure smooth transition
+      // Use shorter delay (400ms) since PreloaderB now has auto-hide as fallback
+      const minDisplayTimer = setTimeout(checkPageLoaded, 400) // Minimum 400ms display to ensure smooth transition
 
       // Safety mechanism: Force hide after maximum time
       const safetyTimer = setTimeout(() => {
@@ -71,6 +84,9 @@ export function usePageTransition() {
           isNavigatingRef.current = false
           hidePreloaderB()
           setNavigating(false)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚠️ usePageTransition: Safety timer triggered, forcing preloader hide')
+          }
         }
       }, 2000) // Maximum 2 seconds
 
