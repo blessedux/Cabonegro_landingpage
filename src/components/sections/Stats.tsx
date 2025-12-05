@@ -113,6 +113,19 @@ export default function Stats() {
   const [isMobile, setIsMobile] = useState(false)
   const prefersReducedMotion = useReducedMotion()
   
+  // Debug: Log component mount and initial state
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Stats: Component mounted', {
+        isPreloaderComplete,
+        isPreloaderBVisible,
+        pathname,
+        hasRef: !!statsRef.current,
+        windowReady: typeof window !== 'undefined',
+      })
+    }
+  }, [])
+  
   // Detect mobile device
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -121,6 +134,10 @@ export default function Stats() {
       const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
                             (window.innerWidth <= 768)
       setIsMobile(isMobileDevice)
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Stats: Mobile detection', { isMobileDevice, width: window.innerWidth })
+      }
     }
     
     checkMobile()
@@ -144,6 +161,18 @@ export default function Stats() {
     margin: "-100% 0px -100% 0px", // Trigger when section enters viewport (even if partially)
     once: false // Allow re-triggering on navigation - critical for fade-in on navigation
   })
+  
+  // Debug: Log in-view status changes
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Stats: In-view status changed', {
+        isInView,
+        isPreloaderComplete,
+        isPreloaderBVisible,
+        readyToScroll: !isPreloaderBVisible, // Ready as soon as PreloaderB is hidden
+      })
+    }
+  }, [isInView, isPreloaderBVisible, isPreloaderComplete]) // Include isPreloaderComplete for logging only
   
   
   // Navigation handlers - explicitly show preloader for consistent transitions
@@ -405,8 +434,26 @@ export default function Stats() {
   }, [locale])
   
   // Monitor scroll events to detect when user scrolls
+  // Only block if PreloaderB is actually visible - don't wait for isPreloaderComplete
+  // This makes Stats component ready as soon as PreloaderB hides
   useEffect(() => {
-    if (!isPreloaderComplete || isPreloaderBVisible) return
+    if (isPreloaderBVisible) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Stats: Scroll monitoring blocked - PreloaderB is visible', {
+          isPreloaderBVisible,
+        })
+      }
+      return
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📊 Stats: Scroll monitoring enabled - ready to scroll', {
+        isPreloaderComplete,
+        isPreloaderBVisible,
+        hasRef: !!statsRef.current,
+        ready: !isPreloaderBVisible, // Ready if PreloaderB is not visible
+      })
+    }
     
     const handleScroll = () => {
       setHasScrolled(true)
@@ -419,7 +466,11 @@ export default function Stats() {
       if (isVisible) {
         setForceVisible(true)
         if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Stats: Scrolled to section, forcing visibility')
+          console.log('✅ Stats: Scrolled to section, forcing visibility', {
+            rectTop: rect.top,
+            rectBottom: rect.bottom,
+            windowHeight: window.innerHeight,
+          })
         }
       }
     }
@@ -431,24 +482,34 @@ export default function Stats() {
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [isPreloaderComplete, isPreloaderBVisible, navigationKey, locale]) // Include locale to re-initialize on language change
+  }, [isPreloaderBVisible, navigationKey, locale]) // Only depend on isPreloaderBVisible, not isPreloaderComplete
   
   // Monitor in-view status - this is the primary trigger for visibility
+  // Only check if PreloaderB is not visible - don't wait for isPreloaderComplete
   useEffect(() => {
-    if (isInView && isPreloaderComplete && !isPreloaderBVisible) {
+    if (isInView && !isPreloaderBVisible) {
       setForceVisible(true)
       if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Stats: Section in view, forcing visibility')
+        console.log('✅ Stats: Section in view, forcing visibility', {
+          isInView,
+          isPreloaderBVisible,
+          ready: !isPreloaderBVisible,
+        })
       }
     }
-  }, [isInView, isPreloaderComplete, isPreloaderBVisible, navigationKey, locale]) // Include locale
+  }, [isInView, isPreloaderBVisible, navigationKey, locale]) // Only depend on isPreloaderBVisible
   
   // Also monitor scroll progress as secondary trigger
+  // Only check if PreloaderB is not visible - don't wait for isPreloaderComplete
   useMotionValueEvent(statsSectionOpacity, "change", (latest) => {
-    if (latest > 0.01 && isPreloaderComplete && !isPreloaderBVisible) {
+    if (latest > 0.01 && !isPreloaderBVisible) {
       setForceVisible(true)
       if (process.env.NODE_ENV === 'development' && !forceVisible) {
-        console.log('✅ Stats: Scroll progress > 0.01, forcing visibility', latest)
+        console.log('✅ Stats: Scroll progress > 0.01, forcing visibility', {
+          latest,
+          isPreloaderBVisible,
+          ready: !isPreloaderBVisible,
+        })
       }
     }
   })
@@ -467,10 +528,11 @@ export default function Stats() {
       }
       
       // Check visibility after navigation with multiple attempts
+      // Only check if PreloaderB is not visible - don't wait for isPreloaderComplete
       const timers: NodeJS.Timeout[] = []
       
       timers.push(setTimeout(() => {
-        if (statsRef.current && isPreloaderComplete && !isPreloaderBVisible) {
+        if (statsRef.current && !isPreloaderBVisible) {
           const rect = statsRef.current.getBoundingClientRect()
           const isVisible = rect.top < window.innerHeight && rect.bottom > 0
           if (isVisible) {
@@ -480,7 +542,7 @@ export default function Stats() {
       }, 300))
       
       timers.push(setTimeout(() => {
-        if (statsRef.current && isPreloaderComplete && !isPreloaderBVisible) {
+        if (statsRef.current && !isPreloaderBVisible) {
           const rect = statsRef.current.getBoundingClientRect()
           const isVisible = rect.top < window.innerHeight && rect.bottom > 0
           if (isVisible) {
@@ -493,7 +555,7 @@ export default function Stats() {
         timers.forEach(timer => clearTimeout(timer))
       }
     }
-  }, [pathname, locale, isPreloaderComplete, isPreloaderBVisible, navigationKey])
+  }, [pathname, locale, isPreloaderBVisible, navigationKey]) // Only depend on isPreloaderBVisible
   
   // Fade to white when Partners section approaches
   // Partners scroll progress: 0 = Stats end at center, 1 = Stats end at top
@@ -543,7 +605,104 @@ export default function Stats() {
   useMotionValueEvent(statsSectionOpacity, "change", (latest) => {
     // Only show Stats section when AboutUs is in view
     setShouldShowStats(latest > 0.1)
+    
+    // Debug: Log opacity changes
+    if (process.env.NODE_ENV === 'development' && latest > 0.01) {
+      console.log('📊 Stats: Section opacity changed', {
+        opacity: latest,
+        shouldShow: latest > 0.1,
+        isPreloaderComplete,
+        isPreloaderBVisible,
+      })
+    }
   })
+  
+  // Debug: Check asset loading status
+  // Check assets as soon as PreloaderB is hidden, don't wait for isPreloaderComplete
+  useEffect(() => {
+    if (typeof window === 'undefined' || isPreloaderBVisible) return
+    
+    const checkAssets = () => {
+      const images = document.querySelectorAll('img')
+      const loadedImages: HTMLImageElement[] = []
+      const loadingImages: HTMLImageElement[] = []
+      
+      images.forEach((img) => {
+        if (img.complete) {
+          loadedImages.push(img as HTMLImageElement)
+        } else {
+          loadingImages.push(img as HTMLImageElement)
+        }
+      })
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('📊 Stats: Asset loading status', {
+          totalImages: images.length,
+          loadedImages: loadedImages.length,
+          loadingImages: loadingImages.length,
+          allAssetsLoaded: loadingImages.length === 0,
+          readyToScroll: !isPreloaderBVisible && loadingImages.length === 0,
+        })
+      }
+    }
+    
+    // Check immediately
+    checkAssets()
+    
+    // Check after a short delay to catch late-loading images
+    const timer = setTimeout(checkAssets, 500)
+    
+    // Also check when images load
+    const images = document.querySelectorAll('img')
+    const imageLoadHandlers: (() => void)[] = []
+    
+    images.forEach((img) => {
+      if (!img.complete) {
+        const handler = () => {
+          checkAssets()
+          img.removeEventListener('load', handler)
+        }
+        img.addEventListener('load', handler)
+        imageLoadHandlers.push(handler)
+      }
+    })
+    
+    return () => {
+      clearTimeout(timer)
+      images.forEach((img, index) => {
+        if (imageLoadHandlers[index]) {
+          img.removeEventListener('load', imageLoadHandlers[index])
+        }
+      })
+    }
+  }, [isPreloaderBVisible]) // Only depend on isPreloaderBVisible
+  
+  // Debug: Overall readiness check
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const readyToScroll = !isPreloaderBVisible // Ready as soon as PreloaderB is hidden
+      const readiness = {
+        componentMounted: true,
+        preloaderComplete: isPreloaderComplete,
+        preloaderBVisible: isPreloaderBVisible,
+        hasRef: !!statsRef.current,
+        isInView,
+        readyToScroll, // Ready as soon as PreloaderB is hidden
+        scrollProgress: baseScrollProgress.get(),
+        statsSectionOpacity: statsSectionOpacity.get(),
+      }
+      
+      console.log('📊 Stats: Overall readiness check', readiness)
+      
+      if (readyToScroll && !isPreloaderBVisible) {
+        console.log('✅ Stats: READY TO SCROLL - Component is loaded and ready')
+      } else {
+        console.log('⏳ Stats: NOT READY - Waiting for:', {
+          preloaderBVisible: isPreloaderBVisible,
+        })
+      }
+    }
+  }, [isPreloaderBVisible, isInView, baseScrollProgress, statsSectionOpacity]) // Removed isPreloaderComplete dependency
 
   return (
     <>
@@ -555,7 +714,8 @@ export default function Stats() {
         style={{
           zIndex: 3,
           opacity: (() => {
-            if (isPreloaderBVisible || !isPreloaderComplete) return 0
+            // Only block if PreloaderB is actually visible - don't wait for isPreloaderComplete
+            if (isPreloaderBVisible) return 0
             
             // Get scroll-based opacity
             const scrollOpacity = statsSectionOpacity.get()
@@ -573,8 +733,8 @@ export default function Stats() {
             // Otherwise use scroll-based opacity
             return scrollOpacity
           })(),
-          pointerEvents: (!isPreloaderBVisible && isPreloaderComplete && (shouldShowStats || forceVisible || isInView || hasScrolled || statsSectionOpacity.get() > 0.1)) ? 'auto' : 'none',
-          visibility: (!isPreloaderBVisible && isPreloaderComplete) ? 'visible' : 'hidden', // Prevent FCP from showing this - hide if preloader is visible
+          pointerEvents: (!isPreloaderBVisible && (shouldShowStats || forceVisible || isInView || hasScrolled || statsSectionOpacity.get() > 0.1)) ? 'auto' : 'none',
+          visibility: !isPreloaderBVisible ? 'visible' : 'hidden', // Only hide if PreloaderB is visible
           // Fix mobile viewport height issues - add extra height on mobile to prevent Partners from covering last card
           minHeight: isMobile ? 'calc(100vh + 250px)' : '100vh',
           height: isMobile ? 'calc(100vh + 250px)' : '100vh',

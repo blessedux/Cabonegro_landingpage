@@ -433,8 +433,8 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
       />
       
       {/* Location Info Panel */}
-      <div className="absolute top-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 text-sm text-white">
-        <div className="space-y-1 text-xs sm:text-sm">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 text-sm text-white mx-4 md:mx-0 max-w-[calc(100%-2rem)] md:max-w-none">
+        <div className="space-y-1 text-xs sm:text-sm text-center md:text-left">
           <div className="text-white">
             Estrecho de Magallanes, Chile
           </div>

@@ -75,7 +75,7 @@ interface LocaleHomePageProps {
 export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderBVisible, hidePreloaderB, hasSeenPreloader, isNavigating } = usePreloader()
+  const { isPreloaderBVisible, hidePreloaderB, hasSeenPreloader, isNavigating, setPreloaderComplete } = usePreloader()
   const pathname = usePathname()
   // Always initialize to false to prevent hydration mismatch
   // We'll set the correct value in useEffect after hydration
@@ -188,14 +188,15 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         if (checkContentReady()) {
           clearInterval(checkInterval)
           // Content is ready - hide PreloaderB smoothly
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              hidePreloaderB()
-              if (process.env.NODE_ENV === 'development') {
-                console.log('✅ LocaleHomePage: Return visit - Content confirmed ready, hiding PreloaderB')
-              }
-            })
-          })
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  hidePreloaderB()
+                  setPreloaderComplete(true) // Mark preloader as complete
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('✅ LocaleHomePage: Return visit - Content confirmed ready, hiding PreloaderB and marking complete')
+                  }
+                })
+              })
         }
       }, 50) // Check every 50ms
       
@@ -204,8 +205,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         clearInterval(checkInterval)
         if (isPreloaderBVisible) {
           hidePreloaderB()
+          setPreloaderComplete(true) // Mark preloader as complete
           if (process.env.NODE_ENV === 'development') {
-            console.log('⚠️ LocaleHomePage: Return visit - Safety timer triggered, hiding PreloaderB')
+            console.log('⚠️ LocaleHomePage: Return visit - Safety timer triggered, hiding PreloaderB and marking complete')
           }
         }
       }, 2000)
@@ -231,8 +233,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
             requestAnimationFrame(() => {
               requestAnimationFrame(() => {
                 hidePreloaderB()
+                setPreloaderComplete(true) // Mark preloader as complete
                 if (process.env.NODE_ENV === 'development') {
-                  console.log('✅ LocaleHomePage: First load - Content confirmed ready, hiding PreloaderB')
+                  console.log('✅ LocaleHomePage: First load - Content confirmed ready, hiding PreloaderB and marking complete')
                 }
               })
             })
@@ -244,8 +247,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           clearInterval(checkInterval)
           if (isPreloaderBVisible) {
             hidePreloaderB()
+            setPreloaderComplete(true) // Mark preloader as complete
             if (process.env.NODE_ENV === 'development') {
-              console.log('⚠️ LocaleHomePage: First load - Safety timer triggered, hiding PreloaderB')
+              console.log('⚠️ LocaleHomePage: First load - Safety timer triggered, hiding PreloaderB and marking complete')
             }
           }
         }, 3000) // 2s min display + 1s safety = 3s total
@@ -269,8 +273,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               hidePreloaderB()
+              setPreloaderComplete(true) // Mark preloader as complete
               if (process.env.NODE_ENV === 'development') {
-                console.log('✅ LocaleHomePage: Language switch - Content confirmed ready, hiding PreloaderB')
+                console.log('✅ LocaleHomePage: Language switch - Content confirmed ready, hiding PreloaderB and marking complete')
               }
             })
           })
@@ -282,8 +287,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         clearInterval(checkInterval)
         if (isPreloaderBVisible) {
           hidePreloaderB()
+          setPreloaderComplete(true) // Mark preloader as complete
           if (process.env.NODE_ENV === 'development') {
-            console.log('⚠️ LocaleHomePage: Language switch - Safety timer triggered, hiding PreloaderB')
+            console.log('⚠️ LocaleHomePage: Language switch - Safety timer triggered, hiding PreloaderB and marking complete')
           }
         }
       }, 2000)
@@ -315,7 +321,11 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         if (isPreloaderBVisible) {
           // Preloader stuck, force show content
           hidePreloaderB()
+          setPreloaderComplete(true) // Mark preloader as complete
           setShouldShowContent(true)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⚠️ LocaleHomePage: Safety timer - Preloader stuck, forcing completion')
+          }
         }
       }, 3000) // Max 3 seconds
       return () => clearTimeout(safetyTimer)
