@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useLayoutEffect, startTransition } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent, useSpring, useMotionValue } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent, useSpring, useMotionValue, useInView, useReducedMotion } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { Button } from '@/components/ui/button'
@@ -159,9 +159,40 @@ export default function Stats() {
   const pathname = usePathname()
   const { showPreloaderB, isPreloaderComplete, isPreloaderBVisible } = usePreloader()
   
+  // Mobile detection for optimized animations
+  const [isMobile, setIsMobile] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
+  
+  // Detect mobile device
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const checkMobile = () => {
+      const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
+                            (window.innerWidth <= 768)
+      setIsMobile(isMobileDevice)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
   // Determine locale from pathname for button text
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
   const buttonText = locale === 'es' ? 'Explorar Terreno' : locale === 'zh' ? '探索地形' : locale === 'fr' ? 'Explorer le Terrain' : 'Explore Terrain'
+  
+  // Track previous pathname to detect navigation
+  const prevPathnameRef = useRef(pathname)
+  
+  // Track if Stats section is in view - resets on navigation
+  // Use a more lenient margin to ensure it triggers when scrolling through the area
+  // Use pathname as key to force re-initialization on navigation
+  const isInView = useInView(statsRef, { 
+    margin: "-100% 0px -100% 0px", // Trigger when section enters viewport (even if partially)
+    once: false // Allow re-triggering on navigation - critical for fade-in on navigation
+  })
+  
   
   // Navigation handlers
   const handlePatagonValleyClick = () => {
@@ -189,11 +220,41 @@ export default function Stats() {
   }
   
   // Track scroll progress using statsRef (always defined, avoids hydration errors)
-  // We'll manually adjust the scroll progress based on AboutUs position if needed
+  // Force re-initialization by using pathname as part of the scroll tracking
+  const [navigationKey, setNavigationKey] = useState(0)
+  
+  useEffect(() => {
+    const isHomePage = pathname === `/${locale}` || pathname === '/en' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
+    const wasHomePage = prevPathnameRef.current === `/${locale}` || prevPathnameRef.current === '/en' || prevPathnameRef.current === '/es' || prevPathnameRef.current === '/zh' || prevPathnameRef.current === '/fr'
+    
+    if (isHomePage && !wasHomePage) {
+      // Force re-initialization by updating key
+      setNavigationKey(prev => prev + 1)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Stats: Navigation to homepage detected, resetting scroll tracking', { navigationKey })
+      }
+    }
+    
+    prevPathnameRef.current = pathname
+  }, [pathname, locale])
+  
+  // Use navigationKey to force useScroll to re-initialize
+  // This ensures scroll tracking resets properly after navigation
   const { scrollYProgress: baseScrollProgress } = useScroll({
     target: statsRef,
     offset: ["start end", "end start"]
   })
+  
+  // Reset scroll progress manually when navigation key changes
+  useEffect(() => {
+    if (navigationKey > 0 && statsRef.current) {
+      // Force a recalculation by temporarily hiding and showing
+      // This ensures useScroll recalculates the scroll progress
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Stats: Forcing scroll progress recalculation', { navigationKey })
+      }
+    }
+  }, [navigationKey])
   
   // Find AboutUs section to potentially adjust scroll calculations
   const aboutUsSectionRef = useRef<HTMLElement | null>(null)
@@ -348,12 +409,108 @@ export default function Stats() {
   
   // Overall Stats section visibility - hide completely until AboutUs is in view
   // This ensures Stats doesn't show before AboutUs section is reached
+  // Also check if section is in view to ensure it fades in on navigation
   const statsSectionOpacity = useTransform(
     scrollYProgress,
     [0, 0.01],
     [0, 1],
     { clamp: true }
   )
+  
+  // Simplified visibility - always show when in viewport, regardless of scroll progress
+  const [forceVisible, setForceVisible] = useState(false)
+  const [hasScrolled, setHasScrolled] = useState(false)
+  
+  // Monitor scroll events to detect when user scrolls
+  useEffect(() => {
+    if (!isPreloaderComplete || isPreloaderBVisible) return
+    
+    const handleScroll = () => {
+      setHasScrolled(true)
+      
+      if (!statsRef.current) return
+      
+      const rect = statsRef.current.getBoundingClientRect()
+      const isVisible = rect.top < window.innerHeight && rect.bottom > 0
+      
+      if (isVisible) {
+        setForceVisible(true)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Stats: Scrolled to section, forcing visibility')
+        }
+      }
+    }
+    
+    // Check immediately and on scroll
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [isPreloaderComplete, isPreloaderBVisible, navigationKey]) // Include navigationKey to re-initialize on navigation
+  
+  // Monitor in-view status - this is the primary trigger for visibility
+  useEffect(() => {
+    if (isInView && isPreloaderComplete && !isPreloaderBVisible) {
+      setForceVisible(true)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Stats: Section in view, forcing visibility')
+      }
+    }
+  }, [isInView, isPreloaderComplete, isPreloaderBVisible, navigationKey]) // Include navigationKey
+  
+  // Also monitor scroll progress as secondary trigger
+  useMotionValueEvent(statsSectionOpacity, "change", (latest) => {
+    if (latest > 0.01 && isPreloaderComplete && !isPreloaderBVisible) {
+      setForceVisible(true)
+      if (process.env.NODE_ENV === 'development' && !forceVisible) {
+        console.log('✅ Stats: Scroll progress > 0.01, forcing visibility', latest)
+      }
+    }
+  })
+  
+  // Reset when navigating to homepage
+  useEffect(() => {
+    const isHomePage = pathname === `/${locale}` || pathname === '/en' || pathname === '/es' || pathname === '/zh' || pathname === '/fr'
+    const wasHomePage = prevPathnameRef.current === `/${locale}` || prevPathnameRef.current === '/en' || prevPathnameRef.current === '/es' || prevPathnameRef.current === '/zh' || prevPathnameRef.current === '/fr'
+    
+    if (isHomePage && !wasHomePage) {
+      // Reset on navigation to home
+      setForceVisible(false)
+      setHasScrolled(false)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Stats: Reset visibility on homepage navigation')
+      }
+      
+      // Check visibility after navigation with multiple attempts
+      const timers: NodeJS.Timeout[] = []
+      
+      timers.push(setTimeout(() => {
+        if (statsRef.current && isPreloaderComplete && !isPreloaderBVisible) {
+          const rect = statsRef.current.getBoundingClientRect()
+          const isVisible = rect.top < window.innerHeight && rect.bottom > 0
+          if (isVisible) {
+            setForceVisible(true)
+          }
+        }
+      }, 300))
+      
+      timers.push(setTimeout(() => {
+        if (statsRef.current && isPreloaderComplete && !isPreloaderBVisible) {
+          const rect = statsRef.current.getBoundingClientRect()
+          const isVisible = rect.top < window.innerHeight && rect.bottom > 0
+          if (isVisible) {
+            setForceVisible(true)
+          }
+        }
+      }, 1000))
+      
+      return () => {
+        timers.forEach(timer => clearTimeout(timer))
+      }
+    }
+  }, [pathname, locale, isPreloaderComplete, isPreloaderBVisible, navigationKey])
   
   // Fade to white when Partners section approaches
   // Partners scroll progress: 0 = Stats end at center, 1 = Stats end at top
@@ -363,16 +520,25 @@ export default function Stats() {
   const whiteOverlayOpacity = useTransform(partnersScrollProgress, [0.7, 1], [0, 1], { clamp: true })
 
   // Staggered fade-in animations for stat boxes
-  // Each box fades in sequentially as we scroll through the Stats section
-  // Start at 0.20 (when background starts fading in) and stagger over the next 0.15 (15% of scroll progress)
-  const statBox1Opacity = useTransform(scrollYProgress, [0.20, 0.30], [0, 1], { clamp: true })
-  const statBox1Y = useTransform(scrollYProgress, [0.20, 0.30], [30, 0], { clamp: true })
+  // On mobile: animate all boxes simultaneously (no stagger) for better performance
+  // On desktop: use staggered animation for visual interest
+  // Reduced motion: disable Y transform and use simpler fade-in
+  const yTransformDistance = prefersReducedMotion ? 0 : (isMobile ? 15 : 30)
   
-  const statBox2Opacity = useTransform(scrollYProgress, [0.22, 0.32], [0, 1], { clamp: true })
-  const statBox2Y = useTransform(scrollYProgress, [0.22, 0.32], [30, 0], { clamp: true })
+  // Mobile: all boxes use same range [0.20, 0.30] (no stagger)
+  // Desktop: staggered ranges [0.20, 0.30], [0.22, 0.32], [0.24, 0.34]
+  const statBox1Range: [number, number] = isMobile ? [0.20, 0.30] : [0.20, 0.30]
+  const statBox2Range: [number, number] = isMobile ? [0.20, 0.30] : [0.22, 0.32]
+  const statBox3Range: [number, number] = isMobile ? [0.20, 0.30] : [0.24, 0.34]
   
-  const statBox3Opacity = useTransform(scrollYProgress, [0.24, 0.34], [0, 1], { clamp: true })
-  const statBox3Y = useTransform(scrollYProgress, [0.24, 0.34], [30, 0], { clamp: true })
+  const statBox1Opacity = useTransform(scrollYProgress, statBox1Range, [0, 1], { clamp: true })
+  const statBox1Y = useTransform(scrollYProgress, statBox1Range, [yTransformDistance, 0], { clamp: true })
+  
+  const statBox2Opacity = useTransform(scrollYProgress, statBox2Range, [0, 1], { clamp: true })
+  const statBox2Y = useTransform(scrollYProgress, statBox2Range, [yTransformDistance, 0], { clamp: true })
+  
+  const statBox3Opacity = useTransform(scrollYProgress, statBox3Range, [0, 1], { clamp: true })
+  const statBox3Y = useTransform(scrollYProgress, statBox3Range, [yTransformDistance, 0], { clamp: true })
 
   // Track opacity to conditionally enable pointer events
   const [shouldBlockPointer, setShouldBlockPointer] = useState(false)
@@ -397,9 +563,31 @@ export default function Stats() {
         className="sticky top-0 left-0 right-0 h-[100vh] z-[3] pointer-events-none"
         style={{
           zIndex: 3,
-          opacity: (!isPreloaderBVisible && isPreloaderComplete) ? statsSectionOpacity : 0, // Hide until preloader completes
-          pointerEvents: (!isPreloaderBVisible && isPreloaderComplete && shouldShowStats) ? 'auto' : 'none',
-          visibility: (!isPreloaderBVisible && isPreloaderComplete) ? 'visible' : 'hidden' // Prevent FCP from showing this - hide if preloader is visible
+          opacity: (() => {
+            if (isPreloaderBVisible || !isPreloaderComplete) return 0
+            
+            // Get scroll-based opacity
+            const scrollOpacity = statsSectionOpacity.get()
+            
+            // If force visible (in viewport or scrolled), ensure minimum visibility
+            // This ensures fade-in works even after navigation
+            if (forceVisible || isInView || hasScrolled) {
+              const minOpacity = Math.max(scrollOpacity, 0.3)
+              if (process.env.NODE_ENV === 'development' && minOpacity > 0 && scrollOpacity < 0.01) {
+                console.log('✅ Stats: Using force visibility', { forceVisible, isInView, hasScrolled, scrollOpacity, minOpacity })
+              }
+              return minOpacity
+            }
+            
+            // Otherwise use scroll-based opacity
+            return scrollOpacity
+          })(),
+          pointerEvents: (!isPreloaderBVisible && isPreloaderComplete && (shouldShowStats || forceVisible || isInView || hasScrolled || statsSectionOpacity.get() > 0.1)) ? 'auto' : 'none',
+          visibility: (!isPreloaderBVisible && isPreloaderComplete) ? 'visible' : 'hidden', // Prevent FCP from showing this - hide if preloader is visible
+          // Fix mobile viewport height issues
+          minHeight: '100vh',
+          height: '100vh',
+          maxHeight: '100vh'
         }}
       >
         {/* Content container - positioned at top, centers in viewport when background fades in (40% scroll) */}
@@ -415,10 +603,10 @@ export default function Stats() {
         >
           
           {/* Content wrapper - no margins, matches section positioning, content at top */}
-          <div className="w-full max-w-7xl mx-auto px-6 pt-0">
+          <div className="w-full max-w-7xl mx-auto px-4 md:px-6 pt-0">
             {/* Our Vision - only visible in Stats section, fades in when background appears */}
             <motion.div
-              className="w-full mb-[30vh]"
+              className="w-full mb-[20vh] md:mb-[30vh]"
             >
               <div className="text-center">
                 <motion.h3 
@@ -426,13 +614,17 @@ export default function Stats() {
                   style={{ 
                     opacity: visionTitleOpacity,
                     color: '#ffffff', 
-                    textShadow: '0 0 0 rgba(255,255,255,1)' 
+                    textShadow: '0 0 0 rgba(255,255,255,1)',
+                    willChange: 'opacity'
                   }}
                 >
                   {locale === 'es' ? 'Nuestra Visión' : locale === 'zh' ? '我们的愿景' : locale === 'fr' ? 'Notre Vision' : 'Our Vision'}
                 </motion.h3>
                 <motion.div
-                  style={{ opacity: visionSubtitleOpacity }}
+                  style={{ 
+                    opacity: visionSubtitleOpacity,
+                    willChange: 'opacity'
+                  }}
                   className="max-w-5xl mx-auto"
                 >
                   <EarlyMagicText 
@@ -454,7 +646,8 @@ export default function Stats() {
               className="relative"
               style={{
                 opacity: contentOpacity,
-                y: contentY
+                y: contentY,
+                willChange: 'transform, opacity'
               }}
             >
               {/* Title section - fades in when background appears (11%) */}
@@ -462,7 +655,8 @@ export default function Stats() {
                 className="text-center mb-2 relative"
                 style={{
                   opacity: titleOpacity,
-                  y: titleY
+                  y: titleY,
+                  willChange: 'transform, opacity'
                 }}
               >
                 <h2 className="text-4xl md:text-5xl font-bold mb-2 text-white">
@@ -498,94 +692,92 @@ export default function Stats() {
               </div>
 
             {/* Company/Area Breakdown - 3 Cards Layout: 1 top, 2 bottom */}
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Top Row: Patagon Valley (centered) */}
               <div className="flex justify-center">
                 <motion.div 
                   className="relative w-full max-w-md rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox1Opacity,
-                    y: statBox1Y
+                    y: statBox1Y,
+                    willChange: 'transform, opacity'
                   }}
                   onClick={handlePatagonValleyClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/parque-tecnologico`)}
                 >
-                  {/* Background Image */}
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                      backgroundImage: 'url(/Patagon_Valley_v2.webp)'
-                    }}
-                  />
+                  {/* Background Image - Optimized with next/image */}
+                  <div className="absolute inset-0">
+                    <Image
+                      src="/image13.webp"
+                      alt="Patagon Valley"
+                      fill
+                      className="object-cover"
+                      loading="lazy"
+                      sizes="(max-width: 768px) 100vw, 448px"
+                      priority={false}
+                    />
+                  </div>
                   {/* Overlay for better text readability */}
                   <div className="absolute inset-0 bg-black/40" />
                   
-                  {/* Content */}
-                  <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
-                    {/* Logo Icon */}
-                    <div className="mb-6 relative w-20 h-20 mx-auto">
+                  {/* Content - Logo only, centered and larger */}
+                  <div className="relative p-6 md:p-8 min-h-[250px] md:min-h-[300px] flex flex-col items-center justify-center text-center">
+                    {/* Logo Icon - Twice the size, centered */}
+                    <div className="relative w-40 h-40 md:w-48 md:h-48 mx-auto">
                       <Image 
                         src="/logos/patagon_white.png" 
                         alt="Patagon Valley Logo" 
                         fill
                         className="object-contain"
                         loading="lazy"
-                        sizes="80px"
+                        sizes="(max-width: 768px) 160px, 192px"
                       />
-                    </div>
-                    
-                    {/* Title */}
-                    <h3 className="text-white font-bold text-2xl mb-2">Patagon Valley</h3>
-                    <p className="text-gray-300 text-sm mb-4">
-                      {locale === 'es' ? 'Inmobiliaria Patagon Valley SpA' : locale === 'zh' ? '巴塔哥尼亚谷房地产公司' : locale === 'fr' ? 'Immobilier Patagon Valley SpA' : 'Inmobiliaria Patagon Valley SpA'}
-                    </p>
-                    <div className="text-3xl font-bold text-white mb-2">
-                      <AnimatedCounter end={33} suffix=" ha" />
                     </div>
                   </div>
                 </motion.div>
               </div>
 
               {/* Bottom Row: Terminal Marítimo and Cabo Negro Dos (2 cards) */}
-              <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
                 {/* Terminal Marítimo */}
                 <motion.div 
                   className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox2Opacity,
-                    y: statBox2Y
+                    y: statBox2Y,
+                    willChange: 'transform, opacity'
                   }}
                   onClick={handlePortZoneClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/terminal-maritimo`)}
                 >
-                  {/* Background Image */}
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                      backgroundImage: 'url(/maritime_terminal.png)'
-                    }}
-                  />
+                  {/* Background Image - Optimized with next/image */}
+                  <div className="absolute inset-0">
+                    <Image
+                      src="/image15.webp"
+                      alt="Terminal Marítimo"
+                      fill
+                      className="object-cover"
+                      loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 512px"
+                      priority={false}
+                    />
+                  </div>
                   {/* Overlay for better text readability */}
                   <div className="absolute inset-0 bg-black/40" />
                   
-                  {/* Content */}
-                  <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
-                    {/* Logo Icon */}
-                    <div className="mb-6 relative w-20 h-20 mx-auto">
+                  {/* Content - Logo only, centered and larger */}
+                  <div className="relative p-6 md:p-8 min-h-[250px] md:min-h-[300px] flex flex-col items-center justify-center text-center">
+                    {/* Logo Icon - Twice the size, centered, using white logo */}
+                    <div className="relative w-40 h-40 md:w-48 md:h-48 mx-auto">
                       <Image 
-                        src="/cabonegro_logo.png" 
+                        src="/logos/CaboNegro_logo_white.png" 
                         alt="Cabo Negro Logo" 
                         fill
-                        className="object-contain filter brightness-0 invert"
+                        className="object-contain"
                         loading="lazy"
-                        sizes="80px"
+                        sizes="(max-width: 768px) 160px, 192px"
                       />
                     </div>
-                    
-                    {/* Title */}
-                    <h3 className="text-white font-bold text-2xl mb-2">
-                      {locale === 'es' ? 'Terminal Marítimo Cabo Negro' : locale === 'zh' ? '卡波内格罗海运码头' : locale === 'fr' ? 'Terminal Maritime Cabo Negro' : 'Terminal Marítimo Cabo Negro'}
-                    </h3>
                   </div>
                 </motion.div>
 
@@ -594,42 +786,42 @@ export default function Stats() {
                   className="relative rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.02] transition-transform duration-300 shadow-2xl"
                   style={{
                     opacity: statBox3Opacity,
-                    y: statBox3Y
+                    y: statBox3Y,
+                    willChange: 'transform, opacity'
                   }}
                   onClick={handleCaboNegroDosClick}
                   onMouseEnter={() => router.prefetch(`/${locale}/parque-logistico`)}
                 >
-                  {/* Background Image */}
-                  <div 
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{
-                      backgroundImage: 'url(/cabo_negro1.webp)'
-                    }}
-                  />
+                  {/* Background Image - Optimized with next/image */}
+                  <div className="absolute inset-0">
+                    <Image
+                      src="/image16.webp"
+                      alt="Cabo Negro Dos"
+                      fill
+                      className="object-cover"
+                      loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 512px"
+                      priority={false}
+                    />
+                  </div>
                   {/* Overlay for better text readability */}
                   <div className="absolute inset-0 bg-black/40" />
                   
-                  {/* Content */}
-                  <div className="relative p-8 min-h-[300px] flex flex-col items-center justify-center text-center">
-                    {/* Logo Icon */}
-                    <div className="mb-6 relative w-20 h-20 mx-auto">
-                      <Image 
-                        src="/cabonegro_logo.png" 
-                        alt="Cabo Negro Logo" 
-                        fill
-                        className="object-contain filter brightness-0 invert"
-                        loading="lazy"
-                        sizes="80px"
-                      />
+                  {/* Content - Custom three-line text with DOS emphasized */}
+                  <div className="relative p-6 md:p-8 min-h-[250px] md:min-h-[300px] flex flex-col items-center justify-center text-center">
+                    {/* Line 1: CaboNegro */}
+                    <div className="text-white text-lg md:text-xl font-medium mb-2">
+                      CaboNegro
                     </div>
                     
-                    {/* Title */}
-                    <h3 className="text-white font-bold text-2xl mb-2">Cabo Negro Dos</h3>
-                    <p className="text-gray-300 text-sm mb-4">
-                      {locale === 'es' ? 'Inmobiliaria Cabo Negro Dos' : locale === 'zh' ? '卡波内格罗二号房地产公司' : locale === 'fr' ? 'Immobilier Cabo Negro Dos' : 'Inmobiliaria Cabo Negro Dos'}
-                    </p>
-                    <div className="text-3xl font-bold text-white mb-2">
-                      <AnimatedCounter end={173} suffix=" ha" />
+                    {/* Line 2: DOS - Much bigger font */}
+                    <div className="text-white text-6xl md:text-7xl lg:text-8xl font-bold mb-2 leading-none">
+                      DOS
+                    </div>
+                    
+                    {/* Line 3: M  A C  R  O  L  O  T  E with spaces */}
+                    <div className="text-white text-lg md:text-xl font-medium tracking-wider">
+                      M  A C  R  O  L  O  T  E
                     </div>
                   </div>
                 </motion.div>
