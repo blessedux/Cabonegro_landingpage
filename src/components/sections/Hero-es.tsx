@@ -20,7 +20,7 @@ export default function HeroEs() {
   const { showPreloaderB, isPreloaderComplete } = usePreloader()
 
   // Single hero video (first video - logistics)
-  const heroVideo = 'https://res.cloudinary.com/dezm9avsj/video/upload/v1763931613/cabonegro_pjk8im.mp4'
+  const heroVideo = 'https://storage.reimage.dev/mente-files/vid-86ef632d3d23/original.mp4'
   
   // Extract locale from pathname
   const getLocale = () => {
@@ -262,7 +262,7 @@ export default function HeroEs() {
       ref={heroRef}
       className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[10]"
       style={{
-        backgroundColor: videoLoaded ? 'transparent' : '#000000', // Black background while video loads
+        backgroundColor: '#000000', // Always black background to prevent white flash
         pointerEvents: 'auto',
         height: '100vh',
         maxHeight: '100vh',
@@ -284,31 +284,93 @@ export default function HeroEs() {
             height: '100%'
           }}
         >
-          {shouldLoadVideo && (!isMobile || isVideoPlaying) ? (
-            // Show video element only if: (1) video should load AND (2) either not mobile OR video is playing
+          {/* Placeholder image - always render, fade out when video is ready */}
+          <Image
+            src="/cabonegro_frame1.webp"
+            alt="Cabo Negro Hero"
+            fill
+            priority
+            fetchPriority="high"
+            className="absolute inset-0 object-cover"
+            sizes="100vw"
+            quality={85}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+            style={{
+              zIndex: 1,
+              opacity: (shouldLoadVideo && videoLoaded && (!isMobile || isVideoPlaying)) ? 0 : 1,
+              transition: 'opacity 0.6s ease-in-out',
+              pointerEvents: 'none'
+            }}
+          />
+          
+          {/* Video element - always render when shouldLoadVideo is true, fade in when ready */}
+          {shouldLoadVideo && (!isMobile || isVideoPlaying) && (
             <video
               ref={videoRef}
               autoPlay
               loop
               muted
               playsInline
-              preload="metadata"
+              preload="auto"
+              crossOrigin="anonymous"
               className="absolute inset-0 w-full h-full object-cover"
               style={{
-                willChange: 'transform',
+                willChange: 'transform, opacity',
                 transform: 'translateZ(0)', // Force GPU acceleration
-                backgroundColor: videoLoaded ? 'transparent' : '#000000', // Black background while loading
+                zIndex: 2, // Always above placeholder
+                opacity: videoLoaded ? 1 : 0, // Fade in when loaded
+                transition: 'opacity 0.6s ease-in-out',
+                backgroundColor: '#000000' // Black background while loading to prevent white flash
               }}
               onLoadedData={() => {
+                console.log('✅ Video loaded data:', heroVideo)
                 setVideoLoaded(true)
               }}
               onCanPlay={() => {
+                console.log('✅ Video can play:', heroVideo)
                 setVideoLoaded(true)
               }}
+              onLoadedMetadata={() => {
+                console.log('✅ Video metadata loaded:', heroVideo)
+              }}
+              onStalled={() => {
+                console.warn('⚠️ Video stalled:', heroVideo)
+              }}
+              onWaiting={() => {
+                console.warn('⚠️ Video waiting for data:', heroVideo)
+              }}
               onError={(e) => {
-                if (process.env.NODE_ENV === 'development') {
-                  console.error('Video loading error:', e)
+                const video = e.currentTarget
+                const error = video.error
+                let errorMessage = 'Unknown error'
+                
+                if (error) {
+                  switch (error.code) {
+                    case error.MEDIA_ERR_ABORTED:
+                      errorMessage = 'Video loading aborted'
+                      break
+                    case error.MEDIA_ERR_NETWORK:
+                      errorMessage = 'Network error while loading video'
+                      break
+                    case error.MEDIA_ERR_DECODE:
+                      errorMessage = 'Video decoding error'
+                      break
+                    case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                      errorMessage = 'Video format not supported or source not found'
+                      break
+                    default:
+                      errorMessage = `Video error code: ${error.code}`
+                  }
                 }
+                
+                console.error('❌ Video loading error:', {
+                  message: errorMessage,
+                  error: error,
+                  src: heroVideo,
+                  networkState: video.networkState,
+                  readyState: video.readyState
+                })
                 setVideoError(true)
               }}
               onLoadStart={() => {
@@ -317,21 +379,6 @@ export default function HeroEs() {
             >
               <source src={heroVideo} type="video/mp4" />
             </video>
-          ) : (
-            // Show poster image: (1) while video is not loaded, OR (2) on mobile when video isn't playing
-            // Optimized with Next.js Image component for better performance
-            <Image
-              src="/cabonegro_frame1.webp"
-              alt="Cabo Negro Hero"
-              fill
-              priority
-              fetchPriority="high"
-              className="object-cover"
-              sizes="100vw"
-              quality={85}
-              placeholder="blur"
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-            />
           )}
         </motion.div>
         {/* Dark overlay that fades in as AboutUs comes into view */}

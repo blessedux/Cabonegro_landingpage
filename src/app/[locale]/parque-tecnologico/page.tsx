@@ -26,6 +26,11 @@ export default function ParqueTecnologicoPage() {
   const router = useRouter()
   const pathname = usePathname()
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
+  
+  const heroVideo = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -358,12 +363,65 @@ export default function ParqueTecnologicoPage() {
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <video
-            src="https://res.cloudinary.com/dezm9avsj/video/upload/v1764433255/cabonegro_slide3_ngbqi0.mp4"
+            ref={videoRef}
+            src={heroVideo}
             autoPlay
             muted
             loop
             playsInline
+            preload="auto"
+            crossOrigin="anonymous"
             className="w-full h-full object-cover"
+            onLoadedData={() => {
+              console.log('✅ Parque Tecnologico video loaded data:', heroVideo)
+              setVideoLoaded(true)
+            }}
+            onCanPlay={() => {
+              console.log('✅ Parque Tecnologico video can play:', heroVideo)
+              setVideoLoaded(true)
+            }}
+            onLoadedMetadata={() => {
+              console.log('✅ Parque Tecnologico video metadata loaded:', heroVideo)
+            }}
+            onStalled={() => {
+              console.warn('⚠️ Parque Tecnologico video stalled:', heroVideo)
+            }}
+            onWaiting={() => {
+              console.warn('⚠️ Parque Tecnologico video waiting for data:', heroVideo)
+            }}
+            onError={(e) => {
+              const video = e.currentTarget
+              const error = video.error
+              let errorMessage = 'Unknown error'
+              
+              if (error) {
+                switch (error.code) {
+                  case error.MEDIA_ERR_ABORTED:
+                    errorMessage = 'Video loading aborted'
+                    break
+                  case error.MEDIA_ERR_NETWORK:
+                    errorMessage = 'Network error while loading video'
+                    break
+                  case error.MEDIA_ERR_DECODE:
+                    errorMessage = 'Video decoding error'
+                    break
+                  case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                    errorMessage = 'Video format not supported or source not found'
+                    break
+                  default:
+                    errorMessage = `Video error code: ${error.code}`
+                }
+              }
+              
+              console.error('❌ Parque Tecnologico video loading error:', {
+                message: errorMessage,
+                error: error,
+                src: heroVideo,
+                networkState: video.networkState,
+                readyState: video.readyState
+              })
+              setVideoError(true)
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-0" />
         </div>

@@ -181,7 +181,7 @@ export default function Features() {
       titleLine2: t('maritimeTerminal.title').split(' ').slice(1).join(' '),
       icon: Anchor,
       description: t('maritimeTerminal.description'),
-      image: '/cabo_negro1.webp',
+      image: '/cabonegro_astillero.webp',
       highlights: Array.isArray(t.raw('maritimeTerminal.highlights')) ? t.raw('maritimeTerminal.highlights') : []
     },
     {

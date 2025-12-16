@@ -20,7 +20,7 @@ declare global {
 import { RulerCarousel, type CarouselItem } from '@/components/ui/ruler-carousel'
 import { MagicText } from '@/components/ui/magic-text'
 import { motion } from 'framer-motion'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useScroll, useTransform } from 'framer-motion'
 
 // Code-split navigation components - only load when needed
@@ -150,6 +150,11 @@ function MagicTextWithBold({ text, className = "", boldWords = [] }: { text: str
 export default function TerminalMaritimoPage() {
   const pathname = usePathname()
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
+  
+  const heroVideo = 'https://storage.reimage.dev/mente-files/vid-2d88fd081208/original.mp4'
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -571,14 +576,67 @@ export default function TerminalMaritimoPage() {
       <section data-hero-section="true" className="relative h-screen w-full overflow-hidden">
         {/* Background Video */}
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
+          preload="auto"
+          crossOrigin="anonymous"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
+          onLoadedData={() => {
+            console.log('✅ Terminal Maritimo video loaded data:', heroVideo)
+            setVideoLoaded(true)
+          }}
+          onCanPlay={() => {
+            console.log('✅ Terminal Maritimo video can play:', heroVideo)
+            setVideoLoaded(true)
+          }}
+          onLoadedMetadata={() => {
+            console.log('✅ Terminal Maritimo video metadata loaded:', heroVideo)
+          }}
+          onStalled={() => {
+            console.warn('⚠️ Terminal Maritimo video stalled:', heroVideo)
+          }}
+          onWaiting={() => {
+            console.warn('⚠️ Terminal Maritimo video waiting for data:', heroVideo)
+          }}
+          onError={(e) => {
+            const video = e.currentTarget
+            const error = video.error
+            let errorMessage = 'Unknown error'
+            
+            if (error) {
+              switch (error.code) {
+                case error.MEDIA_ERR_ABORTED:
+                  errorMessage = 'Video loading aborted'
+                  break
+                case error.MEDIA_ERR_NETWORK:
+                  errorMessage = 'Network error while loading video'
+                  break
+                case error.MEDIA_ERR_DECODE:
+                  errorMessage = 'Video decoding error'
+                  break
+                case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                  errorMessage = 'Video format not supported or source not found'
+                  break
+                default:
+                  errorMessage = `Video error code: ${error.code}`
+              }
+            }
+            
+            console.error('❌ Terminal Maritimo video loading error:', {
+              message: errorMessage,
+              error: error,
+              src: heroVideo,
+              networkState: video.networkState,
+              readyState: video.readyState
+            })
+            setVideoError(true)
+          }}
         >
-          <source src="https://res.cloudinary.com/dezm9avsj/video/upload/v1764433234/cabonegro_slide2_vktkza.mp4" type="video/mp4" />
+          <source src={heroVideo} type="video/mp4" />
         </video>
         
         {/* Overlay for better text readability */}

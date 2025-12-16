@@ -22,7 +22,7 @@ const mediaItems = [
     type: "image",
     title: "Forest Path",
     desc: "Mystical forest trail",
-    url: "/cabo_negro1.webp",
+    url: "/cabonegro_astillero.webp",
     span: "md:col-span-1 md:row-span-3 sm:col-span-2 sm:row-span-2",
   },
   {

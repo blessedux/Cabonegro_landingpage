@@ -109,6 +109,104 @@ export default function Stats() {
   const pathname = usePathname()
   const { showPreloaderB, isPreloaderComplete, isPreloaderBVisible } = usePreloader()
   
+  // Track if hero video is loaded and ready - prevents Stats background from showing before video
+  const [heroVideoReady, setHeroVideoReady] = useState(false)
+  
+  // Check if hero video is loaded and ready
+  useEffect(() => {
+    // Don't check until preloader is hidden - video won't be loading until then
+    if (isPreloaderBVisible) {
+      setHeroVideoReady(false)
+      return
+    }
+    
+    const checkHeroVideo = () => {
+      // Find the hero video element - look for video in fixed section
+      const heroSection = document.querySelector('section[class*="fixed"][class*="top-0"]')
+      const heroVideo = heroSection?.querySelector('video') as HTMLVideoElement
+      
+      if (heroVideo) {
+        // Check if video has loaded enough data to play
+        // readyState 3 = HAVE_FUTURE_DATA, 4 = HAVE_ENOUGH_DATA
+        const hasEnoughData = heroVideo.readyState >= 3
+        
+        if (hasEnoughData) {
+          setHeroVideoReady(true)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📊 Stats: Hero video is ready', { readyState: heroVideo.readyState })
+          }
+          return true
+        }
+      }
+      
+      return false
+    }
+    
+    // Wait a bit for video element to be created after preloader hides
+    const initialDelay = setTimeout(() => {
+      // Check immediately after delay
+      if (checkHeroVideo()) {
+        return
+      }
+      
+      // If not ready, find video and listen for events
+      const heroSection = document.querySelector('section[class*="fixed"][class*="top-0"]')
+      const heroVideo = heroSection?.querySelector('video') as HTMLVideoElement
+      
+      if (heroVideo) {
+        const handleCanPlay = () => {
+          setHeroVideoReady(true)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📊 Stats: Hero video canPlay event fired')
+          }
+        }
+        
+        const handleLoadedData = () => {
+          setHeroVideoReady(true)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('📊 Stats: Hero video loadedData event fired')
+          }
+        }
+        
+        // If already ready, set immediately
+        if (heroVideo.readyState >= 3) {
+          setHeroVideoReady(true)
+        } else {
+          // Listen for ready events
+          heroVideo.addEventListener('canplay', handleCanPlay, { once: true })
+          heroVideo.addEventListener('loadeddata', handleLoadedData, { once: true })
+          heroVideo.addEventListener('playing', handleCanPlay, { once: true })
+        }
+      }
+      
+      // Also poll for video readiness as fallback (check every 100ms for max 2 seconds)
+      let pollCount = 0
+      const maxPolls = 20 // 2 seconds max
+      
+      const pollInterval = setInterval(() => {
+        pollCount++
+        if (checkHeroVideo() || pollCount >= maxPolls) {
+          clearInterval(pollInterval)
+          // If max polls reached and still not ready, allow it anyway (video might be slow)
+          if (pollCount >= maxPolls && !heroVideoReady) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('📊 Stats: Max polls reached, allowing Stats background (video may be slow)')
+            }
+            setHeroVideoReady(true)
+          }
+        }
+      }, 100)
+      
+      return () => {
+        clearInterval(pollInterval)
+      }
+    }, 200) // Small delay to allow video element to be created
+    
+    return () => {
+      clearTimeout(initialDelay)
+    }
+  }, [isPreloaderBVisible]) // Re-check when preloader visibility changes
+  
   // Mobile detection for optimized animations
   const [isMobile, setIsMobile] = useState(false)
   const prefersReducedMotion = useReducedMotion()
@@ -322,12 +420,16 @@ export default function Stats() {
   // Background fade in - starts later at 0.40 (40% of AboutUs scroll), completes at 0.60 (60%)
   // Adjusted for shorter AboutUs section (100vh) - trigger earlier
   // Start fading in when AboutUs is at 20% scroll progress (earlier than before)
-  const backgroundOpacity = useTransform(
+  const backgroundOpacityRaw = useTransform(
     scrollYProgress, 
     [0, 0.20, 0.40], 
     [0, 0, 1],
     { clamp: true }
   )
+  
+  // Force background opacity to 0 when preloader is visible
+  // We'll handle this in the style by checking isPreloaderBVisible
+  const backgroundOpacity = backgroundOpacityRaw
   
   // Background zoom effect - scales from 1 to 1.1 (10% zoom) as we scroll from top to bottom
   // Only apply zoom when background starts appearing
@@ -708,8 +810,8 @@ export default function Stats() {
         style={{
           zIndex: 3,
           opacity: (() => {
-            // Only block if PreloaderB is actually visible - don't wait for isPreloaderComplete
-            if (isPreloaderBVisible) return 0
+            // Hide completely if PreloaderB is visible OR hero video is not ready
+            if (isPreloaderBVisible || !heroVideoReady) return 0
             
             // Get scroll-based opacity
             const scrollOpacity = statsSectionOpacity.get()
@@ -729,8 +831,8 @@ export default function Stats() {
           })(),
           // Only enable pointer events when Stats is significantly visible (opacity > 0.5)
           // This prevents Stats from blocking Hero button clicks when Hero is still visible
-          pointerEvents: (!isPreloaderBVisible && (shouldShowStats || forceVisible || isInView || hasScrolled) && statsSectionOpacity.get() > 0.5) ? 'auto' : 'none',
-          visibility: !isPreloaderBVisible ? 'visible' : 'hidden', // Only hide if PreloaderB is visible
+          pointerEvents: (!isPreloaderBVisible && heroVideoReady && (shouldShowStats || forceVisible || isInView || hasScrolled) && statsSectionOpacity.get() > 0.5) ? 'auto' : 'none',
+          visibility: (!isPreloaderBVisible && heroVideoReady) ? 'visible' : 'hidden', // Hide if PreloaderB is visible OR video not ready
           // Fix mobile viewport height issues - add extra height on mobile to prevent Partners from covering last card
           minHeight: isMobile ? 'calc(100vh + 250px)' : '100vh',
           height: isMobile ? 'calc(100vh + 250px)' : '100vh',
@@ -739,13 +841,16 @@ export default function Stats() {
       >
         {/* Content container - positioned at top, centers in viewport when background fades in (40% scroll) */}
         {/* This should be above AboutUs content when Stats is fully visible */}
+        {/* Completely hidden until preloader is hidden AND hero video is ready */}
         <motion.div
           className="absolute left-0 right-0 w-full flex flex-col justify-start"
           style={{
             pointerEvents: shouldBlockPointer ? 'auto' : 'none',
             top: containerTop,
             y: isMobile ? 0 : containerY, // Only apply Y transform on desktop
-            zIndex: 7 // Above AboutUs content (z-[6]) so Stats content appears on top when visible
+            zIndex: 7, // Above AboutUs content (z-[6]) so Stats content appears on top when visible
+            opacity: (isPreloaderBVisible || !heroVideoReady) ? 0 : 1, // Force 0 when preloader visible OR video not ready
+            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible' // Hide completely when preloader visible OR video not ready
           }}
         >
           
@@ -959,6 +1064,7 @@ export default function Stats() {
         
         {/* Background image layer - fades in based on scroll with zoom effect */}
         {/* This should be below AboutUs content but above Hero */}
+        {/* Completely hidden when preloader is visible OR hero video is not ready to prevent flash on first load */}
         <motion.div
           className="fixed inset-0"
           style={{
@@ -966,30 +1072,39 @@ export default function Stats() {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            opacity: backgroundOpacity,
+            opacity: (isPreloaderBVisible || !heroVideoReady) ? 0 : backgroundOpacity, // Force 0 when preloader visible OR video not ready
             scale: backgroundScale,
-            zIndex: 2 // Below AboutUs content (z-4) but above Hero (z-1)
+            zIndex: 2, // Below AboutUs content (z-4) but above Hero (z-1)
+            display: (isPreloaderBVisible || !heroVideoReady) ? 'none' : 'block', // Hide completely when preloader is visible OR video not ready
+            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible', // Double-check visibility
+            pointerEvents: 'none' // Never block interactions
           }}
         />
         
         {/* Black overlay that increases as we scroll - only visible when Stats section is active */}
+        {/* Completely hidden when preloader is visible OR hero video is not ready to prevent flash on first load */}
         <motion.div 
           className="fixed inset-0 pointer-events-none"
           style={{
             backgroundColor: 'rgba(0, 0, 0, 0.7)',
             opacity: blackOverlayOpacity,
-            zIndex: 2 // Same as background
+            zIndex: 2, // Same as background
+            display: (isPreloaderBVisible || !heroVideoReady) ? 'none' : 'block',
+            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible'
           }}
         />
         
         {/* White overlay - fades in when Partners starts reaching top */}
         {/* Only affects background, content stays visible above it */}
+        {/* Completely hidden when preloader is visible OR hero video is not ready to prevent flash on first load */}
         <motion.div 
           className="fixed inset-0 pointer-events-none"
           style={{
             backgroundColor: 'rgba(255, 255, 255, 1)',
             opacity: whiteOverlayOpacity,
-            zIndex: 3 // Same as background layer, below content (z-7)
+            zIndex: 3, // Same as background layer, below content (z-7)
+            display: (isPreloaderBVisible || !heroVideoReady) ? 'none' : 'block',
+            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible'
           }}
         />
       </motion.section>

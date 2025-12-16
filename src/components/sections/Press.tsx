@@ -43,7 +43,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         id: 3,
         title: 'Ambitious industrial park project in Cabo Negro',
         description: 'The idea is to create a new industrial park on a 179-hectare extension that will stretch between the highway and the sea, starting at kilometer 28 of Route 9 Norte. This initiative arises from the need to have a properly enabled space for the installation of industrial projects, especially those involving the use of chemical products, due to the new urban regulations established by the latest modification to the Punta Arenas Regulatory Plan.',
-        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
+        image: '/cabonegro_astillero.webp',
         link: 'https://elpinguino.com/noticia/2018/12/20/ambicioso-proyecto-de-parque-industrial-en-cabo-negro',
         source: 'El Pingüino',
         date: '2018-12-20'
@@ -81,7 +81,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         id: 3,
         title: 'Ambicioso proyecto de parque industrial en Cabo Negro',
         description: 'La idea es crear un nuevo parque industrial en una extensión de 179 hectáreas y que se extenderá entre la carretera y el mar, a contar del kilómetro 28 de la ruta 9 Norte. Esta iniciativa surge debido a la necesidad de contar con un espacio debidamente habilitado para la instalación de proyectos industriales, especialmente, aquellos que involucran el uso de productos químicos, debido a las nuevas normativas urbanas establecidas por la última modificación al Plano Regulador de Punta Arenas.',
-        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
+        image: '/cabonegro_astillero.webp',
         link: 'https://elpinguino.com/noticia/2018/12/20/ambicioso-proyecto-de-parque-industrial-en-cabo-negro',
         source: 'El Pingüino',
         date: '2018-12-20'
@@ -119,7 +119,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         id: 3,
         title: '卡波内格罗雄心勃勃的工业园区项目',
         description: '该计划是在179公顷的土地上创建一个新的工业园区，从9号公路北段28公里处开始，延伸至公路与海洋之间。这一倡议源于需要拥有一个适当启用的空间来安装工业项目，特别是那些涉及化学品使用的项目，这是由于对蓬塔阿雷纳斯监管计划的最后修改所建立的新城市规范。',
-        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
+        image: '/cabonegro_astillero.webp',
         link: 'https://elpinguino.com/noticia/2018/12/20/ambicioso-proyecto-de-parque-industrial-en-cabo-negro',
         source: 'El Pingüino',
         date: '2018-12-20'
@@ -157,7 +157,7 @@ const getPressArticles = (locale: string): PressArticle[] => {
         id: 3,
         title: 'Projet ambitieux de parc industriel à Cabo Negro',
         description: 'L\'idée est de créer un nouveau parc industriel sur une superficie de 179 hectares qui s\'étendra entre la route et la mer, à partir du kilomètre 28 de la route 9 Norte. Cette initiative naît de la nécessité de disposer d\'un espace correctement aménagé pour l\'installation de projets industriels, en particulier ceux impliquant l\'utilisation de produits chimiques, en raison des nouvelles normes urbaines établies par la dernière modification du Plan Régulateur de Punta Arenas.',
-        image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop',
+        image: '/cabonegro_astillero.webp',
         link: 'https://elpinguino.com/noticia/2018/12/20/ambicioso-proyecto-de-parque-industrial-en-cabo-negro',
         source: 'El Pingüino',
         date: '2018-12-20'
