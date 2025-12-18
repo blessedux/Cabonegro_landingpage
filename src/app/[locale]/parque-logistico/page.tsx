@@ -1,9 +1,9 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { Download, Calendar, Mail, Warehouse, Truck, Factory, Zap, Wrench } from 'lucide-react'
 import Image from 'next/image'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Navbar from '@/components/sections/Navbar'
 import NavbarEs from '@/components/sections/Navbar-es'
 import NavbarZh from '@/components/sections/Navbar-zh'
@@ -15,13 +15,35 @@ import Link from 'next/link'
 
 export default function ParqueLogisticoPage() {
   const params = useParams()
-  const locale = params?.locale as string || 'en'
+  const pathname = usePathname()
+  // Use pathname for consistent locale detection across all pages
+  const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : (params?.locale as string || 'en')
   const videoRef = useRef<HTMLVideoElement>(null)
   const [expandedCard, setExpandedCard] = useState<number | null>(null)
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [videoError, setVideoError] = useState(false)
   
   const heroVideo = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
+
+  // Check if video is already loaded (cached) when component mounts
+  useEffect(() => {
+    // Small delay to ensure video element is set up
+    const checkVideoState = () => {
+      if (videoRef.current) {
+        // Check if video is already loaded (readyState >= 3 means HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA)
+        if (videoRef.current.readyState >= 3) {
+          // Add small delay to ensure placeholder shows briefly
+          setTimeout(() => setVideoLoaded(true), 200)
+        }
+      }
+    }
+    
+    // Check immediately and after a short delay
+    checkVideoState()
+    const timeout = setTimeout(checkVideoState, 100)
+    
+    return () => clearTimeout(timeout)
+  }, [])
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -62,6 +84,7 @@ export default function ParqueLogisticoPage() {
           items: [
             'Direct access to Route 9 North',
             'Close proximity to maritime terminal',
+            'Connection via international airport at 5 km',
             'Industrial zone with expansion potential',
             'Supporting infrastructure ready'
           ],
@@ -104,6 +127,7 @@ export default function ParqueLogisticoPage() {
           items: [
             'Acceso directo a la Ruta 9 Norte',
             'Cercanía al terminal marítimo',
+            'Conexión vía aeropuerto internacional a 5 km',
             'Zona industrial con potencial de expansión',
             'Infraestructura de apoyo lista'
           ],
@@ -146,6 +170,7 @@ export default function ParqueLogisticoPage() {
           items: [
             '直接通往9号公路北段',
             '靠近海运码头',
+            '距离国际机场5公里',
             '具有扩展潜力的工业区',
             '支持基础设施已就绪'
           ],
@@ -188,6 +213,7 @@ export default function ParqueLogisticoPage() {
           items: [
             'Accès direct à la Route 9 Nord',
             'Proximité du terminal maritime',
+            'Connexion via aéroport international à 5 km',
             'Zone industrielle avec potentiel d\'expansion',
             'Infrastructure de soutien prête'
           ],
@@ -217,6 +243,26 @@ export default function ParqueLogisticoPage() {
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
+          {/* Lazy Loading Placeholder Image */}
+          <div 
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ 
+              zIndex: 1,
+              opacity: videoLoaded ? 0 : 1,
+              transition: 'opacity 0.6s ease-in-out',
+              pointerEvents: 'none'
+            }}
+          >
+            <Image
+              src="/cabonegro_slide3.webp"
+              alt="Cabo Negro II Logistics Park"
+              fill
+              className="object-cover"
+              priority
+              quality={90}
+            />
+          </div>
+          
           <video
             ref={videoRef}
             src={heroVideo}
@@ -226,14 +272,21 @@ export default function ParqueLogisticoPage() {
             playsInline
             preload="auto"
             crossOrigin="anonymous"
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ 
+              zIndex: 2,
+              opacity: videoLoaded ? 1 : 0,
+              transition: 'opacity 0.6s ease-in-out'
+            }}
             onLoadedData={() => {
               console.log('✅ Parque Logistico video loaded data:', heroVideo)
-              setVideoLoaded(true)
+              // Small delay to ensure placeholder is visible briefly
+              setTimeout(() => setVideoLoaded(true), 100)
             }}
             onCanPlay={() => {
               console.log('✅ Parque Logistico video can play:', heroVideo)
-              setVideoLoaded(true)
+              // Small delay to ensure placeholder is visible briefly
+              setTimeout(() => setVideoLoaded(true), 100)
             }}
             onLoadedMetadata={() => {
               console.log('✅ Parque Logistico video metadata loaded:', heroVideo)
@@ -278,7 +331,7 @@ export default function ParqueLogisticoPage() {
               setVideoError(true)
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-0" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black" style={{ zIndex: 3 }} />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-4">

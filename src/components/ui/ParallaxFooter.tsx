@@ -85,7 +85,7 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
       title: 'CABO NEGRO',
       copyright: '© 2025 Cabo Negro Industrial Park',
       links: [
-        { href: '/explore', text: 'Explore Terrain' },
+        { href: '/map', text: 'Explore Terrain' },
         { href: '/deck', text: 'View Deck' },
         { href: '/#FAQ', text: 'FAQ' }
       ]
@@ -94,7 +94,7 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
       title: 'CABO NEGRO',
       copyright: '© 2025 Parque Industrial Cabo Negro',
       links: [
-        { href: '/es/explore', text: 'Explorar Terreno' },
+        { href: '/es/map', text: 'Explorar Terreno' },
         { href: '/es/deck', text: 'Ver Deck' },
         { href: '/es#FAQ', text: 'Preguntas Frecuentes' }
       ]
@@ -103,7 +103,7 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
       title: 'CABO NEGRO',
       copyright: '© 2025 Cabo Negro Industrial Park',
       links: [
-        { href: '/zh/explore', text: '探索地形' },
+        { href: '/zh/map', text: '探索地形' },
         { href: '/zh/deck', text: '查看甲板' },
         { href: '/zh#FAQ', text: '常见问题' }
       ]
@@ -112,7 +112,7 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
       title: 'CABO NEGRO',
       copyright: '© 2025 Parc Industriel Cabo Negro',
       links: [
-        { href: '/fr/explore', text: 'Explorer le Terrain' },
+        { href: '/fr/map', text: 'Explorer le Terrain' },
         { href: '/fr/deck', text: 'Voir le Deck' },
         { href: '/fr#FAQ', text: 'FAQ' }
       ]

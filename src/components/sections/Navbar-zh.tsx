@@ -526,7 +526,7 @@ export default function NavbarZh() {
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-12 w-auto hover:opacity-80 transition-all duration-300"
+                  className="h-[62.4px] w-auto hover:opacity-80 transition-all duration-300"
                   style={{
                     filter: isOverWhiteBackground ? 'brightness(0)' : 'brightness(1)',
                     transition: 'filter 0.3s ease-in-out'

@@ -1,4 +1,4 @@
-import { WordRotate } from '@/components/ui/word-rotate'
+import { TypingAnimation } from '@/components/ui/typing-animation'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
@@ -71,10 +71,9 @@ export default function HeroZh() {
   // Export scroll progress for use in other components (via context or prop)
   // For now, we'll use a shared scroll tracking approach
   
-  // Words for rotating animation
+  // Words for typing animation
   const rotatingWords = ['物流', '港口', '科技']
   const subtitle = '麦哲伦海峡的综合基础设施，面向新能源和科技经济'
-  const [displayWordIndex, setDisplayWordIndex] = useState(0)
 
   // Trigger hero animations immediately - no delay needed
   useEffect(() => {
@@ -213,14 +212,6 @@ export default function HeroZh() {
     }
   }, [shouldLoadVideo])
 
-  // Auto-rotate word every 4 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDisplayWordIndex((prev) => (prev + 1) % rotatingWords.length)
-    }, 4000) // 4 seconds
-
-    return () => clearInterval(interval)
-  }, [rotatingWords.length])
 
   // Handle "探索项目" button click - instant response
   const handleExploreProject = (e?: React.MouseEvent | React.TouchEvent) => {
@@ -321,7 +312,11 @@ export default function HeroZh() {
                 zIndex: 2, // Always above placeholder
                 opacity: videoLoaded ? 1 : 0, // Fade in when loaded
                 transition: 'opacity 0.6s ease-in-out',
-                backgroundColor: '#000000' // Black background while loading to prevent white flash
+                backgroundColor: '#000000', // Black background while loading to prevent white flash
+                minWidth: '100%',
+                minHeight: '100%',
+                width: '100%',
+                height: '100%'
               }}
               onLoadedData={() => {
                 console.log('✅ Video loaded data:', heroVideo)
@@ -434,16 +429,12 @@ export default function HeroZh() {
           >
             <span>通往世界南方的</span>
             <span>
-              <WordRotate
+              <TypingAnimation
                 words={rotatingWords}
-                controlledIndex={displayWordIndex}
+                duration={100}
+                deleteSpeed={50}
+                pauseTime={2000}
                 className="font-bold text-white"
-                framerProps={{
-                  initial: { opacity: 0, y: -50 },
-                  animate: { opacity: 1, y: 0 },
-                  exit: { opacity: 0, y: 50 },
-                  transition: { duration: 0.6, ease: "easeOut" },
-                }}
               />
             </span>
             <span>门户</span>

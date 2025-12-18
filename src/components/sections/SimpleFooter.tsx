@@ -215,7 +215,7 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
                 {content.location.title}
               </h3>
               <Link 
-                href={`${basePath}/explore`}
+                href={`${basePath}/map`}
                 className="text-gray-700 hover:text-black transition-colors block mb-4"
               >
                 {content.location.virtualTour}

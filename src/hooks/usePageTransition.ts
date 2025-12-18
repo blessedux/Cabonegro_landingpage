@@ -36,16 +36,6 @@ export function usePageTransition() {
                           pathname.match(/^\/(en|es|zh|fr)\/?$/)
       const isProjectToHome = isFromProjectPage && isToHomePage
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 usePageTransition: Pathname changed detected', {
-          from: prevPathnameRef.current,
-          to: pathname,
-          isPreloaderBVisible,
-          isProjectToHome,
-          timestamp: navigationStart
-        })
-      }
-      
       // Reset navigation ref to ensure proper detection
       // This handles cases where preloader was shown explicitly before pathname change
       isNavigatingRef.current = true
@@ -54,9 +44,6 @@ export function usePageTransition() {
       // Skip PreloaderB for project → home navigation (fast transitions)
       // This matches the logic in Navbar.handleHomeClick
       if (isProjectToHome) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('⚡ usePageTransition: Project → Home navigation detected, skipping PreloaderB for faster transition')
-        }
         // Don't show preloader, but still set up hide logic in case it was already shown
         // Reset navigation state immediately for instant navigation
         requestAnimationFrame(() => {
@@ -65,9 +52,6 @@ export function usePageTransition() {
               isNavigatingRef.current = false
               hidePreloaderB()
               setNavigating(false)
-              if (process.env.NODE_ENV === 'development') {
-                console.log('✅ usePageTransition: Project → Home navigation complete, navigation state reset')
-              }
             }
           }, 25) // Minimal delay for state updates
         })
@@ -80,14 +64,7 @@ export function usePageTransition() {
       // Otherwise, show it here to ensure consistent transitions
       // This handles navigation preloaders, first load is handled by LocaleHomePage
       if (!isPreloaderBVisible) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 usePageTransition: Showing preloader for navigation')
-        }
         showPreloaderB()
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 usePageTransition: Preloader already visible, setting up hide logic')
-        }
       }
 
       // Always set up hide timer when pathname changes
@@ -102,9 +79,6 @@ export function usePageTransition() {
               hidePreloaderB()
               // CRITICAL: Reset navigation state immediately to re-enable navbar clicks
               setNavigating(false)
-              if (process.env.NODE_ENV === 'development') {
-                console.log('✅ usePageTransition: Navigation complete, preloader hidden, navigation state reset')
-              }
             }
           }, 25) // Reduced from 50ms to 25ms for faster response
         })
@@ -122,9 +96,6 @@ export function usePageTransition() {
           hidePreloaderB()
           // CRITICAL: Always reset navigation state, even on safety timer
           setNavigating(false)
-          if (process.env.NODE_ENV === 'development') {
-            console.log('⚠️ usePageTransition: Safety timer triggered, forcing preloader hide and navigation reset')
-          }
         }
       }, 2000) // Maximum 2 seconds
 

@@ -14,9 +14,9 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [dotCoords, setDotCoords] = useState<[number, number]>([-70.8056, -52.9479]) // Chile coordinates
+  const [dotCoords, setDotCoords] = useState<[number, number]>([-70.8290556, -52.9263056]) // Cabo Negro coordinates: 52°55'34.7"S 70°49'44.6"W
   const [glowAnimation, setGlowAnimation] = useState(0)
-  const dotCoordsRef = useRef<[number, number]>([-70.8056, -52.9479])
+  const dotCoordsRef = useRef<[number, number]>([-70.8290556, -52.9263056])
   const glowAnimationRef = useRef(0)
 
   // Sync refs with state

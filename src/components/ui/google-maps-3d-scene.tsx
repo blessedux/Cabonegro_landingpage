@@ -120,7 +120,6 @@ export default function GoogleMaps3DScene({
     if (!mapInstanceRef.current) return
 
     const map = mapInstanceRef.current
-    console.log('🎥 Starting camera rotation around Cabo Negro')
     
     let currentHeading = 330
     const rotationSpeed = 0.3 // Slower rotation for cinematic effect
@@ -142,7 +141,6 @@ export default function GoogleMaps3DScene({
     if (!mapInstanceRef.current) return
 
     const map = mapInstanceRef.current
-    console.log('🌍 Starting epic cinematic journey from space to Cabo Negro, Primavera, Magallanes, Chile')
     
     // Phase 1: Space view - Start from very far away (Asia)
     map.setZoom(0) // Even further away
@@ -168,8 +166,6 @@ export default function GoogleMaps3DScene({
             setTimeout(() => {
               // Phase 6: Final zoom to Cabo Negro
               animateToPosition(12, 45, 330, 4000)
-              
-              console.log('🎯 Reached Cabo Negro - Starting camera rotation')
               
               // Start camera rotation around the location
               setTimeout(() => {
@@ -222,23 +218,14 @@ export default function GoogleMaps3DScene({
   }, [enableAutoRotation, startAutoRotation])
 
   useEffect(() => {
-    console.log('🚀 Creating 3D Scene with coordinates:', center)
-    console.log('📍 Altitude:', altitude, 'meters')
-    console.log('🔄 Current state - isLoaded:', isLoaded, 'hasError:', hasError)
-    
     // Use the global Google Maps loader to prevent multiple script loads
     googleMapsLoader.loadGoogleMaps()
       .then(() => {
-        console.log('✅ Google Maps loaded successfully via global loader')
-        console.log('🔄 About to call initializeMap')
-        
         // Wait for DOM element to be available
         const waitForElement = () => {
           if (mapRef.current) {
-            console.log('🔄 DOM element ready - mapRef.current:', mapRef.current)
             initializeMap()
           } else {
-            console.log('🔄 Waiting for DOM element...')
             setTimeout(waitForElement, 50)
           }
         }
@@ -262,11 +249,6 @@ export default function GoogleMaps3DScene({
   }, [onLoad, onError, stopAutoRotation, center, altitude])
 
   const initializeMap = () => {
-    console.log('🔍 initializeMap called')
-    console.log('🔍 mapRef.current:', mapRef.current)
-    console.log('🔍 window.google:', (window as unknown as { google?: any }).google)
-    console.log('🔍 window.google.maps:', (window as unknown as { google?: any }).google?.maps)
-    
     if (!mapRef.current) {
       console.error('❌ mapRef.current is null')
       return
@@ -289,13 +271,6 @@ export default function GoogleMaps3DScene({
 
     try {
       const calculatedZoom = enableAltitudeView ? getZoomFromAltitude(altitude) : zoom
-      
-      console.log('🗺️ Initializing 3D Map Scene:')
-      console.log('   📍 Center:', center)
-      console.log('   🏔️ Altitude:', altitude, 'm')
-      console.log('   🔍 Zoom:', calculatedZoom)
-      console.log('   📐 Tilt:', tilt)
-      console.log('   🧭 Heading:', heading)
 
       const map = new (window as unknown as { google: any }).google.maps.Map(mapRef.current, {
         center: center,
@@ -403,12 +378,9 @@ export default function GoogleMaps3DScene({
         ]
       })
 
-      console.log('🗺️ Map instance created:', map)
       mapInstanceRef.current = map
       setIsLoaded(true)
       onLoad?.()
-      
-      console.log('✅ 3D Map Scene initialized successfully')
 
       // Start dramatic zoom-in animation
       setTimeout(() => {

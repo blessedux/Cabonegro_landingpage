@@ -397,19 +397,17 @@ export default function AboutUs() {
           </div>
           
           {/* Icons Grid - Full width, horizontal layout (4 columns) */}
-          <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full items-start">
+          <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full items-stretch">
             {textSections.map((section, index) => {
               const isHovered = hoveredCard === index
               return (
                 <div
                   key={index}
-                  className="flex flex-col items-start text-left p-6 rounded-lg border border-white/20 bg-white/5 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/30 self-start"
+                  className="flex flex-col items-start text-left p-6 rounded-lg border border-white/20 bg-white/5 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/30 h-full"
                   style={{ 
                     opacity: iconOpacities[index] || 0,
                     transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,
-                    transition: 'opacity 0.6s ease-out, transform 0.6s ease-out',
-                    height: isHovered ? 'auto' : 'auto',
-                    minHeight: 'auto'
+                    transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
                   }}
                   onMouseEnter={(e) => {
                     e.stopPropagation()

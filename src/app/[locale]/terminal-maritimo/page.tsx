@@ -20,7 +20,7 @@ declare global {
 import { RulerCarousel, type CarouselItem } from '@/components/ui/ruler-carousel'
 import { MagicText } from '@/components/ui/magic-text'
 import { motion } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useScroll, useTransform } from 'framer-motion'
 
 // Code-split navigation components - only load when needed
@@ -156,6 +156,26 @@ export default function TerminalMaritimoPage() {
   
   const heroVideo = 'https://storage.reimage.dev/mente-files/vid-2d88fd081208/original.mp4'
 
+  // Check if video is already loaded (cached) when component mounts
+  useEffect(() => {
+    // Small delay to ensure video element is set up
+    const checkVideoState = () => {
+      if (videoRef.current) {
+        // Check if video is already loaded (readyState >= 3 means HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA)
+        if (videoRef.current.readyState >= 3) {
+          // Add small delay to ensure placeholder shows briefly
+          setTimeout(() => setVideoLoaded(true), 200)
+        }
+      }
+    }
+    
+    // Check immediately and after a short delay
+    checkVideoState()
+    const timeout = setTimeout(checkVideoState, 100)
+    
+    return () => clearTimeout(timeout)
+  }, [])
+
   // Get localized text based on locale
   const getLocalizedText = () => {
     const texts: Record<string, any> = {
@@ -209,8 +229,8 @@ export default function TerminalMaritimoPage() {
           downloadBtn: 'Download Fact Sheet'
         },
         strategicCollaboration: {
-          name: 'Felipe Morales',
-          title: 'General Manager\nMaritime Terminal\nCabo Negro',
+          name: 'Felipe Morales Pacheco',
+          title: 'General Manager\nTerminal Maritimo Cabo Negro',
           scheduleBtn: 'Schedule Meeting',
           partnerTitle: 'Strategic Partner of the Port Project',
           description: 'Compas Marine is the partner responsible for the management and development of the Cabo Negro Maritime Terminal. With extensive experience in the design, construction, operation, and administration of maritime terminals in Chilean Patagonia, the company brings technical expertise, high-level operational standards, and a solid focus on efficiency, safety, and port innovation. Their participation ensures development aligned with industry best practices and the logistical and energy needs of the region.'
@@ -266,8 +286,8 @@ export default function TerminalMaritimoPage() {
           downloadBtn: 'Descargar Fact Sheet'
         },
         strategicCollaboration: {
-          name: 'Felipe Morales',
-          title: 'Gerente General\nTerminal Maritimo\nCabo Negro',
+          name: 'Felipe Morales Pacheco',
+          title: 'Gerente General\nTerminal Maritimo Cabo Negro',
           scheduleBtn: 'Agendar Reunión',
           partnerTitle: 'Socio Estratégico del Proyecto Portuario',
           description: 'Compas Marine es el socio responsable de la gestión y desarrollo del Terminal Marítimo Cabo Negro. Con una amplia trayectoria en el diseño, construcción, operación y administración de terminales marítimos en la Patagonia Chilena, la compañía aporta experiencia técnica, estándares operacionales de alto nivel y un enfoque sólido en eficiencia, seguridad e innovación portuaria. Su participación garantiza un desarrollo alineado con las mejores prácticas de la industria y con las necesidades logísticas y energéticas de la región.'
@@ -323,8 +343,8 @@ export default function TerminalMaritimoPage() {
           downloadBtn: '下载概况表'
         },
         strategicCollaboration: {
-          name: 'Felipe Morales',
-          title: '总经理\n海运码头\n卡波内格罗',
+          name: 'Felipe Morales Pacheco',
+          title: '总经理\n海运码头卡波内格罗',
           scheduleBtn: '安排会议',
           partnerTitle: '港口项目的战略合作伙伴',
           description: 'Compas Marine 是负责卡波内格罗海运码头管理和开发的合作伙伴。该公司在智利巴塔哥尼亚地区海运码头的设计、建设、运营和管理方面拥有丰富经验，提供专业技术、高水平的运营标准，并专注于效率、安全和港口创新。他们的参与确保了与行业最佳实践以及该地区物流和能源需求相一致的发展。'
@@ -380,8 +400,8 @@ export default function TerminalMaritimoPage() {
           downloadBtn: 'Télécharger la Fiche Technique'
         },
         strategicCollaboration: {
-          name: 'Felipe Morales',
-          title: 'Directeur Général\nTerminal Maritime\nCabo Negro',
+          name: 'Felipe Morales Pacheco',
+          title: 'Directeur Général\nTerminal Maritime Cabo Negro',
           scheduleBtn: 'Planifier une Réunion',
           partnerTitle: 'Partenaire Stratégique du Projet Portuaire',
           description: 'Compas Marine est le partenaire responsable de la gestion et du développement du Terminal Maritime Cabo Negro. Avec une vaste expérience dans la conception, la construction, l\'exploitation et l\'administration de terminaux maritimes en Patagonie chilienne, l\'entreprise apporte une expertise technique, des normes opérationnelles de haut niveau et un solide focus sur l\'efficacité, la sécurité et l\'innovation portuaire. Leur participation garantit un développement aligné avec les meilleures pratiques de l\'industrie et les besoins logistiques et énergétiques de la région.'
@@ -574,6 +594,26 @@ export default function TerminalMaritimoPage() {
 
       {/* Hero Section with Full Background Video */}
       <section data-hero-section="true" className="relative h-screen w-full overflow-hidden">
+        {/* Lazy Loading Placeholder Image */}
+        <div 
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ 
+            zIndex: 1,
+            opacity: videoLoaded ? 0 : 1,
+            transition: 'opacity 0.6s ease-in-out',
+            pointerEvents: 'none'
+          }}
+        >
+          <Image
+            src="/cabonegro_slide2.webp"
+            alt="Cabo Negro Maritime Terminal"
+            fill
+            className="object-cover"
+            priority
+            quality={90}
+          />
+        </div>
+        
         {/* Background Video */}
         <video
           ref={videoRef}
@@ -584,23 +624,27 @@ export default function TerminalMaritimoPage() {
           preload="auto"
           crossOrigin="anonymous"
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ zIndex: 0 }}
+          style={{ 
+            zIndex: 2,
+            opacity: videoLoaded ? 1 : 0,
+            transition: 'opacity 0.6s ease-in-out'
+          }}
           onLoadedData={() => {
-            console.log('✅ Terminal Maritimo video loaded data:', heroVideo)
-            setVideoLoaded(true)
+            // Small delay to ensure placeholder is visible briefly
+            setTimeout(() => setVideoLoaded(true), 100)
           }}
           onCanPlay={() => {
-            console.log('✅ Terminal Maritimo video can play:', heroVideo)
-            setVideoLoaded(true)
+            // Small delay to ensure placeholder is visible briefly
+            setTimeout(() => setVideoLoaded(true), 100)
           }}
           onLoadedMetadata={() => {
-            console.log('✅ Terminal Maritimo video metadata loaded:', heroVideo)
+            // Video metadata loaded
           }}
           onStalled={() => {
-            console.warn('⚠️ Terminal Maritimo video stalled:', heroVideo)
+            // Video stalled - handled silently
           }}
           onWaiting={() => {
-            console.warn('⚠️ Terminal Maritimo video waiting for data:', heroVideo)
+            // Video waiting for data - handled silently
           }}
           onError={(e) => {
             const video = e.currentTarget
@@ -640,7 +684,7 @@ export default function TerminalMaritimoPage() {
         </video>
         
         {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" style={{ zIndex: 1 }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" style={{ zIndex: 3 }} />
         
         {/* Content */}
         <div className="relative h-full flex flex-col items-center justify-center px-6 text-center text-white" style={{ zIndex: 2 }}>
@@ -702,16 +746,21 @@ export default function TerminalMaritimoPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             {/* Left Side: Image and Logo */}
             <div className="flex flex-col items-start gap-6">
-              {/* Image Container for Project Manager */}
-              <div className="w-full max-w-[300px] aspect-square">
+              {/* Image Container for Project Manager - Clickable LinkedIn Link */}
+              <a
+                href="https://www.linkedin.com/in/felipe-morales-p-2071aa6/?originalSubdomain=cl"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full max-w-[300px] aspect-square transition-opacity hover:opacity-90 cursor-pointer"
+              >
                 <Image
-                  src="/felipe_morales_perfil.jpeg"
+                  src="/felipemoraleshighres.webp"
                   alt={`${localizedText.strategicCollaboration.name} - ${locale === 'es' ? 'Jefe de Proyecto Compas Marine' : locale === 'en' ? 'Project Manager Compas Marine' : locale === 'fr' ? 'Chef de Projet Compas Marine' : '项目经理 Compas Marine'}`}
                   width={300}
                   height={300}
                   className="w-full h-full object-cover rounded-full"
                 />
-              </div>
+              </a>
               {/* Felipe Morales Name and Title */}
               <div className="flex flex-col gap-1">
                 <h3 className={`text-2xl font-bold ${isLightMode ? 'text-gray-900' : 'text-white'}`}>

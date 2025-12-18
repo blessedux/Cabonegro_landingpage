@@ -269,10 +269,6 @@ export default function Navbar() {
     // Immediately show navbar when pathname changes (navigation occurred)
     setIsNavbarHidden(false)
     setIsVisible(true)
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Navbar: Pathname changed, forcing navbar to show', { pathname })
-    }
   }, [pathname])
 
   // Dropdown animation only after preloader completes
@@ -294,9 +290,6 @@ export default function Navbar() {
       const timer = setTimeout(() => {
         setIsVisible(true)
         setIsNavbarHidden(false) // Ensure navbar is not hidden
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Navbar: Preloader complete, showing navbar')
-        }
       }, 300) // Reduced delay for faster navbar appearance after preloader
 
       return () => clearTimeout(timer)
@@ -316,9 +309,6 @@ export default function Navbar() {
         // Navbar should be visible but isn't - force it to show
         setIsVisible(true)
         setIsNavbarHidden(false)
-        if (process.env.NODE_ENV === 'development') {
-          console.log('⚠️ Navbar: Periodic check detected navbar not visible, forcing it to show')
-        }
       }
       
       // CRITICAL: Ensure navbar element has pointer events enabled when visible
@@ -327,9 +317,6 @@ export default function Navbar() {
         if (computedStyle.pointerEvents === 'none') {
           // Force pointer events to be enabled
           navbarRef.current.style.pointerEvents = 'auto'
-          if (process.env.NODE_ENV === 'development') {
-            console.log('⚠️ Navbar: Periodic check detected pointer events disabled, forcing them enabled')
-          }
         }
       }
     }, 500) // Check every 500ms
@@ -527,7 +514,7 @@ export default function Navbar() {
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-12 w-auto hover:opacity-80 transition-all duration-300"
+                  className="h-[62.4px] w-auto hover:opacity-80 transition-all duration-300"
                   style={{
                     filter: isOverWhiteBackground ? 'brightness(0)' : 'brightness(1)',
                     transition: 'filter 0.3s ease-in-out'

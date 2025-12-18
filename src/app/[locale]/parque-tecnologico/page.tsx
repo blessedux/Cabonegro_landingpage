@@ -373,21 +373,19 @@ export default function ParqueTecnologicoPage() {
             crossOrigin="anonymous"
             className="w-full h-full object-cover"
             onLoadedData={() => {
-              console.log('✅ Parque Tecnologico video loaded data:', heroVideo)
               setVideoLoaded(true)
             }}
             onCanPlay={() => {
-              console.log('✅ Parque Tecnologico video can play:', heroVideo)
               setVideoLoaded(true)
             }}
             onLoadedMetadata={() => {
-              console.log('✅ Parque Tecnologico video metadata loaded:', heroVideo)
+              // Video metadata loaded
             }}
             onStalled={() => {
-              console.warn('⚠️ Parque Tecnologico video stalled:', heroVideo)
+              // Video stalled - handled silently
             }}
             onWaiting={() => {
-              console.warn('⚠️ Parque Tecnologico video waiting for data:', heroVideo)
+              // Video waiting for data - handled silently
             }}
             onError={(e) => {
               const video = e.currentTarget
@@ -463,13 +461,13 @@ export default function ParqueTecnologicoPage() {
               {localizedText.vision.description}
             </p>
           </div>
-          <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full items-start">
+          <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full items-stretch">
             {localizedText.vision.items.map((item: any, index: number) => {
               const isHovered = hoveredCard === index
               return (
                 <div
                   key={index}
-                  className="relative flex flex-col items-start text-left p-6 rounded-lg border border-white/20 backdrop-blur-md transition-all duration-300 hover:border-white/30 self-start cursor-pointer overflow-hidden"
+                  className="relative flex flex-col items-start text-left p-6 rounded-lg border border-white/20 backdrop-blur-md transition-all duration-300 hover:border-white/30 h-full cursor-pointer overflow-hidden"
                   style={{ 
                     opacity: iconOpacities[index] || 0,
                     transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,

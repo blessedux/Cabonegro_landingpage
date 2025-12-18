@@ -132,9 +132,6 @@ export default function Stats() {
         
         if (hasEnoughData) {
           setHeroVideoReady(true)
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📊 Stats: Hero video is ready', { readyState: heroVideo.readyState })
-          }
           return true
         }
       }
@@ -156,16 +153,10 @@ export default function Stats() {
       if (heroVideo) {
         const handleCanPlay = () => {
           setHeroVideoReady(true)
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📊 Stats: Hero video canPlay event fired')
-          }
         }
         
         const handleLoadedData = () => {
           setHeroVideoReady(true)
-          if (process.env.NODE_ENV === 'development') {
-            console.log('📊 Stats: Hero video loadedData event fired')
-          }
         }
         
         // If already ready, set immediately
@@ -189,9 +180,6 @@ export default function Stats() {
           clearInterval(pollInterval)
           // If max polls reached and still not ready, allow it anyway (video might be slow)
           if (pollCount >= maxPolls && !heroVideoReady) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log('📊 Stats: Max polls reached, allowing Stats background (video may be slow)')
-            }
             setHeroVideoReady(true)
           }
         }
@@ -211,19 +199,6 @@ export default function Stats() {
   const [isMobile, setIsMobile] = useState(false)
   const prefersReducedMotion = useReducedMotion()
   
-  // Debug: Log component mount and initial state
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📊 Stats: Component mounted', {
-        isPreloaderComplete,
-        isPreloaderBVisible,
-        pathname,
-        hasRef: !!statsRef.current,
-        windowReady: typeof window !== 'undefined',
-      })
-    }
-  }, [])
-  
   // Detect mobile device
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -232,10 +207,6 @@ export default function Stats() {
       const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
                             (window.innerWidth <= 768)
       setIsMobile(isMobileDevice)
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📊 Stats: Mobile detection', { isMobileDevice, width: window.innerWidth })
-      }
     }
     
     checkMobile()
@@ -260,57 +231,26 @@ export default function Stats() {
     once: false // Allow re-triggering on navigation - critical for fade-in on navigation
   })
   
-  // Debug: Log in-view status changes
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📊 Stats: In-view status changed', {
-        isInView,
-        isPreloaderComplete,
-        isPreloaderBVisible,
-        readyToScroll: !isPreloaderBVisible, // Ready as soon as PreloaderB is hidden
-      })
-    }
-  }, [isInView, isPreloaderBVisible, isPreloaderComplete]) // Include isPreloaderComplete for logging only
-  
-  
   // Navigation handlers - explicitly show preloader for consistent transitions
   const handlePatagonValleyClick = () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Stats: handlePatagonValleyClick - showing preloader before navigation')
-    }
     // Show preloader immediately before navigation for consistent UX
     // This must happen synchronously before router.push to prevent white screen
     showPreloaderB()
     // Navigate immediately - no startTransition to avoid delays
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Stats: Navigating to parque-tecnologico')
-    }
     router.push(`/${locale}/parque-tecnologico`)
   }
   
   const handlePortZoneClick = () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Stats: handlePortZoneClick - showing preloader before navigation')
-    }
     // Show preloader immediately before navigation for consistent UX
     showPreloaderB()
     // Navigate immediately - no startTransition to avoid delays
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Stats: Navigating to terminal-maritimo')
-    }
     router.push(`/${locale}/terminal-maritimo`)
   }
   
   const handleCaboNegroDosClick = () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Stats: handleCaboNegroDosClick - showing preloader before navigation')
-    }
     // Show preloader immediately before navigation for consistent UX
     showPreloaderB()
     // Navigate immediately - no startTransition to avoid delays
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Stats: Navigating to parque-logistico')
-    }
     router.push(`/${locale}/parque-logistico`)
   }
   
@@ -327,9 +267,6 @@ export default function Stats() {
     if ((isHomePage && !wasHomePage) || (isHomePage && localeChanged)) {
       // Force re-initialization by updating key
       setNavigationKey(prev => prev + 1)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Stats: Navigation to homepage or locale change detected, resetting scroll tracking', { navigationKey, localeChanged, locale })
-      }
     }
     
     prevPathnameRef.current = pathname
@@ -348,9 +285,6 @@ export default function Stats() {
     if (navigationKey > 0 && statsRef.current) {
       // Force a recalculation by temporarily hiding and showing
       // This ensures useScroll recalculates the scroll progress
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Stats: Forcing scroll progress recalculation', { navigationKey })
-      }
     }
   }, [navigationKey])
   
@@ -524,9 +458,6 @@ export default function Stats() {
   useEffect(() => {
     setForceVisible(false)
     setHasScrolled(false)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 Stats: Locale changed, resetting visibility state', { locale })
-    }
   }, [locale])
   
   // Monitor scroll events to detect when user scrolls
@@ -534,21 +465,7 @@ export default function Stats() {
   // This makes Stats component ready as soon as PreloaderB hides
   useEffect(() => {
     if (isPreloaderBVisible) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📊 Stats: Scroll monitoring blocked - PreloaderB is visible', {
-          isPreloaderBVisible,
-        })
-      }
       return
-    }
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📊 Stats: Scroll monitoring enabled - ready to scroll', {
-        isPreloaderComplete,
-        isPreloaderBVisible,
-        hasRef: !!statsRef.current,
-        ready: !isPreloaderBVisible, // Ready if PreloaderB is not visible
-      })
     }
     
     const handleScroll = () => {
@@ -561,13 +478,6 @@ export default function Stats() {
       
       if (isVisible) {
         setForceVisible(true)
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Stats: Scrolled to section, forcing visibility', {
-            rectTop: rect.top,
-            rectBottom: rect.bottom,
-            windowHeight: window.innerHeight,
-          })
-        }
       }
     }
     
@@ -585,13 +495,6 @@ export default function Stats() {
   useEffect(() => {
     if (isInView && !isPreloaderBVisible) {
       setForceVisible(true)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Stats: Section in view, forcing visibility', {
-          isInView,
-          isPreloaderBVisible,
-          ready: !isPreloaderBVisible,
-        })
-      }
     }
   }, [isInView, isPreloaderBVisible, navigationKey, locale]) // Only depend on isPreloaderBVisible
   
@@ -600,13 +503,6 @@ export default function Stats() {
   useMotionValueEvent(statsSectionOpacity, "change", (latest) => {
     if (latest > 0.01 && !isPreloaderBVisible) {
       setForceVisible(true)
-      if (process.env.NODE_ENV === 'development' && !forceVisible) {
-        console.log('✅ Stats: Scroll progress > 0.01, forcing visibility', {
-          latest,
-          isPreloaderBVisible,
-          ready: !isPreloaderBVisible,
-        })
-      }
     }
   })
   
@@ -619,9 +515,6 @@ export default function Stats() {
       // Reset on navigation to home
       setForceVisible(false)
       setHasScrolled(false)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Stats: Reset visibility on homepage navigation')
-      }
       
       // Check visibility after navigation with multiple attempts
       // Only check if PreloaderB is not visible - don't wait for isPreloaderComplete
@@ -701,19 +594,9 @@ export default function Stats() {
   useMotionValueEvent(statsSectionOpacity, "change", (latest) => {
     // Only show Stats section when AboutUs is in view
     setShouldShowStats(latest > 0.1)
-    
-    // Debug: Log opacity changes
-    if (process.env.NODE_ENV === 'development' && latest > 0.01) {
-      console.log('📊 Stats: Section opacity changed', {
-        opacity: latest,
-        shouldShow: latest > 0.1,
-        isPreloaderComplete,
-        isPreloaderBVisible,
-      })
-    }
   })
   
-  // Debug: Check asset loading status
+  // Check asset loading status
   // Check assets as soon as PreloaderB is hidden, don't wait for isPreloaderComplete
   useEffect(() => {
     if (typeof window === 'undefined' || isPreloaderBVisible) return
@@ -730,16 +613,6 @@ export default function Stats() {
           loadingImages.push(img as HTMLImageElement)
         }
       })
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📊 Stats: Asset loading status', {
-          totalImages: images.length,
-          loadedImages: loadedImages.length,
-          loadingImages: loadingImages.length,
-          allAssetsLoaded: loadingImages.length === 0,
-          readyToScroll: !isPreloaderBVisible && loadingImages.length === 0,
-        })
-      }
     }
     
     // Check immediately
@@ -773,32 +646,6 @@ export default function Stats() {
     }
   }, [isPreloaderBVisible]) // Only depend on isPreloaderBVisible
   
-  // Debug: Overall readiness check
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      const readyToScroll = !isPreloaderBVisible // Ready as soon as PreloaderB is hidden
-      const readiness = {
-        componentMounted: true,
-        preloaderComplete: isPreloaderComplete,
-        preloaderBVisible: isPreloaderBVisible,
-        hasRef: !!statsRef.current,
-        isInView,
-        readyToScroll, // Ready as soon as PreloaderB is hidden
-        scrollProgress: baseScrollProgress.get(),
-        statsSectionOpacity: statsSectionOpacity.get(),
-      }
-      
-      console.log('📊 Stats: Overall readiness check', readiness)
-      
-      if (readyToScroll && !isPreloaderBVisible) {
-        console.log('✅ Stats: READY TO SCROLL - Component is loaded and ready')
-      } else {
-        console.log('⏳ Stats: NOT READY - Waiting for:', {
-          preloaderBVisible: isPreloaderBVisible,
-        })
-      }
-    }
-  }, [isPreloaderBVisible, isInView, baseScrollProgress, statsSectionOpacity]) // Removed isPreloaderComplete dependency
 
   return (
     <>
@@ -820,9 +667,6 @@ export default function Stats() {
             // This ensures fade-in works even after navigation
             if (forceVisible || isInView || hasScrolled) {
               const minOpacity = Math.max(scrollOpacity, 0.3)
-              if (process.env.NODE_ENV === 'development' && minOpacity > 0 && scrollOpacity < 0.01) {
-                console.log('✅ Stats: Using force visibility', { forceVisible, isInView, hasScrolled, scrollOpacity, minOpacity })
-              }
               return minOpacity
             }
             

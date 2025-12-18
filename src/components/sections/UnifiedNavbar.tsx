@@ -171,9 +171,9 @@ export default function UnifiedNavbar() {
   const handleExploreTerrain = () => {
     startFadeOut()
     
-    // Navigate to explore route after animations using next-intl router
+    // Navigate to map route (3D experience) after animations using next-intl router
     setTimeout(() => {
-      router.push('/explore')
+      router.push(`/${currentLocale}/map`)
     }, 1000)
   }
 
@@ -205,7 +205,7 @@ export default function UnifiedNavbar() {
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-11 w-auto hover:opacity-80 transition-opacity"
+                  className="h-[57.2px] w-auto hover:opacity-80 transition-opacity"
                 />
               </Link>
             </div>
