@@ -275,7 +275,7 @@ export default function HeroFr() {
             height: '100%'
           }}
         >
-          {/* Placeholder image - always render, fade out when video is ready */}
+          {/* Placeholder image - always render, fade out smoothly when video is ready */}
           <Image
             src="/cabonegro_frame1.webp"
             alt="Cabo Negro Hero"
@@ -289,14 +289,16 @@ export default function HeroFr() {
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             style={{
               zIndex: 1,
+              // Keep placeholder visible until video is fully loaded and ready to play
+              // Only fade out when video is loaded AND (not mobile OR video is playing)
               opacity: (shouldLoadVideo && videoLoaded && (!isMobile || isVideoPlaying)) ? 0 : 1,
-              transition: 'opacity 0.6s ease-in-out',
+              transition: 'opacity 0.8s ease-in-out',
               pointerEvents: 'none'
             }}
           />
           
-          {/* Video element - always render when shouldLoadVideo is true, fade in when ready */}
-          {shouldLoadVideo && (!isMobile || isVideoPlaying) && (
+          {/* Video element - always render when shouldLoadVideo is true to ensure smooth transition */}
+          {shouldLoadVideo && (
             <video
               ref={videoRef}
               autoPlay
@@ -310,8 +312,10 @@ export default function HeroFr() {
                 willChange: 'transform, opacity',
                 transform: 'translateZ(0)', // Force GPU acceleration
                 zIndex: 2, // Always above placeholder
-                opacity: videoLoaded ? 1 : 0, // Fade in when loaded
-                transition: 'opacity 0.6s ease-in-out',
+                // Fade in video when it's loaded AND ready to play
+                // On mobile, also wait for video to be playing
+                opacity: (videoLoaded && (!isMobile || isVideoPlaying)) ? 1 : 0,
+                transition: 'opacity 0.8s ease-in-out',
                 backgroundColor: '#000000', // Black background while loading to prevent white flash
                 minWidth: '100%',
                 minHeight: '100%',
@@ -320,10 +324,17 @@ export default function HeroFr() {
               }}
               onLoadedData={() => {
                 console.log('✅ Video loaded data:', heroVideo)
-                setVideoLoaded(true)
+                // Only set loaded when video has enough data to play smoothly
+                if (videoRef.current && videoRef.current.readyState >= 3) {
+                  setVideoLoaded(true)
+                }
               }}
               onCanPlay={() => {
                 console.log('✅ Video can play:', heroVideo)
+                setVideoLoaded(true)
+              }}
+              onCanPlayThrough={() => {
+                console.log('✅ Video can play through:', heroVideo)
                 setVideoLoaded(true)
               }}
               onLoadedMetadata={() => {

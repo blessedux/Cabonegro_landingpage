@@ -594,13 +594,13 @@ export default function TerminalMaritimoPage() {
 
       {/* Hero Section with Full Background Video */}
       <section data-hero-section="true" className="relative h-screen w-full overflow-hidden">
-        {/* Lazy Loading Placeholder Image */}
+        {/* Lazy Loading Placeholder Image - fades out smoothly when video is ready */}
         <div 
           className="absolute inset-0 w-full h-full object-cover"
           style={{ 
             zIndex: 1,
             opacity: videoLoaded ? 0 : 1,
-            transition: 'opacity 0.6s ease-in-out',
+            transition: 'opacity 0.8s ease-in-out',
             pointerEvents: 'none'
           }}
         >
@@ -614,7 +614,7 @@ export default function TerminalMaritimoPage() {
           />
         </div>
         
-        {/* Background Video */}
+        {/* Background Video - fades in smoothly when ready */}
         <video
           ref={videoRef}
           autoPlay
@@ -627,15 +627,21 @@ export default function TerminalMaritimoPage() {
           style={{ 
             zIndex: 2,
             opacity: videoLoaded ? 1 : 0,
-            transition: 'opacity 0.6s ease-in-out'
+            transition: 'opacity 0.8s ease-in-out',
+            backgroundColor: '#000000' // Black background while loading to prevent white flash
           }}
           onLoadedData={() => {
-            // Small delay to ensure placeholder is visible briefly
-            setTimeout(() => setVideoLoaded(true), 100)
+            // Only set loaded when video has enough data to play smoothly
+            if (videoRef.current && videoRef.current.readyState >= 3) {
+              setVideoLoaded(true)
+            }
           }}
           onCanPlay={() => {
-            // Small delay to ensure placeholder is visible briefly
-            setTimeout(() => setVideoLoaded(true), 100)
+            setVideoLoaded(true)
+          }}
+          onCanPlayThrough={() => {
+            // Best indicator that video is fully ready
+            setVideoLoaded(true)
           }}
           onLoadedMetadata={() => {
             // Video metadata loaded
@@ -678,6 +684,9 @@ export default function TerminalMaritimoPage() {
               readyState: video.readyState
             })
             setVideoError(true)
+          }}
+          onLoadStart={() => {
+            setVideoLoaded(false)
           }}
         >
           <source src={heroVideo} type="video/mp4" />
