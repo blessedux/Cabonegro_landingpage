@@ -448,7 +448,7 @@ export default function ParqueLogisticoPage() {
                 variant="outline"
                 className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-200"
               >
-                {localizedText.explore.button}
+                {localizedText.explore?.button || 'Explore Terrain'}
               </Button>
             </Link>
           </div>

@@ -136,8 +136,25 @@ def main():
     else:
         output_path = DEFAULT_OUTPUT
     
+    # Get resolution from command line or environment variable
+    target_width = TARGET_WIDTH
+    target_height = TARGET_HEIGHT
+    
+    if len(sys.argv) >= 4:
+        try:
+            target_width = int(sys.argv[3])
+            target_height = int(sys.argv[3])  # Square by default
+        except ValueError:
+            print(f"⚠️  Invalid resolution, using default: {TARGET_WIDTH}x{TARGET_HEIGHT}")
+    elif os.getenv('TARGET_RESOLUTION'):
+        try:
+            target_width = int(os.getenv('TARGET_RESOLUTION'))
+            target_height = int(os.getenv('TARGET_RESOLUTION'))
+        except ValueError:
+            print(f"⚠️  Invalid TARGET_RESOLUTION env var, using default: {TARGET_WIDTH}x{TARGET_HEIGHT}")
+    
     # Process the DEM
-    success = process_dem_to_heightmap(input_path, output_path)
+    success = process_dem_to_heightmap(input_path, output_path, target_width, target_height)
     
     if not success:
         sys.exit(1)

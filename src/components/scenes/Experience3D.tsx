@@ -22,10 +22,13 @@ import LaserMarker from './LaserMarker'
 import CameraWaypoints, { CameraWaypointController } from './CameraWaypoints'
 import IndustrialModels from './IndustrialModels'
 import { LoadingStateTracker } from './LoadingStateTracker'
+import SatelliteOrbitCamera from './SatelliteOrbitCamera'
+import SceneSequenceController from './SceneSequenceController'
 // import TerrainGLB from './TerrainGLB' // Disabled - causing material uniform errors
 
 export default function Experience3D() {
   const [isMobile, setIsMobile] = useState(false)
+  const [currentScene, setCurrentScene] = useState<'initial' | 'satellite-view' | 'satellite-orbit' | 'ground-level'>('initial')
 
   // Detect mobile device (client-side only)
   useEffect(() => {
@@ -130,8 +133,26 @@ export default function Experience3D() {
             pulseSpeed={2}
           />
           
-          {/* Controls */}
-          <CameraControls />
+          {/* Controls - disabled during satellite orbit */}
+          {currentScene !== 'satellite-orbit' && <CameraControls />}
+          
+          {/* Scene Sequence Controller - manages transitions between scenes */}
+          <SceneSequenceController
+            currentScene={currentScene}
+            autoAdvance={true}
+            sceneDuration={8}
+            onSceneChange={setCurrentScene}
+          />
+          
+          {/* Satellite Orbit Camera - orbits around light beam base */}
+          <SatelliteOrbitCamera
+            targetLat={-52.937139}
+            targetLng={-70.849639}
+            altitude={50000}
+            orbitalRadius={20000}
+            orbitalSpeed={0.1}
+            enabled={currentScene === 'satellite-orbit'}
+          />
           
           {/* Story Overlay Controller (inside Canvas for R3F hooks) */}
           <StoryOverlayController />

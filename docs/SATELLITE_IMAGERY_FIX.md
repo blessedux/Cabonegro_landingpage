@@ -164,3 +164,4 @@ console.log("useSatellite:", terrain.material.uniforms.useSatellite.value);
 Recommendation: Start with zoom 13, upgrade to 14 if needed.
 
 
+

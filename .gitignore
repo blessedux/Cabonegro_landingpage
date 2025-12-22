@@ -51,3 +51,8 @@ __pycache__/
 
 # terrain tiles (too large for git)
 /public/assets/tiles/
+
+# large terrain textures (too large for git)
+/public/assets/models/terrain-texture.png
+/public/assets/terrain/terrain-texture-ultra.png
+/public/assets/terrain/raw-dem.tif

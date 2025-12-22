@@ -72,8 +72,16 @@ const nextConfig = {
         destination: `${externalMapUrl}/:path*`,
       },
       {
+        source: '/:locale/explore',
+        destination: `${externalMapUrl}`,
+      },
+      {
         source: '/explore/:path*',
         destination: `${externalMapUrl}/:path*`,
+      },
+      {
+        source: '/explore',
+        destination: `${externalMapUrl}`,
       },
     ]
   },
