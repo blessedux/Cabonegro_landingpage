@@ -72,7 +72,26 @@ const nextConfig = {
     }
     
     return [
-      // Main explore routes
+      // IMPORTANT: Asset rewrites must come BEFORE the main explore routes
+      // to ensure they're matched first. Next.js evaluates rewrites in order.
+      
+      // Proxy Next.js root-level assets (index-*.js, index-*.css)
+      // These are typically only used by Next.js apps and unlikely to conflict with our own assets
+      // Our own Next.js app serves assets from /_next/static/, not root level
+      {
+        source: '/index-:hash.js',
+        destination: `${externalMapUrl}/index-:hash.js`,
+      },
+      {
+        source: '/index-:hash.css',
+        destination: `${externalMapUrl}/index-:hash.css`,
+      },
+      // Proxy specific assets that the external app might reference
+      {
+        source: '/CaboNegro_logo_white.png',
+        destination: `${externalMapUrl}/CaboNegro_logo_white.png`,
+      },
+      // Main explore routes (must come after asset rewrites)
       {
         source: '/:locale/explore/:path*',
         destination: `${externalMapUrl}/:path*`,
@@ -89,32 +108,9 @@ const nextConfig = {
         source: '/explore',
         destination: `${externalMapUrl}`,
       },
-      // Proxy Next.js _next assets from external app
-      // These are safe because our own _next assets are handled by Next.js first
-      {
-        source: '/_next/static/:path*',
-        destination: `${externalMapUrl}/_next/static/:path*`,
-      },
-      {
-        source: '/_next/image/:path*',
-        destination: `${externalMapUrl}/_next/image/:path*`,
-      },
-      // Proxy Next.js root-level assets (index-*.js, index-*.css)
-      // These are typically only used by Next.js apps and unlikely to conflict with our own assets
-      // Our own Next.js app serves assets from /_next/static/, not root level
-      {
-        source: '/index-:hash.js',
-        destination: `${externalMapUrl}/index-:hash.js`,
-      },
-      {
-        source: '/index-:hash.css',
-        destination: `${externalMapUrl}/index-:hash.css`,
-      },
-      // Proxy specific assets that the external app might reference
-      {
-        source: '/:filename(CaboNegro_logo_white.png)',
-        destination: `${externalMapUrl}/:filename`,
-      },
+      // Note: /_next/static and /_next/image are handled by Next.js internally
+      // and cannot be rewritten. The external app should use absolute URLs for these
+      // OR we need to handle them differently (e.g., via middleware)
     ]
   },
   async headers() {
@@ -131,6 +127,8 @@ const nextConfig = {
       // If URL parsing fails, use as-is
     }
 
+    const exploreCSP = `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
+
     return [
       {
         // Apply stricter CSP to /explore routes to allow external app resources
@@ -138,7 +136,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
+            value: exploreCSP
           },
           {
             key: 'Link',
@@ -147,12 +145,40 @@ const nextConfig = {
         ]
       },
       {
-        // Apply stricter CSP to /explore routes (non-localized)
+        // Apply CSP to /:locale/explore (root explore route with locale)
+        source: '/:locale/explore',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: exploreCSP
+          },
+          {
+            key: 'Link',
+            value: '<https://fonts.cdnfonts.com>; rel=preconnect; crossorigin, <https://fonts.googleapis.com>; rel=preconnect; crossorigin'
+          }
+        ]
+      },
+      {
+        // Apply stricter CSP to /explore routes (non-localized with path)
         source: '/explore/:path*',
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
+            value: exploreCSP
+          },
+          {
+            key: 'Link',
+            value: '<https://fonts.cdnfonts.com>; rel=preconnect; crossorigin, <https://fonts.googleapis.com>; rel=preconnect; crossorigin'
+          }
+        ]
+      },
+      {
+        // Apply CSP to /explore (root explore route)
+        source: '/explore',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: exploreCSP
           },
           {
             key: 'Link',
