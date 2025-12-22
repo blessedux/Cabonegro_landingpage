@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Icon from '@mdi/react'
 import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
+import { Button } from '@/components/ui/button'
 
 // Code-split navigation components - only load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -81,6 +82,9 @@ export default function ParqueTecnologicoPage() {
           title: 'Our Clients',
           subtitle: 'Leading companies trust Patagon Valley'
         },
+        explore: {
+          button: 'Explore Terrain'
+        },
         contact: {
           title: 'Get in Touch',
           description: 'Interested in Patagon Valley? Contact us for more information.',
@@ -134,6 +138,9 @@ export default function ParqueTecnologicoPage() {
         clients: {
           title: 'Nuestros Clientes',
           subtitle: 'Empresas líderes confían en Patagon Valley'
+        },
+        explore: {
+          button: 'Explorar Terreno'
         },
         contact: {
           title: 'Contáctanos',
@@ -189,6 +196,9 @@ export default function ParqueTecnologicoPage() {
           title: '我们的客户',
           subtitle: '领先企业信任 Patagon Valley'
         },
+        explore: {
+          button: '探索地形'
+        },
         contact: {
           title: '联系我们',
           description: '对 Patagon Valley 感兴趣？联系我们了解更多信息。',
@@ -242,6 +252,9 @@ export default function ParqueTecnologicoPage() {
         clients: {
           title: 'Nos Clients',
           subtitle: 'Les entreprises leaders font confiance à Patagon Valley'
+        },
+        explore: {
+          button: 'Explorer le Terrain'
         },
         contact: {
           title: 'Contactez-nous',
@@ -537,6 +550,18 @@ export default function ParqueTecnologicoPage() {
                 className="object-cover"
               />
             </div>
+          </div>
+          {/* Explore Terrain Button */}
+          <div className="flex justify-center mt-8">
+            <Link href={`/${locale}/explore`}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-200"
+              >
+                {localizedText.explore.button}
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

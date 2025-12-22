@@ -215,14 +215,14 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
                 {content.location.title}
               </h3>
               <Link 
-                href={`${basePath}/map`}
+                href={`${basePath}/explore`}
                 className="text-gray-700 hover:text-black transition-colors block mb-4"
               >
                 {content.location.virtualTour}
               </Link>
               {/* Map image - clickable */}
               <a 
-                href="https://www.google.com/maps?q=-52.937139,-70.849639"
+                href="https://maps.app.goo.gl/qYqfHZmW4uVFpKJZ7"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full h-32 rounded-lg mt-4 overflow-hidden hover:opacity-90 transition-opacity cursor-pointer relative"

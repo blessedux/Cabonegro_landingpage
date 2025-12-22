@@ -71,6 +71,9 @@ export default function ParqueLogisticoPage() {
             { icon: Wrench, title: 'Maintenance', description: 'Equipment maintenance and repair services' }
           ]
         },
+        explore: {
+          button: 'Explore Terrain'
+        },
         contact: {
           title: 'Get in Touch',
           description: 'Interested in the Logistics Park? Contact us for more information.',
@@ -113,6 +116,9 @@ export default function ParqueLogisticoPage() {
             { icon: Zap, title: 'Infraestructura H2V', description: 'Instalaciones de producción y almacenamiento de hidrógeno verde' },
             { icon: Wrench, title: 'Mantenimiento', description: 'Servicios de mantenimiento y reparación de equipos' }
           ]
+        },
+        explore: {
+          button: 'Explorar Terreno'
         },
         contact: {
           title: 'Contáctanos',
@@ -157,6 +163,9 @@ export default function ParqueLogisticoPage() {
             { icon: Wrench, title: '维护', description: '设备维护和维修服务' }
           ]
         },
+        explore: {
+          button: '探索地形'
+        },
         contact: {
           title: '联系我们',
           description: '对物流园区感兴趣？联系我们了解更多信息。',
@@ -199,6 +208,9 @@ export default function ParqueLogisticoPage() {
             { icon: Zap, title: 'Infrastructure H2V', description: 'Installations de production et de stockage d\'hydrogène vert' },
             { icon: Wrench, title: 'Maintenance', description: 'Services de maintenance et de réparation d\'équipements' }
           ]
+        },
+        explore: {
+          button: 'Explorer le Terrain'
         },
         contact: {
           title: 'Contactez-nous',
@@ -427,6 +439,18 @@ export default function ParqueLogisticoPage() {
                 className="object-cover"
               />
             </div>
+          </div>
+          {/* Explore Terrain Button */}
+          <div className="flex justify-center mt-8">
+            <Link href={`/${locale}/explore`}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-200"
+              >
+                {localizedText.explore.button}
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

@@ -171,9 +171,9 @@ export default function UnifiedNavbar() {
   const handleExploreTerrain = () => {
     startFadeOut()
     
-    // Navigate to map route (3D experience) after animations using next-intl router
+    // Navigate to explore route (3D experience) after animations using next-intl router
     setTimeout(() => {
-      router.push(`/${currentLocale}/map`)
+      router.push(`/${currentLocale}/explore`)
     }, 1000)
   }
 

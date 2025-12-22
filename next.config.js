@@ -61,6 +61,22 @@ const nextConfig = {
       },
     ],
   },
+  // Rewrites for /explore route - proxies external map deployment
+  // This allows the map to be served from the same domain while keeping repos separate
+  async rewrites() {
+    const externalMapUrl = process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL || 'https://your-map-deployment.vercel.app'
+    
+    return [
+      {
+        source: '/:locale/explore/:path*',
+        destination: `${externalMapUrl}/:path*`,
+      },
+      {
+        source: '/explore/:path*',
+        destination: `${externalMapUrl}/:path*`,
+      },
+    ]
+  },
   async headers() {
     return [
       {
