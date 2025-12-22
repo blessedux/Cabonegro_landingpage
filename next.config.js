@@ -72,6 +72,7 @@ const nextConfig = {
     }
     
     return [
+      // Main explore routes
       {
         source: '/:locale/explore/:path*',
         destination: `${externalMapUrl}/:path*`,
@@ -88,11 +89,79 @@ const nextConfig = {
         source: '/explore',
         destination: `${externalMapUrl}`,
       },
+      // Proxy Next.js _next assets from external app
+      // These are safe because our own _next assets are handled by Next.js first
+      {
+        source: '/_next/static/:path*',
+        destination: `${externalMapUrl}/_next/static/:path*`,
+      },
+      {
+        source: '/_next/image/:path*',
+        destination: `${externalMapUrl}/_next/image/:path*`,
+      },
+      // Proxy Next.js root-level assets (index-*.js, index-*.css)
+      // These are typically only used by Next.js apps and unlikely to conflict with our own assets
+      // Our own Next.js app serves assets from /_next/static/, not root level
+      {
+        source: '/index-:hash.js',
+        destination: `${externalMapUrl}/index-:hash.js`,
+      },
+      {
+        source: '/index-:hash.css',
+        destination: `${externalMapUrl}/index-:hash.css`,
+      },
+      // Proxy specific assets that the external app might reference
+      {
+        source: '/:filename(CaboNegro_logo_white.png)',
+        destination: `${externalMapUrl}/:filename`,
+      },
     ]
   },
   async headers() {
+    const externalMapUrl = process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL || 'https://your-map-deployment.vercel.app'
+    let externalMapHost = externalMapUrl
+    if (!externalMapHost.startsWith('http://') && !externalMapHost.startsWith('https://')) {
+      externalMapHost = `https://${externalMapHost}`
+    }
+    // Extract hostname from URL for CSP
+    try {
+      const url = new URL(externalMapHost)
+      externalMapHost = url.hostname
+    } catch (e) {
+      // If URL parsing fails, use as-is
+    }
+
     return [
       {
+        // Apply stricter CSP to /explore routes to allow external app resources
+        source: '/:locale/explore/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
+          },
+          {
+            key: 'Link',
+            value: '<https://fonts.cdnfonts.com>; rel=preconnect; crossorigin, <https://fonts.googleapis.com>; rel=preconnect; crossorigin'
+          }
+        ]
+      },
+      {
+        // Apply stricter CSP to /explore routes (non-localized)
+        source: '/explore/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
+          },
+          {
+            key: 'Link',
+            value: '<https://fonts.cdnfonts.com>; rel=preconnect; crossorigin, <https://fonts.googleapis.com>; rel=preconnect; crossorigin'
+          }
+        ]
+      },
+      {
+        // Default CSP for all other routes
         source: '/(.*)',
         headers: [
           {
