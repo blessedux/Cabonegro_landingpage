@@ -71,16 +71,26 @@ const nextConfig = {
       externalMapUrl = `https://${externalMapUrl}`
     }
     
+    // Debug logging (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 Rewrites config:', {
+        externalMapUrl,
+        hasEnvVar: !!process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL
+      })
+    }
+    
     return [
       // IMPORTANT: Asset rewrites must come BEFORE the main explore routes
       // to ensure they're matched first. Next.js evaluates rewrites in order.
       
       // Proxy assets folder from external app (catch-all for assets)
+      // This handles /assets/index-*.js, /assets/index-*.css, etc.
       {
         source: '/assets/:path*',
         destination: `${externalMapUrl}/assets/:path*`,
       },
       // Proxy Next.js root-level assets (index-*.js, index-*.css)
+      // These might be at root level OR in assets folder
       // :hash matches any string (alphanumeric + dashes typically)
       {
         source: '/index-:hash.js',
@@ -90,10 +100,23 @@ const nextConfig = {
         source: '/index-:hash.css',
         destination: `${externalMapUrl}/index-:hash.css`,
       },
+      // Also try assets folder for index files (common Next.js pattern)
+      {
+        source: '/assets/index-:hash.js',
+        destination: `${externalMapUrl}/assets/index-:hash.js`,
+      },
+      {
+        source: '/assets/index-:hash.css',
+        destination: `${externalMapUrl}/assets/index-:hash.css`,
+      },
       // Proxy specific assets that the external app might reference
       {
         source: '/CaboNegro_logo_white.png',
         destination: `${externalMapUrl}/CaboNegro_logo_white.png`,
+      },
+      {
+        source: '/assets/CaboNegro_logo_white.png',
+        destination: `${externalMapUrl}/assets/CaboNegro_logo_white.png`,
       },
       // Main explore routes (must come after asset rewrites)
       {
