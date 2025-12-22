@@ -565,12 +565,17 @@ export default function ParqueTecnologicoPage() {
             </div>
           </div>
           {/* Explore Terrain Button */}
-          <div className="flex justify-center mt-8">
-            <Link href={`/${locale}/explore`} onClick={handleExploreClick}>
+          <div className="flex justify-center mt-8" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
+            <Link 
+              href={`/${locale}/explore`} 
+              onClick={handleExploreClick}
+              style={{ pointerEvents: 'auto' }}
+            >
               <Button
                 size="lg"
                 variant="outline"
                 className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-200"
+                style={{ pointerEvents: 'auto', cursor: 'pointer' }}
               >
                 {localizedText.explore?.button || 'Explore Terrain'}
               </Button>

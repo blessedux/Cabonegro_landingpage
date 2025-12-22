@@ -130,10 +130,11 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
       {/* Keep children visible during transition - overlay preloader on top */}
       {/* This ensures old page stays visible until new page is ready, preventing white screens */}
       {/* CRITICAL: Re-enable pointer events as soon as navigation completes to allow navbar clicks */}
+      {/* IMPORTANT: Don't block pointer events - let buttons and links work immediately */}
       <div 
         style={{
           opacity: 1, // Always keep visible - preloader overlays on top
-          pointerEvents: (isNavigating && isPreloaderBVisible) ? 'none' : 'auto' // Only disable when actively showing preloader
+          pointerEvents: 'auto' // Always allow interactions - preloader is just a visual overlay
         }}
       >
         {/* Wrap children in Suspense to prevent white screen during route transitions */}
