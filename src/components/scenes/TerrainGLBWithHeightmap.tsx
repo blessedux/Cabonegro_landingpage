@@ -78,18 +78,20 @@ export default function TerrainGLBWithHeightmap({
             if (matAny.map instanceof THREE.Texture) {
               // Clone the texture to avoid issues
               extractedTexture = matAny.map.clone()
-              extractedTexture.wrapS = THREE.ClampToEdgeWrapping
-              extractedTexture.wrapT = THREE.ClampToEdgeWrapping
-              extractedTexture.minFilter = THREE.LinearMipmapLinearFilter
-              extractedTexture.magFilter = THREE.LinearFilter
-              extractedTexture.generateMipmaps = true
-              if ('colorSpace' in extractedTexture) {
-                extractedTexture.colorSpace = THREE.SRGBColorSpace
+              if (extractedTexture) {
+                extractedTexture.wrapS = THREE.ClampToEdgeWrapping
+                extractedTexture.wrapT = THREE.ClampToEdgeWrapping
+                extractedTexture.minFilter = THREE.LinearMipmapLinearFilter
+                extractedTexture.magFilter = THREE.LinearFilter
+                extractedTexture.generateMipmaps = true
+                if ('colorSpace' in extractedTexture) {
+                  extractedTexture.colorSpace = THREE.SRGBColorSpace
+                }
+                console.log('[TerrainGLBWithHeightmap] ✓ Extracted texture from GLB:', {
+                  width: extractedTexture.image?.width || 'unknown',
+                  height: extractedTexture.image?.height || 'unknown'
+                })
               }
-              console.log('[TerrainGLBWithHeightmap] ✓ Extracted texture from GLB:', {
-                width: extractedTexture.image?.width || 'unknown',
-                height: extractedTexture.image?.height || 'unknown'
-              })
               break
             }
           }
@@ -215,8 +217,8 @@ export default function TerrainGLBWithHeightmap({
 
   // Default scale: GLB plane is 2 units, scale to TERRAIN_SIZE
   const defaultScale = TERRAIN_SIZE / 2
-  const finalScale = scale !== undefined 
-    ? (Array.isArray(scale) ? scale : [scale, scale, scale])
+  const finalScale: [number, number, number] = scale !== undefined 
+    ? (Array.isArray(scale) ? [scale[0] || 1, scale[1] || 1, scale[2] || 1] as [number, number, number] : [scale, scale, scale])
     : [defaultScale, 1, defaultScale]
 
   // Expose mesh ref

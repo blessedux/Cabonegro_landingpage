@@ -24,14 +24,16 @@ export default function TerrainGLB({
   receiveShadow?: boolean
   castShadow?: boolean
 }) {
+  // All hooks must be called unconditionally at the top level - no early returns before hooks
   const { scene } = useGLTF(url)
 
-  if (!scene) {
-    return null
-  }
-
   // Process scene: clone and replace materials to avoid uniform errors
+  // useMemo is called unconditionally - early return is inside the callback, not before the hook
   const processedScene = useMemo(() => {
+    if (!scene) {
+      return null
+    }
+    
     const clone = scene.clone()
     
     clone.traverse((child) => {
@@ -49,7 +51,7 @@ export default function TerrainGLB({
               const matAny = oldMat as any
               if (matAny.map instanceof THREE.Texture) {
                 texture = matAny.map.clone()
-                if ('colorSpace' in texture) {
+                if (texture && 'colorSpace' in texture) {
                   texture.colorSpace = THREE.SRGBColorSpace
                 }
               }
@@ -91,10 +93,14 @@ export default function TerrainGLB({
     return clone
   }, [scene, receiveShadow, castShadow])
 
+  if (!processedScene) {
+    return null
+  }
+
   // Default scale: GLB plane is 2 units, scale to TERRAIN_SIZE
   const defaultScale = TERRAIN_SIZE / 2
-  const finalScale = scale !== undefined 
-    ? (Array.isArray(scale) ? scale : [scale, scale, scale])
+  const finalScale: [number, number, number] = scale !== undefined 
+    ? (Array.isArray(scale) ? [scale[0] || 1, scale[1] || 1, scale[2] || 1] as [number, number, number] : [scale, scale, scale])
     : [defaultScale, 1, defaultScale]
 
   return (

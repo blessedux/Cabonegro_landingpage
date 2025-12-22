@@ -181,8 +181,8 @@ export default function AdaptiveTerrainTexture({
 
   // Default scale: plane is 2 units, scale to TERRAIN_SIZE
   const defaultScale = TERRAIN_SIZE / 2
-  const finalScale = scale !== undefined 
-    ? (Array.isArray(scale) ? scale : [scale, scale, scale])
+  const finalScale: [number, number, number] = scale !== undefined 
+    ? (Array.isArray(scale) ? [scale[0] || 1, scale[1] || 1, scale[2] || 1] as [number, number, number] : [scale, scale, scale])
     : [defaultScale, 1, defaultScale]
 
   // Set global terrain mesh reference

@@ -238,7 +238,6 @@ export default function ProceduralTerrainShader({
         }
       `,
       side: THREE.FrontSide,
-      flatShading: false,
     })
 
     setMaterial(shaderMaterial)
@@ -289,6 +288,10 @@ export default function ProceduralTerrainShader({
     // We'll keep UVs but the shader will handle everything
     return geo
   }, [terrainSize, segments])
+
+  if (!material) {
+    return null
+  }
 
   return (
     <mesh ref={meshRef} geometry={geometry} material={material} receiveShadow castShadow />

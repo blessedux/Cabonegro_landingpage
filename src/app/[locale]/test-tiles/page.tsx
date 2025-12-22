@@ -148,12 +148,9 @@ export default function TestTilesPage() {
           antialias: true,
           alpha: false,
           powerPreference: 'high-performance',
-          toneMapping: THREE.ACESFilmicToneMapping,
-          shadowMap: {
-            enabled: true,
-            type: THREE.PCFSoftShadowMap
-          }
+          toneMapping: THREE.ACESFilmicToneMapping
         }}
+        shadows
         onCreated={({ gl, scene }) => {
           gl.shadowMap.enabled = true
           // Set background color like example

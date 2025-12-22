@@ -27,6 +27,7 @@ export default function ProceduralTerrainTestPage() {
 
     // Load the procedural terrain implementation
     loadProceduralTerrain()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadProceduralTerrain = async () => {
@@ -177,15 +178,15 @@ export default function ProceduralTerrainTestPage() {
   ) => {
     if (!containerRef.current) return
 
-    let camera: any, scene: any, renderer: any, controls: any, drag: any, terrain: any
+    let renderer: any, controls: any, terrain: any
 
     // Camera - adjust position to see terrain better
-    camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000)
+    const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000)
     camera.position.set(0, 50, 100)
     camera.lookAt(0, 0, 0)
 
     // Scene
-    scene = new THREE.Scene()
+    const scene = new THREE.Scene()
     scene.background = new THREE.Color(0x87ceeb) // Sky blue
     scene.fog = new THREE.Fog(0x87ceeb, 50, 500)
 
@@ -329,69 +330,68 @@ export default function ProceduralTerrainTestPage() {
     water.receiveShadow = true
     scene.add(water)
 
-    // Drag setup
-    drag = {
+    // Create a larger invisible plane for dragging (covers the terrain area)
+    const dragObject = new THREE.Mesh(
+      new THREE.PlaneGeometry(400, 400, 1, 1),
+      new THREE.MeshBasicMaterial({ visible: false })
+    )
+    dragObject.rotation.x = -Math.PI * 0.5
+    dragObject.position.y = 0
+    dragObject.visible = false
+    scene.add(dragObject)
+
+    // Drag setup - define all properties upfront
+    const drag = {
       screenCoords: new THREE.Vector2(),
       prevWorldCoords: new THREE.Vector3(),
       worldCoords: new THREE.Vector3(),
       raycaster: new THREE.Raycaster(),
       down: false,
-      hover: false
-    }
-
-    // Create a larger invisible plane for dragging (covers the terrain area)
-    drag.object = new THREE.Mesh(
-      new THREE.PlaneGeometry(400, 400, 1, 1),
-      new THREE.MeshBasicMaterial({ visible: false })
-    )
-    drag.object.rotation.x = -Math.PI * 0.5
-    drag.object.position.y = 0
-    drag.object.visible = false
-    scene.add(drag.object)
-
-    drag.getIntersect = () => {
-      drag.raycaster.setFromCamera(drag.screenCoords, camera)
-      const intersects = drag.raycaster.intersectObject(drag.object)
-      if (intersects.length) return intersects[0]
-      return null
-    }
-
-    drag.update = () => {
-      // Get terrain from global reference or local variable
-      const currentTerrain = terrain || (window as any).terrain
-      if (!currentTerrain) return
-      
-      const intersect = drag.getIntersect()
-      if (intersect) {
-        drag.hover = true
-        if (!drag.down) {
+      hover: false,
+      object: dragObject,
+      getIntersect: () => {
+        drag.raycaster.setFromCamera(drag.screenCoords, camera)
+        const intersects = drag.raycaster.intersectObject(drag.object)
+        if (intersects.length) return intersects[0]
+        return null
+      },
+      update: () => {
+        // Get terrain from global reference or local variable
+        const currentTerrain = terrain || (window as any).terrain
+        if (!currentTerrain) return
+        
+        const intersect = drag.getIntersect()
+        if (intersect) {
+          drag.hover = true
+          if (!drag.down) {
+            if (renderer.domElement) {
+              renderer.domElement.style.cursor = 'grab'
+            }
+          }
+        } else {
+          drag.hover = false
           if (renderer.domElement) {
-            renderer.domElement.style.cursor = 'grab'
+            renderer.domElement.style.cursor = 'default'
           }
         }
-      } else {
-        drag.hover = false
-        if (renderer.domElement) {
-          renderer.domElement.style.cursor = 'default'
-        }
-      }
 
-      // Pan terrain when dragging (translate instead of regenerating)
-      if (drag.hover && drag.down && currentTerrain) {
-        const delta = drag.prevWorldCoords.clone().sub(drag.worldCoords)
-        
-        // Apply panning to terrain position (invert delta for natural dragging)
-        const panSpeed = 1.0 // Adjust this to control panning speed
-        const newX = currentTerrain.position.x - delta.x * panSpeed
-        const newZ = currentTerrain.position.z - delta.z * panSpeed
-        
-        // Clamp to bounds
-        currentTerrain.position.x = Math.max(terrainBounds.minX, Math.min(terrainBounds.maxX, newX))
-        currentTerrain.position.z = Math.max(terrainBounds.minZ, Math.min(terrainBounds.maxZ, newZ))
-        
-        // Update offset for reference
-        terrainOffset.x = currentTerrain.position.x
-        terrainOffset.z = currentTerrain.position.z
+        // Pan terrain when dragging (translate instead of regenerating)
+        if (drag.hover && drag.down && currentTerrain) {
+          const delta = drag.prevWorldCoords.clone().sub(drag.worldCoords)
+          
+          // Apply panning to terrain position (invert delta for natural dragging)
+          const panSpeed = 1.0 // Adjust this to control panning speed
+          const newX = currentTerrain.position.x - delta.x * panSpeed
+          const newZ = currentTerrain.position.z - delta.z * panSpeed
+          
+          // Clamp to bounds
+          currentTerrain.position.x = Math.max(terrainBounds.minX, Math.min(terrainBounds.maxX, newX))
+          currentTerrain.position.z = Math.max(terrainBounds.minZ, Math.min(terrainBounds.maxZ, newZ))
+          
+          // Update offset for reference
+          terrainOffset.x = currentTerrain.position.x
+          terrainOffset.z = currentTerrain.position.z
+        }
       }
     }
 

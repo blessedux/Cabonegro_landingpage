@@ -25,15 +25,8 @@ export default function LaserMarker({
   pulseSpeed = 2
 }: LaserMarkerProps) {
   const meshRef = useRef<THREE.Mesh>(null)
-  const materialRef = useRef<THREE.ShaderMaterial>(null)
+  const materialRef = useRef<THREE.ShaderMaterial | null>(null)
   const timeRef = useRef(0)
-  
-  // Store material ref
-  useEffect(() => {
-    if (meshRef.current?.material) {
-      materialRef.current = meshRef.current.material as THREE.ShaderMaterial
-    }
-  }, [])
 
   // Convert lat/lng to world coordinates
   const [x, , z] = latLngToWorld(lat, lng)
@@ -123,20 +116,16 @@ export default function LaserMarker({
   // Animate pulse
   useFrame((state, delta) => {
     timeRef.current += delta
-    if (materialRef.current) {
-      materialRef.current.uniforms.time.value = timeRef.current
+    const material = meshRef.current?.material as THREE.ShaderMaterial | undefined
+    if (material) {
+      material.uniforms.time.value = timeRef.current
     }
   })
 
   return (
     <group position={[x, terrainHeight + height / 2, z]}>
       <mesh
-        ref={(ref) => {
-          meshRef.current = ref
-          if (ref?.material) {
-            materialRef.current = ref.material as THREE.ShaderMaterial
-          }
-        }}
+        ref={meshRef}
         geometry={geometry}
         material={material}
         renderOrder={100} // Render on top
@@ -148,8 +137,6 @@ export default function LaserMarker({
           color={color}
           transparent
           opacity={0.9}
-          emissive={color}
-          emissiveIntensity={2}
         />
       </mesh>
     </group>
