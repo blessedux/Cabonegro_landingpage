@@ -67,9 +67,56 @@ export function usePageTransition() {
         showPreloaderB()
       }
 
+      // Check if navigating to /explore route (external app)
+      const isToExploreRoute = pathname.includes('/explore')
+
       // Always set up hide timer when pathname changes
       // This ensures preloader gets hidden even if it was shown explicitly before pathname change
       const checkPageLoaded = () => {
+        // For external apps (/explore), wait for page to be fully loaded
+        if (isToExploreRoute) {
+          // Check if document is ready and external app has loaded
+          const checkExternalAppLoaded = () => {
+            // Check document ready state
+            if (document.readyState === 'complete') {
+              // Additional check: wait for any loading indicators to disappear
+              // Look for common loading patterns in the DOM
+              const hasLoadingElements = document.querySelector('[data-loading], .loading, [class*="loading"]')
+              
+              if (!hasLoadingElements) {
+                // Page appears to be loaded
+                if (isNavigatingRef.current) {
+                  isNavigatingRef.current = false
+                  hidePreloaderB()
+                  setNavigating(false)
+                }
+                return true
+              }
+            }
+            return false
+          }
+
+          // Poll for external app to be ready
+          const pollInterval = setInterval(() => {
+            if (checkExternalAppLoaded()) {
+              clearInterval(pollInterval)
+            }
+          }, 100) // Check every 100ms
+
+          // Safety: clear interval after max time
+          setTimeout(() => {
+            clearInterval(pollInterval)
+            if (isNavigatingRef.current) {
+              isNavigatingRef.current = false
+              hidePreloaderB()
+              setNavigating(false)
+            }
+          }, 10000) // 10 seconds max for external apps
+
+          return
+        }
+
+        // For regular routes, use faster detection
         // Use a single requestAnimationFrame for faster detection
         requestAnimationFrame(() => {
           // Minimal delay to ensure page has started rendering
@@ -85,11 +132,14 @@ export function usePageTransition() {
       }
 
       // Start checking after a minimum display time
-      // Reduced delay to detect navigation faster - preloader will still display for its full duration
-      const minDisplayTimer = setTimeout(checkPageLoaded, 100) // Reduced from 200ms to 100ms for faster detection
+      // For external apps, wait longer before starting to check
+      const minDisplayDelay = isToExploreRoute ? 1500 : 100 // 1.5s for external apps, 100ms for regular routes
+      const minDisplayTimer = setTimeout(checkPageLoaded, minDisplayDelay)
 
       // Safety mechanism: Force hide after maximum time
       // CRITICAL: Always reset navigation state to prevent navbar from being blocked
+      // Longer timeout for external apps
+      const maxTimeout = isToExploreRoute ? 10000 : 2000 // 10s for external apps, 2s for regular routes
       const safetyTimer = setTimeout(() => {
         if (isNavigatingRef.current) {
           isNavigatingRef.current = false
@@ -97,7 +147,7 @@ export function usePageTransition() {
           // CRITICAL: Always reset navigation state, even on safety timer
           setNavigating(false)
         }
-      }, 2000) // Maximum 2 seconds
+      }, maxTimeout)
 
       prevPathnameRef.current = pathname
 

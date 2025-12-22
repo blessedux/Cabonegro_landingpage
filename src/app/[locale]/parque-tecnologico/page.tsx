@@ -9,6 +9,7 @@ import Link from 'next/link'
 import Icon from '@mdi/react'
 import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
 import { Button } from '@/components/ui/button'
+import { usePreloader } from '@/contexts/PreloaderContext'
 
 // Code-split navigation components - only load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -30,8 +31,20 @@ export default function ParqueTecnologicoPage() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [videoError, setVideoError] = useState(false)
+  const { showPreloaderB } = usePreloader()
   
   const heroVideo = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
+
+  // Handle explore navigation with preloader
+  const handleExploreClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    // Show preloader immediately
+    showPreloaderB()
+    // Navigate to explore route
+    setTimeout(() => {
+      router.push(`/${locale}/explore`)
+    }, 50) // Small delay to ensure preloader is shown
+  }
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -553,7 +566,7 @@ export default function ParqueTecnologicoPage() {
           </div>
           {/* Explore Terrain Button */}
           <div className="flex justify-center mt-8">
-            <Link href={`/${locale}/explore`}>
+            <Link href={`/${locale}/explore`} onClick={handleExploreClick}>
               <Button
                 size="lg"
                 variant="outline"

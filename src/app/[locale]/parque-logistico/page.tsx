@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, usePathname, useRouter } from 'next/navigation'
 import { Download, Calendar, Mail, Warehouse, Truck, Factory, Zap, Wrench } from 'lucide-react'
 import Image from 'next/image'
 import { useRef, useState, useEffect } from 'react'
@@ -12,18 +12,32 @@ import CookieBanner from '@/components/sections/CookieBanner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
+import { usePreloader } from '@/contexts/PreloaderContext'
 
 export default function ParqueLogisticoPage() {
   const params = useParams()
   const pathname = usePathname()
+  const router = useRouter()
   // Use pathname for consistent locale detection across all pages
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : (params?.locale as string || 'en')
   const videoRef = useRef<HTMLVideoElement>(null)
   const [expandedCard, setExpandedCard] = useState<number | null>(null)
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [videoError, setVideoError] = useState(false)
+  const { showPreloaderB } = usePreloader()
   
   const heroVideo = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
+
+  // Handle explore navigation with preloader
+  const handleExploreClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    // Show preloader immediately
+    showPreloaderB()
+    // Navigate to explore route
+    setTimeout(() => {
+      router.push(`/${locale}/explore`)
+    }, 50) // Small delay to ensure preloader is shown
+  }
 
   // Check if video is already loaded (cached) when component mounts
   useEffect(() => {
@@ -442,7 +456,7 @@ export default function ParqueLogisticoPage() {
           </div>
           {/* Explore Terrain Button */}
           <div className="flex justify-center mt-8">
-            <Link href={`/${locale}/explore`}>
+            <Link href={`/${locale}/explore`} onClick={handleExploreClick}>
               <Button
                 size="lg"
                 variant="outline"

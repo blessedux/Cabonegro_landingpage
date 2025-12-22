@@ -64,7 +64,12 @@ const nextConfig = {
   // Rewrites for /explore route - proxies external map deployment
   // This allows the map to be served from the same domain while keeping repos separate
   async rewrites() {
-    const externalMapUrl = process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL || 'https://your-map-deployment.vercel.app'
+    let externalMapUrl = process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL || 'https://your-map-deployment.vercel.app'
+    
+    // Ensure URL has protocol prefix (required by Next.js rewrites)
+    if (!externalMapUrl.startsWith('http://') && !externalMapUrl.startsWith('https://')) {
+      externalMapUrl = `https://${externalMapUrl}`
+    }
     
     return [
       {
