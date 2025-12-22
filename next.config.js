@@ -75,6 +75,11 @@ const nextConfig = {
       // IMPORTANT: Asset rewrites must come BEFORE the main explore routes
       // to ensure they're matched first. Next.js evaluates rewrites in order.
       
+      // Proxy assets folder from external app
+      {
+        source: '/assets/:path*',
+        destination: `${externalMapUrl}/assets/:path*`,
+      },
       // Proxy Next.js root-level assets (index-*.js, index-*.css)
       // These are typically only used by Next.js apps and unlikely to conflict with our own assets
       // Our own Next.js app serves assets from /_next/static/, not root level
@@ -129,9 +134,12 @@ const nextConfig = {
 
     const exploreCSP = `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
 
+    const defaultCSP = "frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com blob:;"
+
     return [
+      // IMPORTANT: More specific routes must come BEFORE the catch-all (.*) pattern
+      // Apply explore CSP to explore routes and their assets
       {
-        // Apply stricter CSP to /explore routes to allow external app resources
         source: '/:locale/explore/:path*',
         headers: [
           {
@@ -145,7 +153,6 @@ const nextConfig = {
         ]
       },
       {
-        // Apply CSP to /:locale/explore (root explore route with locale)
         source: '/:locale/explore',
         headers: [
           {
@@ -159,7 +166,6 @@ const nextConfig = {
         ]
       },
       {
-        // Apply stricter CSP to /explore routes (non-localized with path)
         source: '/explore/:path*',
         headers: [
           {
@@ -173,7 +179,6 @@ const nextConfig = {
         ]
       },
       {
-        // Apply CSP to /explore (root explore route)
         source: '/explore',
         headers: [
           {
@@ -186,13 +191,50 @@ const nextConfig = {
           }
         ]
       },
+      // Apply explore CSP to asset requests (they might be loaded from explore context)
       {
-        // Default CSP for all other routes
+        source: '/assets/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: exploreCSP
+          }
+        ]
+      },
+      {
+        source: '/index-:hash.js',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: exploreCSP
+          }
+        ]
+      },
+      {
+        source: '/index-:hash.css',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: exploreCSP
+          }
+        ]
+      },
+      {
+        source: '/CaboNegro_logo_white.png',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: exploreCSP
+          }
+        ]
+      },
+      {
+        // Default CSP for all other routes (must be last)
         source: '/(.*)',
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com blob:;"
+            value: defaultCSP
           },
           {
             key: 'Link',
