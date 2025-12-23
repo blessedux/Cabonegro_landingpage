@@ -71,12 +71,17 @@ const nextConfig = {
       externalMapUrl = `https://${externalMapUrl}`
     }
     
-    // Debug logging (only in development)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔧 Rewrites config:', {
-        externalMapUrl,
-        hasEnvVar: !!process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL
-      })
+    // Debug logging
+    console.log('🔧 Rewrites config:', {
+      externalMapUrl,
+      hasEnvVar: !!process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL,
+      nodeEnv: process.env.NODE_ENV
+    })
+    
+    // If external URL is not set, return empty rewrites to avoid errors
+    if (!externalMapUrl || externalMapUrl === 'https://your-map-deployment.vercel.app') {
+      console.warn('⚠️ NEXT_PUBLIC_EXTERNAL_MAP_URL not set, /explore rewrites disabled')
+      return []
     }
     
     return [
@@ -156,7 +161,8 @@ const nextConfig = {
 
     // Unified CSP that works for both regular routes and explore routes
     // Adding vercel.live to default CSP since it's needed for explore routes and not a security risk
-    const unifiedCSP = `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
+    // Note: This CSP will be applied as HTTP headers, which take precedence over meta tags in HTML
+    const unifiedCSP = `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; script-src-elem 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
 
     return [
       {
