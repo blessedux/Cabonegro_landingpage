@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams, useRouter, usePathname } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
 import { Download, Calendar, Mail, Network, Route } from 'lucide-react'
 import Image from 'next/image'
@@ -8,8 +8,6 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Icon from '@mdi/react'
 import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
-import { Button } from '@/components/ui/button'
-import { usePreloader } from '@/contexts/PreloaderContext'
 
 // Code-split navigation components - only load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -25,26 +23,13 @@ const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'),
 
 export default function ParqueTecnologicoPage() {
   const params = useParams()
-  const router = useRouter()
   const pathname = usePathname()
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [videoError, setVideoError] = useState(false)
-  const { showPreloaderB } = usePreloader()
   
   const heroVideo = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
-
-  // Handle explore navigation with preloader
-  const handleExploreClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault()
-    // Show preloader immediately
-    showPreloaderB()
-    // Navigate to explore route
-    setTimeout(() => {
-      router.push(`/${locale}/explore`)
-    }, 50) // Small delay to ensure preloader is shown
-  }
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -563,24 +548,6 @@ export default function ParqueTecnologicoPage() {
                 className="object-cover"
               />
             </div>
-          </div>
-          {/* Explore Terrain Button */}
-          <div className="flex justify-center mt-8" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
-            <a 
-              href="https://cabo-negro-flight-simulator.vercel.app/explore"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ pointerEvents: 'auto', textDecoration: 'none' }}
-            >
-              <Button
-                size="lg"
-                variant="outline"
-                className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black transition-all duration-200"
-                style={{ pointerEvents: 'auto', cursor: 'pointer' }}
-              >
-                {localizedText.explore?.button || 'Explore Terrain'}
-              </Button>
-            </a>
           </div>
         </div>
       </section>
