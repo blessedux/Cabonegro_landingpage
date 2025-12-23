@@ -144,4 +144,3 @@ Once you identify the exact paths the external app uses:
 1. Update the rewrites in `next.config.js` to match
 2. Test locally with `npm run build && npm start`
 3. Deploy and verify
-

@@ -200,12 +200,12 @@ export default function UnifiedNavbar() {
       <nav className="container mx-auto">
         <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
           <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center">
-              <Link href={`/${currentLocale}`} className="cursor-pointer">
+            <div className="flex items-center flex-shrink-0">
+              <Link href={`/${currentLocale}`} className="cursor-pointer flex-shrink-0">
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-[57.2px] w-auto hover:opacity-80 transition-opacity"
+                  className="h-[57.2px] w-auto object-contain flex-shrink-0 hover:opacity-80 transition-opacity"
                 />
               </Link>
             </div>

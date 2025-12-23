@@ -507,13 +507,13 @@ export default function NavbarZh() {
       <nav className="container mx-auto">
         <div ref={mobileMenuRef} className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
           <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center">
+            <div className="flex items-center flex-shrink-0">
               <Link 
                 href={currentLocale === 'en' ? '/en' : 
                       currentLocale === 'es' ? '/es' :
                       currentLocale === 'zh' ? '/zh' :
                       currentLocale === 'fr' ? '/fr' : '/zh'} 
-                className="cursor-pointer"
+                className="cursor-pointer flex-shrink-0"
                 onClick={handleHomeClick}
                 onMouseEnter={() => {
                   const homePath = currentLocale === 'en' ? '/en' : 
@@ -526,7 +526,7 @@ export default function NavbarZh() {
                 <img 
                   src="/cabonegro_logo.png" 
                   alt="Cabo Negro" 
-                  className="h-[62.4px] w-auto hover:opacity-80 transition-all duration-300"
+                  className="h-[62.4px] w-auto object-contain flex-shrink-0 hover:opacity-80 transition-all duration-300"
                   style={{
                     filter: isOverWhiteBackground ? 'brightness(0)' : 'brightness(1)',
                     transition: 'filter 0.3s ease-in-out'

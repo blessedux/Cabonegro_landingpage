@@ -456,10 +456,11 @@ export default function ParqueLogisticoPage() {
           </div>
           {/* Explore Terrain Button */}
           <div className="flex justify-center mt-8" style={{ pointerEvents: 'auto', zIndex: 1000 }}>
-            <Link 
-              href={`/${locale}/explore`} 
-              onClick={handleExploreClick}
-              style={{ pointerEvents: 'auto' }}
+            <a 
+              href="https://cabo-negro-flight-simulator.vercel.app/explore"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ pointerEvents: 'auto', textDecoration: 'none' }}
             >
               <Button
                 size="lg"
@@ -469,7 +470,7 @@ export default function ParqueLogisticoPage() {
               >
                 {localizedText.explore?.button || 'Explore Terrain'}
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
       </section>
