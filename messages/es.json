@@ -162,5 +162,10 @@
       "downloadDeck": "Descargar Presentación de Inversión"
     },
     "successMessage": "¡Gracias por tu mensaje! Te contactaremos pronto."
+  },
+  "notFound": {
+    "title": "Oops, Página no encontrada",
+    "hoverText": ["volver a", "Cabo Negro"],
+    "homeButton": "Inicio"
   }
 }

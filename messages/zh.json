@@ -162,5 +162,10 @@
       "downloadDeck": "下载投资演示文稿"
     },
     "successMessage": "感谢您的消息！我们会尽快与您联系。"
+  },
+  "notFound": {
+    "title": "糟糕，页面未找到",
+    "hoverText": ["返回", "卡波内格罗"],
+    "homeButton": "首页"
   }
 }

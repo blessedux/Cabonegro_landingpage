@@ -162,6 +162,11 @@
       "downloadDeck": "Télécharger la Présentation d'Investissement"
     },
     "successMessage": "Merci pour votre message ! Nous vous contacterons bientôt."
+  },
+  "notFound": {
+    "title": "Oops, Page non trouvée",
+    "hoverText": ["retour à", "Cabo Negro"],
+    "homeButton": "Accueil"
   }
 }
 
