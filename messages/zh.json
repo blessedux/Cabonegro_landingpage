@@ -166,6 +166,7 @@
   "notFound": {
     "title": "糟糕，页面未找到",
     "hoverText": ["返回", "卡波内格罗"],
+    "errorText": "404 错误",
     "homeButton": "首页"
   }
 }

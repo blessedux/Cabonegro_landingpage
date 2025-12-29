@@ -165,7 +165,8 @@
   },
   "notFound": {
     "title": "Oops, Page non trouvée",
-    "hoverText": ["retour à", "Cabo Negro"],
+    "hoverText": ["Retour à", "Cabo Negro"],
+    "errorText": "erreur 404",
     "homeButton": "Accueil"
   }
 }

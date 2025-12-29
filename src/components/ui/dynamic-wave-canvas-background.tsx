@@ -13,7 +13,10 @@ const HeroWave = () => {
     if (!ctx) return;
 
     let width: number, height: number, imageData: ImageData, data: Uint8ClampedArray;
-    const SCALE = 2;
+    // Adaptive scale based on device performance
+    const SCALE = typeof window !== 'undefined' && window.devicePixelRatio > 1.5 ? 2 : 3;
+    let frameCount = 0;
+    const FRAME_SKIP = 1; // Render every frame (can increase to 2 for 30fps on slower devices)
 
     const resizeCanvas = () => {
       if (!canvas) return;
@@ -25,7 +28,14 @@ const HeroWave = () => {
       data = imageData.data;
     };
 
-    window.addEventListener('resize', resizeCanvas);
+    // Throttle resize events
+    let resizeTimeout: ReturnType<typeof setTimeout>;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(resizeCanvas, 150);
+    };
+    
+    window.addEventListener('resize', handleResize, { passive: true });
     resizeCanvas();
 
     const startTime = Date.now();
@@ -50,6 +60,13 @@ const HeroWave = () => {
 
     const render = () => {
       if (!canvas || !ctx) return;
+      
+      // Frame skipping for performance
+      frameCount++;
+      if (frameCount % (FRAME_SKIP + 1) !== 0) {
+        requestAnimationFrame(render);
+        return;
+      }
       
       const time = (Date.now() - startTime) * 0.0003; // Slower animation (0.0003 instead of 0.001)
 
@@ -96,7 +113,8 @@ const HeroWave = () => {
     render();
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('resize', handleResize);
+      if (resizeTimeout) clearTimeout(resizeTimeout);
     };
   }, []);
 

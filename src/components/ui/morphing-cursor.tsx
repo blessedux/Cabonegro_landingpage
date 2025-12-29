@@ -43,35 +43,59 @@ export function MagneticText({ text = "CREATIVE", hoverText = "EXPLORE", classNa
         })
       }
     }
-    updateSize()
-    window.addEventListener("resize", updateSize)
-    return () => window.removeEventListener("resize", updateSize)
-  }, [hoverTextLines, textLines])
+    
+    // Use requestAnimationFrame to batch size updates
+    let rafId: number
+    const scheduleUpdate = () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(updateSize)
+    }
+    
+    scheduleUpdate()
+    
+    // Throttle resize events
+    let resizeTimeout: ReturnType<typeof setTimeout>
+    const handleResize = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(scheduleUpdate, 150)
+    }
+    
+    window.addEventListener("resize", handleResize, { passive: true })
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      if (rafId) cancelAnimationFrame(rafId)
+      clearTimeout(resizeTimeout)
+    }
+  }, [hoverTextLines.join(','), textLines.join(',')]) // Use string comparison instead of array reference
 
   useEffect(() => {
     const lerp = (start: number, end: number, factor: number) => start + (end - start) * factor
+    
+    // Cache container dimensions to avoid getBoundingClientRect on every frame
+    let containerWidth = 0
+    let containerHeight = 0
+    const updateContainerSize = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect()
+        containerWidth = rect.width
+        containerHeight = rect.height
+      }
+    }
+    updateContainerSize()
 
     const animate = () => {
-      if (!containerRef.current) return
-      
-      const rect = containerRef.current.getBoundingClientRect()
-      const containerCenterX = rect.left + rect.width / 2
-      const containerCenterY = rect.top + rect.height / 2
+      if (!containerRef.current || !circleRef.current) return
       
       currentPos.current.x = lerp(currentPos.current.x, mousePos.current.x, 0.15)
       currentPos.current.y = lerp(currentPos.current.y, mousePos.current.y, 0.15)
 
-      if (circleRef.current) {
-        circleRef.current.style.transform = `translate(${currentPos.current.x}px, ${currentPos.current.y}px) translate(-50%, -50%)`
-      }
+      // Use transform instead of style.transform for better performance
+      circleRef.current.style.transform = `translate(${currentPos.current.x}px, ${currentPos.current.y}px) translate(-50%, -50%)`
 
       if (innerTextRef.current && isHovered) {
         // Position hover text to match base text position
-        // The base text is at the container's center, so we need to offset the hover text
-        // to align with the base text position
-        const containerCenterX = rect.width / 2
-        const containerCenterY = rect.height / 2
-        // Offset to align with base text (which is at container center)
+        const containerCenterX = containerWidth / 2
+        const containerCenterY = containerHeight / 2
         const offsetX = containerCenterX - currentPos.current.x
         const offsetY = containerCenterY - currentPos.current.y
         
@@ -83,9 +107,15 @@ export function MagneticText({ text = "CREATIVE", hoverText = "EXPLORE", classNa
       animationFrameRef.current = requestAnimationFrame(animate)
     }
 
-    animationFrameRef.current = requestAnimationFrame(animate)
+    // Only start animation if component is mounted and visible
+    if (containerRef.current) {
+      animationFrameRef.current = requestAnimationFrame(animate)
+    }
+    
     return () => {
-      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
     }
   }, [isHovered])
 

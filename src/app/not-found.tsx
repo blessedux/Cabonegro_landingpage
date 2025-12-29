@@ -9,25 +9,29 @@ import { routing } from '@/i18n/routing'
 import HeroWave from '@/components/ui/dynamic-wave-canvas-background'
 
 // Translations for 404 page
-const translations: Record<string, { title: string[]; hoverText: string[]; homeButton: string }> = {
+const translations: Record<string, { title: string[]; hoverText: string[]; errorText: string; homeButton: string }> = {
   en: {
-    title: ['Oops,', 'Page not found'],
-    hoverText: ['go back to', 'Cabo Negro'],
+    title: ['Oops, page', 'not found'],
+    hoverText: ['Go back to', 'Cabo Negro'],
+    errorText: '404 error',
     homeButton: 'Home'
   },
   es: {
     title: ['Oops,', 'Página no encontrada'],
-    hoverText: ['volver a', 'Cabo Negro'],
+    hoverText: ['Volver a', 'Cabo Negro'],
+    errorText: 'error 404',
     homeButton: 'Inicio'
   },
   fr: {
     title: ['Oops,', 'Page non trouvée'],
-    hoverText: ['retour à', 'Cabo Negro'],
+    hoverText: ['Retour à', 'Cabo Negro'],
+    errorText: 'erreur 404',
     homeButton: 'Accueil'
   },
   zh: {
     title: ['糟糕，', '页面未找到'],
     hoverText: ['返回', '卡波内格罗'],
+    errorText: '404 错误',
     homeButton: '首页'
   }
 }
@@ -53,17 +57,54 @@ export default function NotFound() {
     if (detectedLocale) {
       setLocale(detectedLocale)
     }
+    
+    // Override body background for 404 page (combined effect for better performance)
+    const originalBg = document.body.style.backgroundColor
+    document.body.style.backgroundColor = 'transparent'
+    
+    return () => {
+      // Reset on unmount
+      document.body.style.backgroundColor = originalBg
+    }
   }, [pathname])
 
   const t = translations[locale] || translations[routing.defaultLocale]
 
+  // Ensure favicon is set for 404 page
   useEffect(() => {
-    // Override body background for 404 page
-    document.body.style.backgroundColor = 'transparent'
-    return () => {
-      // Reset on unmount
-      document.body.style.backgroundColor = ''
+    const updateFavicon = () => {
+      // Remove any existing favicon links
+      const existingLinks = document.querySelectorAll('link[rel*="icon"]')
+      existingLinks.forEach(link => link.remove())
+      
+      // Add favicon links
+      const faviconIco = document.createElement('link')
+      faviconIco.rel = 'icon'
+      faviconIco.href = '/favicon.ico'
+      faviconIco.type = 'image/x-icon'
+      document.head.appendChild(faviconIco)
+      
+      const favicon16 = document.createElement('link')
+      favicon16.rel = 'icon'
+      favicon16.href = '/favicon-16x16.png'
+      favicon16.type = 'image/png'
+      favicon16.sizes = '16x16'
+      document.head.appendChild(favicon16)
+      
+      const favicon32 = document.createElement('link')
+      favicon32.rel = 'icon'
+      favicon32.href = '/favicon-32x32.png'
+      favicon32.type = 'image/png'
+      favicon32.sizes = '32x32'
+      document.head.appendChild(favicon32)
+      
+      const appleIcon = document.createElement('link')
+      appleIcon.rel = 'apple-touch-icon'
+      appleIcon.href = '/apple-touch-icon.png'
+      document.head.appendChild(appleIcon)
     }
+    
+    updateFavicon()
   }, [])
 
   return (
@@ -73,8 +114,11 @@ export default function NotFound() {
         <div className="text-center w-full flex justify-center">
           <MagneticText text={t.title} hoverText={t.hoverText} />
         </div>
+        <p className="text-white/60 text-xs font-light tracking-wider uppercase -mt-2 mb-0">
+          {t.errorText}
+        </p>
         <Link href={`/${locale}`}>
-          <Button size="lg" variant="outline" className="mt-8 bg-transparent border-white text-white hover:bg-white/10">
+          <Button size="lg" variant="outline" className="mt-0 bg-transparent border-white text-white hover:bg-white/10">
             {t.homeButton}
           </Button>
         </Link>
