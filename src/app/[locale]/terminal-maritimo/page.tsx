@@ -695,12 +695,12 @@ export default function TerminalMaritimoPage() {
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" style={{ zIndex: 3 }} />
         
-        {/* Content */}
-        <div className="relative h-full flex flex-col items-center justify-center px-6 text-center text-white" style={{ zIndex: 2 }}>
-          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4">
+        {/* Content - Above overlay for full brightness */}
+        <div className="relative h-full flex flex-col items-center justify-center px-6 text-center" style={{ zIndex: 10 }}>
+          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
             {localizedText.hero.title}
           </h1>
-          <p className="mx-auto max-w-[42ch] text-xl md:text-2xl opacity-90 mb-6">
+          <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
             {localizedText.hero.subtitle}
           </p>
           {/* COMPAS Marine Logo */}
@@ -717,7 +717,7 @@ export default function TerminalMaritimoPage() {
                 width={220}
                 height={110}
                 className="object-contain"
-                style={{ filter: 'brightness(0) invert(1)' }}
+                style={{ filter: 'brightness(0) invert(1)', zIndex: 10 }}
               />
             </a>
             <p className="mt-4 text-sm italic text-white/70">
@@ -798,7 +798,7 @@ export default function TerminalMaritimoPage() {
             
             {/* Right Side: Title and Paragraph */}
             <div className="flex flex-col">
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-4 mb-6 ml-8 md:ml-12">
                
                 {/* Compas Marine Logo */}
                 <a
@@ -817,7 +817,7 @@ export default function TerminalMaritimoPage() {
                   />
                 </a>
               </div>
-              <h3 className={`text-xl md:text-2xl font-semibold mb-4 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>
+              <h3 className={`text-xl md:text-2xl font-semibold mb-4 ml-8 md:ml-12 ${isLightMode ? 'text-gray-900' : 'text-white'}`}>
                 {localizedText.strategicCollaboration.partnerTitle}
               </h3>
               {/* Use MagicText with bold words for English and Spanish locales, regular paragraph for others */}
@@ -830,7 +830,7 @@ export default function TerminalMaritimoPage() {
                   />
                 </div>
               ) : (
-                <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
+                <p className={`text-xl ml-8 md:ml-12 ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}>
                   {localizedText.strategicCollaboration.description}
                 </p>
               )}
