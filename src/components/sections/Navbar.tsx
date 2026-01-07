@@ -525,8 +525,8 @@ export default function Navbar() {
 
             {/* Right side: Language Dropdown + Hamburger Button */}
             <div className="flex items-center gap-3">
-              {/* Language Dropdown - Always visible, to the left of hamburger */}
-              <div className="relative" ref={languageDropdownRef}>
+              {/* Language Dropdown - Hidden on mobile, visible on desktop */}
+              <div className="relative hidden md:block" ref={languageDropdownRef}>
                 <button
                   onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
                   className={`flex items-center gap-2 text-xs px-3 py-2 rounded transition-colors ${
@@ -590,6 +590,34 @@ export default function Navbar() {
           }`}>
             <div className="px-6 pb-6 border-t border-white/20">
               <div className="flex flex-col gap-4 pt-4">
+                {/* Language Selector - Mobile only */}
+                <div className="md:hidden mb-2">
+                  <div className="text-xs uppercase mb-2 opacity-70" style={{ color: isOverWhiteBackground ? '#000' : '#fff' }}>
+                    {localizedText.language}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          handleLanguageChange(lang.code)
+                          setMobileMenuOpen(false)
+                        }}
+                        className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                          currentLocale === lang.code
+                            ? isOverWhiteBackground 
+                              ? 'bg-black text-white' 
+                              : 'bg-white text-black'
+                            : isOverWhiteBackground
+                              ? 'bg-gray-100 text-black hover:bg-gray-200'
+                              : 'bg-white/10 text-white hover:bg-white/20'
+                        }`}
+                      >
+                        {lang.code.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <button 
                   onClick={() => {
                     setMobileMenuOpen(false)

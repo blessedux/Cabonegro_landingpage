@@ -229,7 +229,7 @@ export default function TerminalMaritimoPage() {
           downloadBtn: 'Download Fact Sheet'
         },
         strategicCollaboration: {
-          name: 'Felipe Morales Pacheco',
+          name: 'Felipe Morales Peralta',
           title: 'General Manager\nTerminal Maritimo Cabo Negro',
           scheduleBtn: 'Schedule Meeting',
           partnerTitle: 'Strategic Partner of the Port Project',
@@ -286,7 +286,7 @@ export default function TerminalMaritimoPage() {
           downloadBtn: 'Descargar Fact Sheet'
         },
         strategicCollaboration: {
-          name: 'Felipe Morales Pacheco',
+          name: 'Felipe Morales Peralta',
           title: 'Gerente General\nTerminal Maritimo Cabo Negro',
           scheduleBtn: 'Agendar Reunión',
           partnerTitle: 'Socio Estratégico del Proyecto Portuario',
@@ -343,7 +343,7 @@ export default function TerminalMaritimoPage() {
           downloadBtn: '下载概况表'
         },
         strategicCollaboration: {
-          name: 'Felipe Morales Pacheco',
+          name: 'Felipe Morales Peralta',
           title: '总经理\n海运码头卡波内格罗',
           scheduleBtn: '安排会议',
           partnerTitle: '港口项目的战略合作伙伴',
@@ -400,7 +400,7 @@ export default function TerminalMaritimoPage() {
           downloadBtn: 'Télécharger la Fiche Technique'
         },
         strategicCollaboration: {
-          name: 'Felipe Morales Pacheco',
+          name: 'Felipe Morales Peralta',
           title: 'Directeur Général\nTerminal Maritime Cabo Negro',
           scheduleBtn: 'Planifier une Réunion',
           partnerTitle: 'Partenaire Stratégique du Projet Portuaire',
