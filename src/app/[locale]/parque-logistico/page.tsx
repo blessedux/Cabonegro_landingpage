@@ -247,7 +247,7 @@ export default function ParqueLogisticoPage() {
   const contactPath = `/${locale}/contact?from=parque-logistico`
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Navigation */}
       {getNavbar()}
 
@@ -342,13 +342,13 @@ export default function ParqueLogisticoPage() {
               setVideoError(true)
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black" style={{ zIndex: 3 }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white" style={{ zIndex: 3 }} />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4">
+          <h1 className="text-5xl md:text-7xl font-bold mb-4 text-white">
             {localizedText.hero.title}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300">
+          <p className="text-xl md:text-2xl text-white">
             {localizedText.hero.subtitle}
           </p>
         </div>
@@ -360,19 +360,19 @@ export default function ParqueLogisticoPage() {
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             {localizedText.terrain.title}
           </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-4xl leading-relaxed">
+          <p className="text-xl text-gray-700 mb-8 max-w-4xl leading-relaxed">
             {localizedText.terrain.description}
           </p>
-          <div className="bg-white/5 rounded-lg p-8 border border-white/10">
+          <div className="bg-gray-50 rounded-lg p-8 border border-gray-200">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
-                <Warehouse className="w-8 h-8 text-green-400" />
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <Warehouse className="w-8 h-8 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-400 mb-2">
+                <p className="text-2xl font-bold text-green-600 mb-2">
                   {localizedText.terrain.size}
                 </p>
-                <p className="text-gray-400">
+                <p className="text-gray-600">
                   {localizedText.terrain.readyText}
                 </p>
               </div>
@@ -382,12 +382,12 @@ export default function ParqueLogisticoPage() {
       </section>
 
       {/* Recommended Uses Section */}
-      <section className="py-20 px-6 bg-white/5">
+      <section className="py-20 px-6 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             {localizedText.uses.title}
           </h2>
-          <p className="text-xl text-gray-300 mb-12 max-w-4xl">
+          <p className="text-xl text-gray-700 mb-12 max-w-4xl">
             {localizedText.uses.description}
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -397,7 +397,7 @@ export default function ParqueLogisticoPage() {
               return (
                 <Card 
                   key={index} 
-                  className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer relative overflow-hidden"
+                  className="bg-white border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer relative overflow-hidden shadow-sm"
                   onClick={() => setExpandedCard(isExpanded ? null : index)}
                 >
                   <CardContent className="p-6 min-h-[200px] flex flex-col items-center justify-center">
@@ -407,7 +407,7 @@ export default function ParqueLogisticoPage() {
                         isExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'
                       }`}
                     >
-                      <IconComponent className="w-16 h-16 text-green-400" />
+                      <IconComponent className="w-16 h-16 text-green-600" />
                     </div>
                     {/* Text - fades in when expanded */}
                     <div 
@@ -415,8 +415,8 @@ export default function ParqueLogisticoPage() {
                         isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
                       }`}
                     >
-                      <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                      <p className="text-gray-300">{item.description}</p>
+                      <h3 className="text-xl font-bold mb-2 text-gray-900">{item.title}</h3>
+                      <p className="text-gray-700">{item.description}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -427,9 +427,9 @@ export default function ParqueLogisticoPage() {
       </section>
 
       {/* Interactive Map Placeholder Section */}
-      <section className="py-20 px-6 bg-white/5">
+      <section className="py-20 px-6 bg-white">
         <div className="container mx-auto max-w-6xl">
-          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-white/10">
+          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-gray-200">
             <div className="absolute inset-0 scale-110">
               <Image
                 src="/Patagon_Valley_v2.webp"
@@ -448,13 +448,13 @@ export default function ParqueLogisticoPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h3 className="text-3xl font-bold mb-6">{localizedText.strategicLocation.title}</h3>
-              <p className="text-lg text-gray-300 mb-4 leading-relaxed">
+              <p className="text-lg text-gray-700 mb-4 leading-relaxed">
                 {localizedText.strategicLocation.description}
               </p>
-              <ul className="space-y-3 text-gray-300">
+              <ul className="space-y-3 text-gray-700">
                 {localizedText.strategicLocation.items.map((item: string, index: number) => (
                   <li key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
+                    <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
                     <span>{item}</span>
                   </li>
                 ))}

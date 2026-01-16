@@ -96,9 +96,9 @@ export function usePageTransition() {
         }
 
         // For regular routes, wait for content to be ready before hiding
-        // AGGRESSIVE APPROACH: Hide after 500ms minimum, no complex checks
+        // OPTIMIZED: Hide after 300ms minimum for faster transitions
         let checkCount = 0
-        const maxChecks = 30 // 3 seconds max (30 * 100ms) - user wants < 3 seconds
+        const maxChecks = 20 // 2 seconds max (20 * 100ms) - faster timeout
         
         if (process.env.NODE_ENV === 'development') {
           console.log('⏱️ [PERF] Starting content check interval', {
@@ -110,10 +110,10 @@ export function usePageTransition() {
         const checkInterval = setInterval(() => {
           checkCount++
           
-          // Minimum wait time for smooth transition (500ms = 5 checks)
-          const minWaitTime = checkCount >= 5
+          // Minimum wait time for smooth transition (300ms = 3 checks) - faster
+          const minWaitTime = checkCount >= 3
           
-          // AGGRESSIVE: Just wait 500ms, then hide - no complex checks
+          // OPTIMIZED: Wait 300ms, then hide - faster transition
           // The pathname has already changed, so navigation has started
           if (minWaitTime || checkCount >= maxChecks) {
             clearInterval(checkInterval)
@@ -122,7 +122,7 @@ export function usePageTransition() {
             console.log('⏱️ [PERF] Hiding preloader', {
               checkCount,
               timeElapsed: `${(checkCount * 100).toFixed(0)}ms`,
-              reason: checkCount >= maxChecks ? 'maxChecks reached' : 'minWaitTime (500ms)',
+              reason: checkCount >= maxChecks ? 'maxChecks reached' : 'minWaitTime (300ms)',
               isNavigatingRef: isNavigatingRef.current
             })
             
@@ -144,7 +144,7 @@ export function usePageTransition() {
             console.log('⏱️ [PERF] Waiting...', {
               checkCount,
               timeElapsed: `${(checkCount * 100).toFixed(0)}ms`,
-              willHideIn: `${((5 - checkCount) * 100).toFixed(0)}ms`,
+              willHideIn: `${((3 - checkCount) * 100).toFixed(0)}ms`,
               isNavigatingRef: isNavigatingRef.current
             })
           }
@@ -164,8 +164,8 @@ export function usePageTransition() {
 
       // Safety mechanism: Force hide after maximum time
       // CRITICAL: Always reset navigation state to prevent navbar from being blocked
-      // User wants < 3 seconds, so set safety to 2s (more aggressive)
-      const maxTimeout = isToExploreRoute ? 10000 : 2000 // 10s for external apps, 2s for regular routes (more aggressive)
+      // Optimized: Set safety to 1.5s for faster transitions
+      const maxTimeout = isToExploreRoute ? 10000 : 1500 // 10s for external apps, 1.5s for regular routes (faster)
       const safetyTimer = setTimeout(() => {
         if (isNavigatingRef.current) {
           if (process.env.NODE_ENV === 'development') {

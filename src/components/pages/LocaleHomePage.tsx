@@ -208,18 +208,26 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       
       // CRITICAL: Check if video is ready - ONLY on home page (has video)
       // Non-home pages don't have videos, so skip this check for them
+      // OPTIMIZED: For navigation (not first load), be less strict about video ready state
       const isHomePage = pathname === `/${locale}` || pathname === '/en' || pathname === '/es' || pathname === '/zh' || pathname === '/fr' || pathname === '/'
       if (isHomePage && !isVideoReady) {
         // Check if video element exists and is ready
         const videoElement = document.querySelector('video') as HTMLVideoElement
         if (videoElement) {
-          // Video exists but not ready yet - wait for it
-          if (videoElement.readyState < 3) {
+          // For navigation (not first load), accept readyState >= 2 (HAVE_CURRENT_DATA) for faster transitions
+          // For first load, require readyState >= 3 (HAVE_FUTURE_DATA) for smoother playback
+          const minReadyState = isFirstLoad ? 3 : 2
+          if (videoElement.readyState < minReadyState) {
             return false
           }
         } else {
           // Video element doesn't exist yet - wait (only on home page)
-          return false
+          // But for navigation, don't wait too long - video might load in background
+          if (isFirstLoad) {
+            return false
+          }
+          // For navigation, if video doesn't exist after a short time, proceed anyway
+          // This prevents blocking on slow video loads
         }
       }
       // For non-home pages, skip video check (no video exists)
@@ -287,6 +295,15 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       
       // Show content immediately - usePageTransition will handle preloader hiding
       // No delays needed - let usePageTransition control timing
+      setShouldShowContent(true)
+      setContentOpacity(1)
+      setPreloaderComplete(true)
+    }
+    
+    // OPTIMIZED: For navigation (not first load), show content faster
+    // When navigating to home, show content immediately when preloader is visible
+    if (!isFirstLoad && isNavigating && isPreloaderBVisible && !shouldShowContent) {
+      // Show content immediately on navigation - don't wait
       setShouldShowContent(true)
       setContentOpacity(1)
       setPreloaderComplete(true)
@@ -395,14 +412,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
     
     // Additional safeguard: If shouldShowContent is true but contentOpacity is still 0,
     // force it to 1 to ensure content is visible
+    // OPTIMIZED: Set immediately, no delay
     if (shouldShowContent && contentOpacity === 0) {
-      if (!isPreloaderBVisible) {
-        setContentOpacity(1)
-      } else {
-        setTimeout(() => {
-          setContentOpacity(1)
-        }, 200)
-      }
+      setContentOpacity(1)
     }
   }, [isPreloaderBVisible, shouldShowContent, isNavigating, isFirstLoad, hidePreloaderB, locale, componentsLoaded])
   
@@ -413,11 +425,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       setContentOpacity(1)
     }
     // If shouldShowContent is true, ensure preloader is marked complete so Hero can show
+    // OPTIMIZED: Set immediately, no delay
     if (shouldShowContent) {
-      const timer = setTimeout(() => {
-        setPreloaderComplete(true)
-      }, 50)
-      return () => clearTimeout(timer)
+      setPreloaderComplete(true)
     }
   }, [shouldShowContent, isPreloaderBVisible, contentOpacity, setPreloaderComplete])
   
@@ -444,7 +454,7 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           setPreloaderComplete(true)
           hidePreloaderB()
         }
-      }, 2000)
+      }, 1500) // Reduced from 2000ms to 1500ms for faster recovery
       return () => clearTimeout(safetyTimer)
     }
   }, [isPreloaderBVisible, shouldShowContent, hidePreloaderB, setPreloaderComplete])

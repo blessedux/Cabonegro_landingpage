@@ -426,40 +426,21 @@ export default function NavbarEs() {
       return
     }
     
-    // Check if we're on a project page - no PreloaderB needed (usePageTransition handles it)
-    const isOnProjectPage = pathname.includes('/parque-tecnologico') || 
-                           pathname.includes('/parque-logistico') || 
-                           pathname.includes('/terminal-maritimo')
-    
-    // Only show PreloaderB for special pages (explore, deck, contact)
-    // Project pages → home is fast and doesn't need PreloaderB
-    const isOnSpecialPage = pathname.includes('/explore') || 
-                           pathname.includes('/deck') || 
-                           pathname.includes('/contact')
-    
+    // CRITICAL: Always show preloader when navigating TO home page from any other page
+    // This ensures smooth transition and prevents old page from showing
     e.preventDefault()
     
-    // Only show PreloaderB for special pages, not project pages
-    if (isOnSpecialPage) {
-      // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
-      flushSync(() => {
-        showPreloaderB()
-      })
-      
-      // Navigate IMMEDIATELY - no delays
-      const homePath = currentLocale === 'en' ? '/en' : 
-                      currentLocale === 'es' ? '/es' :
-                      currentLocale === 'zh' ? '/zh' :
-                      currentLocale === 'fr' ? '/fr' : '/es'
-      router.push(homePath)
-    } else {
-      // No preloader needed, navigate immediately
-      const homePath = currentLocale === 'en' ? '/en' : 
-                      currentLocale === 'es' ? '/es' :
-                      currentLocale === 'zh' ? '/zh' :
-                      currentLocale === 'fr' ? '/fr' : '/es'
-      router.push(homePath)
-    }
+    // Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
+      showPreloaderB()
+    })
+    
+    // Navigate IMMEDIATELY - no delays
+    const homePath = currentLocale === 'en' ? '/en' : 
+                    currentLocale === 'es' ? '/es' :
+                    currentLocale === 'zh' ? '/zh' :
+                    currentLocale === 'fr' ? '/fr' : '/es'
+    router.push(homePath)
   }
 
   // Handle FAQ click
@@ -574,7 +555,7 @@ export default function NavbarEs() {
                   <div className={`absolute top-full right-0 mt-2 min-w-[120px] rounded-lg shadow-lg z-50 backdrop-blur-2xl ${
                     isOverWhiteBackground 
                       ? 'bg-white/95 border border-black/20' 
-                      : 'bg-white/30 border border-white/30'
+                      : 'bg-white/85 border border-white/30'
                   }`}>
                     {languages.map((lang) => (
                       <button
@@ -619,7 +600,17 @@ export default function NavbarEs() {
           <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}>
-            <div className="px-6 pb-6 border-t border-white/20">
+            <div 
+              className={`px-6 pb-6 border-t ${
+                isOverWhiteBackground 
+                  ? 'bg-white/90 border-black/10' 
+                  : 'bg-white/85 border-white/30'
+              }`}
+              style={{
+                backdropFilter: 'blur(40px)',
+                WebkitBackdropFilter: 'blur(40px)'
+              }}
+            >
               <div className="flex flex-col gap-4 pt-4">
                 {/* Language Selector - Mobile only */}
                 <div className="md:hidden mb-2">

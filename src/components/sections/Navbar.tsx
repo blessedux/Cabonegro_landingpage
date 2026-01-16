@@ -567,8 +567,8 @@ export default function Navbar() {
                   <div 
                     className={`absolute top-full right-0 mt-2 min-w-[120px] rounded-lg shadow-lg z-50 ${
                       isOverWhiteBackground 
-                        ? 'bg-white/20 border border-black/10' 
-                        : 'bg-white/15 border border-white/20'
+                        ? 'bg-black/20 border border-black/10' 
+                        : 'bg-black/30 border border-white/30'
                     }`}
                     style={{
                       backdropFilter: 'blur(40px)',
@@ -621,8 +621,8 @@ export default function Navbar() {
             <div 
               className={`px-6 pb-6 border-t ${
                 isOverWhiteBackground 
-                  ? 'bg-white/20 border-black/10' 
-                  : 'bg-white/15 border-white/20'
+                  ? 'bg-black/20 border-black/10' 
+                  : 'bg-black/30 border-white/30'
               }`}
               style={{
                 backdropFilter: 'blur(40px)',

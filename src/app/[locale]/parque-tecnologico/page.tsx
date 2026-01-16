@@ -366,7 +366,7 @@ export default function ParqueTecnologicoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Navigation */}
       {getNavbar()}
 
@@ -432,10 +432,10 @@ export default function ParqueTecnologicoPage() {
               setVideoError(true)
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-0" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white z-0" />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mt-16 mb-4">
+          <h1 className="text-5xl md:text-7xl font-bold mt-16 mb-4 text-white">
             {localizedText.hero.title.includes('&') ? (
               <>
                 {localizedText.hero.title.split(' & ')[0]}
@@ -465,10 +465,10 @@ export default function ParqueTecnologicoPage() {
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               {localizedText.vision.title}
             </h2>
-            <p className="text-xl md:text-2xl text-blue-400 mb-6 font-semibold">
+            <p className="text-xl md:text-2xl text-blue-600 mb-6 font-semibold">
               {localizedText.vision.subtitle}
             </p>
-            <p className="text-xl text-gray-300 mb-8 max-w-4xl leading-relaxed">
+            <p className="text-xl text-gray-700 mb-8 max-w-4xl leading-relaxed">
               {localizedText.vision.description}
             </p>
           </div>
@@ -478,7 +478,7 @@ export default function ParqueTecnologicoPage() {
               return (
                 <div
                   key={index}
-                  className="relative flex flex-col items-start text-left p-6 rounded-lg border border-white/20 backdrop-blur-md transition-all duration-300 hover:border-white/30 h-full cursor-pointer overflow-hidden"
+                  className="relative flex flex-col items-start text-left p-6 rounded-lg border border-white/30 backdrop-blur-md transition-all duration-300 hover:border-white/40 h-full cursor-pointer overflow-hidden"
                   style={{ 
                     opacity: iconOpacities[index] || 0,
                     transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,
@@ -504,7 +504,7 @@ export default function ParqueTecnologicoPage() {
                       fill
                       className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-black/70" />
+                    <div className="absolute inset-0 bg-black/50" />
                   </div>
                   
                   {/* Content */}
@@ -537,9 +537,9 @@ export default function ParqueTecnologicoPage() {
       </section>
 
       {/* Interactive Map Placeholder Section */}
-      <section className="py-20 px-6 bg-white/5">
+      <section className="py-20 px-6 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
-          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-white/10">
+          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-gray-200">
             <div className="absolute inset-0 scale-110">
               <Image
                 src="/Patagon_Valley_v2.webp"
@@ -559,12 +559,12 @@ export default function ParqueTecnologicoPage() {
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               {localizedText.clients.title}
             </h2>
-            <p className="text-xl text-gray-300">
+            <p className="text-xl text-gray-700">
               {localizedText.clients.subtitle}
             </p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-12">
-            <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
+            <div className="flex items-center justify-center h-24 w-48 bg-black rounded-lg p-6">
               <Image
                 src="/logos/aws.png"
                 alt="AWS"
@@ -573,7 +573,7 @@ export default function ParqueTecnologicoPage() {
                 className="object-contain"
               />
             </div>
-            <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
+            <div className="flex items-center justify-center h-24 w-48 bg-black rounded-lg p-6">
               <Image
                 src="/gtd_white_logo.png"
                 alt="GTD"

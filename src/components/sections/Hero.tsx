@@ -194,11 +194,11 @@ export default function Hero() {
     <>
     <motion.section 
       ref={heroRef}
-      className="relative w-full h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y"
+      className="relative w-full h-[90vh] pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y"
       style={{
         backgroundColor: 'transparent', // Transparent to show gradient background
-        height: '100vh',
-        minHeight: '100vh',
+        height: '90vh',
+        minHeight: '90vh',
         width: '100%',
         zIndex: 1, // Above gradient background (0) but below navbar (100)
         opacity: 1, // Keep Hero section always visible - video stays in place
@@ -332,18 +332,19 @@ export default function Hero() {
 
       {/* Hero Content - always visible, no scroll-based fade */}
       <motion.div 
-        className="container mx-auto relative z-[30] flex justify-start"
+        className="container mx-auto relative z-[30] flex justify-start h-full"
         style={{ 
           opacity: 1, // Always visible - no scroll-based fade
           pointerEvents: 'auto', // Always allow pointer events - buttons should always be clickable
         }}
       >
-        <div className="max-w-4xl w-full px-6 lg:px-12 relative z-[30] text-white" 
+        <div className="max-w-4xl w-full px-6 lg:px-12 relative z-[30] text-white flex flex-col h-full" 
           style={{ 
             pointerEvents: 'auto',
             filter: 'brightness(1)',
             color: '#ffffff', // White text
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            // h1 will be centered, subtitle/buttons container uses mt-auto to push to bottom
           }}
         >
           {/* Title and Subtitle */}
@@ -378,30 +379,32 @@ export default function Hero() {
             <span>platform</span>
             <span>of the south of the world</span>
           </motion.h1>
-          <motion.p 
-            ref={paragraphRef}
-            className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none italic"
-            style={{ 
-              userSelect: 'none', 
-              WebkitUserSelect: 'none', 
-              MozUserSelect: 'none', 
-              msUserSelect: 'none',
-              color: '#ffffff', // White text
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-            }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-            transition={{ 
-              duration: 0.3, 
-              delay: 0.1, // Small delay after title
-              ease: "easeOut" 
-            }}
-          >
-            {subtitle}
-          </motion.p>
+          {/* Subtitle and Buttons Container - positioned at bottom */}
+          <div style={{ marginTop: 'auto', paddingBottom: '3rem' }}>
+            <motion.p 
+              ref={paragraphRef}
+              className="text-lg sm:text-xl md:text-2xl text-white mb-12 max-w-2xl leading-relaxed text-left select-none italic"
+              style={{ 
+                userSelect: 'none', 
+                WebkitUserSelect: 'none', 
+                MozUserSelect: 'none', 
+                msUserSelect: 'none',
+                color: '#ffffff', // White text
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+              transition={{ 
+                duration: 0.3, 
+                delay: 0.1, // Small delay after title
+                ease: "easeOut" 
+              }}
+            >
+              {subtitle}
+            </motion.p>
 
-          {/* Button Section - switches between single CTA and three project buttons */}
-          <AnimatePresence mode="wait">
+            {/* Button Section - switches between single CTA and three project buttons */}
+            <AnimatePresence mode="wait">
             {!showProjectOptions ? (
               <motion.div 
                 ref={ctaRef}
@@ -537,7 +540,8 @@ export default function Hero() {
                 </Button>
               </motion.div>
             )}
-          </AnimatePresence>
+            </AnimatePresence>
+          </div>
         </div>
       </motion.div>
     </motion.section>
