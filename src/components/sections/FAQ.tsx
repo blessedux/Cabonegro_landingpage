@@ -205,14 +205,14 @@ export default function FAQ() {
   const hasMoreQuestions = faqs.length > 6
 
   return (
-    <section className="pt-8 md:pt-20 pb-20 px-6 bg-white relative z-20" id="FAQ" data-white-background="true">
+    <section className="pt-8 md:pt-20 pb-20 px-6 bg-white relative" id="FAQ" data-white-background="true" style={{ zIndex: 20 }}>
       <div className="container mx-auto max-w-4xl">
         <motion.h2 
           initial={{ x: -50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           viewport={{ margin: "-10% 0px -10% 0px" }}
-          className="text-4xl md:text-5xl font-bold mb-6"
+          className="text-4xl md:text-5xl font-bold mb-6 font-primary"
         >
           {title}
         </motion.h2>
@@ -233,7 +233,7 @@ export default function FAQ() {
               >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold pr-4 text-foreground">{faq.question}</h3>
+                    <h3 className="text-lg font-semibold pr-4 text-foreground font-primary">{faq.question}</h3>
                     <ChevronDown
                       className={`w-5 h-5 flex-shrink-0 transition-transform text-gray-600 ${
                         openFaq === index ? 'rotate-180' : ''

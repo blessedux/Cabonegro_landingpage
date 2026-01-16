@@ -38,35 +38,31 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
     if (prevPathnameRef.current !== pathname) {
       isTransitioning.current = true
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 PageTransitionWrapper: Pathname changed', {
+        console.log('⏱️ [PERF] Pathname changed', {
           from: prevPathnameRef.current,
-          to: pathname,
-          isNavigating,
-          isPreloaderBVisible
+          to: pathname
         })
       }
       prevPathnameRef.current = pathname
     }
   }, [pathname, isNavigating, isPreloaderBVisible])
 
-  // Control white blocker visibility with timeout for fast transitions
+  // Control white blocker visibility - show immediately when navigating
   React.useEffect(() => {
-    // Show white blocker when navigating and PreloaderB not visible yet
-    if (isNavigating && !isPreloaderBVisible) {
+    // Show white blocker immediately when navigation starts
+    // This prevents blank screen while preloader loads
+    if (isNavigating) {
       setShowWhiteBlocker(true)
-      // Auto-hide after short timeout if PreloaderB doesn't appear (fast transition)
-      // This handles project → home navigation where PreloaderB is skipped
-      const timeout = setTimeout(() => {
-        if (!isPreloaderBVisible) {
+      // Hide when preloader appears
+      if (isPreloaderBVisible) {
+        // Small delay to ensure smooth transition
+        const timeout = setTimeout(() => {
           setShowWhiteBlocker(false)
-          if (process.env.NODE_ENV === 'development') {
-            console.log('⚡ PageTransitionWrapper: White blocker auto-hide (fast transition detected)')
-          }
-        }
-      }, 100) // Hide after 100ms if PreloaderB doesn't appear
-      return () => clearTimeout(timeout)
+        }, 50)
+        return () => clearTimeout(timeout)
+      }
     } else {
-      // Hide immediately when PreloaderB appears or navigation completes
+      // Hide when navigation completes
       setShowWhiteBlocker(false)
     }
   }, [isNavigating, isPreloaderBVisible])
@@ -74,18 +70,6 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
   const handlePreloaderBComplete = () => {
     // Don't hide here - let usePageTransition handle it
     // This prevents double hiding and ensures proper timing
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ PageTransitionWrapper: PreloaderB onComplete called, waiting for usePageTransition to hide')
-    }
-  }
-
-  if (process.env.NODE_ENV === 'development' && isNavigating) {
-    console.log('🎬 PageTransitionWrapper render:', {
-      isNavigating,
-      isPreloaderBVisible,
-      showWhiteBlocker,
-      pathname
-    })
   }
 
   return (
@@ -115,26 +99,25 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
         </div>
       )}
 
-      {/* Show preloader during navigation ONLY (not first load) */}
+      {/* Show preloader during navigation - CRITICAL: Show when navigating */}
       {/* z-index 99999 ensures it overlays everything including navbar and white blocker */}
       {/* LocaleHomePage handles first load preloader separately */}
-      {isPreloaderBVisible && isNavigating && (
+      {isNavigating && (
         <PreloaderB 
           key={`preloader-nav-${pathname}`} // Unique key per route to ensure proper remounting
           onComplete={handlePreloaderBComplete}
           duration={0.5}
-          shouldAutoHide={true} // Enable auto-hide as fallback if hidePreloaderB() isn't called
+          shouldAutoHide={false} // Don't auto-hide - let usePageTransition control it
         />
       )}
       
-      {/* Keep children visible during transition - overlay preloader on top */}
-      {/* This ensures old page stays visible until new page is ready, preventing white screens */}
-      {/* CRITICAL: Re-enable pointer events as soon as navigation completes to allow navbar clicks */}
-      {/* IMPORTANT: Don't block pointer events - let buttons and links work immediately */}
+      {/* CRITICAL: Hide old page when navigating - white blocker/preloader covers it */}
+      {/* White blocker shows immediately, then preloader appears */}
       <div 
         style={{
-          opacity: 1, // Always keep visible - preloader overlays on top
-          pointerEvents: 'auto' // Always allow interactions - preloader is just a visual overlay
+          opacity: isNavigating ? 0 : 1, // Hide old page when navigating (white blocker/preloader covers it)
+          transition: 'opacity 0.2s ease-out', // Smooth fade out
+          pointerEvents: isNavigating ? 'none' : 'auto' // Block interactions when navigating
         }}
       >
         {/* Wrap children in Suspense to prevent white screen during route transitions */}

@@ -29,9 +29,9 @@ export function WorldMapDemo() {
   return (
     <div 
       ref={containerRef} 
-      className="pt-0 pb-0 bg-white w-full relative z-20 md:min-h-[100vh] md:mt-0"
+      className="pt-0 pb-0 bg-white w-full relative md:min-h-[100vh] md:mt-0"
       data-white-background="true"
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', zIndex: 20 }}
     >
       {/* Mobile map - simple flow, no sticky, no wrapper */}
       <motion.div

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { GradientHeading } from '@/components/ui/gradient-heading'
 import { MagicText } from '@/components/ui/magic-text'
@@ -17,50 +17,37 @@ const partnerLogos = [
 export default function Partners() {
   const t = useTranslations('partners')
   const partnersRef = useRef(null)
-  const triggerRef = useRef<HTMLDivElement>(null)
   
-  // Track scroll progress - Partners starts later, after Stats
-  const { scrollYProgress } = useScroll({
-    target: triggerRef,
-    offset: ["start end", "end start"]
-  })
-
-  // Delay the start of animations - only start when scroll progress reaches 0.6
-  // This makes Partners start later in the scroll, allowing more Stats content to be visible
-  const adjustedProgress = useTransform(scrollYProgress, [0.6, 1], [0, 1])
-  
-  const titleY = useTransform(adjustedProgress, [0, 1], [50, -50])
-  const titleOpacity = useTransform(adjustedProgress, [0, 0.3, 1], [0, 1, 1])
-  const descriptionOpacity = useTransform(adjustedProgress, [0, 0.2, 1], [0, 1, 1])
-  
-  // Shadow intensity - static, no parallax movement
-  const shadowOpacity = useTransform(adjustedProgress, [0, 0.3, 0.7, 1], [0.3, 0.6, 0.8, 0.5])
+  // Removed all scroll-based animations - content is always visible
 
   return (
     <>
-      {/* Trigger element for scroll tracking - positioned before section */}
-      <div ref={triggerRef} className="h-0" />
       <motion.section 
         ref={partnersRef} 
         data-partners-section="true"
         data-white-background="true"
-        className="pt-20 pb-20 px-3 md:px-6 relative overflow-visible bg-white rounded-t-[3rem] md:rounded-t-[4rem] -mt-8 md:-mt-8 mt-[300px] md:mt-[276px] relative z-10"
+        className="pt-20 pb-20 px-3 md:px-6 relative overflow-visible bg-white rounded-t-[3rem] md:rounded-t-[4rem]"
+        style={{
+          minHeight: '50vh',
+          zIndex: 20, // Lower than Hero initially (Hero is 30), but higher than Hero when scrolled (Hero goes to -1)
+          isolation: 'isolate' // Create new stacking context
+        }}
       >
-      {/* Enhanced shadow that moves with parallax - creates depth as it slides */}
-      <motion.div
+      {/* Static shadow - no parallax */}
+      <div
         className="absolute -top-12 left-0 right-0 h-16 z-0 pointer-events-none"
         style={{ 
-          opacity: shadowOpacity,
+          opacity: 0.5,
           background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.1), transparent)',
           filter: 'blur(20px)',
           transform: 'translateY(-50%)'
         }}
       />
-      {/* Additional shadow layer for more depth */}
-      <motion.div
+      {/* Additional shadow layer */}
+      <div
         className="absolute -top-8 left-0 right-0 h-12 z-0 pointer-events-none"
         style={{ 
-          opacity: shadowOpacity,
+          opacity: 0.5,
           background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.15), transparent)',
           filter: 'blur(15px)'
         }}
@@ -105,14 +92,14 @@ export default function Partners() {
       >
         <div className="text-center mb-8">
           <div className="mb-2">
-            <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black tracking-tight pb-2">
+            <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black tracking-tight pb-2 font-primary">
               {t('title')}
             </h3>
           </div>
           
           <div className="mb-4">
             <h2 
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight pb-2 text-black"
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight pb-2 text-black font-primary"
               style={{ 
                 color: '#000000 !important',
                 transform: 'none',
@@ -126,15 +113,15 @@ export default function Partners() {
             </h2>
           </div>
           
-          <motion.div
-            style={{ opacity: descriptionOpacity }}
+          <div
+            style={{ opacity: 1 }}
             className="max-w-2xl mx-auto"
           >
             <MagicText 
               text={t('description')}
-              className="text-black text-lg"
+              className="text-black text-lg font-primary"
             />
-          </motion.div>
+          </div>
         </div>
 
         <div className="flex justify-center items-center gap-8 md:gap-12 mb-0">

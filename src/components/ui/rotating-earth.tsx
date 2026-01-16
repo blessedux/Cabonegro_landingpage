@@ -8,9 +8,12 @@ interface RotatingEarthProps {
   width?: number
   height?: number
   className?: string
+  vectorColor?: string
+  backgroundColor?: string
+  showInfoPanel?: boolean
 }
 
-export default function RotatingEarth({ width = 800, height = 600, className = "" }: RotatingEarthProps) {
+export default function RotatingEarth({ width = 800, height = 600, className = "", vectorColor = "#ffffff", backgroundColor = "transparent", showInfoPanel = true }: RotatingEarthProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -155,9 +158,16 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
       // Draw ocean (globe background) with transparency
       context.beginPath()
       context.arc(containerWidth / 2, containerHeight / 2, currentScale, 0, 2 * Math.PI)
-      context.fillStyle = "rgba(0, 0, 0, 0.3)" // Semi-transparent black
+      // Use light gray for ocean when background is white, otherwise use semi-transparent black
+      if (backgroundColor === "#ffffff" || backgroundColor === "white") {
+        context.fillStyle = "rgba(240, 240, 240, 0.8)" // Light gray for white background
+      } else if (backgroundColor === "transparent") {
+        context.fillStyle = "rgba(0, 0, 0, 0.3)" // Semi-transparent black for transparent background
+      } else {
+        context.fillStyle = backgroundColor
+      }
       context.fill()
-      context.strokeStyle = "#ffffff"
+      context.strokeStyle = vectorColor
       context.lineWidth = 2 * scaleFactor
       context.stroke()
 
@@ -166,7 +176,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
         const graticule = d3.geoGraticule()
         context.beginPath()
         path(graticule())
-        context.strokeStyle = "#ffffff"
+        context.strokeStyle = vectorColor
         context.lineWidth = 1 * scaleFactor
         context.globalAlpha = 0.25
         context.stroke()
@@ -177,7 +187,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
         landFeatures.features.forEach((feature: any) => {
           path(feature)
         })
-        context.strokeStyle = "#ffffff"
+        context.strokeStyle = vectorColor
         context.lineWidth = 1 * scaleFactor
         context.stroke()
 
@@ -193,7 +203,8 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
           ) {
             context.beginPath()
             context.arc(projected[0], projected[1], 1.2 * scaleFactor, 0, 2 * Math.PI)
-            context.fillStyle = "#999999"
+            // Use darker dots on white background, lighter on dark background
+            context.fillStyle = (backgroundColor === "#ffffff" || backgroundColor === "white") ? "#333333" : "#999999"
             context.fill()
           }
         })
@@ -411,7 +422,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
       canvas.removeEventListener("touchmove", handleTouchMove)
       canvas.removeEventListener("touchend", handleTouchEnd)
     }
-  }, [width, height])
+  }, [width, height, vectorColor, backgroundColor])
 
   if (error) {
     return (
@@ -429,27 +440,29 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
       <canvas
         ref={canvasRef}
         className="w-full h-auto rounded-2xl"
-        style={{ maxWidth: "100%", height: "auto", background: "transparent" }}
+        style={{ maxWidth: "100%", height: "auto", background: backgroundColor === "transparent" ? "transparent" : backgroundColor }}
       />
       
       {/* Location Info Panel */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 text-sm text-white mx-4 md:mx-0 max-w-[calc(100%-2rem)] md:max-w-none">
-        <div className="space-y-1 text-xs sm:text-sm text-center md:text-left">
-          <div className="text-white">
-            Estrecho de Magallanes, Chile
-          </div>
-          <div>
-            <a
-              href={`https://www.google.com/maps?q=${dotCoords[1]},${dotCoords[0]}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-cyan-300 hover:text-cyan-200 underline cursor-pointer transition-colors"
-            >
-              {dotCoords[1].toFixed(4)}°S, {Math.abs(dotCoords[0]).toFixed(4)}°W
-            </a>
+      {showInfoPanel && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-4 bg-black/80 backdrop-blur-sm rounded-lg p-3 text-sm text-white mx-4 md:mx-0 max-w-[calc(100%-2rem)] md:max-w-none">
+          <div className="space-y-1 text-xs sm:text-sm text-center md:text-left">
+            <div className="text-white">
+              Estrecho de Magallanes, Chile
+            </div>
+            <div>
+              <a
+                href={`https://www.google.com/maps?q=${dotCoords[1]},${dotCoords[0]}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-cyan-300 hover:text-cyan-200 underline cursor-pointer transition-colors"
+              >
+                {dotCoords[1].toFixed(4)}°S, {Math.abs(dotCoords[0]).toFixed(4)}°W
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

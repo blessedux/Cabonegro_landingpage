@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState, useRef, useLayoutEffect } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent, useSpring, useMotionValue, useInView, useReducedMotion } from 'framer-motion'
+import { useEffect, useState, useRef } from 'react'
+import { flushSync } from 'react-dom'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { Button } from '@/components/ui/button'
@@ -233,24 +234,29 @@ export default function Stats() {
   
   // Navigation handlers - explicitly show preloader for consistent transitions
   const handlePatagonValleyClick = () => {
-    // Show preloader immediately before navigation for consistent UX
-    // This must happen synchronously before router.push to prevent white screen
-    showPreloaderB()
-    // Navigate immediately - no startTransition to avoid delays
+    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
+      showPreloaderB()
+    })
+    // Navigate IMMEDIATELY - no delays
     router.push(`/${locale}/parque-tecnologico`)
   }
   
   const handlePortZoneClick = () => {
-    // Show preloader immediately before navigation for consistent UX
-    showPreloaderB()
-    // Navigate immediately - no startTransition to avoid delays
+    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
+      showPreloaderB()
+    })
+    // Navigate IMMEDIATELY - no delays
     router.push(`/${locale}/terminal-maritimo`)
   }
   
   const handleCaboNegroDosClick = () => {
-    // Show preloader immediately before navigation for consistent UX
-    showPreloaderB()
-    // Navigate immediately - no startTransition to avoid delays
+    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
+      showPreloaderB()
+    })
+    // Navigate IMMEDIATELY - no delays
     router.push(`/${locale}/parque-logistico`)
   }
   
@@ -273,182 +279,7 @@ export default function Stats() {
     prevLocaleRef.current = locale
   }, [pathname, locale, navigationKey])
   
-  // Use navigationKey to force useScroll to re-initialize
-  // This ensures scroll tracking resets properly after navigation
-  const { scrollYProgress: baseScrollProgress } = useScroll({
-    target: statsRef,
-    offset: ["start end", "end start"]
-  })
-  
-  // Reset scroll progress manually when navigation key changes
-  useEffect(() => {
-    if (navigationKey > 0 && statsRef.current) {
-      // Force a recalculation by temporarily hiding and showing
-      // This ensures useScroll recalculates the scroll progress
-    }
-  }, [navigationKey])
-  
-  // Find AboutUs section to potentially adjust scroll calculations
-  const aboutUsSectionRef = useRef<HTMLElement | null>(null)
-  
-  useEffect(() => {
-    const findElement = () => {
-      const element = document.querySelector('[data-aboutus-section="true"]') as HTMLElement
-      if (element) {
-        aboutUsSectionRef.current = element
-      }
-    }
-    requestAnimationFrame(findElement)
-  }, [])
-  
-  // For now, use baseScrollProgress as aboutUsScrollProgress
-  // The animations should still work since they're based on scroll position
-  // If precise AboutUs tracking is needed, we can add manual calculations later
-  const aboutUsScrollProgress = baseScrollProgress
-  
-  // AboutUs content opacity - matches the original AboutUs component
-  const aboutUsOpacity = useTransform(aboutUsScrollProgress, [0, 0.01, 0.05, 0.7, 1], [0, 0, 1, 1, 0], { clamp: true })
-  const rawAboutUsY = useTransform(aboutUsScrollProgress, [0, 0.01, 0.05, 0.5, 0.7, 1], [80, 80, 0, 0, 0, -50])
-  const aboutUsY = useSpring(rawAboutUsY, { 
-    stiffness: 80, 
-    damping: 25,
-    mass: 0.6
-  })
-  
-  // Title opacity for duplicate
-  const duplicateTitleOpacity = useTransform(aboutUsScrollProgress, [0, 0.01, 0.04], [0, 0, 1], { clamp: true })
-  const rawDuplicateTitleY = useTransform(aboutUsScrollProgress, [0, 0.01, 0.04, 0.5], [60, 60, 0, 0])
-  const duplicateTitleY = useSpring(rawDuplicateTitleY, { 
-    stiffness: 100, 
-    damping: 20,
-    mass: 0.5
-  })
-  
-  // Use AboutUs scroll progress for Stats background fade-in
-  // This triggers much earlier - during the AboutUs section itself
-  const scrollYProgress = aboutUsScrollProgress
-
-  // Track when Partners section reaches 50% of viewport (center line)
-  // Use statsRef as the target to avoid hydration errors - it's always attached to a valid element
-  // We'll manually find the Partners section for any future calculations if needed
-  const partnersSectionRef = useRef<HTMLElement | null>(null)
-  
-  // Find Partners section for potential future use (not used in useScroll to avoid hydration issues)
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const element = document.querySelector('[data-partners-section="true"]') as HTMLElement
-      if (element) {
-        partnersSectionRef.current = element
-      }
-    }
-  }, [])
-  
-  // Track Partners section scroll progress
-  // Use a more delayed offset - only start tracking when Partners section is actually approaching
-  // Changed from ["start center", "start start"] to ["end center", "end start"] to delay the trigger
-  const { scrollYProgress: partnersScrollProgress } = useScroll({
-    target: statsRef,
-    offset: ["end center", "end start"] // Start tracking later - when Stats end reaches center
-  })
-
-  // Background fade in - starts later at 0.40 (40% of AboutUs scroll), completes at 0.60 (60%)
-  // Adjusted for shorter AboutUs section (100vh) - trigger earlier
-  // Start fading in when AboutUs is at 20% scroll progress (earlier than before)
-  const backgroundOpacityRaw = useTransform(
-    scrollYProgress, 
-    [0, 0.20, 0.40], 
-    [0, 0, 1],
-    { clamp: true }
-  )
-  
-  // Force background opacity to 0 when preloader is visible
-  // We'll handle this in the style by checking isPreloaderBVisible
-  const backgroundOpacity = backgroundOpacityRaw
-  
-  // Background zoom effect - scales from 1 to 1.1 (10% zoom) as we scroll from top to bottom
-  // Only apply zoom when background starts appearing
-  // Always call hooks unconditionally - use static value for mobile, transform for desktop
-  const backgroundScaleStatic = useMotionValue(1) // No zoom effect on mobile
-  const backgroundScaleTransform = useTransform(
-    scrollYProgress, 
-    [0, 0.20, 1], 
-    [1, 1, 1.1], 
-    { clamp: true }
-  )
-  const backgroundScale = isMobile ? backgroundScaleStatic : backgroundScaleTransform
-  
-  // Black overlay opacity - starts when background starts fading in (40% to 60%)
-  const blackOverlayOpacity = useTransform(
-    scrollYProgress, 
-    [0, 0.40, 0.60], 
-    [0, 0, 1],
-    { clamp: true }
-  )
-  
-  // Title fade in - starts when background and content start fading in (20%)
-  // On mobile, title should appear at the same time as cards for better UX
-  const titleOpacity = useTransform(
-    scrollYProgress, 
-    [0, 0.20, 0.30], 
-    [0, 0, 1],
-    { clamp: true }
-  )
-  // Always call hooks unconditionally - use static value for mobile, transform for desktop
-  const titleYStatic = useMotionValue(0) // No parallax on mobile
-  const titleYTransform = useTransform(
-    scrollYProgress, 
-    [0, 0.20, 0.30], 
-    [0, 0, 0],
-    { clamp: true }
-  )
-  const titleY = isMobile ? titleYStatic : titleYTransform
-  
-  // Content fade in - start earlier to match stat cards (0.20 when background starts)
-  const contentOpacity = useTransform(
-    scrollYProgress, 
-    [0, 0.20, 0.30], 
-    [0, 0, 1],
-    { clamp: true }
-  )
-  // Always call hooks unconditionally - use static value for mobile, transform for desktop
-  const contentYStatic = useMotionValue(0) // No parallax on mobile
-  const contentYTransform = useTransform(
-    scrollYProgress, 
-    [0, 0.20, 0.30], 
-    [0, 0, 0],
-    { clamp: true }
-  )
-  const contentY = isMobile ? contentYStatic : contentYTransform
-  
-  // Position orange container at the very top, close to AboutUs component
-  // At 0%: container at top (top: 0, y: 0)
-  // At 40%: container positioned at very top (top: 0%, y: -50%) - at the very top
-  // After 40%: stays in position
-  const containerTop = useTransform(
-    scrollYProgress, 
-    [0, 0.40, 0.60], 
-    ['0%', '0%', '0%'], 
-    { clamp: true }
-  )
-  // Always call hooks unconditionally - use static value for mobile, transform for desktop
-  const containerYStatic = useMotionValue('0%') // Static positioning on mobile
-  const containerYTransform = useTransform(
-    scrollYProgress, 
-    [0, 0.40, 0.60], 
-    ['0%', '-50%', '-50%'], 
-    { clamp: true }
-  )
-  const containerY = isMobile ? containerYStatic : containerYTransform
-  
-  // Overall Stats section visibility - hide completely until AboutUs is in view
-  // This ensures Stats doesn't show before AboutUs section is reached
-  // Also check if section is in view to ensure it fades in on navigation
-  const statsSectionOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.01],
-    [0, 1],
-    { clamp: true }
-  )
+  // Removed all scroll-based animations - everything is always visible
   
   // Simplified visibility - always show when in viewport, regardless of scroll progress
   const [forceVisible, setForceVisible] = useState(false)
@@ -497,14 +328,8 @@ export default function Stats() {
       setForceVisible(true)
     }
   }, [isInView, isPreloaderBVisible, navigationKey, locale]) // Only depend on isPreloaderBVisible
-  
-  // Also monitor scroll progress as secondary trigger
-  // Only check if PreloaderB is not visible - don't wait for isPreloaderComplete
-  useMotionValueEvent(statsSectionOpacity, "change", (latest) => {
-    if (latest > 0.01 && !isPreloaderBVisible) {
-      setForceVisible(true)
-    }
-  })
+
+  // Removed scroll-based visibility monitoring - content is always visible when in viewport
   
   // Reset when navigating to homepage
   useEffect(() => {
@@ -547,55 +372,13 @@ export default function Stats() {
   }, [pathname, locale, isPreloaderBVisible, navigationKey]) // Only depend on isPreloaderBVisible
   
   // Fade to white when Partners section approaches
-  // Partners scroll progress: 0 = Stats end at center, 1 = Stats end at top
-  // Delay the white overlay significantly - only start fading when Partners is very close (at 0.7 progress)
-  // and complete when Stats end reaches top (at 1.0 progress)
-  // This ensures the white overlay only appears right before Partners section
-  const whiteOverlayOpacity = useTransform(partnersScrollProgress, [0.7, 1], [0, 1], { clamp: true })
+  // All content is always visible - no scroll-based animations
+  
+  // Hover state for card interactions
+  const [isHovered1, setIsHovered1] = useState(false)
+  const [isHovered2, setIsHovered2] = useState(false)
+  const [isHovered3, setIsHovered3] = useState(false)
 
-  // Staggered fade-in animations for stat boxes
-  // On mobile: animate all boxes simultaneously (no stagger) for better performance
-  // On desktop: use staggered animation for visual interest
-  // Reduced motion: disable Y transform and use simpler fade-in
-  // Mobile: no Y transforms at all - only opacity fade-in
-  const yTransformDistance = prefersReducedMotion ? 0 : (isMobile ? 0 : 30)
-  
-  // Mobile: all boxes use same range [0.20, 0.30] (no stagger)
-  // Desktop: staggered ranges [0.20, 0.30], [0.22, 0.32], [0.24, 0.34]
-  const statBox1Range: [number, number] = isMobile ? [0.20, 0.30] : [0.20, 0.30]
-  const statBox2Range: [number, number] = isMobile ? [0.20, 0.30] : [0.22, 0.32]
-  const statBox3Range: [number, number] = isMobile ? [0.20, 0.30] : [0.24, 0.34]
-  
-  const statBox1Opacity = useTransform(scrollYProgress, statBox1Range, [0, 1], { clamp: true })
-  // Always call hooks unconditionally - use static value for mobile, transform for desktop
-  const statBox1YStatic = useMotionValue(0) // Static value for mobile
-  const statBox1YTransform = useTransform(scrollYProgress, statBox1Range, [yTransformDistance, 0], { clamp: true })
-  const statBox1Y = isMobile ? statBox1YStatic : statBox1YTransform
-  
-  const statBox2Opacity = useTransform(scrollYProgress, statBox2Range, [0, 1], { clamp: true })
-  const statBox2YStatic = useMotionValue(0) // Static value for mobile
-  const statBox2YTransform = useTransform(scrollYProgress, statBox2Range, [yTransformDistance, 0], { clamp: true })
-  const statBox2Y = isMobile ? statBox2YStatic : statBox2YTransform
-  
-  const statBox3Opacity = useTransform(scrollYProgress, statBox3Range, [0, 1], { clamp: true })
-  const statBox3YStatic = useMotionValue(0) // Static value for mobile
-  const statBox3YTransform = useTransform(scrollYProgress, statBox3Range, [yTransformDistance, 0], { clamp: true })
-  const statBox3Y = isMobile ? statBox3YStatic : statBox3YTransform
-
-  // Track opacity to conditionally enable pointer events
-  const [shouldBlockPointer, setShouldBlockPointer] = useState(false)
-  const [shouldShowStats, setShouldShowStats] = useState(false)
-  
-  useMotionValueEvent(contentOpacity, "change", (latest) => {
-    // Only block pointer events when opacity is above 0.1 (visible enough)
-    setShouldBlockPointer(latest > 0.1)
-  })
-  
-  useMotionValueEvent(statsSectionOpacity, "change", (latest) => {
-    // Only show Stats section when AboutUs is in view
-    setShouldShowStats(latest > 0.1)
-  })
-  
   // Check asset loading status
   // Check assets as soon as PreloaderB is hidden, don't wait for isPreloaderComplete
   useEffect(() => {
@@ -649,67 +432,51 @@ export default function Stats() {
 
   return (
     <>
-      {/* Stats section - sticky positioning to allow scrolling */}
+      {/* Stats section - normal flow positioning */}
       <motion.section 
         id="stats"
         ref={statsRef} 
-        className="sticky top-0 left-0 right-0 z-[3] pointer-events-none"
+        className="relative w-full"
         style={{
-          zIndex: 3,
-          opacity: (() => {
-            // Hide completely if PreloaderB is visible OR hero video is not ready
-            if (isPreloaderBVisible || !heroVideoReady) return 0
-            
-            // Get scroll-based opacity
-            const scrollOpacity = statsSectionOpacity.get()
-            
-            // If force visible (in viewport or scrolled), ensure minimum visibility
-            // This ensures fade-in works even after navigation
-            if (forceVisible || isInView || hasScrolled) {
-              const minOpacity = Math.max(scrollOpacity, 0.3)
-              return minOpacity
-            }
-            
-            // Otherwise use scroll-based opacity
-            return scrollOpacity
-          })(),
-          // Only enable pointer events when Stats is significantly visible (opacity > 0.5)
-          // This prevents Stats from blocking Hero button clicks when Hero is still visible
-          pointerEvents: (!isPreloaderBVisible && heroVideoReady && (shouldShowStats || forceVisible || isInView || hasScrolled) && statsSectionOpacity.get() > 0.5) ? 'auto' : 'none',
-          visibility: (!isPreloaderBVisible && heroVideoReady) ? 'visible' : 'hidden', // Hide if PreloaderB is visible OR video not ready
-          // Fix mobile viewport height issues - add extra height on mobile to prevent Partners from covering last card
-          minHeight: isMobile ? 'calc(100vh + 250px)' : '100vh',
-          height: isMobile ? 'calc(100vh + 250px)' : '100vh',
-          maxHeight: isMobile ? 'calc(100vh + 250px)' : '100vh'
+          zIndex: 2, // Normal z-index for document flow
+          isolation: 'isolate', // Create new stacking context
+          position: 'relative', // Normal document flow
+          opacity: (!isPreloaderBVisible && heroVideoReady) ? 1 : 0, // Always visible when preloader is hidden and video is ready
+          // Enable pointer events when Stats is visible - allow interaction with content
+          pointerEvents: (!isPreloaderBVisible && heroVideoReady) ? 'auto' : 'none',
+          visibility: 'visible', // DEBUG: Always visible to see if it's rendering
+          // Use minHeight to ensure content fits - 20% larger than before
+          minHeight: isMobile ? 'calc((100vh + 400px) * 1.2)' : 'calc((100vh + 300px) * 1.2)',
+          paddingTop: isMobile ? '4rem' : '6rem', // Top padding for content
+          paddingBottom: isMobile ? '10rem' : '8rem', // Extra padding at bottom to prevent cropping
+          overflow: 'hidden' // Ensure content stays within section bounds
         }}
       >
         {/* Content container - positioned at top, centers in viewport when background fades in (40% scroll) */}
         {/* This should be above AboutUs content when Stats is fully visible */}
         {/* Completely hidden until preloader is hidden AND hero video is ready */}
         <motion.div
-          className="absolute left-0 right-0 w-full flex flex-col justify-start"
+          className="relative w-full flex flex-col justify-start"
           style={{
-            pointerEvents: shouldBlockPointer ? 'auto' : 'none',
-            top: containerTop,
-            y: isMobile ? 0 : containerY, // Only apply Y transform on desktop
+            pointerEvents: 'auto',
             zIndex: 7, // Above AboutUs content (z-[6]) so Stats content appears on top when visible
             opacity: (isPreloaderBVisible || !heroVideoReady) ? 0 : 1, // Force 0 when preloader visible OR video not ready
-            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible' // Hide completely when preloader visible OR video not ready
+            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible', // Hide completely when preloader visible OR video not ready
+            minHeight: '100%' // Ensure it fills the section
           }}
         >
           
-          {/* Content wrapper - no margins, matches section positioning, content at top */}
-          <div className="w-full max-w-7xl mx-auto px-4 md:px-6 pt-0">
-            {/* Land Development Structure Title - moved to top position */}
+          {/* Content wrapper - with proper top margin for title */}
+          <div className="w-full max-w-7xl mx-auto px-4 md:px-6 pt-12 md:pt-16 pb-12 md:pb-16">
+            {/* Land Development Structure Title - with more top margin */}
             <motion.div 
-              className="text-center mb-[20vh] md:mb-[30vh] relative"
+              className="text-center mb-8 md:mb-12 relative mt-8 md:mt-12"
               style={{
-                opacity: titleOpacity,
-                y: isMobile ? 0 : titleY, // Only apply Y transform on desktop
-                willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
+                opacity: 1, // Always visible
+                y: 0, // No scroll-based transforms
               }}
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-2 text-white">
+              <h2 className="text-4xl md:text-5xl font-bold mb-2 text-white font-primary">
                 {locale === 'es' ? 'Estructura de Desarrollo de Tierras' : locale === 'zh' ? '土地开发结构' : locale === 'fr' ? 'Structure de Développement des Terres' : 'Land Development Structure'}
               </h2>
               <div className="max-w-3xl mx-auto mb-2">
@@ -730,37 +497,35 @@ export default function Stats() {
             <motion.div
               className="relative"
               style={{
-                opacity: contentOpacity,
-                y: isMobile ? 0 : contentY, // Only apply Y transform on desktop
-                willChange: isMobile ? 'opacity' : 'transform, opacity' // Optimize for mobile
+                opacity: 1, // Always visible
+                y: 0, // No scroll-based transforms
               }}
             >
 
               {/* Total Hectares - Featured */}
               <div className="max-w-4xl mx-auto mb-8">
-                <div className="text-center p-8 bg-black/50 backdrop-blur-md rounded-xl border border-white/30 shadow-2xl">
-                  <div className="text-6xl md:text-7xl font-bold mb-4 text-white">
+                <div className="text-center p-8 bg-white/80 backdrop-blur-md rounded-xl border border-white/30 shadow-2xl">
+                  <div className="text-6xl md:text-7xl font-bold mb-4 text-gray-900">
                     <AnimatedCounter end={300} suffix="+" />
                   </div>
-                  <p className="text-gray-300 text-lg font-medium mb-2">
+                  <p className="text-gray-700 text-lg font-medium mb-2">
                     {locale === 'es' ? 'Hectáreas Totales' : locale === 'zh' ? '总公顷数' : locale === 'fr' ? 'Hectares Totaux' : 'Total Hectares'}
                   </p>
-                  <p className="text-gray-400 text-sm">
+                  <p className="text-gray-600 text-sm">
                     {locale === 'es' ? 'Zona de Desarrollo Industrial y Marítimo' : locale === 'zh' ? '工业和海事开发区' : locale === 'fr' ? 'Zone de Développement Industriel et Maritime' : 'Industrial & Maritime Development Zone'}
                   </p>
                 </div>
               </div>
 
             {/* Company/Area Breakdown - 3 Cards Layout: 1 top, 2 bottom */}
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-4 md:space-y-6 mb-8 md:mb-12">
               {/* Top Row: Patagon Valley (centered) */}
               <div className="flex justify-center">
                 <motion.div 
                   className="relative w-full max-w-md rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
                   style={{
-                    opacity: statBox1Opacity,
-                    y: isMobile ? 0 : statBox1Y, // Only apply Y transform on desktop
-                    willChange: isMobile ? 'opacity' : 'transform, opacity', // Optimize for mobile
+                    opacity: 1, // Always visible
+                    y: 0, // No scroll-based transforms
                     transition: 'none', // Disable all CSS transitions
                   }}
                   transition={{ duration: 0, ease: "linear" }}
@@ -768,7 +533,11 @@ export default function Stats() {
                   whileTap={{}}
                   animate={{}}
                   onClick={handlePatagonValleyClick}
-                  onMouseEnter={() => router.prefetch(`/${locale}/parque-tecnologico`)}
+                  onMouseEnter={() => {
+                    setIsHovered1(true)
+                    router.prefetch(`/${locale}/parque-tecnologico`)
+                  }}
+                  onMouseLeave={() => setIsHovered1(false)}
                 >
                   {/* Background Image - Optimized with next/image */}
                   <div className="absolute inset-0">
@@ -785,19 +554,46 @@ export default function Stats() {
                   {/* Overlay for better text readability */}
                   <div className="absolute inset-0 bg-black/40" />
                   
-                  {/* Content - Logo only, centered and larger */}
+                  {/* Content - Paragraph with hover interaction */}
                   <div className="relative p-6 md:p-8 min-h-[250px] md:min-h-[300px] flex flex-col items-center justify-center text-center">
-                    {/* Logo Icon - Twice the size, centered */}
-                    <div className="relative w-40 h-40 md:w-48 md:h-48 mx-auto">
-                      <Image 
-                        src="/logos/patagon_white.png" 
-                        alt="Patagon Valley Logo" 
-                        fill
+                    {/* Patagon Valley Logo - Fades out on hover */}
+                    <motion.div
+                      initial={false}
+                      animate={{ opacity: isHovered1 ? 0 : 1 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      <Image
+                        src="/logos/patagon_white.png"
+                        alt="Patagon Valley Logo"
+                        width={160}
+                        height={64}
                         className="object-contain"
-                        loading="lazy"
-                        sizes="(max-width: 768px) 160px, 192px"
                       />
-                    </div>
+                    </motion.div>
+                    
+                    {/* Paragraph - Fades in on hover */}
+                    <motion.div
+                      initial={false}
+                      animate={{ opacity: isHovered1 ? 1 : 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="absolute inset-0 flex flex-col items-center justify-between px-4 py-6 md:py-8"
+                      style={{ pointerEvents: isHovered1 ? 'auto' : 'none' }}
+                    >
+                      <p className="text-white text-base md:text-lg leading-relaxed flex-1 flex items-center">
+                        {locale === 'es' 
+                          ? 'Hub de innovación y conectividad, con terrenos destinados a empresas intensivas en energía, telecomunicaciones, data, tecnología satelital y logística avanzada.'
+                          : locale === 'zh'
+                          ? '创新和连接中心，为能源、电信、数据、卫星技术和先进物流密集型公司提供土地。'
+                          : locale === 'fr'
+                          ? 'Hub d\'innovation et de connectivité, avec des terrains destinés aux entreprises intensives en énergie, télécommunications, données, technologie satellitaire et logistique avancée.'
+                          : 'Innovation and connectivity hub, with land for companies intensive in energy, telecommunications, data, satellite technology, and advanced logistics.'}
+                      </p>
+                      <div className="text-gray-400 text-sm md:text-base font-medium mt-auto">
+                        {locale === 'es' ? 'Ver más' : locale === 'zh' ? '查看更多' : locale === 'fr' ? 'Voir plus' : 'See more'}
+                      </div>
+                    </motion.div>
                   </div>
                 </motion.div>
               </div>
@@ -808,9 +604,8 @@ export default function Stats() {
                 <motion.div 
                   className="relative rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
                   style={{
-                    opacity: statBox2Opacity,
-                    y: isMobile ? 0 : statBox2Y, // Only apply Y transform on desktop
-                    willChange: isMobile ? 'opacity' : 'transform, opacity', // Optimize for mobile
+                    opacity: 1, // Always visible
+                    y: 0, // No scroll-based transforms
                     transition: 'none', // Disable all CSS transitions
                   }}
                   transition={{ duration: 0, ease: "linear" }}
@@ -818,36 +613,74 @@ export default function Stats() {
                   whileTap={{}}
                   animate={{}}
                   onClick={handlePortZoneClick}
-                  onMouseEnter={() => router.prefetch(`/${locale}/terminal-maritimo`)}
+                  onMouseEnter={() => {
+                    setIsHovered2(true)
+                    router.prefetch(`/${locale}/terminal-maritimo`)
+                  }}
+                  onMouseLeave={() => setIsHovered2(false)}
                 >
-                  {/* Background Image - Optimized with next/image */}
-                  <div className="absolute inset-0">
+                  {/* Background Image - Default (shows when not hovered) */}
+                  <motion.div 
+                    className="absolute inset-0"
+                    initial={false}
+                    animate={{ opacity: isHovered2 ? 0 : 1 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  >
                     <Image
-                      src="/image15.webp"
+                      src="/terminal_maritimo_thumbnail.webp"
                       alt="Terminal Marítimo"
                       fill
                       className="object-cover"
+                      style={{ objectPosition: 'center' }}
                       loading="lazy"
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 512px"
                       priority={false}
                     />
-                  </div>
+                  </motion.div>
+                  {/* Background Image - Hover (shows when hovered) */}
+                  <motion.div 
+                    className="absolute inset-0"
+                    initial={false}
+                    animate={{ opacity: isHovered2 ? 1 : 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  >
+                    <Image
+                      src="/image16.webp"
+                      alt="Terminal Marítimo"
+                      fill
+                      className="object-cover"
+                      style={{ objectPosition: 'center' }}
+                      loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 512px"
+                      priority={false}
+                    />
+                  </motion.div>
                   {/* Overlay for better text readability */}
                   <div className="absolute inset-0 bg-black/40" />
                   
-                  {/* Content - Logo only, centered and larger */}
+                  {/* Content - Paragraph with hover interaction */}
                   <div className="relative p-6 md:p-8 min-h-[250px] md:min-h-[300px] flex flex-col items-center justify-center text-center">
-                    {/* Logo Icon - Twice the size, centered, using white logo */}
-                    <div className="relative w-40 h-40 md:w-48 md:h-48 mx-auto">
-                      <Image 
-                        src="/logos/CaboNegro_logo_white.png" 
-                        alt="Cabo Negro Logo" 
-                        fill
-                        className="object-contain"
-                        loading="lazy"
-                        sizes="(max-width: 768px) 160px, 192px"
-                      />
-                    </div>
+                    {/* Paragraph - Fades in on hover */}
+                    <motion.div
+                      initial={false}
+                      animate={{ opacity: isHovered2 ? 1 : 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="absolute inset-0 flex flex-col items-center justify-between px-4 py-6 md:py-8"
+                      style={{ pointerEvents: isHovered2 ? 'auto' : 'none' }}
+                    >
+                      <p className="text-white text-base md:text-lg leading-relaxed flex-1 flex items-center">
+                        {locale === 'es'
+                          ? 'Nuevo Puerto protegido y multipropósito diseñado para la creciente demanda logística, industrial y energética. Desarrollado junto a COMPAS marine'
+                          : locale === 'zh'
+                          ? '新的受保护多用途港口，旨在满足不断增长的物流、工业和能源需求。与COMPAS marine共同开发'
+                          : locale === 'fr'
+                          ? 'Nouveau port protégé et polyvalent conçu pour la demande croissante en logistique, industrie et énergie. Développé avec COMPAS marine'
+                          : 'New protected and multipurpose port designed for the growing logistical, industrial, and energy demand. Developed with COMPAS marine'}
+                      </p>
+                      <div className="text-gray-400 text-sm md:text-base font-medium mt-auto">
+                        {locale === 'es' ? 'Ver más' : locale === 'zh' ? '查看更多' : locale === 'fr' ? 'Voir plus' : 'See more'}
+                      </div>
+                    </motion.div>
                   </div>
                 </motion.div>
 
@@ -855,9 +688,8 @@ export default function Stats() {
                 <motion.div 
                   className="relative rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
                   style={{
-                    opacity: statBox3Opacity,
-                    y: isMobile ? 0 : statBox3Y, // Only apply Y transform on desktop
-                    willChange: isMobile ? 'opacity' : 'transform, opacity', // Optimize for mobile
+                    opacity: 1, // Always visible
+                    y: 0, // No scroll-based transforms
                     transition: 'none', // Disable all CSS transitions
                   }}
                   transition={{ duration: 0, ease: "linear" }}
@@ -865,39 +697,74 @@ export default function Stats() {
                   whileTap={{}}
                   animate={{}}
                   onClick={handleCaboNegroDosClick}
-                  onMouseEnter={() => router.prefetch(`/${locale}/parque-logistico`)}
+                  onMouseEnter={() => {
+                    setIsHovered3(true)
+                    router.prefetch(`/${locale}/parque-logistico`)
+                  }}
+                  onMouseLeave={() => setIsHovered3(false)}
                 >
-                  {/* Background Image - Optimized with next/image */}
-                  <div className="absolute inset-0">
+                  {/* Background Image - Default (shows when not hovered) */}
+                  <motion.div 
+                    className="absolute inset-0"
+                    initial={false}
+                    animate={{ opacity: isHovered3 ? 0 : 1 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  >
                     <Image
-                      src="/image16.webp"
+                      src="/macrolote2_thumbnail.webp"
                       alt="Cabo Negro Dos"
                       fill
                       className="object-cover"
+                      style={{ objectPosition: 'center' }}
                       loading="lazy"
                       sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 512px"
                       priority={false}
                     />
-                  </div>
+                  </motion.div>
+                  {/* Background Image - Hover (shows when hovered) */}
+                  <motion.div 
+                    className="absolute inset-0"
+                    initial={false}
+                    animate={{ opacity: isHovered3 ? 1 : 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  >
+                    <Image
+                      src="/image15.webp"
+                      alt="Cabo Negro Dos"
+                      fill
+                      className="object-cover"
+                      style={{ objectPosition: 'center' }}
+                      loading="lazy"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 512px"
+                      priority={false}
+                    />
+                  </motion.div>
                   {/* Overlay for better text readability */}
                   <div className="absolute inset-0 bg-black/40" />
                   
-                  {/* Content - Custom three-line text with DOS emphasized */}
+                  {/* Content - Paragraph with hover interaction */}
                   <div className="relative p-6 md:p-8 min-h-[250px] md:min-h-[300px] flex flex-col items-center justify-center text-center">
-                    {/* Line 1: CaboNegro */}
-                    <div className="text-white text-lg md:text-xl font-medium mb-2">
-                      CaboNegro
-                    </div>
-                    
-                    {/* Line 2: DOS - Much bigger font */}
-                    <div className="text-white text-6xl md:text-7xl lg:text-8xl font-bold mb-2 leading-none">
-                      DOS
-                    </div>
-                    
-                    {/* Line 3: M  A C  R  O  L  O  T  E with spaces */}
-                    <div className="text-white text-lg md:text-xl font-medium tracking-wider">
-                      M  A C  R  O  L  O  T  E
-                    </div>
+                    {/* Paragraph - Fades in on hover */}
+                    <motion.div
+                      initial={false}
+                      animate={{ opacity: isHovered3 ? 1 : 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="absolute inset-0 flex flex-col items-center justify-between px-4 py-6 md:py-8"
+                      style={{ pointerEvents: isHovered3 ? 'auto' : 'none' }}
+                    >
+                      <p className="text-white text-base md:text-lg leading-relaxed flex-1 flex items-center">
+                        {locale === 'es'
+                          ? 'Terreno conectado al Estrecho de Magallanes y a Ruta Internacional. Su escala lo hace ideal para macro desarrollos logísticos, industriales, energéticos o de almacenamiento.'
+                          : locale === 'zh'
+                          ? '连接麦哲伦海峡和国际路线的土地。其规模使其成为物流、工业、能源或存储大型开发的理想选择。'
+                          : locale === 'fr'
+                          ? 'Terrain connecté au détroit de Magellan et à la route internationale. Son échelle le rend idéal pour les macro-développements logistiques, industriels, énergétiques ou de stockage.'
+                          : 'Land connected to the Strait of Magellan and International Route. Its scale makes it ideal for macro logistical, industrial, energy, or storage developments.'}
+                      </p>
+                      <div className="text-gray-400 text-sm md:text-base font-medium mt-auto">
+                        {locale === 'es' ? 'Ver más' : locale === 'zh' ? '查看更多' : locale === 'fr' ? 'Voir plus' : 'See more'}
+                      </div>
+                    </motion.div>
                   </div>
                 </motion.div>
               </div>
@@ -906,49 +773,44 @@ export default function Stats() {
           </div>
         </motion.div>
         
-        {/* Background image layer - fades in based on scroll with zoom effect */}
-        {/* This should be below AboutUs content but above Hero */}
-        {/* Completely hidden when preloader is visible OR hero video is not ready to prevent flash on first load */}
+        {/* Background image layer - fills entire section including border */}
         <motion.div
-          className="fixed inset-0"
+          className="absolute inset-0"
           style={{
             backgroundImage: 'url(/cabonegro_wirefram2.webp)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            opacity: (isPreloaderBVisible || !heroVideoReady) ? 0 : backgroundOpacity, // Force 0 when preloader visible OR video not ready
-            scale: backgroundScale,
-            zIndex: 2, // Below AboutUs content (z-4) but above Hero (z-1)
+            opacity: (isPreloaderBVisible || !heroVideoReady) ? 0 : 1, // Always visible when preloader hidden and video ready
+            scale: 1, // No scroll-based zoom
+            zIndex: 0, // Behind content
             display: (isPreloaderBVisible || !heroVideoReady) ? 'none' : 'block', // Hide completely when preloader is visible OR video not ready
             visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible', // Double-check visibility
-            pointerEvents: 'none' // Never block interactions
+            pointerEvents: 'none', // Never block interactions
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%'
           }}
         />
         
-        {/* Black overlay that increases as we scroll - only visible when Stats section is active */}
-        {/* Completely hidden when preloader is visible OR hero video is not ready to prevent flash on first load */}
+        {/* Black overlay - fills entire section including border */}
         <motion.div 
-          className="fixed inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none"
           style={{
             backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            opacity: blackOverlayOpacity,
-            zIndex: 2, // Same as background
+            opacity: 0.7, // Static opacity - no scroll-based changes
+            zIndex: 0, // Behind content
             display: (isPreloaderBVisible || !heroVideoReady) ? 'none' : 'block',
-            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible'
-          }}
-        />
-        
-        {/* White overlay - fades in when Partners starts reaching top */}
-        {/* Only affects background, content stays visible above it */}
-        {/* Completely hidden when preloader is visible OR hero video is not ready to prevent flash on first load */}
-        <motion.div 
-          className="fixed inset-0 pointer-events-none"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 1)',
-            opacity: whiteOverlayOpacity,
-            zIndex: 3, // Same as background layer, below content (z-7)
-            display: (isPreloaderBVisible || !heroVideoReady) ? 'none' : 'block',
-            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible'
+            visibility: (isPreloaderBVisible || !heroVideoReady) ? 'hidden' : 'visible',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%'
           }}
         />
       </motion.section>

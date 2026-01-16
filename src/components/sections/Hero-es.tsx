@@ -1,8 +1,9 @@
-import { TypingAnimation } from '@/components/ui/typing-animation'
 import { Button } from '@/components/ui/button'
+import { TypingAnimation } from '@/components/ui/typing-animation'
 import { ArrowLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence, useMotionTemplate } from 'framer-motion'
+import { flushSync } from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import Image from 'next/image'
@@ -17,7 +18,7 @@ export default function HeroEs() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const { showPreloaderB, isPreloaderComplete } = usePreloader()
+  const { showPreloaderB, isPreloaderComplete, setVideoReady } = usePreloader()
 
   // Single hero video (first video - logistics)
   const heroVideo = 'https://storage.reimage.dev/mente-files/vid-86ef632d3d23/original.mp4'
@@ -31,43 +32,6 @@ export default function HeroEs() {
   
   const currentLocale = getLocale()
   
-  // Track overall page scroll progress (not section-specific)
-  // This ensures fade-out happens at the correct overall page scroll percentage
-  // Use heroRef as target to prevent hydration issues during language switching
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  })
-
-  // Hero content stays visible until AboutUs starts appearing
-  // Fade out smoothly as user scrolls - starts fading earlier for smoother transition
-  // Fades out from 0% to 5% of overall page scroll to fade out earlier
-  // Ensure it starts at opacity 1 (visible) on initial load
-  const heroContentOpacity = useTransform(scrollYProgress, [0, 0, 0.05], [1, 1, 0], { clamp: true })
-  const heroContentY = useTransform(scrollYProgress, [0, 0, 0.05], [0, 0, -30], { clamp: true })
-  
-  // Background blur and overlay effects - fade in as AboutUs comes into view
-  // Start fading in slightly before hero content fades out (at 2% scroll) and reach full effect at 8% scroll
-  // This creates a smooth transition where background gets darker/blurred as AboutUs text appears
-  // Blur: 0px to 3px (subtle blur, a couple of points)
-  // Overlay: 0% to 10% opacity black
-  const backgroundBlur = useTransform(scrollYProgress, [0.02, 0.08], [0, 3], { clamp: true })
-  const overlayOpacity = useTransform(scrollYProgress, [0.02, 0.08], [0, 0.1], { clamp: true })
-  
-  // Create a template for the blur filter using the MotionValue
-  const blurFilter = useMotionTemplate`blur(${backgroundBlur}px)`
-  
-  // Always allow pointer events for buttons - don't block based on opacity
-  const [shouldBlockPointer, setShouldBlockPointer] = useState(true)
-  
-  useMotionValueEvent(heroContentOpacity, "change", (latest) => {
-    // Always allow pointer events - buttons should always be clickable
-    // Only disable if completely invisible (below 0.01)
-    setShouldBlockPointer(latest > 0.01)
-  })
-  
-  // Video stays visible - no fade out. Stats background will cover it as it fades in
-  
   // Export scroll progress for use in other components (via context or prop)
   // For now, we'll use a shared scroll tracking approach
   
@@ -75,10 +39,22 @@ export default function HeroEs() {
   const rotatingWords = ['logística', 'portuaria', 'Tecnológica']
   const subtitle = 'infraestructura integrada en el estrecho de magallanes para la nueva economía energética y tecnológica'
 
-  // Trigger hero animations immediately - no delay needed
+  // Trigger hero animations immediately when preloader completes - no delay
   useEffect(() => {
-    setIsVisible(true)
+    // Set visible immediately if preloader is already complete (for return visits)
+    // Or wait for preloader to complete (for first load)
+    if (isPreloaderComplete) {
+      setIsVisible(true)
+    }
+  }, [isPreloaderComplete])
+  
+  // Also check on mount if preloader is already complete
+  useEffect(() => {
+    if (isPreloaderComplete && !isVisible) {
+      setIsVisible(true)
+    }
   }, [])
+  
 
   // Track video loading state
   const [videoLoaded, setVideoLoaded] = useState(false)
@@ -102,33 +78,14 @@ export default function HeroEs() {
     }
   }, [])
 
-  // Lazy load video using Intersection Observer - only load when hero is in viewport
+  // Load video immediately - don't wait for intersection observer
+  // Video should always be ready to play and stay visible
   useEffect(() => {
-    if (!heroRef.current) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setVideoInViewport(true)
-            // Load video after a short delay to ensure page is interactive
-            setTimeout(() => {
-              setShouldLoadVideo(true)
-            }, 500)
-          }
-        })
-      },
-      {
-        rootMargin: '50px', // Start loading slightly before it's fully visible
-        threshold: 0.1
-      }
-    )
-
-    observer.observe(heroRef.current)
-
-    return () => {
-      observer.disconnect()
-    }
+    // Load video immediately when component mounts
+    setVideoInViewport(true)
+    setTimeout(() => {
+      setShouldLoadVideo(true)
+    }, 500)
   }, [])
 
   // Programmatically play video on mobile after user interaction
@@ -143,16 +100,9 @@ export default function HeroEs() {
           videoRef.current.muted = true
           await videoRef.current.play()
           setIsVideoPlaying(true)
-          if (process.env.NODE_ENV === 'development') {
-            console.log('✅ Video started playing')
-          }
         } catch (error) {
           // Silently handle autoplay errors (browser policies)
-          // Video will still show first frame
           setIsVideoPlaying(false)
-          if (process.env.NODE_ENV === 'development') {
-            console.warn('Video autoplay error:', error)
-          }
         }
       }
     }
@@ -188,9 +138,6 @@ export default function HeroEs() {
     
     const handlePlay = () => {
       setIsVideoPlaying(true)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('✅ Video play event fired')
-      }
     }
     
     const handlePause = () => {
@@ -219,9 +166,6 @@ export default function HeroEs() {
       e.preventDefault()
       e.stopPropagation()
     }
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎯 Hero: handleExploreProject called')
-    }
     // Use requestAnimationFrame to ensure state update happens immediately
     requestAnimationFrame(() => {
       setShowProjectOptions(true)
@@ -235,42 +179,46 @@ export default function HeroEs() {
 
   // Handle project navigation - show preloader for consistent transitions
   const handleProjectNavigation = (route: string) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 HeroEs: handleProjectNavigation - showing preloader before navigation', { route })
-    }
-    // Show preloader immediately before navigation for consistent UX
-    showPreloaderB()
-    // Navigate immediately - no startTransition to avoid delays
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 HeroEs: Navigating to', `/${currentLocale}${route}`)
-    }
+    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
+      showPreloaderB()
+    })
+    // Navigate IMMEDIATELY - no delays
     router.push(`/${currentLocale}${route}`)
   }
 
   return (
     <>
-    <section 
+    <motion.section 
       ref={heroRef}
-      className="fixed top-0 left-0 right-0 h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y z-[10]"
+      className="relative w-full h-screen pt-32 pb-20 px-6 flex items-center justify-center overflow-hidden touch-pan-y"
       style={{
-        backgroundColor: '#000000', // Always black background to prevent white flash
-        pointerEvents: 'auto',
+        backgroundColor: 'transparent', // Transparent to show gradient background
         height: '100vh',
-        maxHeight: '100vh',
-        width: '100vw',
-        zIndex: 10, // Higher than Stats section (z-[3]) to ensure Hero is on top
-        opacity: 1, // Ensure section itself is always visible
-        visibility: 'visible', // Force visibility
+        minHeight: '100vh',
+        width: '100%',
+        zIndex: 1, // Above gradient background (-1) but below navbar (100)
+        opacity: 1, // Keep Hero section always visible - video stays in place
         display: 'flex', // Ensure it's displayed
-        isolation: 'isolate' // Create new stacking context to ensure Hero content is above Stats
+        visibility: 'visible', // Ensure Hero section is always visible
+        // Removed isolation: 'isolate' to prevent stacking context issues with navbar
+        pointerEvents: 'auto' // Always allow pointer events
       }}
     >
       {/* Background Video - static single video */}
-      <div className="absolute inset-0 z-0 overflow-hidden" style={{ zIndex: 0, pointerEvents: 'none' }}>
-        <motion.div
+      <div 
+        className="absolute z-0 overflow-hidden rounded-lg" 
+        style={{ 
+          zIndex: 0, 
+          pointerEvents: 'none',
+          top: '0.5rem', // Small margin from top
+          left: '0.5rem', // Small margin from left
+          right: '0.5rem', // Small margin from right
+          bottom: 0 // No margin from bottom
+        }}
+      >
+        <div
           style={{
-            filter: blurFilter,
-            willChange: 'filter',
             width: '100%',
             height: '100%'
           }}
@@ -289,11 +237,11 @@ export default function HeroEs() {
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             style={{
               zIndex: 1,
-              // Keep placeholder visible until video is fully loaded and ready to play
-              // Only fade out when video is loaded AND (not mobile OR video is playing)
-              opacity: (shouldLoadVideo && videoLoaded && (!isMobile || isVideoPlaying)) ? 0 : 1,
+              // Fade out placeholder when video is loaded
+              opacity: (shouldLoadVideo && videoLoaded) ? 0 : 1,
               transition: 'opacity 0.8s ease-in-out',
-              pointerEvents: 'none'
+              pointerEvents: 'none',
+              position: 'absolute', // Ensure absolute positioning
             }}
           />
           
@@ -309,75 +257,56 @@ export default function HeroEs() {
               crossOrigin="anonymous"
               className="absolute inset-0 w-full h-full object-cover"
               style={{
-                willChange: 'transform, opacity',
+                willChange: 'transform',
                 transform: 'translateZ(0)', // Force GPU acceleration
                 zIndex: 2, // Always above placeholder
-                // Fade in video when it's loaded AND ready to play
-                // On mobile, also wait for video to be playing
+                // Video always visible once loaded - no scroll-based opacity changes
                 opacity: (videoLoaded && (!isMobile || isVideoPlaying)) ? 1 : 0,
                 transition: 'opacity 0.8s ease-in-out',
                 backgroundColor: '#000000', // Black background while loading to prevent white flash
                 minWidth: '100%',
                 minHeight: '100%',
                 width: '100%',
-                height: '100%'
+                height: '100%',
+                // Ensure video stays visible - no scroll-based hiding
+                visibility: 'visible',
+                display: 'block',
+                position: 'absolute', // Absolute positioning
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
               }}
               onLoadedData={() => {
-                console.log('✅ Video loaded data:', heroVideo)
-                // Only set loaded when video has enough data to play smoothly
                 if (videoRef.current && videoRef.current.readyState >= 3) {
                   setVideoLoaded(true)
+                  setVideoReady(true)
                 }
               }}
               onCanPlay={() => {
-                console.log('✅ Video can play:', heroVideo)
                 setVideoLoaded(true)
+                setVideoReady(true)
               }}
               onCanPlayThrough={() => {
-                console.log('✅ Video can play through:', heroVideo)
                 setVideoLoaded(true)
+                setVideoReady(true)
               }}
               onLoadedMetadata={() => {
-                console.log('✅ Video metadata loaded:', heroVideo)
+                if (videoRef.current && videoRef.current.readyState >= 3) {
+                  setVideoReady(true)
+                }
               }}
               onStalled={() => {
-                console.warn('⚠️ Video stalled:', heroVideo)
+                // Video stalled - will resume automatically
               }}
               onWaiting={() => {
-                console.warn('⚠️ Video waiting for data:', heroVideo)
+                // Video waiting for data - will resume automatically
               }}
               onError={(e) => {
-                const video = e.currentTarget
-                const error = video.error
-                let errorMessage = 'Unknown error'
-                
-                if (error) {
-                  switch (error.code) {
-                    case error.MEDIA_ERR_ABORTED:
-                      errorMessage = 'Video loading aborted'
-                      break
-                    case error.MEDIA_ERR_NETWORK:
-                      errorMessage = 'Network error while loading video'
-                      break
-                    case error.MEDIA_ERR_DECODE:
-                      errorMessage = 'Video decoding error'
-                      break
-                    case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                      errorMessage = 'Video format not supported or source not found'
-                      break
-                    default:
-                      errorMessage = `Video error code: ${error.code}`
-                  }
-                }
-                
-                console.error('❌ Video loading error:', {
-                  message: errorMessage,
-                  error: error,
-                  src: heroVideo,
-                  networkState: video.networkState,
-                  readyState: video.readyState
-                })
+                // Video error - set error state but don't block content
                 setVideoError(true)
+                // Still signal video ready to prevent blocking non-home pages
+                setVideoReady(true)
               }}
               onLoadStart={() => {
                 setVideoLoaded(false)
@@ -386,27 +315,15 @@ export default function HeroEs() {
               <source src={heroVideo} type="video/mp4" />
             </video>
           )}
-        </motion.div>
-        {/* Dark overlay that fades in as AboutUs comes into view */}
-        <motion.div
-          className="absolute inset-0 bg-black"
-          style={{
-            opacity: overlayOpacity,
-            zIndex: 1,
-            pointerEvents: 'none',
-            willChange: 'opacity'
-          }}
-        />
+        </div>
       </div>
 
-      {/* Hero Content - fades out on scroll */}
+      {/* Hero Content - always visible, no scroll-based fade */}
       <motion.div 
         className="container mx-auto relative z-[30] flex justify-start"
         style={{ 
-          opacity: heroContentOpacity,
-          y: heroContentY,
+          opacity: 1, // Always visible - no scroll-based fade
           pointerEvents: 'auto', // Always allow pointer events - buttons should always be clickable
-          willChange: 'opacity, transform'
         }}
       >
         <div className="max-w-4xl w-full px-6 lg:px-12 relative z-[30] text-white" 
@@ -427,14 +344,13 @@ export default function HeroEs() {
               MozUserSelect: 'none', 
               msUserSelect: 'none',
               color: '#ffffff',
-              textShadow: '0 0 0 rgba(255,255,255,1)',
-              fontFamily: "'PP Neue Montreal', sans-serif"
+              textShadow: '0 0 0 rgba(255,255,255,1)'
             }}
             initial={{ opacity: 0 }}
             animate={isVisible ? { opacity: 1 } : { opacity: 0 }}
             transition={{ 
-              duration: 0.6, 
-              delay: 0.1,
+              duration: 0.3, 
+              delay: 0,
               ease: "easeOut" 
             }}
           >
@@ -461,11 +377,11 @@ export default function HeroEs() {
               color: '#ffffff',
               textShadow: '0 0 0 rgba(255,255,255,1)'
             }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
             transition={{ 
-              duration: 0.6, 
-              delay: 0.4, // Fade in after H1 starts appearing
+              duration: 0.3, 
+              delay: 0.1, // Small delay after title
               ease: "easeOut" 
             }}
           >
@@ -478,26 +394,25 @@ export default function HeroEs() {
               <motion.div 
                 ref={ctaRef}
                 key="cta-button"
-                className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[100]"
-                initial={{ opacity: 0, y: 20 }}
-                animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                exit={{ opacity: 0, y: -20 }}
+                className="flex flex-col sm:flex-row gap-4 justify-start items-start relative z-[20]"
+                initial={{ opacity: 0, y: 10 }}
+                animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+                exit={{ opacity: 0, y: -10 }}
                 transition={{ 
-                  duration: 0.5,
-                  delay: 0.7, // Fade in after subtitle
+                  duration: 0.3,
+                  delay: 0.2, // Small delay after subtitle
                   ease: "easeOut" 
                 }}
                 style={{ 
                   pointerEvents: 'auto',
                   position: 'relative',
-                  zIndex: 100, // Ensure button container is always on top
-                  isolation: 'isolate' // Create new stacking context
+                  zIndex: 20 // Above hero content but below navbar (100)
                 }}
               >
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[100] cursor-pointer transition-all duration-200 touch-manipulation"
+                  className="uppercase border-white text-white bg-transparent hover:bg-white hover:text-black select-none relative z-[20] cursor-pointer transition-all duration-200 touch-manipulation"
                   onClick={handleExploreProject}
                   onTouchEnd={handleExploreProject}
                   style={{ 
@@ -508,13 +423,12 @@ export default function HeroEs() {
                     pointerEvents: 'auto',
                     opacity: 1,
                     position: 'relative',
-                    zIndex: 100, // Higher z-index to ensure it's always on top
+                    zIndex: 20, // Above hero content but below navbar (100)
                     touchAction: 'manipulation',
                     WebkitTapHighlightColor: 'transparent',
                     minHeight: '44px',
                     minWidth: '44px',
-                    cursor: 'pointer',
-                    isolation: 'isolate' // Create new stacking context
+                    cursor: 'pointer'
                   }}
                 >
                   Explorar Proyecto
@@ -614,7 +528,7 @@ export default function HeroEs() {
           </AnimatePresence>
         </div>
       </motion.div>
-    </section>
+    </motion.section>
     </>
   )
 }

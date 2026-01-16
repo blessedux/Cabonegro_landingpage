@@ -9,6 +9,11 @@ export function usePageTransition() {
   const prevPathnameRef = useRef<string>('')
   const navigationStartRef = useRef<number>(0)
   const isNavigatingRef = useRef<boolean>(false)
+  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const isActiveNavigationRef = useRef<boolean>(false) // Track if navigation is actively in progress
+  const activeNavigationPathRef = useRef<string>('') // Track which pathname this navigation is for
+  const minDisplayTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const safetyTimerRef = useRef<NodeJS.Timeout | null>(null)
   const { showPreloaderB, hidePreloaderB, isPreloaderBVisible, setNavigating } = usePreloader()
 
   useEffect(() => {
@@ -24,48 +29,20 @@ export function usePageTransition() {
       const navigationStart = Date.now()
       navigationStartRef.current = navigationStart
       
-      // Check if navigating from project page to home page
-      // Project pages: parque-tecnologico, parque-logistico, terminal-maritimo
-      // Home pages: /en, /es, /zh, /fr, / (with or without trailing slash)
-      const isFromProjectPage = prevPathnameRef.current.includes('/parque-tecnologico') || 
-                                prevPathnameRef.current.includes('/parque-logistico') || 
-                                prevPathnameRef.current.includes('/terminal-maritimo')
-      // Check if pathname is a home page (exact match or just locale)
-      const isToHomePage = pathname === '/' || 
-                          pathname === '/en' || pathname === '/es' || pathname === '/zh' || pathname === '/fr' ||
-                          pathname.match(/^\/(en|es|zh|fr)\/?$/)
-      const isProjectToHome = isFromProjectPage && isToHomePage
+      // Mark navigation as active - prevents cleanup from clearing interval prematurely
+      isActiveNavigationRef.current = true
+      activeNavigationPathRef.current = pathname // Track which pathname this navigation is for
       
       // Reset navigation ref to ensure proper detection
       // This handles cases where preloader was shown explicitly before pathname change
       isNavigatingRef.current = true
       setNavigating(true)
 
-      // Skip PreloaderB for project → home navigation (fast transitions)
-      // This matches the logic in Navbar.handleHomeClick
-      if (isProjectToHome) {
-        // Don't show preloader, but still set up hide logic in case it was already shown
-        // Reset navigation state immediately for instant navigation
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            if (isNavigatingRef.current) {
-              isNavigatingRef.current = false
-              hidePreloaderB()
-              setNavigating(false)
-            }
-          }, 25) // Minimal delay for state updates
-        })
-        prevPathnameRef.current = pathname
-        return
-      }
-
-      // Show preloader for other route changes (navigation)
-      // If preloader was already shown by a component (like Stats), that's fine
-      // Otherwise, show it here to ensure consistent transitions
-      // This handles navigation preloaders, first load is handled by LocaleHomePage
-      if (!isPreloaderBVisible) {
-        showPreloaderB()
-      }
+      // CRITICAL: Always show preloader for ALL route changes (including project → home)
+      // This ensures smooth transitions and prevents old page from flashing
+      // Always call showPreloaderB() even if already visible to ensure state is correct
+      // First load is handled by LocaleHomePage separately
+      showPreloaderB()
 
       // Check if navigating to /explore route (external app)
       const isToExploreRoute = pathname.includes('/explore')
@@ -86,6 +63,7 @@ export function usePageTransition() {
               if (!hasLoadingElements) {
                 // Page appears to be loaded
                 if (isNavigatingRef.current) {
+                  isActiveNavigationRef.current = false
                   isNavigatingRef.current = false
                   hidePreloaderB()
                   setNavigating(false)
@@ -107,6 +85,7 @@ export function usePageTransition() {
           setTimeout(() => {
             clearInterval(pollInterval)
             if (isNavigatingRef.current) {
+              isActiveNavigationRef.current = false
               isNavigatingRef.current = false
               hidePreloaderB()
               setNavigating(false)
@@ -116,47 +95,135 @@ export function usePageTransition() {
           return
         }
 
-        // For regular routes, use faster detection
-        // Use a single requestAnimationFrame for faster detection
-        requestAnimationFrame(() => {
-          // Minimal delay to ensure page has started rendering
-          setTimeout(() => {
+        // For regular routes, wait for content to be ready before hiding
+        // AGGRESSIVE APPROACH: Hide after 500ms minimum, no complex checks
+        let checkCount = 0
+        const maxChecks = 30 // 3 seconds max (30 * 100ms) - user wants < 3 seconds
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log('⏱️ [PERF] Starting content check interval', {
+            targetPath: pathname,
+            currentPath: window.location.pathname
+          })
+        }
+        
+        const checkInterval = setInterval(() => {
+          checkCount++
+          
+          // Minimum wait time for smooth transition (500ms = 5 checks)
+          const minWaitTime = checkCount >= 5
+          
+          // AGGRESSIVE: Just wait 500ms, then hide - no complex checks
+          // The pathname has already changed, so navigation has started
+          if (minWaitTime || checkCount >= maxChecks) {
+            clearInterval(checkInterval)
+            checkIntervalRef.current = null
+            
+            console.log('⏱️ [PERF] Hiding preloader', {
+              checkCount,
+              timeElapsed: `${(checkCount * 100).toFixed(0)}ms`,
+              reason: checkCount >= maxChecks ? 'maxChecks reached' : 'minWaitTime (500ms)',
+              isNavigatingRef: isNavigatingRef.current
+            })
+            
             if (isNavigatingRef.current) {
+              console.log('⏱️ [PERF] HIDING PRELOADER NOW', {
+                checkCount,
+                timeElapsed: `${(checkCount * 100).toFixed(0)}ms`
+              })
+              // Mark navigation as complete - allows cleanup to run
+              isActiveNavigationRef.current = false
               isNavigatingRef.current = false
               hidePreloaderB()
-              // CRITICAL: Reset navigation state immediately to re-enable navbar clicks
               setNavigating(false)
+            } else {
+              console.warn('⏱️ [PERF] WARNING: isNavigatingRef is false')
             }
-          }, 25) // Reduced from 50ms to 25ms for faster response
+          } else {
+            // Log every check to debug
+            console.log('⏱️ [PERF] Waiting...', {
+              checkCount,
+              timeElapsed: `${(checkCount * 100).toFixed(0)}ms`,
+              willHideIn: `${((5 - checkCount) * 100).toFixed(0)}ms`,
+              isNavigatingRef: isNavigatingRef.current
+            })
+          }
+        }, 100) // Check every 100ms
+        checkIntervalRef.current = checkInterval
+        console.log('⏱️ [PERF] Interval started', {
+          intervalId: checkInterval,
+          checkIntervalRef: checkIntervalRef.current !== null
         })
       }
 
-      // Start checking after a minimum display time
+      // Start checking immediately - no delay needed
       // For external apps, wait longer before starting to check
-      const minDisplayDelay = isToExploreRoute ? 1500 : 100 // 1.5s for external apps, 100ms for regular routes
+      const minDisplayDelay = isToExploreRoute ? 1500 : 0 // 1.5s for external apps, 0ms for regular routes (start immediately)
       const minDisplayTimer = setTimeout(checkPageLoaded, minDisplayDelay)
+      minDisplayTimerRef.current = minDisplayTimer
 
       // Safety mechanism: Force hide after maximum time
       // CRITICAL: Always reset navigation state to prevent navbar from being blocked
-      // Longer timeout for external apps
-      const maxTimeout = isToExploreRoute ? 10000 : 2000 // 10s for external apps, 2s for regular routes
+      // User wants < 3 seconds, so set safety to 2s (more aggressive)
+      const maxTimeout = isToExploreRoute ? 10000 : 2000 // 10s for external apps, 2s for regular routes (more aggressive)
       const safetyTimer = setTimeout(() => {
         if (isNavigatingRef.current) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⏱️ [PERF] Safety timer (2s) - FORCING navigation complete', {
+              checkIntervalRunning: checkIntervalRef.current !== null
+            })
+          }
+          // Clear interval if still running
+          if (checkIntervalRef.current) {
+            clearInterval(checkIntervalRef.current)
+            checkIntervalRef.current = null
+          }
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⏱️ [PERF] SAFETY TIMER - FORCING HIDE', {
+              checkIntervalRunning: checkIntervalRef.current !== null
+            })
+          }
+          // Mark navigation as complete - allows cleanup to run
+          isActiveNavigationRef.current = false
           isNavigatingRef.current = false
+          // Force hide immediately
           hidePreloaderB()
           // CRITICAL: Always reset navigation state, even on safety timer
           setNavigating(false)
         }
       }, maxTimeout)
+      safetyTimerRef.current = safetyTimer
 
       prevPathnameRef.current = pathname
 
       return () => {
-        clearTimeout(minDisplayTimer)
-        clearTimeout(safetyTimer)
+        // CRITICAL: Only cleanup if this is for a DIFFERENT navigation
+        // If pathname changed, we're starting a new navigation, so cleanup the old one
+        // If pathname is the same, we're re-running due to other dependencies, so preserve timers
+        const isNewNavigation = activeNavigationPathRef.current !== pathname
+        
+        if (isNewNavigation || !isActiveNavigationRef.current) {
+          // New navigation started or navigation completed - safe to cleanup old timers
+          if (minDisplayTimerRef.current) {
+            clearTimeout(minDisplayTimerRef.current)
+            minDisplayTimerRef.current = null
+          }
+          if (safetyTimerRef.current) {
+            clearTimeout(safetyTimerRef.current)
+            safetyTimerRef.current = null
+          }
+          if (checkIntervalRef.current) {
+            clearInterval(checkIntervalRef.current)
+            checkIntervalRef.current = null
+          }
+        } else {
+          // Same navigation still active - preserve timers/intervals
+          // They will be cleaned up when navigation completes or safety timer fires
+          console.log('⏱️ [PERF] Cleanup skipped - navigation still active for', activeNavigationPathRef.current)
+        }
       }
     }
-  }, [pathname, showPreloaderB, hidePreloaderB, isPreloaderBVisible, setNavigating])
+  }, [pathname, showPreloaderB, hidePreloaderB, setNavigating])
 
   return { isPreloaderBVisible, hidePreloaderB }
 }

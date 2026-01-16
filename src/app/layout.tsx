@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
 import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
 import { ThemeProvider } from 'next-themes';
 import FontLoader from '@/components/FontLoader';
-
-const inter = Inter({ subsets: ["latin"] });
 
 // Base URL for Open Graph - update this with your actual domain
 const siteUrl = "https://www.cabonegro.cl";
@@ -87,7 +84,7 @@ export default function RootLayout({
         <link rel="preload" href="/cabonegro_frame1.webp" as="image" fetchPriority="high" />
         {/* Preload critical CSS - Next.js will handle the actual CSS file */}
       </head>
-      <body className={inter.className}>
+      <body className="font-primary">
         <FontLoader />
         <ThemeProvider
           attribute="class"

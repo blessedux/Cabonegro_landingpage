@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
@@ -80,62 +79,16 @@ const getImportantWords = (locale: string): string[] => {
   }
 }
 
-// AnimatedWord component matching Stats component pattern
-function AnimatedWord({ 
-  word, 
-  index, 
-  totalWords, 
-  scrollYProgress,
-  isImportant = false
-}: { 
-  word: string
-  index: number
-  totalWords: number
-  scrollYProgress: any
-  isImportant?: boolean
-}) {
-  const start = index / totalWords;
-  const end = Math.min(start + 1 / totalWords, 0.99);
-  // Once opacity reaches 1, it stays at 1 (no fade out) - use clamp and ensure it never goes below the max reached value
-  const opacity = useTransform(
-    scrollYProgress, 
-    [start, end, 1], 
-    [0, 1, 1], // Third value ensures it stays at 1
-    { clamp: true }
-  );
-
-  return (
-    <span className="relative mr-2">
-      <span className="absolute opacity-20">{word}</span>
-      <motion.span 
-        style={{ opacity: opacity }}
-        className={isImportant ? 'font-bold' : ''}
-      >
-        {word}
-      </motion.span>
-    </span>
-  );
-}
-
-// Paragraph wrapper with scroll-based word animation - matching Stats component
-function AnimatedParagraph({ text, className = "", locale = 'en' }: { text: string; className?: string; locale?: string }) {
-  const container = useRef<HTMLParagraphElement>(null);
-  
-  // Animation starts when element enters viewport, completes quickly
-  const { scrollYProgress } = useScroll({
-    target: container,
-    offset: ["start 1.5", "start 0.8"], // Start earlier, complete early - similar to Stats component
-  });
-  
+// Simple paragraph component - no scroll animations
+function SimpleParagraph({ text, className = "", locale = 'en' }: { text: string; className?: string; locale?: string }) {
   const words = text.split(" ");
   const importantWords = getImportantWords(locale);
 
   return (
     <p 
-      ref={container} 
       className={`flex flex-wrap leading-relaxed ${className}`} 
       style={{ 
-        color: '#ffffff',
+        color: '#000000', // Black text for white background
         fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', // Smaller font size
         lineHeight: '2', // Good spacing between lines
         letterSpacing: '0.01em'
@@ -151,14 +104,12 @@ function AnimatedParagraph({ text, className = "", locale = 'en' }: { text: stri
         );
         
         return (
-          <AnimatedWord 
+          <span 
             key={i}
-            word={word}
-            index={i}
-            totalWords={words.length}
-            scrollYProgress={scrollYProgress}
-            isImportant={isImportant}
-          />
+            className={`mr-2 ${isImportant ? 'font-bold' : ''}`}
+          >
+            {word}
+          </span>
         );
       })}
     </p>
@@ -269,110 +220,34 @@ export default function AboutUs() {
   ]
 
   const iconsContainerRef = useRef<HTMLDivElement>(null)
-  const [iconOpacities, setIconOpacities] = useState<number[]>([0, 0, 0, 0])
-  const maxOpacitiesRef = useRef<number[]>([0, 0, 0, 0]) // Track maximum opacity reached for each icon
   const [hoveredCard, setHoveredCard] = useState<number | null>(null) // Track which card is hovered
-
-  // Track scroll for icon fade-in animation - icons stay visible once they fade in
-  useEffect(() => {
-    const handleIconScroll = () => {
-      if (!iconsContainerRef.current) return
-      
-      const rect = iconsContainerRef.current.getBoundingClientRect()
-      const viewportHeight = window.innerHeight
-      // Trigger earlier - when container top is 80% down the viewport (sooner)
-      const triggerPoint = viewportHeight * 0.8
-      
-      const icons = iconsContainerRef.current.children
-      const newOpacities: number[] = []
-      
-      // Only calculate if icons container is in viewport or has been in viewport
-      if (rect.bottom > 0) {
-        for (let i = 0; i < icons.length; i++) {
-          const iconRect = icons[i].getBoundingClientRect()
-          const iconTop = iconRect.top
-          const iconCenter = iconTop + iconRect.height / 2
-          
-          // Each icon fades in when its center passes the trigger point
-          // Staggered by 50px between each icon
-          // Fade in over 80px for quicker animation
-          const iconTriggerPoint = triggerPoint - (i * 50)
-          const distance = iconCenter - iconTriggerPoint
-          
-          let opacity = 0
-          if (distance < 0) {
-            // Icon has passed trigger point - fade in
-            opacity = Math.min(1, 1 + (distance / 80))
-          } else if (distance < 80) {
-            // Icon is approaching trigger point - start fading in
-            opacity = Math.max(0, 1 - (distance / 80))
-          }
-          
-          opacity = Math.max(0, Math.min(1, opacity))
-          
-          // Track maximum opacity reached - once an icon reaches full opacity, keep it visible
-          if (opacity > maxOpacitiesRef.current[i]) {
-            maxOpacitiesRef.current[i] = opacity
-          }
-          
-          // If icon has been fully visible before, keep it at max opacity (don't fade out when scrolling down)
-          // Only fade out if scrolling back up above the section
-          if (maxOpacitiesRef.current[i] >= 1 && rect.top < viewportHeight * 1.5) {
-            // Keep at full opacity if we've seen it fully visible and we're still in/near the section
-            opacity = 1
-          } else if (maxOpacitiesRef.current[i] >= 1 && rect.top > viewportHeight * 1.5) {
-            // Only fade out if we scroll way back up (above 1.5 viewport heights)
-            opacity = Math.max(0, opacity)
-          } else {
-            // Use calculated opacity
-            opacity = Math.max(maxOpacitiesRef.current[i], opacity)
-          }
-          
-          newOpacities.push(opacity)
-        }
-      } else {
-        // Icons are above viewport - use max opacities if they've been visible, otherwise 0
-        for (let i = 0; i < icons.length; i++) {
-          if (maxOpacitiesRef.current[i] >= 1 && rect.top < viewportHeight * 2) {
-            // Keep visible if we've seen it and we're not too far up
-            newOpacities.push(1)
-          } else {
-            newOpacities.push(0)
-          }
-        }
-      }
-      
-      setIconOpacities(newOpacities)
-    }
-    
-    window.addEventListener('scroll', handleIconScroll, { passive: true })
-    handleIconScroll() // Initial calculation
-    
-    return () => {
-      window.removeEventListener('scroll', handleIconScroll)
-    }
-  }, [])
   
   
   return (
     <>
-      {/* Spacer to push AboutUs below the fold */}
-      <div className="h-[100vh]" />
-      
-      {/* AboutUs section */}
+      {/* AboutUs section - normal document flow */}
       <section 
         id="about"
         data-aboutus-section="true"
-        className="relative bg-transparent z-[4] py-24"
+        data-white-background="true"
+        className="relative py-24 w-full"
+        style={{
+          minHeight: '100vh',
+          backgroundColor: 'transparent', // Transparent to show gradient background
+          zIndex: 1, // Above gradient background (0) but below navbar (100)
+          position: 'relative',
+          isolation: 'isolate', // Create new stacking context
+          pointerEvents: 'auto' // Ensure it's interactive
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           {/* Title */}
           <div className="mb-16 w-full text-center">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-center text-white" style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-center text-black" style={{ color: '#000000', textShadow: 'none' }}>
               <BlurTextAnimation 
                 text={aboutTitle}
                 fontSize="text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
-                textColor="text-white"
+                textColor="text-black"
                 animationDelay={0}
               />
             </h2>
@@ -383,7 +258,7 @@ export default function AboutUs() {
             {/* Left column - Paragraph */}
             <div className="flex-1 w-full lg:w-1/2 mb-12 lg:mb-0">
               <div className="p-4" style={{ maxHeight: '400px', overflow: 'hidden' }}>
-                <AnimatedParagraph 
+                <SimpleParagraph 
                   text={introParagraph}
                   locale={locale}
                 />
@@ -403,12 +278,7 @@ export default function AboutUs() {
               return (
                 <div
                   key={index}
-                  className="flex flex-col items-start text-left p-6 rounded-lg border border-white/20 bg-white/5 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/30 h-full"
-                  style={{ 
-                    opacity: iconOpacities[index] || 0,
-                    transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,
-                    transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
-                  }}
+                  className="flex flex-col items-start text-left p-6 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300 hover:bg-gray-100 hover:border-gray-300 h-full"
                   onMouseEnter={(e) => {
                     e.stopPropagation()
                     setHoveredCard(index)
@@ -420,19 +290,19 @@ export default function AboutUs() {
                 >
                   <div className="w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mb-4">
                     {index === 0 && (
-                      <MdDirectionsBoat className="w-full h-full text-white" />
+                      <MdDirectionsBoat className="w-full h-full text-gray-700" />
                     )}
                     {index === 1 && (
-                      <MdEnergySavingsLeaf className="w-full h-full text-white" />
+                      <MdEnergySavingsLeaf className="w-full h-full text-gray-700" />
                     )}
                     {index === 2 && (
-                      <Icon path={mdiSatelliteVariant} size={80} className="text-white w-full h-full" />
+                      <Icon path={mdiSatelliteVariant} size={80} className="text-gray-700 w-full h-full" />
                     )}
                     {index === 3 && (
-                      <Icon path={mdiGantryCrane} size={80} className="text-white w-full h-full" />
+                      <Icon path={mdiGantryCrane} size={80} className="text-gray-700 w-full h-full" />
                     )}
                   </div>
-                  <h3 className="text-lg lg:text-xl text-white font-semibold mb-2">{section.title}</h3>
+                  <h3 className="text-lg lg:text-xl text-gray-800 font-semibold mb-2">{section.title}</h3>
                   <div 
                     className="overflow-hidden transition-all duration-300"
                     style={{
@@ -441,7 +311,7 @@ export default function AboutUs() {
                     }}
                   >
                     <p 
-                      className={`text-sm lg:text-base text-white/90 leading-relaxed transition-opacity duration-300 ${
+                      className={`text-sm lg:text-base text-gray-600 leading-relaxed transition-opacity duration-300 ${
                         isHovered ? 'opacity-100' : 'opacity-0'
                       }`}
                     >
@@ -454,9 +324,6 @@ export default function AboutUs() {
           </div>
         </div>
       </section>
-      
-      {/* Spacer to push next section */}
-      <div className="h-[20vh]" />
     </>
   )
 }

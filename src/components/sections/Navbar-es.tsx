@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, startTransition } from 'react'
+import { flushSync } from 'react-dom'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -354,19 +355,23 @@ export default function NavbarEs() {
     // Use PreloaderB for all language switches (unified preloader system)
     // This ensures consistent behavior and proper state management
     setLanguageSwitch(true)
-    showPreloaderB()
     
-    // Navigate immediately using startTransition for non-blocking navigation
-    // This keeps UI responsive during navigation
-    startTransition(() => {
-      router.push(targetPath)
+    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
+      showPreloaderB()
     })
+    
+    // Navigate IMMEDIATELY - no delays, no requestAnimationFrame, no Promise.resolve
+    router.push(targetPath)
   }
 
-  // Handle project navigation
+  // Handle project navigation - instant navigation
   const handleProjectNavigation = (route: string) => {
-    // No PreloaderB needed - project pages are fast, usePageTransition handles it
-    // Navigate immediately without delay
+    // Show preloader for consistent UX even on fast pages
+    flushSync(() => {
+      showPreloaderB()
+    })
+    // Navigate IMMEDIATELY - no delays
     router.push(`/${currentLocale}${route}`)
   }
 
@@ -436,15 +441,25 @@ export default function NavbarEs() {
     
     // Only show PreloaderB for special pages, not project pages
     if (isOnSpecialPage) {
-      showPreloaderB()
+      // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+      flushSync(() => {
+        showPreloaderB()
+      })
+      
+      // Navigate IMMEDIATELY - no delays
+      const homePath = currentLocale === 'en' ? '/en' : 
+                      currentLocale === 'es' ? '/es' :
+                      currentLocale === 'zh' ? '/zh' :
+                      currentLocale === 'fr' ? '/fr' : '/es'
+      router.push(homePath)
+    } else {
+      // No preloader needed, navigate immediately
+      const homePath = currentLocale === 'en' ? '/en' : 
+                      currentLocale === 'es' ? '/es' :
+                      currentLocale === 'zh' ? '/zh' :
+                      currentLocale === 'fr' ? '/fr' : '/es'
+      router.push(homePath)
     }
-    
-    const homePath = currentLocale === 'en' ? '/en' : 
-                    currentLocale === 'es' ? '/es' :
-                    currentLocale === 'zh' ? '/zh' :
-                    currentLocale === 'fr' ? '/fr' : '/es'
-    // Navigate immediately without delay
-    router.push(homePath)
   }
 
   // Handle FAQ click
@@ -469,16 +484,19 @@ export default function NavbarEs() {
     
     // If on special page, navigate to homepage with FAQ hash
     e.preventDefault()
-    showPreloaderB()
     setMobileMenuOpen(false)
     
-    setTimeout(() => {
-      const homePath = currentLocale === 'en' ? '/en#FAQ' : 
-                      currentLocale === 'es' ? '/es#FAQ' :
-                      currentLocale === 'zh' ? '/zh#FAQ' :
-                      currentLocale === 'fr' ? '/fr#FAQ' : '/es#FAQ'
-      router.push(homePath)
-    }, 100)
+    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
+      showPreloaderB()
+    })
+    
+    // Navigate IMMEDIATELY - no delays
+    const homePath = currentLocale === 'en' ? '/en#FAQ' : 
+                    currentLocale === 'es' ? '/es#FAQ' :
+                    currentLocale === 'zh' ? '/zh#FAQ' :
+                    currentLocale === 'fr' ? '/fr#FAQ' : '/es#FAQ'
+    router.push(homePath)
   }
 
   const textColor = isOverWhiteBackground ? 'text-black' : 'text-white'
@@ -489,7 +507,7 @@ export default function NavbarEs() {
   return (
     <header 
       ref={navbarRef}
-      className={`fixed left-0 right-0 z-[100] p-4 transition-all duration-500 ease-out ${
+      className={`fixed left-0 right-0 top-0 z-[100] p-4 transition-all duration-500 ease-out ${
       // For deck, explore, and terminal-maritimo routes, only hide if navbar is explicitly hidden
       pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/terminal-maritimo')
         ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
@@ -501,7 +519,8 @@ export default function NavbarEs() {
     }`}
       style={{
         pointerEvents: (isNavbarHidden || isPreloaderVisible || !isVisible) ? 'none' : 'auto', // Always allow clicks when visible
-        zIndex: 100, // Higher z-index to ensure it's above most content (below preloaders at 99999)
+        zIndex: 100, // Stable z-index - always above hero sections (z-index 10) and content
+        position: 'fixed', // Explicitly set position to ensure stacking context
         isolation: 'isolate' // Create new stacking context
       }}>
       <nav className="container mx-auto">
@@ -552,10 +571,10 @@ export default function NavbarEs() {
                 </button>
                 
                 {languageDropdownOpen && (
-                  <div className={`absolute top-full right-0 mt-2 min-w-[120px] rounded-lg shadow-lg z-50 ${
+                  <div className={`absolute top-full right-0 mt-2 min-w-[120px] rounded-lg shadow-lg z-50 backdrop-blur-2xl ${
                     isOverWhiteBackground 
-                      ? 'bg-white border border-black/20' 
-                      : 'bg-black/90 border border-white/20'
+                      ? 'bg-white/95 border border-black/20' 
+                      : 'bg-white/30 border border-white/30'
                   }`}>
                     {languages.map((lang) => (
                       <button
@@ -674,7 +693,12 @@ export default function NavbarEs() {
                                        currentLocale === 'es' ? '/es/contact' :
                                        currentLocale === 'zh' ? '/zh/contact' :
                                        currentLocale === 'fr' ? '/fr/contact' : '/es/contact'
-                    // Navigate immediately - usePageTransition will handle PreloaderB automatically
+                    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+                    flushSync(() => {
+                      showPreloaderB()
+                    })
+                    
+                    // Navigate IMMEDIATELY - no delays
                     router.push(contactPath)
                   }}
                   variant="outline"

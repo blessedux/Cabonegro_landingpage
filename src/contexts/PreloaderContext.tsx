@@ -10,6 +10,8 @@ interface PreloaderContextType {
   isPreloaderSimpleVisible: boolean
   isLanguageSwitch: boolean
   isNavigating: boolean
+  isVideoReady: boolean
+  navigationStartTime: number | null
   setPreloaderVisible: (visible: boolean) => void
   setPreloaderComplete: (complete: boolean) => void
   showPreloader: () => void
@@ -21,6 +23,7 @@ interface PreloaderContextType {
   hidePreloaderSimple: () => void
   setLanguageSwitch: (isSwitch: boolean) => void
   setNavigating: (navigating: boolean) => void
+  setVideoReady: (ready: boolean) => void
 }
 
 const PreloaderContext = createContext<PreloaderContextType | undefined>(undefined)
@@ -36,6 +39,8 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const [isPreloaderSimpleVisible, setIsPreloaderSimpleVisible] = useState(false)
   const [isLanguageSwitch, setIsLanguageSwitch] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
+  const [isVideoReady, setIsVideoReady] = useState(false)
+  const [navigationStartTime, setNavigationStartTime] = useState<number | null>(null)
 
   // Initialize preloader state on mount (after hydration)
   // Only set initial state - let LocaleHomePage control PreloaderB visibility
@@ -101,29 +106,46 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   }
 
   const showPreloaderB = () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 PreloaderContext: showPreloaderB called', {
-        wasVisible: isPreloaderBVisible,
-        wasNavigating: isNavigating
-      })
-    }
+    // CRITICAL: Set state immediately and synchronously
+    // These state updates will be processed immediately when called from flushSync
     setIsPreloaderBVisible(true)
     setIsNavigating(true)
+    setIsVideoReady(false) // Reset video ready state on navigation
+    setNavigationStartTime(performance.now()) // Track navigation start time
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('⏱️ [PERF] Navigation started', {
+        timestamp: performance.now(),
+        wasVisible: isPreloaderBVisible
+      })
+    }
   }
 
   const hidePreloaderB = () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 PreloaderContext: hidePreloaderB called', {
-        wasVisible: isPreloaderBVisible,
-        wasNavigating: isNavigating
-      })
-    }
+    const navigationTime = navigationStartTime ? performance.now() - navigationStartTime : null
+    console.log('🔴 hidePreloaderB called', {
+      wasVisible: isPreloaderBVisible,
+      timestamp: Date.now(),
+      navigationTime: navigationTime ? `${navigationTime.toFixed(2)}ms` : 'N/A'
+    })
     setIsPreloaderBVisible(false)
     // CRITICAL: Reset navigation state immediately to re-enable navbar clicks
-    // Don't delay - navbar must be clickable as soon as preloader hides
     setIsNavigating(false)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ PreloaderContext: Preloader hidden and navigation state reset immediately')
+    setNavigationStartTime(null)
+    console.log('🔴 hidePreloaderB state updated', {
+      isPreloaderBVisible: false,
+      isNavigating: false
+    })
+  }
+  
+  const setVideoReady = (ready: boolean) => {
+    setIsVideoReady(ready)
+    if (ready && process.env.NODE_ENV === 'development') {
+      const timeSinceNav = navigationStartTime ? performance.now() - navigationStartTime : null
+      console.log('⏱️ [PERF] Video ready', {
+        timeSinceNav: timeSinceNav ? `${timeSinceNav.toFixed(2)}ms` : 'N/A',
+        timestamp: performance.now()
+      })
     }
   }
 
@@ -146,6 +168,8 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         isPreloaderSimpleVisible,
         isLanguageSwitch,
         isNavigating,
+        isVideoReady,
+        navigationStartTime,
         setPreloaderVisible: setIsPreloaderVisible,
         setPreloaderComplete: setIsPreloaderComplete,
         showPreloader,
@@ -157,6 +181,7 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
         hidePreloaderSimple,
         setLanguageSwitch: setIsLanguageSwitch,
         setNavigating: setIsNavigating,
+        setVideoReady,
       }}
     >
       {children}

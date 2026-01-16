@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, startTransition } from 'react'
+import { flushSync } from 'react-dom'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -10,11 +11,13 @@ import { usePreloader } from '@/contexts/PreloaderContext'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
+  const [isVisible, setIsVisible] = useState(false) // Start hidden to enable slide-down animation
   const [isHidden, setIsHidden] = useState(false)
   const [isOverWhiteBackground, setIsOverWhiteBackground] = useState(false)
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const navbarRef = useRef<HTMLElement>(null)
+  
+  // Removed debug console logs - use performance logs instead
   const languageDropdownRef = useRef<HTMLDivElement>(null)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -216,10 +219,13 @@ export default function Navbar() {
   
   const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
 
-  // Handle project navigation
+  // Handle project navigation - instant navigation
   const handleProjectNavigation = (route: string) => {
-    // No PreloaderB needed - project pages are fast, usePageTransition handles it
-    // Navigate immediately without delay
+    // Show preloader for consistent UX even on fast pages
+    flushSync(() => {
+      showPreloaderB()
+    })
+    // Navigate IMMEDIATELY - no delays
     router.push(`/${currentLocale}${route}`)
   }
 
@@ -266,9 +272,16 @@ export default function Navbar() {
 
   // ALWAYS ensure navbar is visible on pathname change - critical for navigation
   useEffect(() => {
-    // Immediately show navbar when pathname changes (navigation occurred)
+    // For special pages, show immediately without animation
+    if (pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/contact') || pathname.includes('/terminal-maritimo')) {
+      setIsNavbarHidden(false)
+      setIsVisible(true)
+      return
+    }
+    
+    // For other pages, ensure navbar is not hidden but keep visibility controlled by preloader logic
     setIsNavbarHidden(false)
-    setIsVisible(true)
+    // Don't set isVisible here - let the preloader effect handle the animation
   }, [pathname])
 
   // Dropdown animation only after preloader completes
@@ -287,14 +300,26 @@ export default function Navbar() {
     const preloaderComplete = (isPreloaderComplete && !isPreloaderVisible) || !isPreloaderBVisible
     
     if (preloaderComplete) {
+      // Ensure navbar is not hidden
+      setIsNavbarHidden(false)
+      
+      // Ensure navbar starts hidden, then animate down smoothly
+      // Use a small delay to ensure the hidden state is rendered first
+      setIsVisible(false)
+      
       const timer = setTimeout(() => {
-        setIsVisible(true)
-        setIsNavbarHidden(false) // Ensure navbar is not hidden
-      }, 300) // Reduced delay for faster navbar appearance after preloader
-
+        // Use requestAnimationFrame for smooth animation trigger
+        requestAnimationFrame(() => {
+          setIsVisible(true)
+        })
+      }, 50) // Small delay to ensure transition triggers
+      
       return () => clearTimeout(timer)
+    } else {
+      // Keep navbar hidden while preloader is visible
+      setIsVisible(false)
     }
-  }, [isPreloaderComplete, isPreloaderVisible, isPreloaderBVisible, pathname, currentLocale, setIsNavbarHidden])
+  }, [isPreloaderComplete, isPreloaderVisible, isPreloaderBVisible, pathname, setIsNavbarHidden])
 
   // Periodic check to ensure navbar is always visible and clickable - safety mechanism
   useEffect(() => {
@@ -389,13 +414,16 @@ export default function Navbar() {
     // Use PreloaderB for all language switches (unified preloader system)
     // This ensures consistent behavior and proper state management
     setLanguageSwitch(true)
-    showPreloaderB()
     
-    // Navigate immediately using startTransition for non-blocking navigation
-    // This keeps UI responsive during navigation
-    startTransition(() => {
-      router.push(targetPath)
+    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+    // This ensures preloader appears synchronously on click, before any navigation delay
+    flushSync(() => {
+      showPreloaderB()
     })
+    
+    // Navigate IMMEDIATELY - no delays, no requestAnimationFrame, no Promise.resolve
+    // The preloader is already visible, so navigation can happen instantly
+    router.push(targetPath)
   }
 
 
@@ -409,29 +437,20 @@ export default function Navbar() {
       return
     }
     
-    // Check if we're on a project page - no PreloaderB needed (usePageTransition handles it)
-    const isOnProjectPage = pathname.includes('/parque-tecnologico') || 
-                           pathname.includes('/parque-logistico') || 
-                           pathname.includes('/terminal-maritimo')
-    
-    // Only show PreloaderB for special pages (explore, deck, contact)
-    // Project pages → home is fast and doesn't need PreloaderB
-    const isOnSpecialPage = pathname.includes('/explore') || 
-                           pathname.includes('/deck') || 
-                           pathname.includes('/contact')
-    
+    // CRITICAL: Always show preloader when navigating TO home page from any other page
+    // This ensures smooth transition and prevents old page from showing
     e.preventDefault()
     
-    // Only show PreloaderB for special pages, not project pages
-    if (isOnSpecialPage) {
+    // Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
       showPreloaderB()
-    }
+    })
     
+    // Navigate IMMEDIATELY - no delays
     const homePath = currentLocale === 'en' ? '/en' : 
                     currentLocale === 'es' ? '/es' :
                     currentLocale === 'zh' ? '/zh' :
                     currentLocale === 'fr' ? '/fr' : '/en'
-    // Navigate immediately without delay
     router.push(homePath)
   }
 
@@ -457,16 +476,19 @@ export default function Navbar() {
     
     // If on special page, navigate to homepage with FAQ hash
     e.preventDefault()
-    showPreloaderB()
     setMobileMenuOpen(false)
     
-    setTimeout(() => {
-      const homePath = currentLocale === 'en' ? '/en#FAQ' : 
-                      currentLocale === 'es' ? '/es#FAQ' :
-                      currentLocale === 'zh' ? '/zh#FAQ' :
-                      currentLocale === 'fr' ? '/fr#FAQ' : '/en#FAQ'
-      router.push(homePath)
-    }, 100)
+    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+    flushSync(() => {
+      showPreloaderB()
+    })
+    
+    // Navigate IMMEDIATELY - no delays
+    const homePath = currentLocale === 'en' ? '/en#FAQ' : 
+                    currentLocale === 'es' ? '/es#FAQ' :
+                    currentLocale === 'zh' ? '/zh#FAQ' :
+                    currentLocale === 'fr' ? '/fr#FAQ' : '/en#FAQ'
+    router.push(homePath)
   }
 
   const textColor = isOverWhiteBackground ? 'text-black' : 'text-white'
@@ -477,20 +499,22 @@ export default function Navbar() {
   return (
     <header 
       ref={navbarRef}
-      className={`fixed left-0 right-0 z-[100] p-4 transition-all duration-500 ease-out ${
+      className={`fixed left-0 right-0 top-0 z-[100] p-4 transition-all duration-500 ease-out ${
       // For deck, explore, and terminal-maritimo routes, only hide if navbar is explicitly hidden
       pathname.includes('/deck') || pathname.includes('/explore') || pathname.includes('/terminal-maritimo')
-        ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'top-0 translate-y-0 opacity-100')
+        ? (isNavbarHidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100')
         : (isNavbarHidden || isPreloaderVisible
             ? '-translate-y-full opacity-0' 
             : isVisible 
-              ? 'top-0 translate-y-0 opacity-100' 
+              ? 'translate-y-0 opacity-100' 
               : '-translate-y-full opacity-0')
     }`}
       style={{
         pointerEvents: (isNavbarHidden || isPreloaderVisible || !isVisible) ? 'none' : 'auto', // Always allow clicks when visible
-        zIndex: 100, // Higher z-index to ensure it's above most content (below preloaders at 99999)
-        isolation: 'isolate' // Create new stacking context
+        zIndex: 100, // Stable z-index - always above hero sections (z-index 10) and content
+        position: 'fixed', // Explicitly set position to ensure stacking context
+        isolation: 'isolate', // Create new stacking context
+        willChange: 'transform, opacity' // Optimize animation performance
       }}>
       <nav className="container mx-auto">
         <div ref={mobileMenuRef} className={`${bgColor} backdrop-blur-xl border ${borderColor} rounded-2xl shadow-lg transition-all duration-300`}>
@@ -540,11 +564,17 @@ export default function Navbar() {
                 </button>
                 
                 {languageDropdownOpen && (
-                  <div className={`absolute top-full right-0 mt-2 min-w-[120px] rounded-lg shadow-lg z-50 ${
-                    isOverWhiteBackground 
-                      ? 'bg-white border border-black/20' 
-                      : 'bg-black/90 border border-white/20'
-                  }`}>
+                  <div 
+                    className={`absolute top-full right-0 mt-2 min-w-[120px] rounded-lg shadow-lg z-50 ${
+                      isOverWhiteBackground 
+                        ? 'bg-white/20 border border-black/10' 
+                        : 'bg-white/15 border border-white/20'
+                    }`}
+                    style={{
+                      backdropFilter: 'blur(40px)',
+                      WebkitBackdropFilter: 'blur(40px)'
+                    }}
+                  >
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
@@ -588,7 +618,17 @@ export default function Navbar() {
           <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
             mobileMenuOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
           }`}>
-            <div className="px-6 pb-6 border-t border-white/20">
+            <div 
+              className={`px-6 pb-6 border-t ${
+                isOverWhiteBackground 
+                  ? 'bg-white/20 border-black/10' 
+                  : 'bg-white/15 border-white/20'
+              }`}
+              style={{
+                backdropFilter: 'blur(40px)',
+                WebkitBackdropFilter: 'blur(40px)'
+              }}
+            >
               <div className="flex flex-col gap-4 pt-4">
                 {/* Language Selector - Mobile only */}
                 <div className="md:hidden mb-2">
@@ -662,7 +702,12 @@ export default function Navbar() {
                                        currentLocale === 'es' ? '/es/contact' :
                                        currentLocale === 'zh' ? '/zh/contact' :
                                        currentLocale === 'fr' ? '/fr/contact' : '/en/contact'
-                    // Navigate immediately - usePageTransition will handle PreloaderB automatically
+                    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
+                    flushSync(() => {
+                      showPreloaderB()
+                    })
+                    
+                    // Navigate IMMEDIATELY - no delays
                     router.push(contactPath)
                   }}
                   variant="outline"

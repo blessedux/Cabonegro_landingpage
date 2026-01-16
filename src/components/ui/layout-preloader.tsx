@@ -468,8 +468,7 @@ export default function LayoutPreloader({ onComplete, duration = 6, className = 
   return (
     <div 
       ref={containerRef}
-      className={`fixed inset-0 z-50 bg-gray-100 overflow-hidden ${className}`}
-      style={{ fontFamily: 'PP Neue Montreal, sans-serif' }}
+      className={`fixed inset-0 z-50 bg-gray-100 overflow-hidden font-primary ${className}`}
     >
       {/* Background noise effect */}
       <div 
