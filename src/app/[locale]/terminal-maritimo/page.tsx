@@ -17,11 +17,12 @@ declare global {
     }
   }
 }
-import { RulerCarousel, type CarouselItem } from '@/components/ui/ruler-carousel'
+import { Timeline } from '@/components/ui/timeline'
 import { MagicText } from '@/components/ui/magic-text'
 import { motion } from 'framer-motion'
 import { useRef, useState, useEffect } from 'react'
 import { useScroll, useTransform } from 'framer-motion'
+import React from 'react'
 
 // Code-split navigation components - only load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -421,8 +422,8 @@ export default function TerminalMaritimoPage() {
     return <Navbar />
   }
 
-  // Timeline data for RulerCarousel - localized
-  const getTimelineItems = (): CarouselItem[] => {
+  // Timeline data for Timeline component - localized
+  const getTimelineData = () => {
     const phaseTitles: Record<string, Record<string, string>> = {
       es: {
         '2021': '2021 - Inicio del Proyecto',
@@ -468,115 +469,223 @@ export default function TerminalMaritimoPage() {
 
     const titles = phaseTitles[locale] || phaseTitles.en
 
-    if (locale === 'es') {
-      return [
-        { 
-          id: 1, 
-          title: '2021', 
-          date: '2021', 
-          phaseTitle: titles['2021'],
-          description: localizedText.timeline.events['2021']
-        },
-        { 
-          id: 2, 
-          title: '2022', 
-          date: '2022', 
-          phaseTitle: titles['2022'],
-          description: localizedText.timeline.events['2022']
-        },
-        { 
-          id: 3, 
-          title: '2023', 
-          date: '2023', 
-          phaseTitle: titles['2023'],
-          description: localizedText.timeline.events['2023']
-        },
-        { 
-          id: 4, 
-          title: '2024', 
-          date: '2024', 
-          phaseTitle: titles['2024'],
-          description: localizedText.timeline.events['2024']
-        },
-        { 
-          id: 5, 
-          title: '2025', 
-          date: '2025', 
-          phaseTitle: titles['2025'],
-          description: localizedText.timeline.events['2025']
-        },
-        { 
-          id: 6, 
-          title: '2026-2028', 
-          date: '2026-2028', 
-          phaseTitle: titles['2026'],
-          description: localizedText.timeline.events['2026']
-        },
-        { 
-          id: 7, 
-          title: '2028', 
-          date: '2028', 
-          phaseTitle: titles['2028'],
-          description: localizedText.timeline.events['2028']
-        }
-      ]
+    // Helper function to format description horizontally with separators
+    const formatDescription = (text: string) => {
+      const lines = text.split('\n').filter(line => line.trim())
+      return (
+        <div className="flex flex-wrap gap-x-4 gap-y-2 items-center">
+          {lines.map((line, index) => (
+            <React.Fragment key={index}>
+              <span className="text-neutral-800 text-xs md:text-sm font-normal">
+                {line.trim()}
+              </span>
+              {index < lines.length - 1 && (
+                <span className="text-neutral-400">•</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      )
     }
-    
-    // For other languages, use the same structure as Spanish
+
+    // Unique images from /public directory - no repeats
+    const timelineImages = {
+      '2021': ['/cabonegro_frame1.webp', '/cabonegro_wirefram2.webp'],
+      '2022': ['/cabonegro_slide2.webp', '/image15.webp'],
+      '2023': ['/cabonegro_slide3.webp', '/image16.webp'],
+      '2024': ['/maritime_terminal.png', '/image13.webp'],
+      '2025': ['/logistics.png', '/cabonegro_astillero.webp'],
+      '2026-2028': ['/macrolote.webp', '/patagon_valley.webp'],
+      '2028': ['/Puerto_v2.webp', '/Patagon_Valley_v2.webp'],
+    }
+
     return [
-      { 
-        id: 1, 
-        title: '2021', 
-        date: '2021', 
-        phaseTitle: titles['2021'],
-        description: localizedText.timeline.events['2021']
+      {
+        title: '2021',
+        content: (
+          <div>
+            <div className="mb-8">
+              {formatDescription(localizedText.timeline.events['2021'])}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Image
+                src={timelineImages['2021'][0]}
+                alt="2021 Project Initiation"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+              <Image
+                src={timelineImages['2021'][1]}
+                alt="2021 Maritime Concession"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+            </div>
+          </div>
+        ),
       },
-      { 
-        id: 2, 
-        title: '2022', 
-        date: '2022', 
-        phaseTitle: titles['2022'],
-        description: localizedText.timeline.events['2022']
+      {
+        title: '2022',
+        content: (
+          <div>
+            <div className="mb-8">
+              {formatDescription(localizedText.timeline.events['2022'])}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Image
+                src={timelineImages['2022'][0]}
+                alt="2022 Studies"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+              <Image
+                src={timelineImages['2022'][1]}
+                alt="2022 Oceanographic Studies"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+            </div>
+          </div>
+        ),
       },
-      { 
-        id: 3, 
-        title: '2023', 
-        date: '2023', 
-        phaseTitle: titles['2023'],
-        description: localizedText.timeline.events['2023']
+      {
+        title: '2023',
+        content: (
+          <div>
+            <div className="mb-8">
+              {formatDescription(localizedText.timeline.events['2023'])}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Image
+                src={timelineImages['2023'][0]}
+                alt="2023 Engineering"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+              <Image
+                src={timelineImages['2023'][1]}
+                alt="2023 Pronouncements"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+            </div>
+          </div>
+        ),
       },
-      { 
-        id: 4, 
-        title: '2024', 
-        date: '2024', 
-        phaseTitle: titles['2024'],
-        description: localizedText.timeline.events['2024']
+      {
+        title: '2024',
+        content: (
+          <div>
+            <div className="mb-8">
+              {formatDescription(localizedText.timeline.events['2024'])}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Image
+                src={timelineImages['2024'][0]}
+                alt="2024 Cartographic Report"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+              <Image
+                src={timelineImages['2024'][1]}
+                alt="2024 Report"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+            </div>
+          </div>
+        ),
       },
-      { 
-        id: 5, 
-        title: '2025', 
-        date: '2025', 
-        phaseTitle: titles['2025'],
-        description: localizedText.timeline.events['2025']
+      {
+        title: '2025',
+        content: (
+          <div>
+            <div className="mb-8">
+              {formatDescription(localizedText.timeline.events['2025'])}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Image
+                src={timelineImages['2025'][0]}
+                alt="2025 Approvals"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+              <Image
+                src={timelineImages['2025'][1]}
+                alt="2025 Concession"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+            </div>
+          </div>
+        ),
       },
-      { 
-        id: 6, 
-        title: '2026-2028', 
-        date: '2026-2028', 
-        phaseTitle: titles['2026'],
-        description: localizedText.timeline.events['2026']
+      {
+        title: '2026-2028',
+        content: (
+          <div>
+            <div className="mb-8">
+              {formatDescription(localizedText.timeline.events['2026'])}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Image
+                src={timelineImages['2026-2028'][0]}
+                alt="2026-2028 Development"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+              <Image
+                src={timelineImages['2026-2028'][1]}
+                alt="2026-2028 Studies"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+            </div>
+          </div>
+        ),
       },
-      { 
-        id: 7, 
-        title: '2028', 
-        date: '2028', 
-        phaseTitle: titles['2028'],
-        description: localizedText.timeline.events['2028']
-      }
+      {
+        title: '2028',
+        content: (
+          <div>
+            <div className="mb-8">
+              {formatDescription(localizedText.timeline.events['2028'])}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Image
+                src={timelineImages['2028'][0]}
+                alt="2028 Ready to Build"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+              <Image
+                src={timelineImages['2028'][1]}
+                alt="Cabo Negro Maritime Terminal"
+                width={500}
+                height={500}
+                className="rounded-lg object-cover h-20 md:h-44 lg:h-60 w-full shadow-lg"
+              />
+            </div>
+          </div>
+        ),
+      },
     ]
   }
 
-  const timelineCarouselItems: CarouselItem[] = getTimelineItems()
+  const timelineData = getTimelineData()
 
   // Light mode for all language versions - white background across all locales
   const isLightMode = true // Always use white background for all languages
@@ -865,19 +974,13 @@ export default function TerminalMaritimoPage() {
         </div>
       </section>
 
-      {/* Timeline Section - RulerCarousel */}
-      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
-        <div className="container mx-auto max-w-6xl">
-          <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}>
-            {localizedText.timeline.title}
-          </h2>
-          <p className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} mb-12`}>
-            {localizedText.timeline.description}
-          </p>
-          <div style={{ pointerEvents: 'auto', touchAction: 'pan-y' }}>
-            <RulerCarousel originalItems={timelineCarouselItems} lightMode={isLightMode} />
-          </div>
-        </div>
+      {/* Timeline Section - Scroll Animated Timeline */}
+      <section data-white-background="true" className={`${isLightMode ? 'bg-white' : ''}`}>
+        <Timeline 
+          data={timelineData}
+          title={localizedText.timeline.title}
+          description={localizedText.timeline.description}
+        />
       </section>
 
       {/* Reference Image Section */}
