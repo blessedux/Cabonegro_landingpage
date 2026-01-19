@@ -372,6 +372,26 @@ export default function ParqueTecnologicoPage() {
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        {/* Placeholder Image - Shows while video loads */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{ 
+            zIndex: 1,
+            opacity: videoLoaded ? 0 : 1,
+            transition: 'opacity 0.8s ease-in-out',
+            pointerEvents: 'none'
+          }}
+        >
+          <Image
+            src="/cabonegro_slide3.webp"
+            alt="Patagon Valley"
+            fill
+            className="object-cover"
+            priority
+            quality={90}
+          />
+        </div>
+        
         <div className="absolute inset-0 z-0">
           <video
             ref={videoRef}
@@ -383,6 +403,12 @@ export default function ParqueTecnologicoPage() {
             preload="auto"
             crossOrigin="anonymous"
             className="w-full h-full object-cover"
+            style={{ 
+              zIndex: 2,
+              opacity: videoLoaded ? 1 : 0,
+              transition: 'opacity 0.8s ease-in-out',
+              backgroundColor: '#000000'
+            }}
             onLoadedData={() => {
               setVideoLoaded(true)
             }}
@@ -422,13 +448,18 @@ export default function ParqueTecnologicoPage() {
                 }
               }
               
-              console.error('❌ Parque Tecnologico video loading error:', {
-                message: errorMessage,
-                error: error,
-                src: heroVideo,
-                networkState: video.networkState,
-                readyState: video.readyState
-              })
+              // Always log errors, but format appropriately
+              if (process.env.NODE_ENV === 'development') {
+                console.error('❌ Parque Tecnologico video loading error:', {
+                  message: errorMessage,
+                  error: error,
+                  src: heroVideo,
+                  networkState: video.networkState,
+                  readyState: video.readyState
+                })
+              } else {
+                console.error('❌ Parque Tecnologico video loading error:', errorMessage)
+              }
               setVideoError(true)
             }}
           />
@@ -475,9 +506,11 @@ export default function ParqueTecnologicoPage() {
           <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full items-stretch">
             {localizedText.vision.items.map((item: any, index: number) => {
               const isHovered = hoveredCard === index
+              // Use title as stable unique key
+              const uniqueKey = `vision-${item.title.toLowerCase().replace(/\s+/g, '-').slice(0, 50)}`
               return (
                 <div
-                  key={index}
+                  key={uniqueKey}
                   className="relative flex flex-col items-start text-left p-6 rounded-lg border border-white/30 backdrop-blur-md transition-all duration-300 hover:border-white/40 h-full cursor-pointer overflow-hidden"
                   style={{ 
                     opacity: iconOpacities[index] || 0,

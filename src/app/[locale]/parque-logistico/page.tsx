@@ -328,14 +328,14 @@ export default function ParqueLogisticoPage() {
       <section className="py-20 px-6 bg-white">
         <div className="container mx-auto max-w-6xl">
           <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-gray-200">
-            <div className="absolute inset-0 scale-110">
-              <Image
-                src="/macrolote.webp"
-                alt="Parque Logístico Cabo Negro II"
-                fill
-                className="object-cover"
-              />
-            </div>
+            <Image
+              src="/macrolote.webp"
+              alt="Parque Logístico Cabo Negro II"
+              fill
+              className="object-cover"
+              priority
+              quality={90}
+            />
           </div>
         </div>
       </section>

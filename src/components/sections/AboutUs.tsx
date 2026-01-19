@@ -341,17 +341,17 @@ function AboutUs() {
             })}
           </div>
           
-          {/* CTA Button - Below the cards */}
+          {/* CTA Button - Below the cards - Disabled */}
           <div className="mt-12 flex justify-center">
             <Button
-              asChild
               size="lg"
-              className="bg-black text-white hover:bg-gray-800 transition-colors font-semibold px-8 py-6 rounded-md shadow-lg"
+              disabled
+              className="bg-gray-400 text-white cursor-not-allowed font-semibold px-8 py-6 rounded-md shadow-lg opacity-60"
             >
-              <Link href={`${basePath}/explore`} className="flex items-center gap-2">
+              <span className="flex items-center gap-2">
                 {ctaText}
                 <ArrowRight className="w-5 h-5" />
-              </Link>
+              </span>
             </Button>
           </div>
         </div>
