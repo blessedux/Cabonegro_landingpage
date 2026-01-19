@@ -6,11 +6,18 @@ import { WorldMap } from "@/components/ui/world-map";
 
 export function WorldMapDemo() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
+  });
+
+  // Track scroll progress for description section
+  const { scrollYProgress: descScrollYProgress } = useScroll({
+    target: descriptionRef,
+    offset: ["start end", "center center"]
   });
 
   // Map slides down from top to bottom of container as user scrolls
@@ -25,6 +32,10 @@ export function WorldMapDemo() {
   // Start with larger margins (smaller width), increase to even larger margins (even smaller width)
   // On mobile, keep full width (no margins) - handled via separate wrapper
   const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]); // 48px to 120px (3rem to 7.5rem)
+
+  // Description animation - fade in and slide up
+  const descOpacity = useTransform(descScrollYProgress, [0, 0.3, 1], [0, 1, 1]);
+  const descY = useTransform(descScrollYProgress, [0, 0.3, 1], [50, 0, 0]);
 
   return (
     <div 
@@ -173,6 +184,33 @@ export function WorldMapDemo() {
           />
           </div>
         </motion.div>
+      </motion.div>
+      
+      {/* Strategic Description Section - Below the map */}
+      <motion.div
+        ref={descriptionRef}
+        className="w-full bg-white py-16 md:py-24 px-4 md:px-6"
+        style={{
+          opacity: descOpacity,
+          y: descY
+        }}
+      >
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6 text-center">
+            Strategic Maritime Gateway
+          </h3>
+          <div className="space-y-4 text-black text-base md:text-lg leading-relaxed">
+            <p>
+              Cabo Negro is positioned at the <strong>southernmost tip of Chile</strong>, directly on the <strong>Strait of Magellan</strong>—one of the world's most critical maritime corridors. This strategic location serves as a natural alternative route to the Panama Canal, connecting the Atlantic and Pacific oceans without tolls or congestion.
+            </p>
+            <p>
+              The region's industrial potential is supported by <strong>over 1,200 hectares</strong> of developable land, with direct access to deep-water ports capable of handling vessels up to <strong>200,000 DWT</strong>. The Strait of Magellan sees approximately <strong>15,000+ vessels annually</strong>, with growing traffic as global trade routes diversify.
+            </p>
+            <p>
+              Magallanes region hosts <strong>one of the world's largest wind energy potentials</strong>, with average wind speeds exceeding <strong>12 m/s</strong>, making it ideal for green hydrogen production. The industrial real estate development is projected to support <strong>$2+ billion in infrastructure investments</strong> over the next decade, positioning Cabo Negro as a key logistics and energy hub for South America.
+            </p>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

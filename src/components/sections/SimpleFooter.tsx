@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
-import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react'
+import { Mail, Phone, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRef } from 'react'
 
 interface SimpleFooterProps {
   locale?: 'en' | 'es' | 'zh' | 'fr'
@@ -13,6 +14,17 @@ interface SimpleFooterProps {
 export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const footerRef = useRef<HTMLElement>(null)
+
+  // Parallax scroll effect - footer slides up from below
+  const { scrollYProgress } = useScroll({
+    target: footerRef,
+    offset: ["start end", "end start"]
+  })
+
+  // Footer slides up as user scrolls
+  const footerY = useTransform(scrollYProgress, [0, 1], [100, 0])
+  const footerOpacity = useTransform(scrollYProgress, [0, 0.3, 1], [0, 1, 1])
 
   // Smooth scroll handler for homepage sections
   const handleSmoothScroll = (sectionId: string, e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -165,9 +177,18 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
 
 
   return (
-    <footer className="w-full bg-white relative z-30" data-keep-navbar-black="true">
+    <motion.footer 
+      ref={footerRef}
+      className="w-full relative z-30" 
+      data-keep-navbar-black="true"
+      style={{
+        backgroundColor: '#DAD8CA',
+        y: footerY,
+        opacity: footerOpacity
+      }}
+    >
       {/* CTA Section - Above Footer Navigation */}
-      <section className="bg-white py-12 md:py-16 px-6 border-b border-gray-200">
+      <section className="py-12 md:py-16 px-6 border-b border-gray-300" style={{ backgroundColor: '#DAD8CA' }}>
         <div className="container mx-auto max-w-7xl">
           <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6 md:gap-8">
             {/* Left Side - Contact Heading and Description */}
@@ -175,10 +196,10 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
               <h3 className="text-black font-bold text-xl md:text-2xl mb-3 uppercase">
                 {content.contact.title}
               </h3>
-              <p className="text-gray-600 italic text-base md:text-lg leading-relaxed">
+              <p className="text-gray-700 italic text-base md:text-lg leading-relaxed">
                 {content.contact.question}
               </p>
-              <p className="text-gray-600 italic text-base md:text-lg leading-relaxed">
+              <p className="text-gray-700 italic text-base md:text-lg leading-relaxed">
                 {content.contact.description}
               </p>
             </div>
@@ -205,105 +226,92 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         </div>
       </section>
 
-      {/* Bottom Section - Navigation Menu (Light Grey Background) */}
-      <section className="bg-gray-200 py-12 md:py-16 px-6">
+      {/* Bottom Section - Navigation Menu - Single Column on Right */}
+      <section className="py-12 md:py-16 px-6" style={{ backgroundColor: '#DAD8CA' }}>
         <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-            {/* Column 1: UBICACIÓN */}
-            <div>
-              <h3 className="text-black font-bold text-lg mb-4 uppercase">
-                {content.location.title}
-              </h3>
-              <Link 
-                href={`${basePath}/explore`}
-                className="text-gray-700 hover:text-black transition-colors block mb-4"
-              >
-                {content.location.virtualTour}
-              </Link>
-              {/* Map image - clickable */}
-              <a 
-                href="https://maps.app.goo.gl/qYqfHZmW4uVFpKJZ7"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full h-32 rounded-lg mt-4 overflow-hidden hover:opacity-90 transition-opacity cursor-pointer relative"
-              >
-                <Image
-                  src="/Screenshot.webp"
-                  alt="Cabo Negro Location Map"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 300px"
-                />
-              </a>
-            </div>
+          <div className="flex justify-end">
+            <div className="w-full max-w-md space-y-8">
+              {/* LOCATION */}
+              <div>
+                <h3 className="text-black font-bold text-lg mb-4 uppercase">
+                  {content.location.title}
+                </h3>
+                <Link 
+                  href={`${basePath}/explore`}
+                  className="text-gray-700 hover:text-black transition-colors block"
+                >
+                  {content.location.virtualTour}
+                </Link>
+              </div>
 
-            {/* Column 2: SOBRE NOSOTROS */}
-            <div>
-              <h3 className="text-black font-bold text-lg mb-4 uppercase">
-                {content.about.title}
-              </h3>
-              <ul className="space-y-2">
-                <li>
-                  <a 
-                    href={`${basePath}#about`}
-                    onClick={(e) => handleSmoothScroll('about', e)}
-                    className="text-gray-700 hover:text-black transition-colors block cursor-pointer"
-                  >
-                    {content.about.whoWeAre}
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href={`${basePath}#stats`}
-                    onClick={(e) => handleSmoothScroll('stats', e)}
-                    className="text-gray-700 hover:text-black transition-colors block cursor-pointer"
-                  >
-                    {content.about.projects}
-                  </a>
-                </li>
-              </ul>
-            </div>
+              {/* ABOUT US */}
+              <div>
+                <h3 className="text-black font-bold text-lg mb-4 uppercase">
+                  {content.about.title}
+                </h3>
+                <ul className="space-y-2">
+                  <li>
+                    <a 
+                      href={`${basePath}#about`}
+                      onClick={(e) => handleSmoothScroll('about', e)}
+                      className="text-gray-700 hover:text-black transition-colors block cursor-pointer"
+                    >
+                      {content.about.whoWeAre}
+                    </a>
+                  </li>
+                  <li>
+                    <a 
+                      href={`${basePath}#stats`}
+                      onClick={(e) => handleSmoothScroll('stats', e)}
+                      className="text-gray-700 hover:text-black transition-colors block cursor-pointer"
+                    >
+                      {content.about.projects}
+                    </a>
+                  </li>
+                </ul>
+              </div>
 
-            {/* Column 3: NEWSLETTER */}
-            <div>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {content.contact.newsletter}
-              </p>
-            </div>
+              {/* NEWSLETTER */}
+              <div>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  {content.contact.newsletter}
+                </p>
+              </div>
 
-            {/* Column 4: CONTACTO */}
-            <div>
-              <h3 className="text-black font-bold text-lg mb-4 uppercase">
-                {content.contact.title}
-              </h3>
-              <div className="space-y-3">
-                {/* Email */}
-                <div className="flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-black" />
-                  <a 
-                    href={`mailto:${content.email}`}
-                    className="text-gray-700 hover:text-black transition-colors"
-                  >
-                    {content.email}
-                  </a>
-                </div>
-                {/* Phone */}
-                <div className="flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-black" />
-                  <a
-                    href={`https://wa.me/56974766174?text=${whatsappMessage}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-black transition-colors"
-                  >
-                    +56 9 7476 6174
-                  </a>
+              {/* CONTACT */}
+              <div>
+                <h3 className="text-black font-bold text-lg mb-4 uppercase">
+                  {content.contact.title}
+                </h3>
+                <div className="space-y-3">
+                  {/* Email */}
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-5 h-5 text-black" />
+                    <a 
+                      href={`mailto:${content.email}`}
+                      className="text-gray-700 hover:text-black transition-colors"
+                    >
+                      {content.email}
+                    </a>
+                  </div>
+                  {/* Phone */}
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-5 h-5 text-black" />
+                    <a
+                      href={`https://wa.me/56974766174?text=${whatsappMessage}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-700 hover:text-black transition-colors"
+                    >
+                      +56 9 7476 6174
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </section>
-    </footer>
+    </motion.footer>
   )
 }

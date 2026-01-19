@@ -6,11 +6,18 @@ import { WorldMap } from "@/components/ui/world-map";
 
 export function WorldMapDemoZh() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
+  });
+
+  // Track scroll progress for description section
+  const { scrollYProgress: descScrollYProgress } = useScroll({
+    target: descriptionRef,
+    offset: ["start end", "center center"]
   });
 
   // Map slides down from top to bottom of container as user scrolls
@@ -21,6 +28,10 @@ export function WorldMapDemoZh() {
 
   // Side margins increase (map width decreases) as user scrolls
   const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]);
+
+  // Description animation - fade in and slide up
+  const descOpacity = useTransform(descScrollYProgress, [0, 0.3, 1], [0, 1, 1]);
+  const descY = useTransform(descScrollYProgress, [0, 0.3, 1], [50, 0, 0]);
 
   return (
     <div 
@@ -115,6 +126,33 @@ export function WorldMapDemoZh() {
             />
           </div>
         </motion.div>
+      </motion.div>
+      
+      {/* Strategic Description Section - Below the map */}
+      <motion.div
+        ref={descriptionRef}
+        className="w-full bg-white py-16 md:py-24 px-4 md:px-6"
+        style={{
+          opacity: descOpacity,
+          y: descY
+        }}
+      >
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6 text-center">
+            战略海上门户
+          </h3>
+          <div className="space-y-4 text-black text-base md:text-lg leading-relaxed">
+            <p>
+              卡波内格罗位于<strong>智利最南端</strong>，直接位于<strong>麦哲伦海峡</strong>——世界上最重要的海上走廊之一。这一战略位置作为巴拿马运河的天然替代路线，连接大西洋和太平洋，无需通行费或拥堵。
+            </p>
+            <p>
+              该地区的工业潜力得到<strong>超过1,200公顷</strong>可开发土地的支持，可直接进入深水港，能够处理高达<strong>200,000载重吨</strong>的船舶。麦哲伦海峡每年约有<strong>超过15,000艘船舶</strong>通过，随着全球贸易路线的多样化，交通量不断增长。
+            </p>
+            <p>
+              麦哲伦地区拥有<strong>世界上最大的风能潜力之一</strong>，平均风速超过<strong>12米/秒</strong>，非常适合绿色制氢。工业房地产开发预计在未来十年内支持<strong>超过20亿美元的基础设施投资</strong>，将卡波内格罗定位为南美洲的关键物流和能源中心。
+            </p>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

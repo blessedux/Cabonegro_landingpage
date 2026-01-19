@@ -6,11 +6,18 @@ import { WorldMap } from "@/components/ui/world-map";
 
 export function WorldMapDemoEs() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
+  });
+
+  // Track scroll progress for description section
+  const { scrollYProgress: descScrollYProgress } = useScroll({
+    target: descriptionRef,
+    offset: ["start end", "center center"]
   });
 
   // Map slides down from top to bottom of container as user scrolls
@@ -25,6 +32,10 @@ export function WorldMapDemoEs() {
   // Start with larger margins (smaller width), increase to even larger margins (even smaller width)
   // On mobile, keep full width (no margins) - handled via separate wrapper
   const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]); // 48px to 120px (3rem to 7.5rem)
+
+  // Description animation - fade in and slide up
+  const descOpacity = useTransform(descScrollYProgress, [0, 0.3, 1], [0, 1, 1]);
+  const descY = useTransform(descScrollYProgress, [0, 0.3, 1], [50, 0, 0]);
 
   return (
     <div 
@@ -173,6 +184,33 @@ export function WorldMapDemoEs() {
           />
           </div>
         </motion.div>
+      </motion.div>
+      
+      {/* Strategic Description Section - Below the map */}
+      <motion.div
+        ref={descriptionRef}
+        className="w-full bg-white py-16 md:py-24 px-4 md:px-6"
+        style={{
+          opacity: descOpacity,
+          y: descY
+        }}
+      >
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6 text-center">
+            Puerta de Entrada Marítima Estratégica
+          </h3>
+          <div className="space-y-4 text-black text-base md:text-lg leading-relaxed">
+            <p>
+              Cabo Negro se ubica en el <strong>extremo sur de Chile</strong>, directamente sobre el <strong>Estrecho de Magallanes</strong>—uno de los corredores marítimos más críticos del mundo. Esta ubicación estratégica sirve como ruta alternativa natural al Canal de Panamá, conectando los océanos Atlántico y Pacífico sin peajes ni congestión.
+            </p>
+            <p>
+              El potencial industrial de la región está respaldado por <strong>más de 1,200 hectáreas</strong> de terreno desarrollable, con acceso directo a puertos de aguas profundas capaces de manejar embarcaciones de hasta <strong>200,000 DWT</strong>. El Estrecho de Magallanes registra aproximadamente <strong>más de 15,000 embarcaciones anuales</strong>, con tráfico creciente a medida que las rutas comerciales globales se diversifican.
+            </p>
+            <p>
+              La región de Magallanes alberga <strong>uno de los mayores potenciales eólicos del mundo</strong>, con velocidades promedio de viento superiores a <strong>12 m/s</strong>, lo que la hace ideal para la producción de hidrógeno verde. El desarrollo inmobiliario industrial está proyectado para respaldar <strong>más de $2 mil millones en inversiones de infraestructura</strong> durante la próxima década, posicionando a Cabo Negro como un centro logístico y energético clave para Sudamérica.
+            </p>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

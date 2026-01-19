@@ -6,11 +6,18 @@ import { WorldMap } from "@/components/ui/world-map";
 
 export function WorldMapDemoFr() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
+  });
+
+  // Track scroll progress for description section
+  const { scrollYProgress: descScrollYProgress } = useScroll({
+    target: descriptionRef,
+    offset: ["start end", "center center"]
   });
 
   // Map slides down from top to bottom of container as user scrolls
@@ -25,6 +32,10 @@ export function WorldMapDemoFr() {
   // Start with larger margins (smaller width), increase to even larger margins (even smaller width)
   // On mobile, keep full width (no margins) - handled via separate wrapper
   const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]); // 48px to 120px (3rem to 7.5rem)
+
+  // Description animation - fade in and slide up
+  const descOpacity = useTransform(descScrollYProgress, [0, 0.3, 1], [0, 1, 1]);
+  const descY = useTransform(descScrollYProgress, [0, 0.3, 1], [50, 0, 0]);
 
   return (
     <div 
@@ -173,6 +184,33 @@ export function WorldMapDemoFr() {
           />
           </div>
         </motion.div>
+      </motion.div>
+      
+      {/* Strategic Description Section - Below the map */}
+      <motion.div
+        ref={descriptionRef}
+        className="w-full bg-white py-16 md:py-24 px-4 md:px-6"
+        style={{
+          opacity: descOpacity,
+          y: descY
+        }}
+      >
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6 text-center">
+            Porte d'Entrée Maritime Stratégique
+          </h3>
+          <div className="space-y-4 text-black text-base md:text-lg leading-relaxed">
+            <p>
+              Cabo Negro est situé à l'<strong>extrémité sud du Chili</strong>, directement sur le <strong>détroit de Magellan</strong>—l'un des corridors maritimes les plus critiques au monde. Cet emplacement stratégique sert de route alternative naturelle au canal de Panama, reliant les océans Atlantique et Pacifique sans péages ni congestion.
+            </p>
+            <p>
+              Le potentiel industriel de la région est soutenu par <strong>plus de 1,200 hectares</strong> de terrain aménageable, avec un accès direct à des ports en eau profonde capables de gérer des navires jusqu'à <strong>200,000 DWT</strong>. Le détroit de Magellan enregistre environ <strong>plus de 15,000 navires par an</strong>, avec une circulation croissante à mesure que les routes commerciales mondiales se diversifient.
+            </p>
+            <p>
+              La région de Magallanes abrite <strong>l'un des plus grands potentiels éoliens au monde</strong>, avec des vitesses de vent moyennes supérieures à <strong>12 m/s</strong>, ce qui la rend idéale pour la production d'hydrogène vert. Le développement immobilier industriel est projeté pour soutenir <strong>plus de 2 milliards de dollars d'investissements en infrastructures</strong> au cours de la prochaine décennie, positionnant Cabo Negro comme un centre logistique et énergétique clé pour l'Amérique du Sud.
+            </p>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

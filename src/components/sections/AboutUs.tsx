@@ -1,12 +1,15 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, memo } from 'react'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { MdDirectionsBoat, MdEnergySavingsLeaf } from 'react-icons/md'
 import Icon from '@mdi/react'
 import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
+import { Button } from '@/components/ui/button'
+import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
 // Code-split RotatingEarth component (includes D3.js ~200KB) - only load when needed
 const RotatingEarth = dynamic(() => import('@/components/ui/rotating-earth'), {
@@ -27,7 +30,9 @@ function LazyRotatingEarth({ width = 600, height = 400, className = "" }: { widt
         entries.forEach((entry) => {
           // Start loading when element is 200px away from viewport (rootMargin)
           if (entry.isIntersecting && !shouldLoad) {
-            console.log('🌍 [LazyRotatingEarth] Component entering viewport - loading RotatingEarth')
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🌍 [LazyRotatingEarth] Component entering viewport - loading RotatingEarth')
+            }
             setShouldLoad(true)
             // Disconnect observer once we've triggered the load
             observer.disconnect()
@@ -116,11 +121,22 @@ function SimpleParagraph({ text, className = "", locale = 'en' }: { text: string
   );
 }
 
-export default function AboutUs() {
+function AboutUs() {
   const pathname = usePathname()
   
   // Determine locale from pathname
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
+  
+  // CTA button text based on locale
+  const ctaText = locale === 'es' 
+    ? 'Explorar Terreno' 
+    : locale === 'zh' 
+    ? '探索地形' 
+    : locale === 'fr'
+    ? 'Explorer le Terrain'
+    : 'Explore Terrain'
+  
+  const basePath = locale === 'en' ? '' : `/${locale}`
   const aboutTitle = locale === 'es' ? 'Cabo Negro: Una localización estratégica' : locale === 'zh' ? '卡波内格罗海事码头' : locale === 'fr' ? 'Terminal Maritime Cabo Negro' : 'Cabo Negro Maritime Terminal'
   
   // Intro paragraph text
@@ -275,9 +291,11 @@ export default function AboutUs() {
           <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full items-stretch">
             {textSections.map((section, index) => {
               const isHovered = hoveredCard === index
+              // Use label as stable unique key
+              const uniqueKey = `section-${section.label}`
               return (
                 <div
-                  key={index}
+                  key={uniqueKey}
                   className="flex flex-col items-start text-left p-6 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300 hover:bg-gray-100 hover:border-gray-300 h-full"
                   onMouseEnter={(e) => {
                     e.stopPropagation()
@@ -322,8 +340,25 @@ export default function AboutUs() {
               )
             })}
           </div>
+          
+          {/* CTA Button - Below the cards */}
+          <div className="mt-12 flex justify-center">
+            <Button
+              asChild
+              size="lg"
+              className="bg-black text-white hover:bg-gray-800 transition-colors font-semibold px-8 py-6 rounded-md shadow-lg"
+            >
+              <Link href={`${basePath}/explore`} className="flex items-center gap-2">
+                {ctaText}
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
     </>
   )
 }
+
+// Memoize AboutUs to prevent unnecessary re-renders
+export default memo(AboutUs)
