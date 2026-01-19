@@ -9,6 +9,7 @@ import CookieBanner from '@/components/sections/CookieBanner'
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
 import PreloaderB from '@/components/ui/preloader-b'
 import { GradientBlurBg } from '@/components/ui/gradient-blur-bg'
+import ErrorBoundary from '@/components/scenes/ErrorBoundary'
 
 // Code-split world maps - only load when needed (named exports)
 const WorldMapDemo = dynamic(() => import('@/components/ui/world-map-demo').then(mod => ({ default: mod.WorldMapDemo })), { ssr: false })
@@ -130,7 +131,7 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           }
         })
     }
-  }, [locale]) // Only depend on locale, start immediately
+  }, [locale, componentsLoaded]) // Include componentsLoaded to prevent re-running when already loaded
   
   // Initialize content visibility after hydration and reset on locale change
   useEffect(() => {
@@ -442,22 +443,60 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
   }, [pathname, locale])
 
   // Safety: If preloader is stuck, show content after max time
+  // More aggressive timeout on first load (3-4 seconds) to prevent getting stuck
   useEffect(() => {
     if (isPreloaderBVisible && !shouldShowContent) {
+      // Use longer timeout for first load (3.5 seconds), shorter for navigation (1.5 seconds)
+      const timeoutDuration = isFirstLoad ? 3500 : 1500
+      
       const safetyTimer = setTimeout(() => {
-        if (isPreloaderBVisible) {
+        if (isPreloaderBVisible && !shouldShowContent) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('⏱️ [PERF] Safety timer - Preloader stuck, forcing completion')
+            console.log('⏱️ [PERF] Safety timer - Preloader stuck, forcing completion', {
+              isFirstLoad,
+              timeoutDuration,
+              isPreloaderBVisible,
+              shouldShowContent
+            })
           }
+          // Force show content and hide preloader
           setShouldShowContent(true)
           setContentOpacity(1)
           setPreloaderComplete(true)
           hidePreloaderB()
+          
+          // If still stuck after timeout, mark first load as complete to prevent loops
+          if (isFirstLoad) {
+            setIsFirstLoad(false)
+          }
         }
-      }, 1500) // Reduced from 2000ms to 1500ms for faster recovery
+      }, timeoutDuration)
+      
       return () => clearTimeout(safetyTimer)
     }
-  }, [isPreloaderBVisible, shouldShowContent, hidePreloaderB, setPreloaderComplete])
+  }, [isPreloaderBVisible, shouldShowContent, hidePreloaderB, setPreloaderComplete, isFirstLoad])
+
+  // Additional first-load fallback: Force show content after 3.5 seconds regardless of readiness
+  // This ensures users never get stuck on preloader on first visit
+  useEffect(() => {
+    if (isFirstLoad && isPreloaderBVisible) {
+      const firstLoadFallbackTimer = setTimeout(() => {
+        if (isPreloaderBVisible) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⏱️ [PERF] First load fallback - Forcing content display after 3.5s')
+          }
+          // Force show content regardless of readiness checks
+          setShouldShowContent(true)
+          setContentOpacity(1)
+          setPreloaderComplete(true)
+          setIsFirstLoad(false)
+          hidePreloaderB()
+        }
+      }, 3500) // 3.5 seconds - user requested 3-4 seconds
+      
+      return () => clearTimeout(firstLoadFallbackTimer)
+    }
+  }, [isFirstLoad, isPreloaderBVisible, hidePreloaderB, setPreloaderComplete])
 
   // Get locale-specific components
   const getLocaleComponents = () => {
@@ -521,7 +560,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         fontLink.crossOrigin = 'anonymous'
         document.head.appendChild(fontLink)
       } catch (error) {
-        console.warn('Asset preloading failed:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Asset preloading failed:', error)
+        }
       }
     }
 
@@ -612,22 +653,38 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
             }}
           >
         {/* Navigation - Render FIRST to ensure it's above Hero */}
-        <NavbarComponent />
+        <ErrorBoundary fallback={<div className="p-4 text-center text-red-500">Navigation error. Please refresh the page.</div>}>
+          <NavbarComponent />
+        </ErrorBoundary>
         
         {/* Hero - Render after Navbar to ensure proper stacking */}
         {/* Hero wrapper - no z-index, let Hero section control its own z-index */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <HeroComponent />
-        </div>
+        <ErrorBoundary fallback={<div className="p-8 text-center text-white bg-black/80">Hero section error. Please refresh the page.</div>}>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <HeroComponent />
+          </div>
+        </ErrorBoundary>
       
         {/* Main Sections */}
         <main style={{ pointerEvents: 'auto', position: 'relative', zIndex: 1 }}>
-          <AboutUs />
-          <Stats key={`stats-${locale}-${statsKey}`} />
-          <PartnersComponent />
-          <WorldMapComponent />
-          <Press />
-          <FAQComponent />
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">About section error. Please refresh the page.</div>}>
+            <AboutUs />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">Stats section error. Please refresh the page.</div>}>
+            <Stats key={`stats-${locale}-${statsKey}`} />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">Partners section error. Please refresh the page.</div>}>
+            <PartnersComponent />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">World map error. Please refresh the page.</div>}>
+            <WorldMapComponent />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">Press section error. Please refresh the page.</div>}>
+            <Press />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">FAQ section error. Please refresh the page.</div>}>
+            <FAQComponent />
+          </ErrorBoundary>
         </main>
 
         {/* Footer */}

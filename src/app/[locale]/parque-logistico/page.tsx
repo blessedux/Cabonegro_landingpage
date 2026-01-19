@@ -3,7 +3,7 @@
 import { useParams, usePathname } from 'next/navigation'
 import { Download, Calendar, Mail, Warehouse, Truck, Factory, Zap, Wrench } from 'lucide-react'
 import Image from 'next/image'
-import { useRef, useState, useEffect } from 'react'
+import { useState } from 'react'
 import Navbar from '@/components/sections/Navbar'
 import NavbarEs from '@/components/sections/Navbar-es'
 import NavbarZh from '@/components/sections/Navbar-zh'
@@ -17,32 +17,7 @@ export default function ParqueLogisticoPage() {
   const pathname = usePathname()
   // Use pathname for consistent locale detection across all pages
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : (params?.locale as string || 'en')
-  const videoRef = useRef<HTMLVideoElement>(null)
   const [expandedCard, setExpandedCard] = useState<number | null>(null)
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoError, setVideoError] = useState(false)
-  
-  const heroVideo = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
-
-  // Check if video is already loaded (cached) when component mounts
-  useEffect(() => {
-    // Small delay to ensure video element is set up
-    const checkVideoState = () => {
-      if (videoRef.current) {
-        // Check if video is already loaded (readyState >= 3 means HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA)
-        if (videoRef.current.readyState >= 3) {
-          // Add small delay to ensure placeholder shows briefly
-          setTimeout(() => setVideoLoaded(true), 200)
-        }
-      }
-    }
-    
-    // Check immediately and after a short delay
-    checkVideoState()
-    const timeout = setTimeout(checkVideoState, 100)
-    
-    return () => clearTimeout(timeout)
-  }, [])
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -254,95 +229,16 @@ export default function ParqueLogisticoPage() {
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          {/* Lazy Loading Placeholder Image */}
-          <div 
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ 
-              zIndex: 1,
-              opacity: videoLoaded ? 0 : 1,
-              transition: 'opacity 0.6s ease-in-out',
-              pointerEvents: 'none'
-            }}
-          >
-            <Image
-              src="/cabonegro_slide3.webp"
-              alt="Cabo Negro II Logistics Park"
-              fill
-              className="object-cover"
-              priority
-              quality={90}
-            />
-          </div>
-          
-          <video
-            ref={videoRef}
-            src={heroVideo}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            crossOrigin="anonymous"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ 
-              zIndex: 2,
-              opacity: videoLoaded ? 1 : 0,
-              transition: 'opacity 0.6s ease-in-out'
-            }}
-            onLoadedData={() => {
-              console.log('✅ Parque Logistico video loaded data:', heroVideo)
-              // Small delay to ensure placeholder is visible briefly
-              setTimeout(() => setVideoLoaded(true), 100)
-            }}
-            onCanPlay={() => {
-              console.log('✅ Parque Logistico video can play:', heroVideo)
-              // Small delay to ensure placeholder is visible briefly
-              setTimeout(() => setVideoLoaded(true), 100)
-            }}
-            onLoadedMetadata={() => {
-              console.log('✅ Parque Logistico video metadata loaded:', heroVideo)
-            }}
-            onStalled={() => {
-              console.warn('⚠️ Parque Logistico video stalled:', heroVideo)
-            }}
-            onWaiting={() => {
-              console.warn('⚠️ Parque Logistico video waiting for data:', heroVideo)
-            }}
-            onError={(e) => {
-              const video = e.currentTarget
-              const error = video.error
-              let errorMessage = 'Unknown error'
-              
-              if (error) {
-                switch (error.code) {
-                  case error.MEDIA_ERR_ABORTED:
-                    errorMessage = 'Video loading aborted'
-                    break
-                  case error.MEDIA_ERR_NETWORK:
-                    errorMessage = 'Network error while loading video'
-                    break
-                  case error.MEDIA_ERR_DECODE:
-                    errorMessage = 'Video decoding error'
-                    break
-                  case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                    errorMessage = 'Video format not supported or source not found'
-                    break
-                  default:
-                    errorMessage = `Video error code: ${error.code}`
-                }
-              }
-              
-              console.error('❌ Parque Logistico video loading error:', {
-                message: errorMessage,
-                error: error,
-                src: heroVideo,
-                networkState: video.networkState,
-                readyState: video.readyState
-              })
-              setVideoError(true)
-            }}
+          {/* Background Image */}
+          <Image
+            src="/cabonegro_astillero.webp"
+            alt="Cabo Negro II Logistics Park"
+            fill
+            className="object-cover"
+            priority
+            quality={90}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white" style={{ zIndex: 3 }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white" style={{ zIndex: 1 }} />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold mb-4 text-white">
@@ -394,9 +290,11 @@ export default function ParqueLogisticoPage() {
             {localizedText.uses.items.map((item: any, index: number) => {
               const IconComponent = item.icon
               const isExpanded = expandedCard === index
+              // Use title as stable unique key
+              const uniqueKey = `use-${item.title.toLowerCase().replace(/\s+/g, '-')}`
               return (
                 <Card 
-                  key={index} 
+                  key={uniqueKey} 
                   className="bg-white border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer relative overflow-hidden shadow-sm"
                   onClick={() => setExpandedCard(isExpanded ? null : index)}
                 >
@@ -432,7 +330,7 @@ export default function ParqueLogisticoPage() {
           <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-gray-200">
             <div className="absolute inset-0 scale-110">
               <Image
-                src="/Patagon_Valley_v2.webp"
+                src="/macrolote.webp"
                 alt="Parque Logístico Cabo Negro II"
                 fill
                 className="object-cover"
@@ -452,12 +350,16 @@ export default function ParqueLogisticoPage() {
                 {localizedText.strategicLocation.description}
               </p>
               <ul className="space-y-3 text-gray-700">
-                {localizedText.strategicLocation.items.map((item: string, index: number) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
+                {localizedText.strategicLocation.items.map((item: string) => {
+                  // Use item text as stable unique key (items are unique strings)
+                  const uniqueKey = `location-${item.slice(0, 30).replace(/\s+/g, '-').toLowerCase()}`
+                  return (
+                    <li key={uniqueKey} className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
             <div className="relative h-[400px] rounded-lg overflow-hidden">

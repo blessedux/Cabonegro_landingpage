@@ -880,6 +880,21 @@ export default function TerminalMaritimoPage() {
         </div>
       </section>
 
+      {/* Reference Image Section */}
+      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : 'bg-gray-900'}`}>
+        <div className="container mx-auto max-w-6xl">
+          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-gray-200">
+            <Image
+              src="/Puerto_v2.webp"
+              alt="Cabo Negro Maritime Terminal"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <Footer />
 
