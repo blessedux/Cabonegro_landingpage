@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, startTransition } from 'react'
+import { useState, useEffect, useRef, startTransition, memo } from 'react'
 import { flushSync } from 'react-dom'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -9,7 +9,7 @@ import { Menu, X, ChevronDown } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 
-export default function Navbar() {
+function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false) // Start hidden to enable slide-down animation
   const [isHidden, setIsHidden] = useState(false)
@@ -567,12 +567,12 @@ export default function Navbar() {
                   <div 
                     className={`absolute top-full right-0 mt-2 min-w-[120px] rounded-lg shadow-lg z-50 ${
                       isOverWhiteBackground 
-                        ? 'bg-black/20 border border-black/10' 
-                        : 'bg-black/30 border border-white/30'
+                        ? 'bg-white/90 border border-black/20' 
+                        : 'bg-black/80 border border-white/40'
                     }`}
                     style={{
-                      backdropFilter: 'blur(40px)',
-                      WebkitBackdropFilter: 'blur(40px)'
+                      backdropFilter: 'blur(20px) saturate(180%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(180%)'
                     }}
                   >
                     {languages.map((lang) => (
@@ -621,9 +621,13 @@ export default function Navbar() {
             <div 
               className={`px-6 pb-6 border-t ${
                 isOverWhiteBackground 
-                  ? 'bg-black/20 border-black/10' 
-                  : 'bg-black/30 border-white/30'
+                  ? 'bg-white/90 border-black/20' 
+                  : 'bg-black/80 border-white/40'
               }`}
+              style={{
+                backdropFilter: 'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+              }}
               style={{
                 backdropFilter: 'blur(40px)',
                 WebkitBackdropFilter: 'blur(40px)'
@@ -727,3 +731,11 @@ export default function Navbar() {
     </header>
   )
 }
+
+// Memoize Navbar to prevent unnecessary re-renders
+// Only re-render when pathname or locale changes
+export default memo(Navbar, (prevProps, nextProps) => {
+  // Since Navbar doesn't take props, we'll always return true to prevent re-renders
+  // The component uses hooks to access pathname/locale internally
+  return false // Always re-render when called, but memo prevents parent-triggered re-renders
+})

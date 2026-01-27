@@ -187,131 +187,80 @@ export function SimpleFooter({ locale = 'es' }: SimpleFooterProps) {
         opacity: footerOpacity
       }}
     >
-      {/* CTA Section - Above Footer Navigation */}
-      <section className="py-12 md:py-16 px-6 border-b border-gray-300" style={{ backgroundColor: '#DAD8CA' }}>
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-6 md:gap-8">
-            {/* Left Side - Contact Heading and Description */}
-            <div className="flex-1">
-              <h3 className="text-black font-bold text-xl md:text-2xl mb-3 uppercase">
-                {content.contact.title}
-              </h3>
-              <p className="text-gray-700 italic text-base md:text-lg leading-relaxed">
-                {content.contact.question}
-              </p>
-              <p className="text-gray-700 italic text-base md:text-lg leading-relaxed">
-                {content.contact.description}
-              </p>
-            </div>
-            
-            {/* Right Side - Schedule Meeting Button */}
-            <div className="flex-shrink-0">
-              <Button
-                asChild
-                size="lg"
-                className="bg-black text-white hover:bg-gray-800 transition-colors font-semibold px-8 py-6 rounded-md shadow-lg"
-              >
-                <a 
-                  href={`https://wa.me/56974766174?text=${whatsappMessage}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2"
-                >
-                  {content.contact.meetingButton}
-                  <ArrowRight className="w-5 h-5" />
-                </a>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom Section - Navigation Menu - Single Column on Right */}
-      <section className="py-12 md:py-16 px-6" style={{ backgroundColor: '#DAD8CA' }}>
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex justify-end">
-            <div className="w-full max-w-md space-y-8">
-              {/* LOCATION */}
-              <div>
-                <h3 className="text-black font-bold text-lg mb-4 uppercase">
-                  {content.location.title}
-                </h3>
-                <Link 
-                  href={`${basePath}/explore`}
-                  className="text-gray-700 hover:text-black transition-colors block"
-                >
-                  {content.location.virtualTour}
-                </Link>
-              </div>
-
-              {/* ABOUT US */}
-              <div>
-                <h3 className="text-black font-bold text-lg mb-4 uppercase">
-                  {content.about.title}
-                </h3>
-                <ul className="space-y-2">
-                  <li>
-                    <a 
-                      href={`${basePath}#about`}
-                      onClick={(e) => handleSmoothScroll('about', e)}
-                      className="text-gray-700 hover:text-black transition-colors block cursor-pointer"
-                    >
-                      {content.about.whoWeAre}
-                    </a>
-                  </li>
-                  <li>
-                    <a 
-                      href={`${basePath}#stats`}
-                      onClick={(e) => handleSmoothScroll('stats', e)}
-                      className="text-gray-700 hover:text-black transition-colors block cursor-pointer"
-                    >
-                      {content.about.projects}
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              {/* NEWSLETTER */}
-              <div>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {content.contact.newsletter}
-                </p>
-              </div>
-
-              {/* CONTACT */}
-              <div>
-                <h3 className="text-black font-bold text-lg mb-4 uppercase">
+      {/* Footer Content - Total height 229px */}
+      <div style={{ height: '229px', backgroundColor: '#DAD8CA' }}>
+        <div className="container mx-auto max-w-7xl h-full px-6">
+          <div className="flex flex-col h-full justify-between py-6">
+            {/* Top Section - Contact Heading, Description, and Schedule Meeting Button */}
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4 md:gap-8">
+              {/* Left Side - Contact Heading and Description */}
+              <div className="flex-1">
+                <h3 className="text-black font-bold text-xl md:text-2xl mb-2 uppercase">
                   {content.contact.title}
                 </h3>
-                <div className="space-y-3">
-                  {/* Email */}
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-5 h-5 text-black" />
-                    <a 
-                      href={`mailto:${content.email}`}
-                      className="text-gray-700 hover:text-black transition-colors"
-                    >
-                      {content.email}
-                    </a>
-                  </div>
-                  {/* Phone */}
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-5 h-5 text-black" />
-                    <a
-                      href={`https://wa.me/56974766174?text=${whatsappMessage}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-700 hover:text-black transition-colors"
-                    >
-                      +56 9 7476 6174
-                    </a>
+                <p className="text-gray-700 italic text-sm md:text-base leading-relaxed">
+                  {content.contact.question}
+                </p>
+                <p className="text-gray-700 italic text-sm md:text-base leading-relaxed">
+                  {content.contact.description}
+                </p>
+              </div>
+              
+              {/* Right Side - Schedule Meeting Button */}
+              <div className="flex-shrink-0">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-black text-white hover:bg-gray-800 transition-colors font-semibold px-8 py-6 rounded-md shadow-lg"
+                >
+                  <a 
+                    href={`https://wa.me/56974766174?text=${whatsappMessage}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    {content.contact.meetingButton}
+                    <ArrowRight className="w-5 h-5" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+
+            {/* Bottom Section - Contact Information Below Schedule Meeting Button */}
+            <div className="flex justify-start">
+              <div className="w-full max-w-md space-y-4">
+                {/* CONTACT */}
+                <div>
+                  <div className="space-y-2">
+                    {/* Email */}
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-black" />
+                      <a 
+                        href={`mailto:${content.email}`}
+                        className="text-gray-700 hover:text-black transition-colors text-sm"
+                      >
+                        {content.email}
+                      </a>
+                    </div>
+                    {/* Phone */}
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-black" />
+                      <a
+                        href={`https://wa.me/56974766174?text=${whatsappMessage}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-700 hover:text-black transition-colors text-sm"
+                      >
+                        +56 9 7476 6174
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </motion.footer>
   )
 }
