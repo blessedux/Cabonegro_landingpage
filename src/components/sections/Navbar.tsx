@@ -628,10 +628,6 @@ function Navbar() {
                 backdropFilter: 'blur(20px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(20px) saturate(180%)'
               }}
-              style={{
-                backdropFilter: 'blur(40px)',
-                WebkitBackdropFilter: 'blur(40px)'
-              }}
             >
               <div className="flex flex-col gap-4 pt-4">
                 {/* Language Selector - Mobile only */}
