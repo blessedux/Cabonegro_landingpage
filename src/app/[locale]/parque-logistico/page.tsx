@@ -241,10 +241,10 @@ export default function ParqueLogisticoPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white" style={{ zIndex: 1 }} />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 text-white">
+          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
             {localizedText.hero.title}
           </h1>
-          <p className="text-xl md:text-2xl text-white">
+          <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
             {localizedText.hero.subtitle}
           </p>
         </div>

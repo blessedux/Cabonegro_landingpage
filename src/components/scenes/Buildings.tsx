@@ -103,18 +103,23 @@ function BuildingWithTerrainSnap({
 
   const [x, , z] = latLngToWorld(building.lat, building.lng)
 
+        // Create stable unique key from building properties
+        const uniqueKey = building.name 
+          ? `building-${building.name}-${building.lat}-${building.lng}`
+          : `building-${building.lat}-${building.lng}`
+        
         return building.modelUrl ? (
           <BuildingModelWithGLTF
-            key={index}
-      position={[x, yPosition, z]}
+            key={uniqueKey}
+            position={[x, yPosition, z]}
             modelUrl={building.modelUrl}
             scale={building.scale}
             rotation={building.rotation}
           />
         ) : (
           <BuildingPlaceholder
-            key={index}
-      position={[x, yPosition, z]}
+            key={uniqueKey}
+            position={[x, yPosition, z]}
             scale={building.scale}
             rotation={building.rotation}
           />
@@ -142,14 +147,20 @@ export default function Buildings({
 
   return (
     <Suspense fallback={null}>
-      {buildings.map((building, index) => (
-        <BuildingWithTerrainSnap
-          key={index}
-          building={building}
-          index={index}
-          terrainMesh={terrain}
-        />
-      ))}
+      {buildings.map((building) => {
+        // Create stable unique key from building properties
+        const uniqueKey = building.name 
+          ? `building-${building.name}-${building.lat}-${building.lng}`
+          : `building-${building.lat}-${building.lng}`
+        return (
+          <BuildingWithTerrainSnap
+            key={uniqueKey}
+            building={building}
+            index={buildings.indexOf(building)}
+            terrainMesh={terrain}
+          />
+        )
+      })}
     </Suspense>
   )
 }

@@ -123,19 +123,30 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
 
   const hidePreloaderB = () => {
     const navigationTime = navigationStartTime ? performance.now() - navigationStartTime : null
-    console.log('🔴 hidePreloaderB called', {
-      wasVisible: isPreloaderBVisible,
-      timestamp: Date.now(),
-      navigationTime: navigationTime ? `${navigationTime.toFixed(2)}ms` : 'N/A'
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔴 hidePreloaderB called', {
+        wasVisible: isPreloaderBVisible,
+        timestamp: Date.now(),
+        navigationTime: navigationTime ? `${navigationTime.toFixed(2)}ms` : 'N/A',
+        isLanguageSwitch
+      })
+    }
     setIsPreloaderBVisible(false)
     // CRITICAL: Reset navigation state immediately to re-enable navbar clicks
     setIsNavigating(false)
     setNavigationStartTime(null)
-    console.log('🔴 hidePreloaderB state updated', {
-      isPreloaderBVisible: false,
-      isNavigating: false
-    })
+    // CRITICAL FIX: Reset language switch flag when preloader hides
+    // This ensures subsequent navigations aren't treated as language switches
+    if (isLanguageSwitch) {
+      setIsLanguageSwitch(false)
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔴 hidePreloaderB state updated', {
+        isPreloaderBVisible: false,
+        isNavigating: false,
+        isLanguageSwitch: false
+      })
+    }
   }
   
   const setVideoReady = (ready: boolean) => {

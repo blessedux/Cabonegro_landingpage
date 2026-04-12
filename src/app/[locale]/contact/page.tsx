@@ -9,9 +9,9 @@ import NavbarZh from '@/components/sections/Navbar-zh'
 import Contact from '@/components/sections/Contact'
 
 // Code-split footer and cookie banner - only load when needed
+// Enable SSR for footer - it's lightweight and should render immediately
 const Footer = dynamic(() => import('@/components/sections/Footer'), { 
-  ssr: false,
-  loading: () => <div className="min-h-[200px]" />
+  ssr: true
 })
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
 

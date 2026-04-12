@@ -15,9 +15,9 @@ const NavbarEs = dynamic(() => import('@/components/sections/Navbar-es'), { ssr:
 const NavbarZh = dynamic(() => import('@/components/sections/Navbar-zh'), { ssr: false })
 
 // Code-split footer and cookie banner - only load when needed
+// Enable SSR for footer - it's lightweight and should render immediately
 const Footer = dynamic(() => import('@/components/sections/Footer'), { 
-  ssr: false,
-  loading: () => <div className="min-h-[200px]" />
+  ssr: true
 })
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
 
@@ -466,7 +466,7 @@ export default function ParqueTecnologicoPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white z-0" />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mt-16 mb-4 text-white">
+          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
             {localizedText.hero.title.includes('&') ? (
               <>
                 {localizedText.hero.title.split(' & ')[0]}
@@ -477,6 +477,11 @@ export default function ParqueTecnologicoPage() {
               localizedText.hero.title
             )}
           </h1>
+          {localizedText.hero.subtitle && (
+            <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
+              {localizedText.hero.subtitle}
+            </p>
+          )}
           <div className="flex justify-center mt-6">
             <Image
               src="/logos/patagon_white.png"

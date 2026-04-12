@@ -21,8 +21,15 @@ const eslintConfig = [
       "@typescript-eslint/no-unused-vars": "off",
       "react/no-unescaped-entities": "off",
       "@next/next/no-img-element": "off",
-      "jsx-a11y/alt-text": "off",
-      "@typescript-eslint/no-explicit-any": "off",
+      // Re-enabled accessibility rules for better a11y compliance
+      "jsx-a11y/alt-text": "warn",
+      "jsx-a11y/anchor-is-valid": "warn",
+      "jsx-a11y/aria-props": "warn",
+      "jsx-a11y/aria-proptypes": "warn",
+      "jsx-a11y/aria-unsupported-elements": "warn",
+      "jsx-a11y/role-has-required-aria-props": "warn",
+      "jsx-a11y/role-supports-aria-props": "warn",
+      "@typescript-eslint/no-explicit-any": "warn", // Changed from "off" to "warn"
       "@typescript-eslint/no-namespace": ["error", { allowDeclarations: true }],
     },
   },

@@ -4,13 +4,15 @@ import { useEffect, useState, useRef } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { TERRAIN_SIZE, CORRIDOR_BOUNDS, latLngToWorld, worldToLatLng } from '@/lib/terrain/coordinates'
+import { useCameraState, MinimapState } from '@/contexts/CameraStateContext'
 
 /**
  * Controller component that runs inside Canvas
- * Monitors camera position and updates shared state
+ * Monitors camera position and updates shared state via Context
  */
 export function MinimapController() {
   const { camera } = useThree()
+  const { setMinimapState } = useCameraState()
   const lastUpdateTime = useRef(0)
   const THROTTLE_MS = 50 // Update every 50ms for smooth minimap
 
@@ -35,24 +37,17 @@ export function MinimapController() {
     // Convert to lat/lng for minimap
     const [lat, lng] = worldToLatLng(x, z)
 
-    // Update window state for UI component to read
-    if (typeof window !== 'undefined') {
-      ;(window as any).__minimapState = {
-        position: { x, z },
-        latLng: { lat, lng },
-        angle,
-        direction: {
-          x: direction.x,
-          y: direction.y,
-          z: direction.z
-        }
+    // Update state via Context instead of window object
+    setMinimapState({
+      position: { x, z },
+      latLng: { lat, lng },
+      angle,
+      direction: {
+        x: direction.x,
+        y: direction.y,
+        z: direction.z
       }
-
-      // Trigger custom event for UI component
-      window.dispatchEvent(new CustomEvent('minimap-update', {
-        detail: { position: { x, z }, latLng: { lat, lng }, angle }
-      }))
-    }
+    })
   })
 
   return null // This component doesn't render anything
@@ -60,38 +55,22 @@ export function MinimapController() {
 
 /**
  * UI component that renders outside Canvas
- * Reads state from window object and renders fixed minimap overlay with coastline
+ * Reads state from Context and renders fixed minimap overlay with coastline
  */
 export default function Minimap() {
+  const { minimapState } = useCameraState()
   const [cameraPos, setCameraPos] = useState({ x: 0, z: 0 })
   const [cameraLatLng, setCameraLatLng] = useState({ lat: 0, lng: 0 })
   const [cameraAngle, setCameraAngle] = useState(0)
 
-  // Listen for updates from controller
+  // Update local state when context state changes
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const handleUpdate = (event: CustomEvent) => {
-      const { position, latLng, angle } = event.detail
-      setCameraPos(position)
-      if (latLng) setCameraLatLng(latLng)
-      setCameraAngle(angle)
+    if (minimapState) {
+      setCameraPos(minimapState.position)
+      setCameraLatLng(minimapState.latLng)
+      setCameraAngle(minimapState.angle)
     }
-
-    window.addEventListener('minimap-update', handleUpdate as EventListener)
-    
-    // Initial check
-    if ((window as any).__minimapState) {
-      const state = (window as any).__minimapState
-      setCameraPos(state.position)
-      if (state.latLng) setCameraLatLng(state.latLng)
-      setCameraAngle(state.angle)
-    }
-
-    return () => {
-      window.removeEventListener('minimap-update', handleUpdate as EventListener)
-    }
-  }, [])
+  }, [minimapState])
 
   // Calculate minimap coordinates based on lat/lng bounds
   const latRange = CORRIDOR_BOUNDS.maxLat - CORRIDOR_BOUNDS.minLat

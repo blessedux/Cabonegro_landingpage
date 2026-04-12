@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, memo } from 'react'
 import { flushSync } from 'react-dom'
 import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
@@ -104,7 +104,7 @@ function AnimatedCounter({ end, duration = 2000, suffix = '', prefix = '', class
   )
 }
 
-export default function Stats() {
+function Stats() {
   const statsRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -817,3 +817,6 @@ export default function Stats() {
     </>
   )
 }
+
+// Memoize Stats to prevent unnecessary re-renders
+export default memo(Stats)

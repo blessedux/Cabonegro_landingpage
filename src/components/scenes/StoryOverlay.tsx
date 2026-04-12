@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import gsap from 'gsap'
+import { useCameraState } from '@/contexts/CameraStateContext'
 
 export interface StoryPoint {
   position: [number, number, number]
@@ -169,13 +170,15 @@ export default function StoryOverlay({ storyPoints = DEFAULT_STORY_POINTS }: { s
 
   // Navigation controls UI
   const NavigationControls = () => {
+    const { navigateToPreviousWaypoint, navigateToNextWaypoint, toggleFreeFlight } = useCameraState()
+    
     return (
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
         <div className="bg-black/70 backdrop-blur-sm rounded-lg p-4 flex gap-4 items-center">
           <button
             onClick={() => {
-              if ((window as any).navigateToPreviousWaypoint) {
-                (window as any).navigateToPreviousWaypoint()
+              if (navigateToPreviousWaypoint) {
+                navigateToPreviousWaypoint()
               }
             }}
             className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded text-white transition-colors"
@@ -184,8 +187,8 @@ export default function StoryOverlay({ storyPoints = DEFAULT_STORY_POINTS }: { s
           </button>
           <button
             onClick={() => {
-              if ((window as any).toggleFreeFlight) {
-                (window as any).toggleFreeFlight()
+              if (toggleFreeFlight) {
+                toggleFreeFlight()
               }
             }}
             className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded text-white transition-colors"
@@ -194,8 +197,8 @@ export default function StoryOverlay({ storyPoints = DEFAULT_STORY_POINTS }: { s
           </button>
           <button
             onClick={() => {
-              if ((window as any).navigateToNextWaypoint) {
-                (window as any).navigateToNextWaypoint()
+              if (navigateToNextWaypoint) {
+                navigateToNextWaypoint()
               }
             }}
             className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded text-white transition-colors"

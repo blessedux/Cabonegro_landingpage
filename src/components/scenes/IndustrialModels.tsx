@@ -234,11 +234,14 @@ function IndustrialModelWithTerrainSnap({
   const [x, , z] = latLngToWorld(location.lat, location.lng)
   const position: [number, number, number] = [x, yPosition, z]
 
+  // Create stable unique key from location properties
+  const uniqueKey = `industrial-${location.type}-${location.lat}-${location.lng}`
+  
   // Render based on type
   if (location.type === 'shipyard') {
     return (
       <ShipyardModel
-        key={index}
+        key={uniqueKey}
         position={position}
         scale={location.scale || 1}
         rotation={location.rotation || 0}
@@ -249,7 +252,7 @@ function IndustrialModelWithTerrainSnap({
   if (location.type === 'vessel') {
     return (
       <VesselModel
-        key={index}
+        key={uniqueKey}
         position={position}
         scale={location.scale || 1}
         rotation={location.rotation || 0}
@@ -267,6 +270,7 @@ function IndustrialModelWithTerrainSnap({
       const gridSize = Math.ceil(Math.sqrt(count))
       const startOffset = -(gridSize - 1) * spacing / 2
       
+      const baseKey = `windturbine-${location.lat}-${location.lng}`
       return (
         <>
           {Array.from({ length: count }).map((_, i) => {
@@ -276,7 +280,7 @@ function IndustrialModelWithTerrainSnap({
             const offsetZ = startOffset + row * spacing
             return (
               <WindTurbineModel
-                key={`${index}-${i}`}
+                key={`${baseKey}-${i}`}
                 position={[x + offsetX, yPosition, z + offsetZ]}
                 scale={location.scale || 1}
                 rotation={location.rotation || 0}
@@ -289,7 +293,7 @@ function IndustrialModelWithTerrainSnap({
     
     return (
       <WindTurbineModel
-        key={index}
+        key={`windturbine-${location.lat}-${location.lng}`}
         position={position}
         scale={location.scale || 1}
         rotation={location.rotation || 0}
@@ -307,6 +311,7 @@ function IndustrialModelWithTerrainSnap({
       const gridSize = Math.ceil(Math.sqrt(count))
       const startOffset = -(gridSize - 1) * spacing / 2
       
+      const baseKey = `datacenter-${location.lat}-${location.lng}`
       return (
         <>
           {Array.from({ length: count }).map((_, i) => {
@@ -316,7 +321,7 @@ function IndustrialModelWithTerrainSnap({
             const offsetZ = startOffset + row * spacing
             return (
               <DataCenterModel
-                key={`${index}-${i}`}
+                key={`${baseKey}-${i}`}
                 position={[x + offsetX, yPosition, z + offsetZ]}
                 scale={location.scale || 1}
                 rotation={location.rotation || 0}
@@ -329,7 +334,7 @@ function IndustrialModelWithTerrainSnap({
     
     return (
       <DataCenterModel
-        key={index}
+        key={`datacenter-${location.lat}-${location.lng}`}
         position={position}
         scale={location.scale || 1}
         rotation={location.rotation || 0}
@@ -374,14 +379,18 @@ export default function IndustrialModels({
 
   return (
     <Suspense fallback={null}>
-      {locations.map((location, index) => (
-        <IndustrialModelWithTerrainSnap
-          key={index}
-          location={location}
-          index={index}
-          terrainMesh={terrain}
-        />
-      ))}
+      {locations.map((location) => {
+        // Create stable unique key from location properties
+        const uniqueKey = `industrial-${location.type}-${location.lat}-${location.lng}`
+        return (
+          <IndustrialModelWithTerrainSnap
+            key={uniqueKey}
+            location={location}
+            index={locations.indexOf(location)}
+            terrainMesh={terrain}
+          />
+        )
+      })}
     </Suspense>
   )
 }

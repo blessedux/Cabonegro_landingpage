@@ -5,6 +5,7 @@ import { useThree, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import gsap from 'gsap'
 import { TERRAIN_SIZE } from '@/lib/terrain/coordinates'
+import { useCameraState, CameraState } from '@/contexts/CameraStateContext'
 
 interface CameraWaypoint {
   position: [number, number, number]
@@ -44,6 +45,7 @@ export default function CameraControls({
   onWaypointReached
 }: CameraControlsProps) {
   const { camera, gl, scene } = useThree()
+  const { setCameraState, setNavigateToNextWaypoint, setNavigateToPreviousWaypoint, setToggleFreeFlight } = useCameraState()
   const [currentWaypointIndex, setCurrentWaypointIndex] = useState(0)
   const [isTouring, setIsTouring] = useState(false)
   const [isFreeFlight, setIsFreeFlight] = useState(enableFreeFlight)
@@ -405,27 +407,27 @@ export default function CameraControls({
     }
   }, [currentWaypointIndex, waypoints, animateToWaypoint])
 
-  // Expose navigation functions globally for UI buttons
+  // Expose navigation functions via Context for UI buttons
   useEffect(() => {
-    ;(window as any).navigateToNextWaypoint = goToNextWaypoint
-    ;(window as any).navigateToPreviousWaypoint = goToPreviousWaypoint
-    ;(window as any).toggleFreeFlight = () => setIsFreeFlight(!isFreeFlight)
+    setNavigateToNextWaypoint(() => goToNextWaypoint)
+    setNavigateToPreviousWaypoint(() => goToPreviousWaypoint)
+    setToggleFreeFlight(() => () => setIsFreeFlight(!isFreeFlight))
     
     return () => {
-      delete (window as any).navigateToNextWaypoint
-      delete (window as any).navigateToPreviousWaypoint
-      delete (window as any).toggleFreeFlight
+      setNavigateToNextWaypoint(null)
+      setNavigateToPreviousWaypoint(null)
+      setToggleFreeFlight(null)
     }
-  }, [goToNextWaypoint, goToPreviousWaypoint, isFreeFlight])
+  }, [goToNextWaypoint, goToPreviousWaypoint, isFreeFlight, setNavigateToNextWaypoint, setNavigateToPreviousWaypoint, setToggleFreeFlight])
 
-  // Expose camera position for minimap (update on every frame)
+  // Update camera state via Context (update on every frame)
   useFrame(() => {
     if (camera && isInitialized) {
       const direction = new THREE.Vector3()
       camera.getWorldDirection(direction)
       const angle = Math.atan2(direction.x, -direction.z) * (180 / Math.PI)
       
-      ;(window as any).__cameraState = {
+      setCameraState({
         position: {
           x: camera.position.x,
           y: camera.position.y,
@@ -437,7 +439,7 @@ export default function CameraControls({
           y: direction.y,
           z: direction.z
         }
-      }
+      })
     }
   })
 

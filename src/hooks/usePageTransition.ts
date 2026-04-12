@@ -14,7 +14,7 @@ export function usePageTransition() {
   const activeNavigationPathRef = useRef<string>('') // Track which pathname this navigation is for
   const minDisplayTimerRef = useRef<NodeJS.Timeout | null>(null)
   const safetyTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const { showPreloaderB, hidePreloaderB, isPreloaderBVisible, setNavigating } = usePreloader()
+  const { showPreloaderB, hidePreloaderB, isPreloaderBVisible, setNavigating, isLanguageSwitch } = usePreloader()
 
   useEffect(() => {
     // Skip on initial mount
@@ -33,16 +33,65 @@ export function usePageTransition() {
       isActiveNavigationRef.current = true
       activeNavigationPathRef.current = pathname // Track which pathname this navigation is for
       
-      // Reset navigation ref to ensure proper detection
-      // This handles cases where preloader was shown explicitly before pathname change
+      // CRITICAL: Set navigating state IMMEDIATELY to ensure white blocker shows
+      // This must happen before any other logic
       isNavigatingRef.current = true
       setNavigating(true)
 
-      // CRITICAL: Always show preloader for ALL route changes (including project → home)
-      // This ensures smooth transitions and prevents old page from flashing
-      // Always call showPreloaderB() even if already visible to ensure state is correct
-      // First load is handled by LocaleHomePage separately
+      // CRITICAL: ALWAYS show preloader on pathname change
+      // Don't check if already visible - ensure it's visible for ALL navigation scenarios
+      // This prevents blank white screens during navigation
+      // Even if navbar already showed it, showing again ensures it's visible
       showPreloaderB()
+
+      // CRITICAL FIX: For language switches, hide preloader IMMEDIATELY
+      // Don't wait for any timers or checks - language switches should be instant
+      // Also detect language switches by checking if pathname changed locale prefix
+      const prevLocale = prevPathnameRef.current.split('/')[1] || ''
+      const currentLocale = pathname.split('/')[1] || ''
+      const isLocaleChange = prevLocale !== currentLocale && 
+                            ['en', 'es', 'zh', 'fr'].includes(prevLocale) && 
+                            ['en', 'es', 'zh', 'fr'].includes(currentLocale) &&
+                            prevPathnameRef.current.substring(prevLocale.length + 2) === pathname.substring(currentLocale.length + 2) // Same path, different locale
+      
+      if (isLanguageSwitch || isLocaleChange) {
+        // Hide immediately - no delays, no checks, no timers
+        isActiveNavigationRef.current = false
+        isNavigatingRef.current = false
+        
+        // Clean up any timers that might have been set
+        if (checkIntervalRef.current) {
+          clearInterval(checkIntervalRef.current)
+          checkIntervalRef.current = null
+        }
+        if (safetyTimerRef.current) {
+          clearTimeout(safetyTimerRef.current)
+          safetyTimerRef.current = null
+        }
+        if (minDisplayTimerRef.current) {
+          clearTimeout(minDisplayTimerRef.current)
+          minDisplayTimerRef.current = null
+        }
+        
+        // Hide preloader immediately - no delays whatsoever
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🌐 [PERF] Language switch detected - hiding preloader immediately', {
+            isLanguageSwitch,
+            isLocaleChange,
+            from: prevPathnameRef.current,
+            to: pathname
+          })
+        }
+        
+        // CRITICAL: Hide immediately - no requestAnimationFrame, no delays
+        // Language switches must be instant
+        hidePreloaderB()
+        setNavigating(false)
+        
+        // Update pathname and return early - skip all other logic
+        prevPathnameRef.current = pathname
+        return
+      }
 
       // Check if navigating to /explore route (external app)
       const isToExploreRoute = pathname.includes('/explore')
@@ -95,65 +144,75 @@ export function usePageTransition() {
           return
         }
 
-        // For regular routes, wait for content to be ready before hiding
-        // OPTIMIZED: Hide after 300ms minimum for faster transitions
-        let checkCount = 0
-        const maxChecks = 20 // 2 seconds max (20 * 100ms) - faster timeout
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log('⏱️ [PERF] Starting content check interval', {
-            targetPath: pathname,
-            currentPath: window.location.pathname
-          })
+        // For regular routes, hide preloader immediately when pathname changes
+        // CRITICAL FIX: Hide immediately - don't wait for RAF
+        // For language switches, we want instant hiding
+        const hidePreloader = () => {
+          if (isNavigatingRef.current) {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('⏱️ [PERF] Hiding preloader immediately', {
+                pathname,
+                timeSinceNav: Date.now() - navigationStart
+              })
+            }
+            // Mark navigation as complete - allows cleanup to run
+            isActiveNavigationRef.current = false
+            isNavigatingRef.current = false
+            
+            // Clean up timers to prevent them from firing after preloader is hidden
+            if (checkIntervalRef.current) {
+              clearInterval(checkIntervalRef.current)
+              checkIntervalRef.current = null
+            }
+            if (safetyTimerRef.current) {
+              clearTimeout(safetyTimerRef.current)
+              safetyTimerRef.current = null
+            }
+            
+            hidePreloaderB()
+            setNavigating(false)
+          }
         }
+
+        // CRITICAL FIX: Hide immediately - don't wait for RAF
+        // For language switches, we want instant hiding
+        hidePreloader()
+        
+        // OPTIMIZED: Simplified safety fallback - only if hidePreloader didn't work
+        // Reduced checks and shorter timeout for faster transitions
+        let checkCount = 0
+        const maxChecks = 2 // 100ms max (2 * 50ms) - very fast timeout
         
         const checkInterval = setInterval(() => {
           checkCount++
           
-          // Minimum wait time for smooth transition (300ms = 3 checks) - faster
-          const minWaitTime = checkCount >= 3
-          
-          // OPTIMIZED: Wait 300ms, then hide - faster transition
-          // The pathname has already changed, so navigation has started
-          if (minWaitTime || checkCount >= maxChecks) {
+          // Safety check: Hide if max checks reached (fallback only)
+          if (checkCount >= maxChecks) {
             clearInterval(checkInterval)
             checkIntervalRef.current = null
             
-            console.log('⏱️ [PERF] Hiding preloader', {
-              checkCount,
-              timeElapsed: `${(checkCount * 100).toFixed(0)}ms`,
-              reason: checkCount >= maxChecks ? 'maxChecks reached' : 'minWaitTime (300ms)',
-              isNavigatingRef: isNavigatingRef.current
-            })
-            
             if (isNavigatingRef.current) {
-              console.log('⏱️ [PERF] HIDING PRELOADER NOW', {
-                checkCount,
-                timeElapsed: `${(checkCount * 100).toFixed(0)}ms`
-              })
-              // Mark navigation as complete - allows cleanup to run
+              if (process.env.NODE_ENV === 'development') {
+                console.log('⏱️ [PERF] Safety interval - hiding preloader', {
+                  checkCount,
+                  timeElapsed: `${(checkCount * 50).toFixed(0)}ms`
+                })
+              }
               isActiveNavigationRef.current = false
               isNavigatingRef.current = false
+              
+              // Clean up other timers
+              if (safetyTimerRef.current) {
+                clearTimeout(safetyTimerRef.current)
+                safetyTimerRef.current = null
+              }
+              
               hidePreloaderB()
               setNavigating(false)
-            } else {
-              console.warn('⏱️ [PERF] WARNING: isNavigatingRef is false')
             }
-          } else {
-            // Log every check to debug
-            console.log('⏱️ [PERF] Waiting...', {
-              checkCount,
-              timeElapsed: `${(checkCount * 100).toFixed(0)}ms`,
-              willHideIn: `${((3 - checkCount) * 100).toFixed(0)}ms`,
-              isNavigatingRef: isNavigatingRef.current
-            })
           }
-        }, 100) // Check every 100ms
+        }, 50) // Check every 50ms
         checkIntervalRef.current = checkInterval
-        console.log('⏱️ [PERF] Interval started', {
-          intervalId: checkInterval,
-          checkIntervalRef: checkIntervalRef.current !== null
-        })
       }
 
       // Start checking immediately - no delay needed
@@ -162,10 +221,10 @@ export function usePageTransition() {
       const minDisplayTimer = setTimeout(checkPageLoaded, minDisplayDelay)
       minDisplayTimerRef.current = minDisplayTimer
 
-      // Safety mechanism: Force hide after maximum time
-      // CRITICAL: Always reset navigation state to prevent navbar from being blocked
-      // Optimized: Set safety to 1.5s for faster transitions
-      const maxTimeout = isToExploreRoute ? 10000 : 1500 // 10s for external apps, 1.5s for regular routes (faster)
+      // CRITICAL FIX: Aggressive safety timer to prevent getting stuck
+      // Force hide after maximum time - this is the last resort
+      // Reduced to 200ms for very fast language switching
+      const maxTimeout = isToExploreRoute ? 10000 : 200 // 10s for external apps, 200ms for regular routes (very aggressive)
       const safetyTimer = setTimeout(() => {
         if (isNavigatingRef.current) {
           if (process.env.NODE_ENV === 'development') {
@@ -186,7 +245,7 @@ export function usePageTransition() {
           // Mark navigation as complete - allows cleanup to run
           isActiveNavigationRef.current = false
           isNavigatingRef.current = false
-          // Force hide immediately
+          // Force hide immediately - this is the last resort safety mechanism
           hidePreloaderB()
           // CRITICAL: Always reset navigation state, even on safety timer
           setNavigating(false)
@@ -194,36 +253,24 @@ export function usePageTransition() {
       }, maxTimeout)
       safetyTimerRef.current = safetyTimer
 
-      prevPathnameRef.current = pathname
+      // CRITICAL: Update prevPathname AFTER setting up all timers
+      // This ensures cleanup can detect if pathname changed
+      const currentPathname = pathname
+      prevPathnameRef.current = currentPathname
 
       return () => {
-        // CRITICAL: Only cleanup if this is for a DIFFERENT navigation
-        // If pathname changed, we're starting a new navigation, so cleanup the old one
-        // If pathname is the same, we're re-running due to other dependencies, so preserve timers
-        const isNewNavigation = activeNavigationPathRef.current !== pathname
-        
-        if (isNewNavigation || !isActiveNavigationRef.current) {
-          // New navigation started or navigation completed - safe to cleanup old timers
-          if (minDisplayTimerRef.current) {
-            clearTimeout(minDisplayTimerRef.current)
-            minDisplayTimerRef.current = null
-          }
-          if (safetyTimerRef.current) {
-            clearTimeout(safetyTimerRef.current)
-            safetyTimerRef.current = null
-          }
-          if (checkIntervalRef.current) {
-            clearInterval(checkIntervalRef.current)
-            checkIntervalRef.current = null
-          }
-        } else {
-          // Same navigation still active - preserve timers/intervals
-          // They will be cleaned up when navigation completes or safety timer fires
-          console.log('⏱️ [PERF] Cleanup skipped - navigation still active for', activeNavigationPathRef.current)
+        // CRITICAL FIX: Only cleanup minDisplayTimer
+        // Safety timer and checkInterval MUST run to ensure preloader hides
+        // They will be cleaned up when hidePreloader() is called or when they fire
+        if (minDisplayTimerRef.current) {
+          clearTimeout(minDisplayTimerRef.current)
+          minDisplayTimerRef.current = null
         }
+        // NEVER clear safetyTimer or checkInterval in cleanup
+        // They are the safety mechanism to ensure preloader always hides
       }
     }
-  }, [pathname, showPreloaderB, hidePreloaderB, setNavigating])
+  }, [pathname, showPreloaderB, hidePreloaderB, setNavigating, isLanguageSwitch])
 
   return { isPreloaderBVisible, hidePreloaderB }
 }

@@ -48,16 +48,23 @@ export default function PerformanceMonitor({
     }
   })
 
-  // Expose FPS to window for debugging
+  // Expose FPS to window for debugging (development only)
   useEffect(() => {
-    if (enabled && typeof window !== 'undefined') {
+    if (enabled && typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
       const interval = setInterval(() => {
-        ;(window as any).__sceneFPS = fpsRef.current
+        // Use typed window extension
+        if (window.__sceneFPS !== undefined) {
+          window.__sceneFPS = fpsRef.current
+        } else {
+          (window as any).__sceneFPS = fpsRef.current
+        }
       }, 1000)
 
       return () => {
         clearInterval(interval)
-        delete (window as any).__sceneFPS
+        if (window.__sceneFPS !== undefined) {
+          delete window.__sceneFPS
+        }
       }
     }
   }, [enabled])

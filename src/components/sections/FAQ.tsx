@@ -225,12 +225,15 @@ export default function FAQ() {
 
         <div className="relative">
           <div className="space-y-4">
-            {visibleFAQs.map((faq, index) => (
-              <Card
-                key={index}
-                className="bg-white border-gray-200 cursor-pointer hover:border-accent transition-colors shadow-sm"
-                onClick={() => setOpenFaq(openFaq === index ? null : index)}
-              >
+            {visibleFAQs.map((faq, index) => {
+              // Use question as stable unique key (questions are unique)
+              const uniqueKey = `faq-${faq.question.slice(0, 50).replace(/\s+/g, '-').toLowerCase()}`
+              return (
+                <Card
+                  key={uniqueKey}
+                  className="bg-white border-gray-200 cursor-pointer hover:border-accent transition-colors shadow-sm"
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold pr-4 text-foreground font-primary">{faq.question}</h3>
@@ -245,7 +248,8 @@ export default function FAQ() {
                   )}
                 </CardContent>
               </Card>
-            ))}
+              )
+            })}
           </div>
 
           {/* Fade out gradient and expand chevron */}

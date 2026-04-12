@@ -23,7 +23,13 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('3D Scene Error:', error, errorInfo)
+    // Always log errors, but format appropriately
+    if (process.env.NODE_ENV === 'development') {
+      console.error('3D Scene Error:', error, errorInfo)
+    } else {
+      // In production, log to error tracking service (e.g., Sentry)
+      console.error('3D Scene Error:', error.message)
+    }
   }
 
   render() {

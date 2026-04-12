@@ -109,8 +109,10 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
     }
   }, [duration, onComplete, inline, shouldAutoHide])
 
-  // Completely remove from DOM when not visible to prevent any overlay
-  if (!isVisible || isFadingOut) return null
+  // CRITICAL: Keep component in DOM during fade-out to prevent white gaps
+  // Only remove when fully invisible (opacity 0 AND animation complete)
+  // This ensures smooth crossfade with content
+  if (!isVisible && !isFadingOut) return null
 
   return (
     <>
@@ -129,9 +131,9 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
           right: 0,
           bottom: 0,
           // Keep visible during fade-out for smooth transition (only hide when fully invisible)
-          visibility: !isVisible ? 'hidden' : 'visible',
+          visibility: (!isVisible && !isFadingOut) ? 'hidden' : 'visible',
           // Keep display block during fade-out for smooth transition
-          display: !isVisible ? 'none' : 'block'
+          display: (!isVisible && !isFadingOut) ? 'none' : 'block'
         }}
       >
         {/* Subtle circular gradient overlay for 3D effect */}

@@ -3,6 +3,7 @@ import "./globals.css";
 import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
 import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
+import { CameraStateProvider } from '@/contexts/CameraStateContext';
 import { ThemeProvider } from 'next-themes';
 import FontLoader from '@/components/FontLoader';
 
@@ -95,7 +96,9 @@ export default function RootLayout({
           <PreloaderProvider>
             <AnimationProvider>
               <CookieBannerProvider>
-                {children}
+                <CameraStateProvider>
+                  {children}
+                </CameraStateProvider>
               </CookieBannerProvider>
             </AnimationProvider>
           </PreloaderProvider>
