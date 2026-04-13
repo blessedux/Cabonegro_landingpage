@@ -505,10 +505,10 @@ function Stats() {
 
             {/* Company/Area Breakdown - 3 Cards Layout: 1 top, 2 bottom */}
             <div className="space-y-4 md:space-y-6 mb-8 md:mb-12">
-              {/* Top Row: Patagon Valley (centered) */}
-              <div className="flex justify-center">
+              {/* Top Row: Patagon Valley — same max width as bottom row so all cards align on tablet+ */}
+              <div className="w-full max-w-4xl mx-auto">
                 <motion.div 
-                  className="relative w-full max-w-md rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
+                  className="relative w-full rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
                   style={{
                     opacity: 1, // Always visible
                     y: 0, // No scroll-based transforms

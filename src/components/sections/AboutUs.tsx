@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect, memo } from 'react'
+import { useRef, useState, useEffect, memo, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { MdDirectionsBoat, MdEnergySavingsLeaf } from 'react-icons/md'
@@ -70,54 +70,142 @@ interface TextSection {
   description: string
 }
 
-// Important words to make bold (case-insensitive) - reduced to half
-const getImportantWords = (locale: string): string[] => {
-  if (locale === 'es') {
-    return ['Cabo Negro', 'Estrecho de Magallanes', 'Magallanes', 'portuario', 'logístico', 'tecnológico', 'nodo', 'industrial']
-  } else if (locale === 'zh') {
-    return ['卡波内格罗', '智利', '绿色氢', '战略']
-  } else if (locale === 'fr') {
-    return ['Cabo Negro', 'développement', 'industriel', 'maritime', 'hydrogène', 'vert']
-  } else {
-    return ['Cabo Negro', 'southernmost', 'strategic', 'gateway', 'green', 'hydrogen']
-  }
+/**
+ * About intro: only these exact phrases are bold.
+ * Latin locales: word tokens match after stripping edge punctuation (case-insensitive).
+ */
+const INTRO_BOLD_PHRASES: Record<'es' | 'en' | 'fr', readonly (readonly string[])[]> = {
+  es: [
+    ['estrecho', 'de', 'magallanes'],
+    ['cabo', 'negro'],
+    ['desarrollo', 'portuario', 'logístico', 'y', 'tecnológico'],
+  ],
+  en: [
+    ['strait', 'of', 'magellan'],
+    ['cabo', 'negro'],
+    ['port', 'logistics', 'and', 'technological', 'development'],
+  ],
+  fr: [
+    ['détroit', 'de', 'magellan'],
+    ['cabo', 'negro'],
+    ['développement', 'portuaire', 'logistique', 'et', 'technologique'],
+  ],
 }
 
-// Simple paragraph component - no scroll animations
-function SimpleParagraph({ text, className = "", locale = 'en' }: { text: string; className?: string; locale?: string }) {
-  const words = text.split(" ");
-  const importantWords = getImportantWords(locale);
+/** Chinese intros have no spaces between words — bold by exact substring. */
+const ZH_INTRO_BOLD_PHRASES = ['麦哲伦海峡', '卡波内格罗', '港口、物流和技术发展'] as const
 
+function tokenNorm(word: string): string {
+  return word.replace(/^[.,;:!?¿¡]+|[.,;:!?¿¡]+$/g, '').toLowerCase()
+}
+
+function buildLatinBoldMask(words: string[], phrases: readonly (readonly string[])[]): boolean[] {
+  const bold = new Array(words.length).fill(false)
+  for (const phrase of phrases) {
+    const len = phrase.length
+    for (let i = 0; i <= words.length - len; i++) {
+      let ok = true
+      for (let j = 0; j < len; j++) {
+        if (tokenNorm(words[i + j]) !== phrase[j]) {
+          ok = false
+          break
+        }
+      }
+      if (ok) {
+        for (let j = 0; j < len; j++) bold[i + j] = true
+      }
+    }
+  }
+  return bold
+}
+
+function mergeBoldRanges(ranges: { start: number; end: number }[]): { start: number; end: number }[] {
+  const sorted = ranges
+    .filter((r) => r.start < r.end)
+    .sort((a, b) => a.start - b.start)
+  const out: { start: number; end: number }[] = []
+  for (const r of sorted) {
+    const last = out[out.length - 1]
+    if (!last || r.start > last.end) out.push({ ...r })
+    else last.end = Math.max(last.end, r.end)
+  }
+  return out
+}
+
+/** Renders Chinese intro with bold only on exact phrase substrings (no space tokenization). */
+function ChineseIntroParagraph({ text, className = '' }: { text: string; className?: string }) {
+  const ranges: { start: number; end: number }[] = []
+  for (const p of ZH_INTRO_BOLD_PHRASES) {
+    let from = 0
+    while (from < text.length) {
+      const i = text.indexOf(p, from)
+      if (i === -1) break
+      ranges.push({ start: i, end: i + p.length })
+      from = i + p.length
+    }
+  }
+  const merged = mergeBoldRanges(ranges)
+  const parts: ReactNode[] = []
+  let cursor = 0
+  merged.forEach((r, idx) => {
+    if (cursor < r.start) {
+      parts.push(
+        <span key={`t-${idx}-a`}>{text.slice(cursor, r.start)}</span>
+      )
+    }
+    parts.push(
+      <span key={`t-${idx}-b`} className="font-bold">
+        {text.slice(r.start, r.end)}
+      </span>
+    )
+    cursor = r.end
+  })
+  if (cursor < text.length) {
+    parts.push(<span key="t-end">{text.slice(cursor)}</span>)
+  }
   return (
-    <p 
-      className={`flex flex-wrap leading-relaxed ${className}`} 
-      style={{ 
-        color: '#000000', // Black text for white background
-        fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', // Smaller font size
-        lineHeight: '2', // Good spacing between lines
-        letterSpacing: '0.01em'
+    <p
+      className={`flex flex-wrap leading-relaxed ${className}`}
+      style={{
+        color: '#000000',
+        fontSize: 'clamp(1rem, 1.5vw, 1.25rem)',
+        lineHeight: '2',
+        letterSpacing: '0.01em',
       }}
     >
-      {words.map((word, i) => {
-        // Check if word (without punctuation) is important
-        const cleanWord = word.replace(/[.,;:!?¿¡]/g, '');
-        const isImportant = importantWords.some(important => 
-          cleanWord.toLowerCase() === important.toLowerCase() ||
-          cleanWord.toLowerCase().includes(important.toLowerCase()) ||
-          important.toLowerCase().includes(cleanWord.toLowerCase())
-        );
-        
-        return (
-          <span 
-            key={i}
-            className={`mr-2 ${isImportant ? 'font-bold' : ''}`}
-          >
-            {word}
-          </span>
-        );
-      })}
+      {parts}
     </p>
-  );
+  )
+}
+
+// Simple paragraph component — Latin locales: phrase-only bold via INTRO_BOLD_PHRASES
+function SimpleParagraph({ text, className = "", locale = 'en' }: { text: string; className?: string; locale?: string }) {
+  if (locale === 'zh') {
+    return <ChineseIntroParagraph text={text} className={className} />
+  }
+
+  const words = text.split(' ')
+  const phrases =
+    locale === 'es' ? INTRO_BOLD_PHRASES.es : locale === 'fr' ? INTRO_BOLD_PHRASES.fr : INTRO_BOLD_PHRASES.en
+  const boldMask = buildLatinBoldMask(words, phrases)
+
+  return (
+    <p
+      className={`flex flex-wrap leading-relaxed ${className}`}
+      style={{
+        color: '#000000',
+        fontSize: 'clamp(1rem, 1.5vw, 1.25rem)',
+        lineHeight: '2',
+        letterSpacing: '0.01em',
+      }}
+    >
+      {words.map((word, i) => (
+        <span key={i} className={`mr-2 ${boldMask[i] ? 'font-bold' : ''}`}>
+          {word}
+        </span>
+      ))}
+    </p>
+  )
 }
 
 function AboutUs() {
@@ -139,13 +227,14 @@ function AboutUs() {
   const aboutTitle = locale === 'es' ? 'Cabo Negro: Una localización estratégica' : locale === 'zh' ? '卡波内格罗海事码头' : locale === 'fr' ? 'Terminal Maritime Cabo Negro' : 'Cabo Negro Maritime Terminal'
   
   // Intro paragraph text
-  const introParagraph = locale === 'es' 
-    ? 'Chile es el país más austral del mundo. En su extremo sur, la ciudad de Punta Arenas se ubica directamente sobre el Estrecho de Magallanes, uno de los corredores marítimos más relevantes y estratégicos del hemisferio sur. El sector de Cabo Negro, a minutos de la ciudad, reúne condiciones únicas para el desarrollo portuario, logístico y tecnológico, consolidándose como nodo clave para el crecimiento industrial de Magallanes.'
-    : locale === 'zh'
-    ? '卡波内格罗代表了智利最南端的远见性工业和海事发展，旨在作为智利绿色氢经济和国际贸易路线的战略门户。'
-    : locale === 'fr'
-    ? 'Cabo Negro représente un développement industriel et maritime visionnaire à la pointe sud du Chili, conçu pour servir de porte d\'entrée stratégique pour l\'économie de l\'hydrogène vert du Chili et les routes commerciales internationales.'
-    : 'Cabo Negro represents a visionary industrial and maritime development at the southernmost tip of Chile, designed to serve as the strategic gateway for Chile\'s green hydrogen economy and international trade routes.'
+  const introParagraph =
+    locale === 'es'
+      ? 'Chile es el país más austral del mundo. En su extremo sur, la ciudad de Punta Arenas se ubica directamente sobre el Estrecho de Magallanes, uno de los corredores marítimos más relevantes y estratégicos del hemisferio sur. El sector de Cabo Negro, a minutos de la ciudad, reúne condiciones únicas para el desarrollo portuario, logístico y tecnológico, consolidándose como nodo clave para el crecimiento industrial de Magallanes.'
+      : locale === 'zh'
+        ? '智利是世界上最南端的国家。在其最南端，蓬塔阿雷纳斯市坐落于麦哲伦海峡之上，是南半球最重要、最具战略意义的海上走廊之一。卡波内格罗片区距市区仅数分钟车程，具备港口、物流和技术发展的独特条件，正成为麦哲伦地区工业增长的关键节点。'
+        : locale === 'fr'
+          ? 'Le Chili est le pays le plus austral du monde. À son extrême sud, la ville de Punta Arenas est située directement sur le détroit de Magellan, l\'un des corridors maritimes les plus importants et stratégiques de l\'hémisphère sud. Le secteur de Cabo Negro, à quelques minutes de la ville, réunit des conditions uniques pour le développement portuaire, logistique et technologique, s\'imposant comme nœud clé pour la croissance industrielle de la région de Magallanes.'
+          : 'Chile is the southernmost country in the world. In its far south, the city of Punta Arenas lies directly on the Strait of Magellan, one of the southern hemisphere\'s most relevant and strategic maritime corridors. The Cabo Negro area, minutes from the city, offers unique conditions for port, logistics, and technological development, establishing itself as a key node for industrial growth in Magallanes.'
   
   // Define icon sections based on locale - matching todo.md lines 54-57
   const textSections: TextSection[] = locale === 'es' ? [

@@ -3,7 +3,12 @@
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
-import { isLocaleHomePath } from '@/lib/navigation-path'
+import {
+  isLocaleHomePath,
+  localeFromPathname,
+  normalizePathname,
+  stripLocalePrefix,
+} from '@/lib/navigation-path'
 
 /** Minimum time navigation preloader stays up after route change so it actually paints */
 const MIN_NAV_PRELOADER_MS = 420
@@ -35,6 +40,9 @@ export function usePageTransition() {
   const isPreloaderBVisibleRef = useRef(isPreloaderBVisible)
   isPreloaderBVisibleRef.current = isPreloaderBVisible
 
+  const isLanguageSwitchRef = useRef(isLanguageSwitch)
+  isLanguageSwitchRef.current = isLanguageSwitch
+
   useEffect(() => {
     if (!prevPathnameRef.current) {
       prevPathnameRef.current = pathname
@@ -50,29 +58,19 @@ export function usePageTransition() {
 
     const effectStartedAt = performance.now()
 
-    setNavigating(true)
-    // Click handlers usually already showed the overlay; avoid resetting timers / start time twice.
-    if (!isPreloaderBVisibleRef.current) {
-      showPreloaderB()
+    /** Same logical route, different locale prefix — must not depend on fragile substring math. */
+    const routeKeyWithoutLocale = (path: string) => {
+      const rest = stripLocalePrefix(normalizePathname(path))
+      return rest === '' ? '/' : normalizePathname(rest)
     }
 
-    const prevLocale = prev.split('/')[1] || ''
-    const currentLocale = pathname.split('/')[1] || ''
-    const isLocaleChange =
+    const prevLocale = localeFromPathname(prev)
+    const currentLocale = localeFromPathname(pathname)
+    const isLocaleOnly =
+      prevLocale !== null &&
+      currentLocale !== null &&
       prevLocale !== currentLocale &&
-      ['en', 'es', 'zh', 'fr'].includes(prevLocale) &&
-      ['en', 'es', 'zh', 'fr'].includes(currentLocale) &&
-      prev.substring(prevLocale.length + 2) === pathname.substring(currentLocale.length + 2)
-
-    if (isLanguageSwitch || isLocaleChange) {
-      if (hideNavTimerRef.current) clearTimeout(hideNavTimerRef.current)
-      if (maxNavTimerRef.current) clearTimeout(maxNavTimerRef.current)
-      hideNavTimerRef.current = null
-      maxNavTimerRef.current = null
-      hidePreloaderB()
-      setNavigating(false)
-      return
-    }
+      routeKeyWithoutLocale(prev) === routeKeyWithoutLocale(pathname)
 
     const clearScheduled = () => {
       setPreloaderDrainHeavy(false)
@@ -96,6 +94,20 @@ export function usePageTransition() {
         cancelAnimationFrame(rafChainRef.current)
         rafChainRef.current = null
       }
+    }
+
+    // Locale-only: hide overlay immediately — do NOT setNavigating first (avoids DeferredHomeWhileOverlay + mask churn).
+    if (isLanguageSwitchRef.current || isLocaleOnly) {
+      clearScheduled()
+      hidePreloaderB()
+      setNavigating(false)
+      return
+    }
+
+    setNavigating(true)
+    // Click handlers usually already showed the overlay; avoid resetting timers / start time twice.
+    if (!isPreloaderBVisibleRef.current) {
+      showPreloaderB()
     }
 
     clearScheduled()
@@ -146,7 +158,8 @@ export function usePageTransition() {
     }, MAX_NAV_PRELOADER_MS)
 
     return clearScheduled
-  }, [pathname, showPreloaderB, hidePreloaderB, setNavigating, setPreloaderDrainHeavy, isLanguageSwitch])
+    // isLanguageSwitch read via isLanguageSwitchRef so pathname updates always use the latest flag without stale closures
+  }, [pathname, showPreloaderB, hidePreloaderB, setNavigating, setPreloaderDrainHeavy])
 
   return { hidePreloaderB }
 }

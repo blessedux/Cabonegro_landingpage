@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { routing } from '@/i18n/routing'
-import { usePreloader } from '@/contexts/PreloaderContext'
+import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -18,8 +18,7 @@ export default function LanguageSwitcher() {
   const pathname = usePathname()
   const locale = useLocale()
   const [isOpen, setIsOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const { setLanguageSwitch } = usePreloader()
+  const { push } = useNavigateWithPreloader()
   
   // Get current language using next-intl's useLocale hook
   const currentLanguage = languages.find(lang => lang.code === locale) || languages[0]
@@ -55,9 +54,6 @@ export default function LanguageSwitcher() {
       return
     }
     
-    // Set language switch flag to skip preloader and optimize performance
-    setLanguageSwitch(true)
-    
     // Close dropdown immediately for instant UI feedback
     setIsOpen(false)
     
@@ -80,11 +76,8 @@ export default function LanguageSwitcher() {
 
     router.prefetch(targetPath)
 
-    // Use startTransition to make navigation non-blocking and faster
-    // This keeps the UI responsive during navigation
-    startTransition(() => {
-      router.push(targetPath)
-    })
+    // Same path as UnifiedNavbar: sync overlay + language flag, then navigate (avoids stuck transition).
+    push(targetPath, { languageSwitch: true })
   }
 
   return (
