@@ -42,6 +42,11 @@ export function useNavbarBackgroundDetection(
     const checkBackground = () => {
       if (!navbarRef.current) return
 
+      if (pathname.includes('/contact')) {
+        setIsOverWhiteBackground(true)
+        return
+      }
+
       const scrollY = window.scrollY || window.pageYOffset
       const windowHeight = window.innerHeight
       const documentHeight = document.documentElement.scrollHeight

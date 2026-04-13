@@ -75,7 +75,7 @@ function NavbarZh() {
       pointerEvents: (isNavbarHidden || isPreloaderVisible || !isVisible
         ? 'none'
         : 'auto') as React.CSSProperties['pointerEvents'],
-      zIndex: 100,
+      zIndex: 100000,
       position: 'fixed' as const,
       isolation: 'isolate' as const,
       willChange: 'transform, opacity' as const,
@@ -108,7 +108,7 @@ function NavbarZh() {
   return (
     <header
       ref={navbarRef}
-      className={`fixed left-0 right-0 top-0 z-[100] p-4 transition-all duration-500 ease-out ${headerClassName}`}
+      className={`fixed left-0 right-0 top-0 z-[100000] p-4 transition-all duration-500 ease-out ${headerClassName}`}
       style={headerStyle}
     >
       <nav className="container mx-auto">

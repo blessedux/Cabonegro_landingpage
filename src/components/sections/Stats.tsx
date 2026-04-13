@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState, useRef, memo } from 'react'
-import { flushSync } from 'react-dom'
 import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { MagicText } from '@/components/ui/magic-text'
 import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { Button } from '@/components/ui/button'
 import { useRouter, usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
+import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
 import Image from 'next/image'
 
 interface AnimatedCounterProps {
@@ -108,7 +108,8 @@ function Stats() {
   const statsRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const { showPreloaderB, isPreloaderComplete, isPreloaderBVisible } = usePreloader()
+  const { push } = useNavigateWithPreloader()
+  const { isPreloaderComplete, isPreloaderBVisible } = usePreloader()
   
   // Track if hero video is loaded and ready - prevents Stats background from showing before video
   const [heroVideoReady, setHeroVideoReady] = useState(false)
@@ -234,30 +235,15 @@ function Stats() {
   
   // Navigation handlers - explicitly show preloader for consistent transitions
   const handlePatagonValleyClick = () => {
-    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
-    flushSync(() => {
-      showPreloaderB()
-    })
-    // Navigate IMMEDIATELY - no delays
-    router.push(`/${locale}/parque-tecnologico`)
+    push(`/${locale}/parque-tecnologico`)
   }
   
   const handlePortZoneClick = () => {
-    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
-    flushSync(() => {
-      showPreloaderB()
-    })
-    // Navigate IMMEDIATELY - no delays
-    router.push(`/${locale}/terminal-maritimo`)
+    push(`/${locale}/terminal-maritimo`)
   }
   
   const handleCaboNegroDosClick = () => {
-    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
-    flushSync(() => {
-      showPreloaderB()
-    })
-    // Navigate IMMEDIATELY - no delays
-    router.push(`/${locale}/parque-logistico`)
+    push(`/${locale}/parque-logistico`)
   }
   
   // Track scroll progress using statsRef (always defined, avoids hydration errors)

@@ -1,4 +1,6 @@
 const createNextIntlPlugin = require('next-intl/plugin');
+const CopyPlugin = require('copy-webpack-plugin');
+const path = require('path');
 
 // Bundle analyzer is optional - only load if available
 let withBundleAnalyzer = (config) => config;
@@ -14,12 +16,35 @@ try {
 
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
+const cesiumSource = path.join(__dirname, 'node_modules/cesium/Build/Cesium');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Parent dirs may contain other lockfiles (e.g. pnpm); pin tracing to this app root.
+  outputFileTracingRoot: path.join(__dirname),
   allowedDevOrigins: ["*.preview.same-app.com"],
+  env: {
+    CESIUM_BASE_URL: '/_next/static/cesium',
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.plugins.push(
+        new CopyPlugin({
+          patterns: [
+            { from: path.join(cesiumSource, 'Workers'), to: path.join(__dirname, '.next/static/cesium/Workers') },
+            { from: path.join(cesiumSource, 'ThirdParty'), to: path.join(__dirname, '.next/static/cesium/ThirdParty') },
+            { from: path.join(cesiumSource, 'Assets'), to: path.join(__dirname, '.next/static/cesium/Assets') },
+            { from: path.join(cesiumSource, 'Widgets'), to: path.join(__dirname, '.next/static/cesium/Widgets') },
+          ],
+        })
+      );
+      config.resolve.fallback = { ...config.resolve.fallback, fs: false };
+    }
+    return config;
+  },
   // Enable experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion', '@mdi/react', 'react-icons', 'd3', 'three', 'leaflet'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@mdi/react', 'react-icons', 'd3'],
   },
   // Reduce bundle size
   // Note: swcMinify is enabled by default in Next.js 15, no need to specify
@@ -61,117 +86,23 @@ const nextConfig = {
       },
     ],
   },
-  // Rewrites for /explore route - proxies external map deployment
-  // This allows the map to be served from the same domain while keeping repos separate
-  async rewrites() {
-    let externalMapUrl = process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL || 'https://your-map-deployment.vercel.app'
-    
-    // Ensure URL has protocol prefix (required by Next.js rewrites)
-    if (!externalMapUrl.startsWith('http://') && !externalMapUrl.startsWith('https://')) {
-      externalMapUrl = `https://${externalMapUrl}`
-    }
-    
-    // Debug logging
-    console.log('🔧 Rewrites config:', {
-      externalMapUrl,
-      hasEnvVar: !!process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL,
-      nodeEnv: process.env.NODE_ENV
-    })
-    
-    // If external URL is not set, return empty rewrites to avoid errors
-    if (!externalMapUrl || externalMapUrl === 'https://your-map-deployment.vercel.app') {
-      console.warn('⚠️ NEXT_PUBLIC_EXTERNAL_MAP_URL not set, /explore rewrites disabled')
-      return []
-    }
-    
-    return [
-      // IMPORTANT: Asset rewrites must come BEFORE the main explore routes
-      // to ensure they're matched first. Next.js evaluates rewrites in order.
-      
-      // Proxy assets folder from external app (catch-all for assets)
-      // This handles /assets/index-*.js, /assets/index-*.css, etc.
-      {
-        source: '/assets/:path*',
-        destination: `${externalMapUrl}/assets/:path*`,
-      },
-      // Proxy Next.js root-level assets (index-*.js, index-*.css)
-      // These might be at root level OR in assets folder
-      // :hash matches any string (alphanumeric + dashes typically)
-      {
-        source: '/index-:hash.js',
-        destination: `${externalMapUrl}/index-:hash.js`,
-      },
-      {
-        source: '/index-:hash.css',
-        destination: `${externalMapUrl}/index-:hash.css`,
-      },
-      // Also try assets folder for index files (common Next.js pattern)
-      {
-        source: '/assets/index-:hash.js',
-        destination: `${externalMapUrl}/assets/index-:hash.js`,
-      },
-      {
-        source: '/assets/index-:hash.css',
-        destination: `${externalMapUrl}/assets/index-:hash.css`,
-      },
-      // Proxy specific assets that the external app might reference
-      {
-        source: '/CaboNegro_logo_white.png',
-        destination: `${externalMapUrl}/CaboNegro_logo_white.png`,
-      },
-      {
-        source: '/assets/CaboNegro_logo_white.png',
-        destination: `${externalMapUrl}/assets/CaboNegro_logo_white.png`,
-      },
-      // Main explore routes (must come after asset rewrites)
-      {
-        source: '/:locale/explore/:path*',
-        destination: `${externalMapUrl}/:path*`,
-      },
-      {
-        source: '/:locale/explore',
-        destination: `${externalMapUrl}`,
-      },
-      {
-        source: '/explore/:path*',
-        destination: `${externalMapUrl}/:path*`,
-      },
-      {
-        source: '/explore',
-        destination: `${externalMapUrl}`,
-      },
-      // Note: /_next/static and /_next/image are handled by Next.js internally
-      // and cannot be rewritten. The external app should use absolute URLs for these
-      // OR we need to handle them differently (e.g., via middleware)
-    ]
-  },
   async headers() {
-    const externalMapUrl = process.env.NEXT_PUBLIC_EXTERNAL_MAP_URL || 'https://your-map-deployment.vercel.app'
-    let externalMapHost = externalMapUrl
-    if (!externalMapHost.startsWith('http://') && !externalMapHost.startsWith('https://')) {
-      externalMapHost = `https://${externalMapHost}`
-    }
-    // Extract hostname from URL for CSP
-    try {
-      const url = new URL(externalMapHost)
-      externalMapHost = url.hostname
-    } catch (e) {
-      // If URL parsing fails, use as-is
-    }
-
-    // Unified CSP that works for both regular routes and explore routes
-    // Adding vercel.live to default CSP since it's needed for explore routes and not a security risk
-    // Note: This CSP will be applied as HTTP headers, which take precedence over meta tags in HTML
-    const unifiedCSP = `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; script-src-elem 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://${externalMapHost}; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com https://${externalMapHost}; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com https://${externalMapHost}; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://${externalMapHost} blob:;`
+    const csp = `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://cesium.com https://*.cesium.com; script-src-elem 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://cesium.com https://*.cesium.com; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://api.cesium.com https://*.cesium.com https://ion.cesium.com blob: data:; worker-src blob: 'self';`
 
     return [
       {
-        // Apply unified CSP to all routes - simpler and more reliable
+        // Long-lived immutable cache for encoded video assets
+        source: '/videos/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: unifiedCSP
+            value: csp
           },
           {
             key: 'Link',

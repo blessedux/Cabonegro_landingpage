@@ -6,7 +6,6 @@ import { WorldMap } from "@/components/ui/world-map";
 
 export function WorldMapDemoZh() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const descriptionRef = useRef<HTMLDivElement>(null);
 
   // Track scroll progress through the map section
   const { scrollYProgress } = useScroll({
@@ -14,24 +13,8 @@ export function WorldMapDemoZh() {
     offset: ["start end", "end start"]
   });
 
-  // Track scroll progress for description section
-  const { scrollYProgress: descScrollYProgress } = useScroll({
-    target: descriptionRef,
-    offset: ["start end", "center center"]
-  });
-
   // Map slides down from top to bottom of container as user scrolls
   const mapY = useTransform(scrollYProgress, [0, 1], ['0px', '40px']);
-
-  // Map slides horizontally from left to right as user scrolls
-  const mapX = useTransform(scrollYProgress, [0, 1], [-50, 50]);
-
-  // Side margins increase (map width decreases) as user scrolls
-  const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]);
-
-  // Description animation - fade in and slide up
-  const descOpacity = useTransform(descScrollYProgress, [0, 0.3, 1], [0, 1, 1]);
-  const descY = useTransform(descScrollYProgress, [0, 0.3, 1], [50, 0, 0]);
 
   return (
     <div 
@@ -40,12 +23,10 @@ export function WorldMapDemoZh() {
       data-white-background="true"
       style={{ position: 'relative' }}
     >
-      {/* Mobile map - simple flow, no sticky, no wrapper */}
       <motion.div
-        className="md:hidden relative w-full bg-white mt-40"
+        className="md:hidden relative w-full max-w-7xl mx-auto px-3 md:px-6 bg-white mt-40"
         style={{
           y: mapY,
-          x: 0,
           height: '50vh'
         }}
       >
@@ -79,21 +60,15 @@ export function WorldMapDemoZh() {
         </div>
       </motion.div>
       
-      {/* Desktop sticky wrapper - with side margins and horizontal movement */}
+      <div className="hidden md:block w-full max-w-7xl mx-auto px-3 md:px-6">
       <motion.div 
-        className="hidden md:block sticky top-[6.5rem] flex items-start justify-center pt-0"
-        style={{
-          paddingLeft: sideMargin,
-          paddingRight: sideMargin,
-          zIndex: 1
-        }}
+        className="sticky top-[6.5rem] flex items-start justify-center pt-0 w-full"
+        style={{ zIndex: 1 }}
       >
-        {/* Desktop wrapper - with side margins and horizontal movement */}
         <motion.div
-          className="relative w-full max-w-full overflow-hidden bg-white"
+          className="relative w-full overflow-hidden bg-white"
           style={{
             y: mapY,
-            x: mapX,
             height: '100vh'
           }}
         >
@@ -127,16 +102,10 @@ export function WorldMapDemoZh() {
           </div>
         </motion.div>
       </motion.div>
+      </div>
       
       {/* Strategic Description Section - Below the map */}
-      <motion.div
-        ref={descriptionRef}
-        className="w-full bg-white py-16 md:py-24 px-4 md:px-6"
-        style={{
-          opacity: descOpacity,
-          y: descY
-        }}
-      >
+      <div className="w-full bg-white py-16 md:py-24 px-4 md:px-6 relative z-30">
         <div className="max-w-4xl mx-auto">
           <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6 text-center">
             战略海上门户
@@ -153,7 +122,7 @@ export function WorldMapDemoZh() {
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

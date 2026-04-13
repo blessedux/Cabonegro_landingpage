@@ -1,9 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
 import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
-import { CameraStateProvider } from '@/contexts/CameraStateContext';
 import { ThemeProvider } from 'next-themes';
 import FontLoader from '@/components/FontLoader';
 
@@ -64,6 +63,13 @@ export const metadata: Metadata = {
   },
 };
 
+/** Lets fixed backgrounds use env(safe-area-inset-*) edge-to-edge on notched phones */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -96,9 +102,7 @@ export default function RootLayout({
           <PreloaderProvider>
             <AnimationProvider>
               <CookieBannerProvider>
-                <CameraStateProvider>
-                  {children}
-                </CameraStateProvider>
+                {children}
               </CookieBannerProvider>
             </AnimationProvider>
           </PreloaderProvider>

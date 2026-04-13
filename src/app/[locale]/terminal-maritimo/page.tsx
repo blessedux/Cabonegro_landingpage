@@ -1,27 +1,23 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Shield, Navigation, MapPin, Zap, Factory, Calendar } from 'lucide-react'
+import { Shield, Navigation, MapPin, Calendar } from 'lucide-react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import Script from 'next/script'
 import { Card, CardContent } from '@/components/ui/card'
-
-// Type declaration for spline-viewer custom element
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'spline-viewer': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
-        url?: string
-      }, HTMLElement>
-    }
-  }
-}
 import { RulerCarousel, type CarouselItem } from '@/components/ui/ruler-carousel'
 import { MagicText } from '@/components/ui/magic-text'
-import { motion } from 'framer-motion'
-import { useRef, useState, useEffect } from 'react'
-import { useScroll, useTransform } from 'framer-motion'
+import { TerminalMaritimoHero } from '@/components/sections/TerminalMaritimoHero'
+import {
+  motion,
+  useInView,
+  useSpring,
+  useTransform,
+  useReducedMotion,
+  useMotionValue,
+  type MotionValue,
+} from 'framer-motion'
+import { useLayoutEffect, useRef } from 'react'
 import React from 'react'
 
 // Code-split navigation components - only load when needed
@@ -36,74 +32,66 @@ const Footer = dynamic(() => import('@/components/sections/Footer'), {
 })
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
 
-// Word component with bold support - must be separate component to use hooks
-function BoldWord({ word, progress, range, isBold }: { word: string; progress: any; range: number[]; isBold: boolean }) {
-  const opacity = useTransform(progress, range, [0, 1])
-  
-  return (
-    <span className="relative mr-1">
-      <span className="absolute opacity-20">{isBold ? <strong>{word}</strong> : word}</span>
-      <motion.span style={{ opacity: opacity }}>
-        {isBold ? <strong>{word}</strong> : word}
-      </motion.span>
-    </span>
-  )
+/**
+ * Framer `useScroll({ target })` is unreliable here (stuck progress after client navigations / accelerated scroll timeline).
+ * We derive 0→1 progress while the bridge element moves through the viewport using the same geometry as `["start start","end start"]`.
+ */
+function useTerminalBridgeProgress(
+  bridgeRef: React.RefObject<HTMLDivElement | null>,
+  active: boolean,
+  /** Remeasure after client-side navigations (same ref instance can persist). */
+  layoutKey: string
+): MotionValue<number> {
+  const progress = useMotionValue(0)
+
+  useLayoutEffect(() => {
+    if (!active) {
+      progress.set(0)
+      return
+    }
+
+    const update = () => {
+      const node = bridgeRef.current
+      if (!node) return
+      const rect = node.getBoundingClientRect()
+      const sy = window.scrollY
+      const topDocument = rect.top + sy
+      const h = node.offsetHeight
+      if (h <= 0) return
+      const p = (sy - topDocument) / h
+      progress.set(Math.min(1, Math.max(0, p)))
+    }
+
+    update()
+    const raf = requestAnimationFrame(update)
+
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    const ro = new ResizeObserver(update)
+    const el = bridgeRef.current
+    if (el) ro.observe(el)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+      ro.disconnect()
+    }
+  }, [active, bridgeRef, progress, layoutKey])
+
+  return progress
 }
 
-// Custom MagicText component with bold words support
-function MagicTextWithBold({ text, className = "", boldWords = [] }: { text: string; className?: string; boldWords?: string[] }) {
+// Bold phrases + viewport stagger (same pattern as `magic-text.tsx`).
+function MagicTextWithBold({ text, className = "" }: { text: string; className?: string }) {
   const container = useRef<HTMLParagraphElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: container,
-    offset: ["start 0.9", "start 0.3"],
-  })
-  
+  const isInView = useInView(container, { once: true, amount: 0.35, margin: "0px 0px -8% 0px" })
+
   const words = text.split(" ")
-  
-  const isBold = (word: string, index: number) => {
-    const cleanWord = word.replace(/[.,;:!?]/g, '').toLowerCase()
-    
-    // Check each bold word/phrase
-    for (const boldPhrase of boldWords) {
-      const phraseWords = boldPhrase.toLowerCase().split(' ')
-      
-      // For single words like "Chile" or "Patagonia" - exact match only
-      if (phraseWords.length === 1) {
-        if (cleanWord === phraseWords[0]) {
-          return true
-        }
-      }
-      // For multi-word phrases like "Cabo Negro Maritime Terminal"
-      else if (phraseWords.length > 1) {
-        // Check if current word is part of the phrase and we're in the right position
-        const phraseStartIndex = index
-        let matches = true
-        for (let i = 0; i < phraseWords.length; i++) {
-          const checkIndex = phraseStartIndex + i
-          if (checkIndex >= words.length) {
-            matches = false
-            break
-          }
-          const checkWord = words[checkIndex].replace(/[.,;:!?]/g, '').toLowerCase()
-          if (checkWord !== phraseWords[i]) {
-            matches = false
-            break
-          }
-        }
-        if (matches) {
-          return true
-        }
-      }
-    }
-    
-    return false
-  }
-  
-  // Pre-process to identify which words should be bold
+
   const boldIndices = new Set<number>()
   const wordsLower = words.map(w => w.replace(/[.,;:!?]/g, '').toLowerCase())
-  
-  // Check for "Cabo Negro Maritime Terminal" phrase
+
   const terminalPhrase = ['cabo', 'negro', 'maritime', 'terminal']
   for (let i = 0; i <= wordsLower.length - terminalPhrase.length; i++) {
     let matches = true
@@ -119,29 +107,35 @@ function MagicTextWithBold({ text, className = "", boldWords = [] }: { text: str
       }
     }
   }
-  
-  // Check for exact matches: "Chile" and "Patagonia"
+
   wordsLower.forEach((word, i) => {
     if (word === 'chile' || word === 'patagonia') {
       boldIndices.add(i)
     }
   })
-  
+
   return (
     <p ref={container} className={`flex flex-wrap leading-relaxed ${className}`}>
       {words.map((word, i) => {
-        const start = i / words.length
-        const end = start + 1 / words.length
         const shouldBeBold = boldIndices.has(i)
-        
         return (
-          <BoldWord 
-            key={i}
-            word={word}
-            progress={scrollYProgress}
-            range={[start, end]}
-            isBold={shouldBeBold}
-          />
+          <span key={i} className="relative mr-1 inline-block">
+            <span className="absolute opacity-20" aria-hidden>
+              {shouldBeBold ? <strong>{word}</strong> : word}
+            </span>
+            <motion.span
+              className="relative inline-block"
+              initial={{ opacity: 0 }}
+              animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+              transition={{
+                duration: 0.45,
+                delay: i * 0.035,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              {shouldBeBold ? <strong>{word}</strong> : word}
+            </motion.span>
+          </span>
         )
       })}
     </p>
@@ -151,31 +145,34 @@ function MagicTextWithBold({ text, className = "", boldWords = [] }: { text: str
 export default function TerminalMaritimoPage() {
   const pathname = usePathname()
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoError, setVideoError] = useState(false)
-  
-  const heroVideo = 'https://storage.reimage.dev/mente-files/vid-2d88fd081208/original.mp4'
 
-  // Check if video is already loaded (cached) when component mounts
-  useEffect(() => {
-    // Small delay to ensure video element is set up
-    const checkVideoState = () => {
-      if (videoRef.current) {
-        // Check if video is already loaded (readyState >= 3 means HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA)
-        if (videoRef.current.readyState >= 3) {
-          // Add small delay to ensure placeholder shows briefly
-          setTimeout(() => setVideoLoaded(true), 200)
-        }
-      }
-    }
-    
-    // Check immediately and after a short delay
-    checkVideoState()
-    const timeout = setTimeout(checkVideoState, 100)
-    
-    return () => clearTimeout(timeout)
-  }, [])
+  const heroVisionBridgeRef = useRef<HTMLDivElement>(null)
+  const prefersReducedMotion = useReducedMotion()
+
+  const bridgeMotionEnabled = prefersReducedMotion !== true
+  const rawBridgeProgress = useTerminalBridgeProgress(heroVisionBridgeRef, bridgeMotionEnabled, pathname)
+
+  const smoothHeroVision = useSpring(rawBridgeProgress, {
+    stiffness: 128,
+    damping: 28,
+    mass: 0.2,
+  })
+
+  const hv = prefersReducedMotion === true ? rawBridgeProgress : smoothHeroVision
+
+  /**
+   * Start zoomed IN (full bleed, no top gap) → zoom OUT as user scrolls.
+   * Steeper early curve = more zoom change per scroll in the first half of the bridge.
+   */
+  const heroMediaScale = useTransform(hv, [0, 0.42, 1], [1.38, 1.12, 1])
+  /** No vertical drift: background reads “fixed” while copy parallaxes */
+  const heroMediaY = useTransform(hv, [0, 1], ['0%', '0%'])
+  const heroMediaBlur = useTransform(hv, [0, 1], [0, 10])
+  /** Foreground moves independently (parallax vs fixed-feel media) */
+  const heroContentY = useTransform(hv, [0, 1], [0, -150])
+  /** Vision block rises into place with a slight lag relative to the hero */
+  const visionParallaxY = useTransform(hv, [0.35, 0.92], [72, 0])
+  const visionParallaxOpacity = useTransform(hv, [0.25, 0.55], [0.88, 1])
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -414,6 +411,19 @@ export default function TerminalMaritimoPage() {
 
   const localizedText = getLocalizedText()
 
+  const terminalHeroText = {
+    title: localizedText.hero.title,
+    subtitle: localizedText.hero.subtitle,
+    learnMore:
+      locale === 'es'
+        ? 'Conoce mas sobre nuestros socios estrategicos.'
+        : locale === 'fr'
+          ? 'En savoir plus sur nos partenaires stratégiques.'
+          : locale === 'zh'
+            ? '了解更多关于我们的战略合作伙伴。'
+            : 'Learn more about our strategic partners.',
+  }
+
   // Get appropriate Navbar component
   const getNavbar = () => {
     if (locale === 'es') return <NavbarEs />
@@ -538,162 +548,68 @@ export default function TerminalMaritimoPage() {
         </div>
       </div>
 
-      {/* Hero Section with Full Background Video */}
-      <section data-hero-section="true" className="relative h-screen w-full overflow-hidden">
-        {/* Lazy Loading Placeholder Image - fades out smoothly when video is ready */}
-        <div 
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ 
-            zIndex: 1,
-            opacity: videoLoaded ? 0 : 1,
-            transition: 'opacity 0.8s ease-in-out',
-            pointerEvents: 'none'
-          }}
+      {/* Hero → Vision: scroll bridge (sticky hero + zoom / parallax; progress from useTerminalBridgeProgress) */}
+      <div
+        ref={heroVisionBridgeRef}
+        className={
+          prefersReducedMotion
+            ? 'relative'
+            : 'relative h-[168vh] min-h-[168vh]'
+        }
+      >
+        <div
+          className={
+            prefersReducedMotion
+              ? 'relative'
+              : 'sticky top-0 z-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden'
+          }
         >
-          <Image
-            src="/cabonegro_slide2.webp"
-            alt="Cabo Negro Maritime Terminal"
-            fill
-            className="object-cover"
-            priority
-            quality={90}
+          <TerminalMaritimoHero
+            text={terminalHeroText}
+            locale={locale}
+            scrollMotion={
+              prefersReducedMotion
+                ? undefined
+                : {
+                    mediaScale: heroMediaScale,
+                    mediaY: heroMediaY,
+                    contentY: heroContentY,
+                    mediaBlur: heroMediaBlur,
+                  }
+            }
           />
         </div>
-        
-        {/* Background Video - fades in smoothly when ready */}
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          crossOrigin="anonymous"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ 
-            zIndex: 2,
-            opacity: videoLoaded ? 1 : 0,
-            transition: 'opacity 0.8s ease-in-out',
-            backgroundColor: '#000000' // Black background while loading to prevent white flash
-          }}
-          onLoadedData={() => {
-            // Only set loaded when video has enough data to play smoothly
-            if (videoRef.current && videoRef.current.readyState >= 3) {
-              setVideoLoaded(true)
-            }
-          }}
-          onCanPlay={() => {
-            setVideoLoaded(true)
-          }}
-          onCanPlayThrough={() => {
-            // Best indicator that video is fully ready
-            setVideoLoaded(true)
-          }}
-          onLoadedMetadata={() => {
-            // Video metadata loaded
-          }}
-          onStalled={() => {
-            // Video stalled - handled silently
-          }}
-          onWaiting={() => {
-            // Video waiting for data - handled silently
-          }}
-          onError={(e) => {
-            const video = e.currentTarget
-            const error = video.error
-            let errorMessage = 'Unknown error'
-            
-            if (error) {
-              switch (error.code) {
-                case error.MEDIA_ERR_ABORTED:
-                  errorMessage = 'Video loading aborted'
-                  break
-                case error.MEDIA_ERR_NETWORK:
-                  errorMessage = 'Network error while loading video'
-                  break
-                case error.MEDIA_ERR_DECODE:
-                  errorMessage = 'Video decoding error'
-                  break
-                case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                  errorMessage = 'Video format not supported or source not found'
-                  break
-                default:
-                  errorMessage = `Video error code: ${error.code}`
-              }
-            }
-            
-            console.error('❌ Terminal Maritimo video loading error:', {
-              message: errorMessage,
-              error: error,
-              src: heroVideo,
-              networkState: video.networkState,
-              readyState: video.readyState
-            })
-            setVideoError(true)
-          }}
-          onLoadStart={() => {
-            setVideoLoaded(false)
-          }}
-        >
-          <source src={heroVideo} type="video/mp4" />
-        </video>
-        
-        {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" style={{ zIndex: 3 }} />
-        
-        {/* Content - Above overlay for full brightness */}
-        <div className="relative h-full flex flex-col items-center justify-center px-6 text-center" style={{ zIndex: 10 }}>
-          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
-            {localizedText.hero.title}
-          </h1>
-          <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
-            {localizedText.hero.subtitle}
-          </p>
-          {/* COMPAS Marine Logo */}
-          <div className="mt-24">
-            <a
-              href="https://compasmarine.cl/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block transition-opacity hover:opacity-80"
-            >
-              <Image
-                src="/logos/COMPAS_MARINE.png"
-                alt="COMPAS Marine"
-                width={220}
-                height={110}
-                className="object-contain"
-                style={{ filter: 'brightness(0) invert(1)', zIndex: 10 }}
-              />
-            </a>
-            <p className="mt-4 text-sm italic text-white/70">
-              {locale === 'es' && 'Conoce mas sobre nuestros socios estrategicos.'}
-              {locale === 'en' && 'Learn more about our strategic partners.'}
-              {locale === 'fr' && 'En savoir plus sur nos partenaires stratégiques.'}
-              {locale === 'zh' && '了解更多关于我们的战略合作伙伴。'}
-            </p>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* Vision Section - Right after hero */}
-      <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
+      <motion.section
+        data-white-background="true"
+        className={`relative z-10 py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                y: visionParallaxY,
+                opacity: visionParallaxOpacity,
+              }
+        }
+      >
         <div className="container mx-auto max-w-6xl">
-          <motion.h2 
-            initial={{ x: -50, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ margin: "-10% 0px -10% 0px" }}
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true, amount: 0.35 }}
             className={`text-4xl md:text-5xl font-bold mb-6 ${isLightMode ? 'text-gray-900' : ''}`}
           >
             {localizedText.vision.title}
           </motion.h2>
-          <MagicText 
+          <MagicText
             text={localizedText.vision.description}
             className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} max-w-4xl leading-relaxed`}
           />
         </div>
-      </section>
+      </motion.section>
 
       {/* Strategic Collaboration Section - Compas Marine */}
       <section data-white-background="true" className={`py-20 px-6 ${isLightMode ? 'bg-white' : ''}`}>
@@ -772,7 +688,6 @@ export default function TerminalMaritimoPage() {
                   <MagicTextWithBold 
                     text={localizedText.strategicCollaboration.description}
                     className={`text-xl ${isLightMode ? 'text-gray-700' : 'text-gray-300'} leading-relaxed`}
-                    boldWords={[]}
                   />
                 </div>
               ) : (

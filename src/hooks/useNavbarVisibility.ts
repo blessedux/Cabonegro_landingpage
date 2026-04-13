@@ -15,6 +15,7 @@ export function useNavbarVisibility() {
     isPreloaderVisible,
     isPreloaderComplete,
     isPreloaderBVisible,
+    hasSeenPreloader,
   } = usePreloader()
 
   // Check if we're on a special page that should show navbar immediately
@@ -34,6 +35,13 @@ export function useNavbarVisibility() {
 
     // For other pages, ensure navbar is not hidden
     setIsNavbarHidden(false)
+
+    // In-app navigations reuse Preloader B after the first visit. Keep the chrome
+    // visible and interactive; only the first-visit splash should hide the bar.
+    if (isPreloaderBVisible && hasSeenPreloader) {
+      setIsVisible(true)
+      return
+    }
 
     // Check both old preloader system (isPreloaderComplete) and new preloader system (isPreloaderBVisible)
     const preloaderComplete = (isPreloaderComplete && !isPreloaderVisible) || !isPreloaderBVisible
@@ -55,27 +63,11 @@ export function useNavbarVisibility() {
     isPreloaderComplete,
     isPreloaderVisible,
     isPreloaderBVisible,
+    hasSeenPreloader,
     pathname,
     setIsNavbarHidden,
     isSpecialPage,
   ])
-
-  // Safety mechanism: periodic check to ensure navbar is always visible and clickable
-  useEffect(() => {
-    // Only check if preloader is not visible (page has loaded)
-    if (isPreloaderBVisible) return
-
-    const checkInterval = setInterval(() => {
-      const shouldBeVisible = !isPreloaderBVisible && !isPreloaderVisible
-
-      if (shouldBeVisible && !isVisible) {
-        setIsVisible(true)
-        setIsNavbarHidden(false)
-      }
-    }, 500) // Check every 500ms
-
-    return () => clearInterval(checkInterval)
-  }, [isVisible, isPreloaderBVisible, isPreloaderVisible, setIsNavbarHidden])
 
   return {
     isVisible,

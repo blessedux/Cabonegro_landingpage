@@ -2,10 +2,10 @@ import { Button } from '@/components/ui/button'
 import { TypingAnimation } from '@/components/ui/typing-animation'
 import { ArrowLeft } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
-import { flushSync } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
+import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
 import Image from 'next/image'
 
 export default function Hero() {
@@ -15,13 +15,9 @@ export default function Hero() {
   const h1Ref = useRef<HTMLHeadingElement>(null)
   const paragraphRef = useRef<HTMLParagraphElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const router = useRouter()
   const pathname = usePathname()
-  const { showPreloaderB, isPreloaderComplete, setVideoReady } = usePreloader()
-
-  // Single hero video (first video - logistics)
-  const heroVideo = 'https://storage.reimage.dev/mente-files/vid-86ef632d3d23/original.mp4'
+  const { push } = useNavigateWithPreloader()
+  const { isPreloaderComplete } = usePreloader()
   
   // Extract locale from pathname
   const getLocale = () => {
@@ -55,114 +51,6 @@ export default function Hero() {
     }
   }, [])
 
-  // Track video loading state
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoError, setVideoError] = useState(false)
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(false)
-  const [videoInViewport, setVideoInViewport] = useState(false)
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  
-  // Detect mobile device
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const checkMobile = () => {
-        const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
-                              (window.innerWidth <= 768)
-        setIsMobile(isMobileDevice)
-      }
-      checkMobile()
-      window.addEventListener('resize', checkMobile)
-      return () => window.removeEventListener('resize', checkMobile)
-    }
-  }, [])
-
-  // Load video immediately - don't wait for intersection observer
-  // Video should always be ready to play and stay visible
-  useEffect(() => {
-    // Load video immediately when component mounts
-    setVideoInViewport(true)
-    setTimeout(() => {
-      setShouldLoadVideo(true)
-    }, 500)
-  }, [])
-
-  // Programmatically play video on mobile after user interaction
-  // iOS Safari requires user interaction before videos can autoplay
-  useEffect(() => {
-    if (!shouldLoadVideo) return
-
-    const playVideo = async () => {
-      if (videoRef.current) {
-        try {
-          // Ensure video is muted and has playsInline for mobile
-          videoRef.current.muted = true
-          await videoRef.current.play()
-          setIsVideoPlaying(true)
-        } catch (error) {
-          // Silently handle autoplay errors (browser policies)
-          // Video will still show first frame
-          setIsVideoPlaying(false)
-        }
-      }
-    }
-
-    // Try to play after preloader completes (user interaction)
-    if (isPreloaderComplete) {
-      // Small delay to ensure video element is ready
-      setTimeout(playVideo, 100)
-    }
-
-    // Also try on first user interaction (touch/scroll) as fallback
-    const handleUserInteraction = () => {
-      playVideo()
-      // Remove listeners after first interaction
-      document.removeEventListener('touchstart', handleUserInteraction)
-      document.removeEventListener('scroll', handleUserInteraction, true)
-    }
-
-    document.addEventListener('touchstart', handleUserInteraction, { once: true, passive: true })
-    document.addEventListener('scroll', handleUserInteraction, { once: true, passive: true })
-
-    return () => {
-      document.removeEventListener('touchstart', handleUserInteraction)
-      document.removeEventListener('scroll', handleUserInteraction, true)
-    }
-  }, [isPreloaderComplete, shouldLoadVideo])
-  
-  // Debug: Log hero section z-index and positioning
-  // Removed debug console logs - use performance logs instead
-  
-  // Monitor video playing state
-  useEffect(() => {
-    if (!videoRef.current) return
-    
-    const video = videoRef.current
-    
-    const handlePlay = () => {
-      setIsVideoPlaying(true)
-    }
-    
-    const handlePause = () => {
-      setIsVideoPlaying(false)
-    }
-    
-    const handlePlaying = () => {
-      setIsVideoPlaying(true)
-    }
-    
-    video.addEventListener('play', handlePlay)
-    video.addEventListener('pause', handlePause)
-    video.addEventListener('playing', handlePlaying)
-    
-    return () => {
-      video.removeEventListener('play', handlePlay)
-      video.removeEventListener('pause', handlePause)
-      video.removeEventListener('playing', handlePlaying)
-    }
-  }, [shouldLoadVideo])
-
-
   // Handle "Explore Project" button click - instant response
   const handleExploreProject = (e?: React.MouseEvent | React.TouchEvent) => {
     if (e) {
@@ -182,12 +70,7 @@ export default function Hero() {
 
   // Handle project navigation - show preloader for consistent transitions
   const handleProjectNavigation = (route: string) => {
-    // CRITICAL: Show preloader INSTANTLY - use flushSync to force immediate state update
-    flushSync(() => {
-      showPreloaderB()
-    })
-    // Navigate IMMEDIATELY - no delays
-    router.push(`/${currentLocale}${route}`)
+    push(`/${currentLocale}${route}`)
   }
 
   return (
@@ -208,16 +91,12 @@ export default function Hero() {
         pointerEvents: 'auto' // Always allow pointer events
       }}
     >
-      {/* Background Video - static single video - always visible, stays in place */}
-      {/* Video container is independent of Hero z-index - always stays visible behind content */}
+      {/* Static background image for fast initial load */}
       <motion.div 
         className="absolute z-0 overflow-hidden rounded-lg" 
         style={{ 
           zIndex: 0, 
           pointerEvents: 'none',
-          opacity: 1, // Always visible - no fading, no scroll-based changes
-          visibility: 'visible', // Ensure it's always visible
-          display: 'block', // Ensure it's displayed
           position: 'absolute', // Absolute within Hero section
           top: '0.5rem', // Small margin from top
           left: '0.5rem', // Small margin from left
@@ -231,7 +110,6 @@ export default function Hero() {
             height: '100%'
           }}
         >
-          {/* Placeholder image - always render, fade out smoothly when video is ready */}
           <Image
             src="/cabonegro_frame1.webp"
             alt="Cabo Negro Hero"
@@ -245,88 +123,9 @@ export default function Hero() {
             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             style={{
               zIndex: 1,
-              // Keep placeholder visible until video is fully loaded and ready to play
-              // Only fade out when video is loaded AND (not mobile OR video is playing)
-              opacity: (shouldLoadVideo && videoLoaded && (!isMobile || isVideoPlaying)) ? 0 : 1,
-              transition: 'opacity 0.8s ease-in-out',
-              pointerEvents: 'none'
+              pointerEvents: 'none',
             }}
           />
-          
-          {/* Video element - always render when shouldLoadVideo is true to ensure smooth transition */}
-          {/* Video stays visible at all times - no scroll-based hiding, always in DOM */}
-          {/* Render video immediately once shouldLoadVideo is true, keep it always rendered */}
-          {shouldLoadVideo && (
-            <video
-              ref={videoRef}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              crossOrigin="anonymous"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                willChange: 'transform',
-                transform: 'translateZ(0)', // Force GPU acceleration
-                zIndex: 2, // Always above placeholder
-                // Video always visible once loaded - no scroll-based opacity changes
-                opacity: (videoLoaded && (!isMobile || isVideoPlaying)) ? 1 : 0,
-                transition: 'opacity 0.8s ease-in-out',
-                backgroundColor: '#000000', // Black background while loading to prevent white flash
-                minWidth: '100%',
-                minHeight: '100%',
-                width: '100%',
-                height: '100%',
-                // Ensure video stays visible - no scroll-based hiding
-                visibility: 'visible',
-                display: 'block',
-                position: 'absolute', // Absolute positioning
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0
-              }}
-              onLoadedData={() => {
-                // Only set loaded when video has enough data to play smoothly
-                if (videoRef.current && videoRef.current.readyState >= 3) {
-                  setVideoLoaded(true)
-                  setVideoReady(true) // Signal to context that video is ready
-                }
-              }}
-              onCanPlay={() => {
-                setVideoLoaded(true)
-                setVideoReady(true) // Signal to context that video is ready
-              }}
-              onCanPlayThrough={() => {
-                setVideoLoaded(true)
-                setVideoReady(true) // Signal to context that video is ready
-              }}
-              onLoadedMetadata={() => {
-                // Metadata loaded - video is ready
-                if (videoRef.current && videoRef.current.readyState >= 3) {
-                  setVideoReady(true)
-                }
-              }}
-              onStalled={() => {
-                // Video stalled - will resume automatically
-              }}
-              onWaiting={() => {
-                // Video waiting for data - will resume automatically
-              }}
-              onError={(e) => {
-                // Video error - set error state but don't block content
-                setVideoError(true)
-                // Still signal video ready to prevent blocking non-home pages
-                setVideoReady(true)
-              }}
-              onLoadStart={() => {
-                setVideoLoaded(false)
-              }}
-            >
-              <source src={heroVideo} type="video/mp4" />
-            </video>
-          )}
         </div>
       </motion.div>
 

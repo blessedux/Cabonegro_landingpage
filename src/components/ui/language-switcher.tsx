@@ -77,7 +77,9 @@ export default function LanguageSwitcher() {
     
     // Build target path
     const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
-    
+
+    router.prefetch(targetPath)
+
     // Use startTransition to make navigation non-blocking and faster
     // This keeps the UI responsive during navigation
     startTransition(() => {

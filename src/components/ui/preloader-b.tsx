@@ -1,6 +1,10 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { usePreloader } from '@/contexts/PreloaderContext'
+import AmChartGlobePreloader from '@/components/ui/amchart-globe-preloader'
+import PreloaderTopographicBackdrop from '@/components/ui/PreloaderTopographicBackdrop'
+import PreloaderTopographicCenterBlur from '@/components/ui/PreloaderTopographicCenterBlur'
 
 interface PreloaderBProps {
   onComplete?: () => void
@@ -8,9 +12,21 @@ interface PreloaderBProps {
   className?: string
   inline?: boolean // If true, uses absolute positioning instead of fixed
   shouldAutoHide?: boolean // If false, preloader waits for explicit hide signal (default: false for language switches)
+  globeSpin?: 'east' | 'west'
+  /** Hydration boot: show full topo + globe, skip internal timers (parent hides overlay). */
+  bootOnly?: boolean
 }
 
-export default function PreloaderB({ onComplete, duration = 0.8, className = '', inline = false, shouldAutoHide = false }: PreloaderBProps) {
+export default function PreloaderB({
+  onComplete,
+  duration = 0.8,
+  className = '',
+  inline = false,
+  shouldAutoHide = false,
+  globeSpin = 'west',
+  bootOnly = false,
+}: PreloaderBProps) {
+  const { preloaderDrainHeavy } = usePreloader()
   const [isVisible, setIsVisible] = useState(true)
   const [isFadingOut, setIsFadingOut] = useState(false)
   const mountTimeRef = useRef<number>(Date.now())
@@ -25,13 +41,10 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
   }, [])
 
   useEffect(() => {
-    
+    if (bootOnly) return
+
     // For inline mode, ensure minimum 2 seconds of visibility before allowing fade out
     if (inline) {
-      const minDisplayTime = 2000 // 2 seconds minimum
-      const elapsed = Date.now() - mountTimeRef.current
-      const remainingTime = Math.max(0, minDisplayTime - elapsed)
-      
       // After minimum time passes, component can be removed by parent
       return
     }
@@ -107,7 +120,7 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
       clearTimeout(fadeOutTimer)
       clearTimeout(safetyTimer)
     }
-  }, [duration, onComplete, inline, shouldAutoHide])
+  }, [bootOnly, duration, onComplete, inline, shouldAutoHide])
 
   // CRITICAL: Keep component in DOM during fade-out to prevent white gaps
   // Only remove when fully invisible (opacity 0 AND animation complete)
@@ -116,14 +129,13 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
 
   return (
     <>
-      {/* Background layer - fades out smoothly for crossfade */}
       <div
-        className={`${inline ? 'absolute' : 'fixed'} inset-0 ${inline ? 'z-50' : 'z-[99999]'} bg-white transition-opacity duration-1000 ease-in-out ${
+        className={`preloader-b-surface ${preloaderDrainHeavy ? 'preloader-b-drain-heavy' : ''} ${inline ? 'absolute' : 'fixed'} inset-0 ${inline ? 'z-50' : 'z-[100003]'} bg-white transition-opacity duration-1000 ease-in-out ${
           isFadingOut ? 'opacity-0' : 'opacity-100'
         } ${className}`}
         style={{ 
           backgroundColor: '#ffffff', // White background to match original preloader
-          zIndex: 99999, // Ensure it's above everything including navbar and Stats section
+          zIndex: 100003, // Above fixed navbar (100000) so full-screen topo + globe cover chrome while loading
           pointerEvents: (isFadingOut || !isVisible) ? 'none' : 'auto', // Disable pointer events when fading out or not visible
           position: 'fixed', // Always fixed to block content
           top: 0,
@@ -136,60 +148,27 @@ export default function PreloaderB({ onComplete, duration = 0.8, className = '',
           display: (!isVisible && !isFadingOut) ? 'none' : 'block'
         }}
       >
-        {/* Subtle circular gradient overlay for 3D effect */}
-        {/* Darker white on borders, brighter white in center */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
+        <PreloaderTopographicBackdrop isFadingOut={isFadingOut} pauseLineAnimation={preloaderDrainHeavy} />
+        <PreloaderTopographicCenterBlur isFadingOut={isFadingOut} />
+        {/* Light vignette only — avoid opaque white over topo (was hiding contour lines) */}
+        <div
+          className="pointer-events-none absolute inset-0 z-[2]"
           style={{
-            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.98) 30%, rgba(255, 255, 255, 0.95) 60%, rgba(250, 250, 250, 0.92) 100%)',
-            opacity: isFadingOut ? 0 : 1, // Fade with background
+            background:
+              'radial-gradient(ellipse 85% 70% at 50% 45%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 45%, transparent 72%)',
+            opacity: isFadingOut ? 0 : 1,
             transition: 'opacity 1000ms ease-in-out',
           }}
         />
-      </div>
-      
-      {/* Video layer - fades out smoothly for crossfade */}
-      <div
-        className={`${inline ? 'absolute' : 'fixed'} inset-0 ${inline ? 'z-50' : 'z-[99999]'} flex items-center justify-center pointer-events-none transition-opacity duration-1000 ease-in-out`}
-        style={{ 
-          zIndex: 100000, // Above background layer
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: isFadingOut ? 0 : 1, // Fade out smoothly
-        }}
-      >
-        {/* Centered video */}
-        <div
-          className="relative"
-          style={{ 
-            opacity: isFadingOut ? 0 : 1, // Fade out smoothly
-            transform: isFadingOut ? 'scale(0.98)' : 'scale(1)', // Slight scale down on fade
-            transition: 'opacity 1000ms ease-in-out, transform 1000ms ease-in-out',
-          }}
-        >
-          <div className="flex items-center justify-center relative w-full h-full">
-            {/* Centered video */}
-            <div className="relative" style={{ maxWidth: '90vw', maxHeight: '90vh', width: 'auto', height: 'auto' }}>
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-contain"
-                style={{
-                  maxWidth: '800px',
-                  maxHeight: '600px',
-                  width: 'auto',
-                  height: 'auto',
-                }}
-              >
-                <source src="/globe_480p_preloader.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
+        <div className="absolute inset-0 z-[40] flex items-center justify-center">
+          <div
+            className="relative z-[50] w-full px-6 sm:px-10 max-w-2xl transition-opacity duration-1000 ease-in-out"
+            style={{ opacity: isFadingOut ? 0 : 1 }}
+          >
+            <AmChartGlobePreloader spin={globeSpin} suspended={preloaderDrainHeavy} />
+            <p className="mt-10 text-center text-xs sm:text-sm uppercase tracking-[0.24em] text-black/70">
+              Loading Cabo Negro
+            </p>
           </div>
         </div>
       </div>

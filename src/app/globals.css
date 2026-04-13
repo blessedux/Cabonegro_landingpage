@@ -25,6 +25,9 @@
     --input: 0 0% 90%;
     --ring: 213 39% 46%;
     --radius: 0.5rem;
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
   }
 }
 
@@ -40,13 +43,14 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
+  /* clip avoids horizontal bleed without the scroll containment that breaks `position: sticky` (common with overflow-x: hidden on the root). */
+  overflow-x: clip;
   margin: 0;
   padding: 0;
 }
 
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
   margin: 0;
   padding: 0;
@@ -218,10 +222,219 @@ body {
   justify-content: center;
 }
 
+/* Ensure html/body fill the viewport so height:100% chains work on explore page */
+html,
+body {
+  height: 100%;
+}
+
+/* Override Cesium's default credit/watermark positioning so it doesn't show */
+.cesium-credit-logoContainer,
+.cesium-credit-textContainer {
+  display: none !important;
+}
+
 .osmo-icon-svg {
   width: 100%;
   max-width: 160px;
   height: auto;
   color: white;
   opacity: 0.8;
+}
+
+/* Preloader globe: spinner arc rotates while stroke length pulses (almost full → short) */
+@keyframes globe-spinner-arc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* R=47 → C≈295.3; dash grows from ~12% to ~92% of perimeter */
+@keyframes globe-spinner-arc-dash {
+  0%,
+  100% {
+    stroke-dasharray: 34 300;
+  }
+  50% {
+    stroke-dasharray: 254 300;
+  }
+}
+
+.animate-globe-spinner-arc-rotate {
+  transform-origin: 0 0;
+  /* Compositor layer: keeps ring moving when the main thread is busy (RSC/navigation long tasks) */
+  will-change: transform;
+  backface-visibility: hidden;
+  animation: globe-spinner-arc-spin 2.4s linear infinite;
+}
+
+.animate-globe-spinner-arc-dash {
+  will-change: stroke-dasharray;
+  backface-visibility: hidden;
+  animation: globe-spinner-arc-dash 2s ease-in-out infinite;
+}
+
+/* Own compositing layer so CSS + canvas animations keep running during heavy RSC/route work */
+.preloader-b-surface {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Isolate the SVG spinner from the rest of the preloader paint (topo + canvas globe) */
+.preloader-globe-spinner-island {
+  contain: layout style paint;
+  isolation: isolate;
+  transform: translateZ(0);
+}
+
+.preloader-b-surface .animate-globe-spinner-arc-rotate,
+.preloader-b-surface .animate-globe-spinner-arc-dash {
+  animation-play-state: running;
+}
+
+/* In-app navigation: drop heavy topo line animation (many paths) so the ring keeps moving */
+.preloader-b-visual-light.preloader-b-surface .preloader-topographic path {
+  -webkit-animation: none !important;
+  animation: none !important;
+  stroke-dashoffset: 500;
+}
+
+/* Last ~120ms before hide: static topo lines (see preloaderDrainHeavy) */
+.preloader-topographic--drain path {
+  -webkit-animation: none !important;
+  animation: none !important;
+  stroke-dashoffset: 500;
+}
+
+/* Preloader: topographic SVG (CodePen YqdWpW) — full viewport width, readable on white */
+.preloader-topographic svg {
+  width: 100vw;
+  min-width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 100vh;
+  flex-shrink: 0;
+  display: block;
+  opacity: 1;
+}
+
+/*
+ * Contact full-page topo: positioned in CSS (not Tailwind inset-0) so mobile can bleed into
+ * safe areas without fighting shorthand. Desktop: edge-to-edge width via 100vw on the SVG.
+ */
+.preloader-topographic--full-page {
+  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+/* Desktop & tablet: match original preloader — full viewport width, no object-fit side crop */
+@media (min-width: 768px) {
+  .preloader-topographic--full-page svg {
+    width: 100vw;
+    min-width: 100%;
+    max-width: none;
+    height: auto;
+    min-height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    display: block;
+  }
+}
+
+/* Mobile: full visual viewport width (incl. safe-area horizontal) + top bleed; avoid clipping 100vw */
+@media (max-width: 767px) {
+  .preloader-topographic--full-page {
+    top: calc(0px - env(safe-area-inset-top, 0px));
+    bottom: auto;
+    right: auto;
+    /* Edge-to-edge: 100vw alone can sit inset when safe areas apply; expand + shift left */
+    left: calc(0px - env(safe-area-inset-left, 0px));
+    width: calc(100vw + env(safe-area-inset-left, 0px) + env(safe-area-inset-right, 0px));
+    max-width: none;
+    height: calc(100dvh + env(safe-area-inset-top, 0px));
+    min-height: calc(100dvh + env(safe-area-inset-top, 0px));
+    min-height: calc(100lvh + env(safe-area-inset-top, 0px));
+    overflow-x: clip;
+    overflow-y: hidden;
+  }
+
+  .preloader-topographic--full-page svg {
+    /* Fill the widened layer; 100vw here can mismatch parent when vw excludes UI chrome */
+    width: 100%;
+    min-width: 100%;
+    max-width: none;
+    display: block;
+    min-height: 100%;
+    height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    object-fit: cover;
+    object-position: top center;
+  }
+}
+
+.preloader-topographic path {
+  will-change: stroke-dashoffset;
+  fill: #e2e8f0;
+  stroke: #64748b;
+  stroke-width: 1.15;
+  stroke-miterlimit: 0;
+  stroke-dasharray: 500;
+  stroke-dashoffset: 1000;
+  -webkit-animation: preloader-topo-dash 10s linear alternate infinite;
+  animation: preloader-topo-dash 10s linear alternate infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preloader-topographic path {
+    -webkit-animation: none;
+    animation: none;
+    stroke-dashoffset: 500;
+  }
+}
+
+@-webkit-keyframes preloader-topo-dash {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes preloader-topo-dash {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Masked backdrop blur: strongest at viewport center, fades toward edges */
+.preloader-topo-radial-blur {
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  -webkit-mask-image: radial-gradient(
+    circle at 50% calc(50% - 2px),
+    #000 0%,
+    rgba(0, 0, 0, 0.92) 18%,
+    rgba(0, 0, 0, 0.35) 38%,
+    transparent 58%
+  );
+  mask-image: radial-gradient(
+    circle at 50% calc(50% - 2px),
+    #000 0%,
+    rgba(0, 0, 0, 0.92) 18%,
+    rgba(0, 0, 0, 0.35) 38%,
+    transparent 58%
+  );
 }

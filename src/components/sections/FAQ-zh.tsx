@@ -60,7 +60,7 @@ export default function FAQZh() {
           initial={{ x: -50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ margin: "-10% 0px -10% 0px" }}
+          viewport={{ once: true, amount: 0.35 }}
           className="text-4xl md:text-5xl font-bold mb-6"
         >
           常见问题

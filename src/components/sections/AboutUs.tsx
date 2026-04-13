@@ -1,7 +1,6 @@
 'use client'
 
 import { useRef, useState, useEffect, memo } from 'react'
-import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { MdDirectionsBoat, MdEnergySavingsLeaf } from 'react-icons/md'
@@ -9,7 +8,7 @@ import Icon from '@mdi/react'
 import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
-import Link from 'next/link'
+import { LinkWithPreloader } from '@/components/ui/LinkWithPreloader'
 
 // Code-split RotatingEarth component (includes D3.js ~200KB) - only load when needed
 const RotatingEarth = dynamic(() => import('@/components/ui/rotating-earth'), {
@@ -260,12 +259,7 @@ function AboutUs() {
           {/* Title */}
           <div className="mb-16 w-full text-center">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-center text-black" style={{ color: '#000000', textShadow: 'none' }}>
-              <BlurTextAnimation 
-                text={aboutTitle}
-                fontSize="text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
-                textColor="text-black"
-                animationDelay={0}
-              />
+              {aboutTitle}
             </h2>
           </div>
 
@@ -345,13 +339,15 @@ function AboutUs() {
           <div className="mt-12 flex justify-center">
             <Button
               size="lg"
-              disabled
-              className="bg-gray-400 text-white cursor-not-allowed font-semibold px-8 py-6 rounded-md shadow-lg opacity-60"
+              asChild
+              className="bg-white text-black hover:bg-white/90 font-semibold px-8 py-6 rounded-md shadow-lg transition-all duration-200"
             >
-              <span className="flex items-center gap-2">
-                {ctaText}
-                <ArrowRight className="w-5 h-5" />
-              </span>
+              <LinkWithPreloader href={`${basePath}/explore`}>
+                <span className="flex items-center gap-2">
+                  {ctaText}
+                  <ArrowRight className="w-5 h-5" />
+                </span>
+              </LinkWithPreloader>
             </Button>
           </div>
         </div>
