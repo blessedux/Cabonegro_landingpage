@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { LinkWithPreloader } from "@/components/ui/LinkWithPreloader"
 import { ArrowRight, Mail, Phone } from "lucide-react"
 
@@ -145,17 +146,112 @@ export function CaboFooter({ locale = "es" }: CaboFooterProps) {
   const content = FOOTER_CONTENT[locale]
   const whatsappMessage = WHATSAPP_MESSAGES[locale] ?? WHATSAPP_MESSAGES.es
 
+  // Landing page footer title: custom per-letter hover images so only B/O swap.
+  // "CABO NEGRO" non-space letters: C A B O N E G R O => indices 0..8
+  const footerTitleLetterImages = [
+    "/Puerto_v2.webp", // C
+    "/Puerto_v2.webp", // A
+    "/macrolote.webp", // B (different)
+    "/patagon_valley_thumbnail.webp", // O (different)
+    "/Puerto_v2.webp", // N
+    "/Puerto_v2.webp", // E
+    "/Puerto_v2.webp", // G
+    "/Puerto_v2.webp", // R
+    "/terminal_maritimo_thumbnail.webp", // O (different)
+  ]
+
   return (
     <div
-      className="relative z-30 h-[72vh]"
+      className="relative z-30 h-[72vh] max-md:h-[82vh]"
       data-keep-navbar-black="true"
       style={{ clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)" }}
     >
-      <div className="relative -top-[100vh] h-[calc(100vh+72vh)]">
-        <footer className="sticky top-[calc(100vh-72vh)] relative z-0 h-[72vh] w-full overflow-hidden">
+      <div className="relative -top-[100vh] h-[calc(100vh+72vh)] max-md:h-[calc(100vh+82vh)]">
+        <footer className="sticky top-[calc(100vh-72vh)] max-md:top-[calc(100vh-82vh)] relative z-0 h-[72vh] max-md:h-[82vh] w-full overflow-hidden">
           <FooterBackground />
-          <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-between px-6 py-10 md:px-8 md:py-14">
-            <div className="grid gap-8 border-b border-black/20 pb-10 md:grid-cols-2 lg:grid-cols-4">
+          {/* <1024px: 2x5 grid pinned to viewport right edge, full footer height */}
+          <div
+            className={[
+              "lg:hidden max-[420px]:hidden",
+              "pointer-events-auto",
+              "absolute right-[5px] top-0 max-md:top-[-10px] h-full",
+              // 420px..768px: right offset ramps 5px -> 25px (clamped)
+              "max-md:right-[clamp(5px,calc(5px+((100vw-420px)*20/348)),25px)]",
+              "grid grid-cols-2 grid-rows-5 gap-x-2 gap-y-1",
+              "p-1",
+            ].join(" ")}
+            aria-label={content.title}
+          >
+            {[
+              ["C", "A"],
+              ["B", "O"],
+              ["N", "E"],
+              ["G", "R"],
+              ["O", ""],
+            ].map((pair, rowIdx) =>
+              pair.map((letter, colIdx) => {
+                if (!letter) {
+                  // Last grid slot: show footer icon after the final "O"
+                  if (rowIdx === 4 && colIdx === 1) {
+                    return (
+                      <div
+                        key="footer-grid-icon"
+                        className="flex items-end justify-center"
+                        aria-hidden
+                      >
+                        <Image
+                          src="/BNWCRANE_white_square.png"
+                          alt=""
+                          width={140}
+                          height={140}
+                          className="h-[70%] w-auto object-contain"
+                          priority={false}
+                        />
+                      </div>
+                    )
+                  }
+                  return (
+                    <span
+                      key={`empty-${rowIdx}-${colIdx}`}
+                      className=""
+                      aria-hidden
+                    />
+                  )
+                }
+
+                const gridLetterImages = (() => {
+                  if (letter === "B") return ["/macrolote.webp"]
+                  if (letter === "O") return ["/patagon_valley_thumbnail.webp"]
+                  return ["/Puerto_v2.webp"]
+                })()
+
+                return (
+                  <div
+                    key={`${letter}-${rowIdx}-${colIdx}`}
+                    className="flex items-end justify-end"
+                  >
+                    <RevealText
+                      text={letter}
+                      textColor="text-black"
+                      fontSize="text-[clamp(1.9rem,7vw,4.15rem)] font-black tracking-tight leading-none max-md:[text-shadow:0_0_1px_rgba(0,0,0,0.85)]"
+                      letterImages={gridLetterImages}
+                      interactive={false}
+                      align="end"
+                      className="flex items-end justify-end"
+                    />
+                  </div>
+                )
+              })
+            )}
+          </div>
+          <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-between px-6 py-10 md:px-8 md:py-14 max-lg:pb-16 max-md:pb-[84px]">
+            {/* <1024px: copyright pinned to footer bottom (always 5px gap) */}
+            <div className="hidden max-lg:flex flex-col items-center text-center absolute bottom-[5px] left-0 right-0 z-20 pointer-events-none">
+              <p className="text-sm text-black/70 leading-snug">{content.copyright}</p>
+              <p className="text-xs text-black/60 leading-snug">{content.allRightsReserved}</p>
+            </div>
+
+            <div className="grid gap-8 border-b border-black/20 pb-10 md:grid-cols-2 lg:grid-cols-4 max-lg:border-b-0 max-lg:pb-0">
               <div className="space-y-4">
                 <h3 className="text-xs font-semibold tracking-widest text-black/70 uppercase">{content.investment.title}</h3>
                 <div className="space-y-1">
@@ -211,23 +307,26 @@ export function CaboFooter({ locale = "es" }: CaboFooterProps) {
                 <Link href={localeHref(locale, "/deck")} className="block text-sm text-black/80 transition-colors hover:text-black">
                   {content.about.viewDeck}
                 </Link>
-                <Link href={localeHref(locale, "/#FAQ")} className="block text-sm text-black/80 transition-colors hover:text-black">
-                  {content.faq}
-                </Link>
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="relative mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between max-lg:mt-4">
               <div className="min-w-0 max-w-full flex-1">
                 <h2 className="sr-only">{content.title}</h2>
-                <RevealText
-                  text={content.title}
-                  textColor="text-black"
-                  fontSize="text-[clamp(2.85rem,12vw,7rem)] font-black tracking-tight"
-                  className="max-w-full"
-                />
+                {/* Desktop: original big wordmark */}
+                <div className="hidden lg:block">
+                  <RevealText
+                    text={content.title}
+                    textColor="text-black"
+                    fontSize="text-[clamp(2.85rem,12vw,7rem)] font-black tracking-tight"
+                    letterImages={footerTitleLetterImages}
+                    interactive={true}
+                    className="max-w-full"
+                  />
+                </div>
               </div>
-              <div className="flex shrink-0 flex-col items-start gap-1 md:items-end">
+              {/* Desktop-only copyright (tablet/mobile pinned above) */}
+              <div className="hidden lg:flex shrink-0 flex-col items-start gap-1 lg:items-end">
                 <p className="text-sm text-black/70">{content.copyright}</p>
                 <p className="text-xs text-black/60">{content.allRightsReserved}</p>
               </div>

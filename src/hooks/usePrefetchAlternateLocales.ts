@@ -2,71 +2,47 @@
 
 import { useEffect, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { routing } from '@/i18n/routing'
 import {
-  buildLocaleHref,
-  isLocaleHomePath,
-  localeFromPathname,
-} from '@/lib/navigation-path'
-import { prefetchHomeChunksForLocale } from '@/lib/prefetch-locale-home-chunks'
+  prefetchAlternateLocaleRscRoutes,
+  warmLocaleSpecificChunks,
+} from '@/lib/prefetch-alternate-locales-client'
 
 /**
- * After idle time, prefetches alternate locale URLs for the current path and (on home)
- * warms locale-specific dynamic chunks so language switches avoid multi-second JS waterfalls.
+ * 1) Next frame: prefetch alternate locale **RSC/flight** routes (small, fast).
+ * 2) When idle: warm heavy locale **JS chunks** (Hero, maps, …) — skipped on Save-Data / 2G.
+ * Keeps `/locale/...` URLs unchanged (SEO-safe).
  */
 export function usePrefetchAlternateLocales(enabled = true) {
   const router = useRouter()
   const pathname = usePathname()
-  const ranKeyRef = useRef<string | null>(null)
+  const chunksWarmedKeyRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!enabled || typeof window === 'undefined') return
 
-    const current = localeFromPathname(pathname) ?? routing.defaultLocale
-    const key = `${pathname}::${current}`
-    if (ranKeyRef.current === key) return
+    const key = pathname
 
-    const useIdleCallback = typeof window.requestIdleCallback === 'function'
-    const idleId = useIdleCallback
-      ? window.requestIdleCallback(() => runPrefetch(), { timeout: 2800 })
-      : window.setTimeout(() => runPrefetch(), 900)
+    const raf = requestAnimationFrame(() => {
+      prefetchAlternateLocaleRscRoutes(pathname, router)
+    })
 
-    function runPrefetch() {
-      if (ranKeyRef.current === key) return
-      ranKeyRef.current = key
-
-      for (const loc of routing.locales) {
-        if (loc === current) continue
-        const href = buildLocaleHref(loc, pathname)
-        try {
-          router.prefetch(href)
-        } catch {
-          /* ignore */
-        }
-      }
-
-      if (isLocaleHomePath(pathname)) {
-        for (const loc of routing.locales) {
-          if (loc === current) continue
-          void Promise.all(prefetchHomeChunksForLocale(loc)).catch(() => {})
-        }
-      } else {
-        const homeHref = `/${current}`
-        try {
-          router.prefetch(homeHref)
-        } catch {
-          /* ignore */
-        }
-        // Warm the current locale’s home chunks so Contact → Home avoids a multi-second JS waterfall
-        void Promise.all(prefetchHomeChunksForLocale(current)).catch(() => {})
-      }
+    const runHeavy = () => {
+      if (chunksWarmedKeyRef.current === key) return
+      chunksWarmedKeyRef.current = key
+      warmLocaleSpecificChunks(pathname, router)
     }
 
+    const useIdleCallback = typeof window.requestIdleCallback === 'function'
+    const idleHandle = useIdleCallback
+      ? window.requestIdleCallback(() => runHeavy(), { timeout: 700 })
+      : window.setTimeout(() => runHeavy(), 400)
+
     return () => {
+      cancelAnimationFrame(raf)
       if (useIdleCallback) {
-        window.cancelIdleCallback(idleId)
+        window.cancelIdleCallback(idleHandle)
       } else {
-        clearTimeout(idleId)
+        clearTimeout(idleHandle)
       }
     }
   }, [enabled, pathname, router])

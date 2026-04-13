@@ -11,6 +11,7 @@ import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { routing } from '@/i18n/routing'
+import { warmAlternateLocalesForPath } from '@/lib/prefetch-alternate-locales-client'
 
 export default function UnifiedNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -114,6 +115,11 @@ export default function UnifiedNavbar() {
 
     return () => clearTimeout(timer)
   }, [pathname, locale, setIsNavbarHidden])
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    warmAlternateLocalesForPath(pathname, router, { forceHeavy: true })
+  }, [mobileMenuOpen, pathname, router])
 
   // Prefetch language route on hover for instant switching
   const prefetchLanguageRoute = (newLocale: string) => {
@@ -228,8 +234,13 @@ export default function UnifiedNavbar() {
                 {content.faq}
               </a>
               
-              {/* Language Toggle with prefetching */}
-              <div className="flex items-center gap-2">
+              {/* Language Toggle with prefetching — pointer intent warms all alternates before click */}
+              <div
+                className="flex items-center gap-2"
+                onPointerEnter={() =>
+                  warmAlternateLocalesForPath(pathname, router, { forceHeavy: true })
+                }
+              >
                 {languages.map((lang) => (
                   <button
                     key={lang.code}

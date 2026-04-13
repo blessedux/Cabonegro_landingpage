@@ -12,20 +12,8 @@ import { usePrefetchAlternateLocales } from '@/hooks/usePrefetchAlternateLocales
 
 // Suspense fallback when a route segment is still loading (chunks)
 function LoadingFallback() {
-  return (
-    <div className="fixed inset-0 z-[100002] bg-white flex items-center justify-center pointer-events-none">
-      <div className="relative">
-        <img
-          src="/cabonegro_logo.png"
-          alt=""
-          className="w-24 h-24 sm:w-32 sm:h-32 object-contain opacity-80"
-          style={{
-            filter: 'brightness(0)',
-          }}
-        />
-      </div>
-    </div>
-  )
+  // Use the same globe + topo overlay (no logo flash).
+  return <PreloaderB key="suspense-fallback-preloader-b" duration={0.5} shouldAutoHide={false} />
 }
 
 export function PageTransitionWrapper({ children }: { children: React.ReactNode }) {
@@ -116,24 +104,7 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
   return (
     <>
       {showWhiteBlocker && isBootLayoutDone ? (
-        <div
-          className="fixed inset-0 z-[99997] bg-white transition-opacity duration-200 pointer-events-none"
-          style={{
-            opacity: showWhiteBlocker ? 1 : 0,
-            visibility: showWhiteBlocker ? 'visible' : 'hidden',
-          }}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <img
-              src="/cabonegro_logo.png"
-              alt=""
-              className="w-24 h-24 sm:w-32 sm:h-32 object-contain opacity-80"
-              style={{
-                filter: 'brightness(0)',
-              }}
-            />
-          </div>
-        </div>
+        <PreloaderB key="white-blocker-preloader-b" duration={0.5} shouldAutoHide={false} />
       ) : null}
 
       <div
@@ -143,7 +114,8 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
           pointerEvents: maskPage ? 'none' : 'auto',
         }}
       >
-        <Suspense fallback={maskPage ? <LoadingFallback /> : null}>
+        {/* Always provide a fallback: when mask lifts, RSC/locale chunks can still suspend — null left an eternal blank */}
+        <Suspense fallback={<LoadingFallback />}>
           <DeferredHomeWhileOverlay>{children}</DeferredHomeWhileOverlay>
         </Suspense>
       </div>

@@ -155,6 +155,9 @@ export function ScrollToTopButton({ className }: ScrollToTopButtonProps) {
       onClick={handleClick}
       className={cn(
         'fixed bottom-8 right-8 z-50 group',
+        'mb-[15px]',
+        // Reduce right offset by ~50% (8 -> 4)
+        'right-4',
         'w-14 h-14 rounded-full',
         'bg-white/90 backdrop-blur-sm',
         'hover:bg-white',

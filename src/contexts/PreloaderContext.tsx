@@ -94,6 +94,13 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
     }
   }, [isLanguageSwitch])
 
+  /** If overlay hid but navigating stayed true, PageTransitionWrapper keeps opacity 0 — recover. */
+  useEffect(() => {
+    if (!isPreloaderBVisible && isNavigating) {
+      setIsNavigating(false)
+    }
+  }, [isPreloaderBVisible, isNavigating])
+
   const showPreloader = useCallback(() => {
     setIsPreloaderVisible(true)
     setIsPreloaderComplete(false)

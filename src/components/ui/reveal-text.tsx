@@ -7,15 +7,11 @@ import { cn } from "@/lib/utils"
 
 /** Local assets for footer title hover fills (cycled per letter). */
 export const FOOTER_TITLE_LETTER_IMAGES: string[] = [
-  "/image13.webp",
-  "/cabonegro_frame1.webp",
   "/patagon_valley_thumbnail.webp",
   "/terminal_maritimo_thumbnail.webp",
   "/Puerto_v2.webp",
   "/macrolote.webp",
-  "/cabo_negro1.webp",
-  "/Patagon_Valley_v2.webp",
-  "/image15.webp",
+  "/macrolote2_thumbnail.webp",
 ]
 
 export interface RevealTextProps {
@@ -23,6 +19,8 @@ export interface RevealTextProps {
   textColor?: string
   fontSize?: string
   letterImages?: string[]
+  interactive?: boolean
+  align?: "start" | "end"
   className?: string
 }
 
@@ -31,6 +29,8 @@ export function RevealText({
   textColor = "text-white",
   fontSize = "text-[250px]",
   letterImages = FOOTER_TITLE_LETTER_IMAGES,
+  interactive = true,
+  align = "start",
   className,
 }: RevealTextProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
@@ -38,10 +38,11 @@ export function RevealText({
   const imgs = letterImages.length > 0 ? letterImages : FOOTER_TITLE_LETTER_IMAGES
 
   let letterOrdinal = 0
+  const justifyClass = align === "end" ? "justify-end" : "justify-start"
 
   return (
-    <div className={cn("flex flex-wrap items-end justify-start", className)}>
-      <div className="flex flex-wrap items-end justify-start gap-y-1">
+    <div className={cn("flex flex-wrap items-end", justifyClass, className)}>
+      <div className={cn("flex flex-wrap items-end gap-y-1", justifyClass)}>
         {text.split("").map((letter, index) => {
           if (letter === " ") {
             return (
@@ -59,11 +60,12 @@ export function RevealText({
           return (
             <span
               key={`${letter}-${index}`}
-              onMouseEnter={() => setHoveredIndex(li)}
-              onMouseLeave={() => setHoveredIndex(null)}
+              onMouseEnter={interactive ? () => setHoveredIndex(li) : undefined}
+              onMouseLeave={interactive ? () => setHoveredIndex(null) : undefined}
               className={cn(
                 fontSize,
-                "inline-block cursor-pointer relative overflow-hidden align-bottom leading-none",
+                "inline-block relative overflow-hidden align-bottom leading-none",
+                interactive ? "cursor-pointer" : "cursor-default",
                 "select-none"
               )}
             >
@@ -76,7 +78,7 @@ export function RevealText({
                   textColor
                 )}
                 animate={{
-                  opacity: hoveredIndex === li ? 0 : 1,
+                  opacity: interactive && hoveredIndex === li ? 0 : 1,
                 }}
                 transition={{ duration: 0.1 }}
               >
@@ -85,8 +87,8 @@ export function RevealText({
               <motion.span
                 className="absolute inset-0 flex items-center justify-center text-transparent bg-clip-text bg-cover bg-center bg-no-repeat"
                 animate={{
-                  opacity: hoveredIndex === li ? 1 : 0,
-                  backgroundPosition: hoveredIndex === li ? "10% center" : "0% center",
+                  opacity: interactive && hoveredIndex === li ? 1 : 0,
+                  backgroundPosition: interactive && hoveredIndex === li ? "10% center" : "0% center",
                 }}
                 transition={{
                   opacity: { duration: 0.1 },

@@ -45,11 +45,12 @@ const PartnersEs = dynamic(() => import('@/components/sections/Partners-es'), {
   loading: () => <div className="min-h-[400px]" />
 })
 
-// Code-split Hero components - load when needed
-const Hero = dynamic(() => import('@/components/sections/Hero'), { ssr: false })
-const HeroEs = dynamic(() => import('@/components/sections/Hero-es'), { ssr: false })
-const HeroZh = dynamic(() => import('@/components/sections/Hero-zh'), { ssr: false })
-const HeroFr = dynamic(() => import('@/components/sections/Hero-fr'), { ssr: false })
+// Code-split Hero — reserve viewport height while chunk loads (avoids About jumping above the fold)
+const heroLoading = () => <div className="min-h-[90vh] w-full shrink-0" aria-hidden />
+const Hero = dynamic(() => import('@/components/sections/Hero'), { ssr: false, loading: heroLoading })
+const HeroEs = dynamic(() => import('@/components/sections/Hero-es'), { ssr: false, loading: heroLoading })
+const HeroZh = dynamic(() => import('@/components/sections/Hero-zh'), { ssr: false, loading: heroLoading })
+const HeroFr = dynamic(() => import('@/components/sections/Hero-fr'), { ssr: false, loading: heroLoading })
 
 // Code-split Navbar components - load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -72,6 +73,16 @@ const FAQZh = dynamic(() => import('@/components/sections/FAQ-zh'), {
 
 interface LocaleHomePageProps {
   locale: string
+}
+
+/** Persist only after first-load preloader completes — early writes break DeferredHomeWhileOverlay (home unmounts mid-boot). */
+function markHomepageFirstVisitPersisted() {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem('cabonegro-homepage-visited', 'true')
+  } catch {
+    /* quota / private mode */
+  }
 }
 
 function isLocaleHomePath(path: string, loc: string): boolean {
@@ -327,16 +338,6 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
     }
   }, [locale, isPreloaderBVisible, isNavigating, isLanguageSwitch]) // Only depend on locale and preloader state, not shouldShowContent/contentOpacity to avoid loops
 
-  // Mark as visited when preloader shows (first load)
-  useEffect(() => {
-    if (isPreloaderBVisible && typeof window !== 'undefined') {
-      const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
-      if (!hasVisited) {
-        localStorage.setItem('cabonegro-homepage-visited', 'true')
-      }
-    }
-  }, [isPreloaderBVisible])
-
   // Handle preloader completion - show content and hide preloader only when content is ready
   // ALWAYS verify content is ready before hiding PreloaderB to prevent blank screens
   useEffect(() => {
@@ -465,6 +466,7 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
             })
           }
           requestAnimationFrame(() => {
+            markHomepageFirstVisitPersisted()
             hidePreloaderB()
             setPreloaderComplete(true)
           })
@@ -484,6 +486,7 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           setPreloaderComplete(true)
           setIsFirstLoad(false)
           requestAnimationFrame(() => {
+            markHomepageFirstVisitPersisted()
             hidePreloaderB()
           })
         }
@@ -549,6 +552,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           setShouldShowContent(true)
           setContentOpacity(1)
           setPreloaderComplete(true)
+          if (isFirstLoad) {
+            markHomepageFirstVisitPersisted()
+          }
           hidePreloaderB()
           
           // If still stuck after timeout, mark first load as complete to prevent loops
@@ -576,6 +582,7 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           setContentOpacity(1)
           setPreloaderComplete(true)
           setIsFirstLoad(false)
+          markHomepageFirstVisitPersisted()
           hidePreloaderB()
         }
       }, 3500) // 3.5 seconds - user requested 3-4 seconds

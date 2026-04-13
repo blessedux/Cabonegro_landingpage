@@ -13,7 +13,13 @@ import { isLocaleHomePath } from '@/lib/navigation-path'
  */
 export function DeferredHomeWhileOverlay({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { isBootLayoutDone, isNavigating, isPreloaderBVisible, hasSeenPreloader } = usePreloader()
+  const {
+    isBootLayoutDone,
+    isNavigating,
+    isPreloaderBVisible,
+    hasSeenPreloader,
+    isLanguageSwitch,
+  } = usePreloader()
   const maskPage = !isBootLayoutDone || isNavigating || isPreloaderBVisible
 
   const [layoutReady, setLayoutReady] = useState(false)
@@ -21,6 +27,7 @@ export function DeferredHomeWhileOverlay({ children }: { children: React.ReactNo
     setLayoutReady(true)
   }, [])
 
+  /** True only after first-load preloader finished (LocaleHomePage sets key then) — never on first paint. */
   const returnVisit =
     typeof window !== 'undefined' &&
     Boolean(localStorage.getItem('cabonegro-homepage-visited'))
@@ -28,8 +35,16 @@ export function DeferredHomeWhileOverlay({ children }: { children: React.ReactNo
   /** Not the first-ever home session (LocaleHomePage must mount for first-visit preloader). */
   const notFirstHomeSession = returnVisit || hasSeenPreloader
 
+  /**
+   * Never swap the home tree for a white shell during locale changes — that unmount caused a blank
+   * screen after PreloaderB hid (new locale segment + remount race). In-app nav to home still defers.
+   */
   const deferHomeMount =
-    layoutReady && notFirstHomeSession && isLocaleHomePath(pathname) && maskPage
+    layoutReady &&
+    notFirstHomeSession &&
+    isLocaleHomePath(pathname) &&
+    maskPage &&
+    !isLanguageSwitch
 
   if (deferHomeMount) {
     return <div className="min-h-[100dvh] w-full bg-white" aria-hidden />
