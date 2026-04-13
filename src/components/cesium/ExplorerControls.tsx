@@ -112,7 +112,7 @@ export default function ExplorerControls({
         }}
       >
         <p className="text-white/35 text-[10px] leading-relaxed">
-          Hover to glide · Drag to adjust angle
+          Left-drag: orbit · Scroll: zoom · Middle-drag: pan · Right-drag: tilt
         </p>
       </div>
     </div>
