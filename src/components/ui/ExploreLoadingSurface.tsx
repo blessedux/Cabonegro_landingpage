@@ -1,6 +1,6 @@
 'use client'
 
-import AmChartGlobePreloader from '@/components/ui/amchart-globe-preloader'
+import PreloaderGlobeVideo from '@/components/ui/PreloaderGlobeVideo'
 import PreloaderTopographicBackdrop from '@/components/ui/PreloaderTopographicBackdrop'
 import PreloaderTopographicCenterBlur from '@/components/ui/PreloaderTopographicCenterBlur'
 
@@ -8,6 +8,8 @@ interface ExploreLoadingSurfaceProps {
   /** Secondary line (e.g. terrain loading status) */
   subtitle?: string
   globeSpin?: 'east' | 'west'
+  /** Pause video globe (avoids extra decode while Cesium boots). */
+  suspended?: boolean
 }
 
 /**
@@ -16,6 +18,7 @@ interface ExploreLoadingSurfaceProps {
 export default function ExploreLoadingSurface({
   subtitle,
   globeSpin = 'west',
+  suspended = false,
 }: ExploreLoadingSurfaceProps) {
   return (
     <div
@@ -33,7 +36,7 @@ export default function ExploreLoadingSurface({
       />
       <div className="absolute inset-0 z-[40] flex items-center justify-center">
         <div className="relative z-[50] w-full max-w-2xl px-6 sm:px-10">
-          <AmChartGlobePreloader spin={globeSpin} />
+          <PreloaderGlobeVideo globeSpin={globeSpin} suspended={suspended} />
           <p className="mt-10 text-center text-xs uppercase tracking-[0.24em] text-black/70 sm:text-sm">
             Loading Cabo Negro
           </p>

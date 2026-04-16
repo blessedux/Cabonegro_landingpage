@@ -7,14 +7,14 @@ const CesiumExplorer = dynamic(() => import('./CesiumExplorer'), {
   ssr: false,
   loading: () => (
     <div style={{ position: 'absolute', inset: 0, background: '#ffffff' }}>
-      <ExploreLoadingSurface />
+      <ExploreLoadingSurface suspended />
     </div>
   ),
 })
 
 export default function CesiumExplorerLoader({ locale }: { locale: string }) {
   return (
-    <div style={{ position: 'absolute', inset: 0 }}>
+    <div style={{ position: 'fixed', inset: 0, width: '100%', height: '100vh' }}>
       <CesiumExplorer locale={locale} />
     </div>
   )

@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import type { Waypoint } from '@/lib/cesium/waypoints'
 
 interface ExplorerControlsProps {
@@ -8,6 +9,10 @@ interface ExplorerControlsProps {
   isFlying: boolean
   locale: string
   onSelectWaypoint: (waypoint: Waypoint) => void
+  /** Scroll wheel on the panel: -1 = previous waypoint, +1 = next (always flies in parent). */
+  onNavigateWaypoints?: (direction: 1 | -1) => void
+  /** 0–1 while a scene plays; fades with parent when user is idle during playback. */
+  menuOpacity?: number
 }
 
 function getLabel(wp: Waypoint, locale: string): string {
@@ -20,10 +25,27 @@ function getLabel(wp: Waypoint, locale: string): string {
 }
 
 const LOCALE_LABELS: Record<string, { title: string; subtitle: string }> = {
-  en: { title: 'Explore', subtitle: 'Select a location' },
-  es: { title: 'Explorar', subtitle: 'Selecciona una ubicación' },
-  zh: { title: '探索', subtitle: '选择一个位置' },
-  fr: { title: 'Explorer', subtitle: 'Sélectionnez un lieu' },
+  en: { title: 'Explore', subtitle: 'Click or scroll the panel — camera flies between pins' },
+  es: { title: 'Explorar', subtitle: 'Clic o scroll en el panel — la cámara vuela entre puntos' },
+  zh: { title: '探索', subtitle: '点击或在面板内滚动 — 相机会在航点间飞行' },
+  fr: { title: 'Explorer', subtitle: 'Clic ou défilement du panneau — la caméra vole entre les points' },
+}
+
+const COMPASS_HINTS: Record<string, string> = {
+  en:
+    'Left-click: staged zoom · Right-click: zoom out · Left-drag / middle-drag: pan (travel) · Ctrl/Cmd+drag: orbit heading · Right-drag: tilt pitch',
+  es:
+    'Clic izq.: zoom por etapas · Clic der.: alejar · Arrastrar izq./centro: paneo (viaje) · Ctrl/Cmd+arrastrar: rumbo · Arrastrar der.: inclinación',
+  zh:
+    '左键：分级缩放 · 右键：拉远 · 左/中键拖：平移（移动）· Ctrl/Cmd+拖：水平转向 · 右拖：俯仰',
+  fr:
+    'Clic gauche : zoom par paliers · Clic droit : zoom arrière · Glisser gauche/milieu : panoramique (déplacement) · Ctrl/Cmd+glisser : cap · Glisser droit : inclinaison',
+}
+
+function wheelStepPx(): number {
+  // About one viewport height per waypoint step (user request).
+  // Clamp avoids extremes on huge displays / tiny windows.
+  return Math.max(260, Math.min(1200, Math.floor(window.innerHeight * 0.9)))
 }
 
 export default function ExplorerControls({
@@ -32,12 +54,40 @@ export default function ExplorerControls({
   isFlying,
   locale,
   onSelectWaypoint,
+  onNavigateWaypoints,
+  menuOpacity = 1,
 }: ExplorerControlsProps) {
   const labels = LOCALE_LABELS[locale] ?? LOCALE_LABELS.en
+  const compassHint = COMPASS_HINTS[locale] ?? COMPASS_HINTS.en
+  const panelRef = useRef<HTMLDivElement>(null)
+  const wheelAccRef = useRef(0)
+
+  useEffect(() => {
+    const el = panelRef.current
+    const nav = onNavigateWaypoints
+    if (!el || !nav) return
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      wheelAccRef.current += e.deltaY
+      if (Math.abs(wheelAccRef.current) < wheelStepPx()) return
+      const dir = wheelAccRef.current > 0 ? 1 : -1
+      wheelAccRef.current = 0
+      nav(dir)
+    }
+
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [onNavigateWaypoints])
 
   return (
-    <div className="absolute left-0 top-0 bottom-0 z-10 flex flex-col justify-center pointer-events-none">
+    <div
+      className="absolute left-0 top-0 bottom-0 z-10 flex flex-col justify-center pointer-events-none transition-opacity duration-500 ease-out"
+      style={{ opacity: menuOpacity }}
+    >
       <div
+        ref={panelRef}
         className="pointer-events-auto mx-4 rounded-2xl overflow-hidden"
         style={{
           background: 'rgba(10, 15, 26, 0.75)',
@@ -56,7 +106,7 @@ export default function ExplorerControls({
           <h2 className="text-white text-sm font-medium tracking-wide">
             {labels.title}
           </h2>
-          <p className="text-white/40 text-[11px] mt-0.5">{labels.subtitle}</p>
+          <p className="text-white/40 text-[11px] mt-0.5 leading-snug">{labels.subtitle}</p>
         </div>
 
         {/* Waypoints list */}
@@ -65,15 +115,16 @@ export default function ExplorerControls({
             const isActive = activeWaypoint?.id === wp.id
             return (
               <button
+                type="button"
                 key={wp.id}
                 onClick={() => onSelectWaypoint(wp)}
-                disabled={isFlying}
+                disabled={false}
                 className={[
                   'w-full text-left px-5 py-3 transition-all duration-200 flex items-center gap-3 group',
                   isActive
                     ? 'bg-white/10 text-white'
                     : 'text-white/60 hover:bg-white/5 hover:text-white/90',
-                  isFlying ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                  'cursor-pointer',
                 ].join(' ')}
               >
                 {/* Dot indicator */}
@@ -91,11 +142,11 @@ export default function ExplorerControls({
           })}
         </div>
 
-        {/* Flying indicator */}
+        {/* Scene indicator (non-blocking) */}
         {isFlying && (
-          <div className="px-5 py-3 border-t border-white/8 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            <span className="text-white/40 text-[11px]">Flying…</span>
+          <div className="px-5 py-2.5 border-t border-white/8 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-white/70 animate-pulse" />
+            <span className="text-white/35 text-[11px]">Scene (tap another waypoint to interrupt)</span>
           </div>
         )}
       </div>
@@ -112,7 +163,7 @@ export default function ExplorerControls({
         }}
       >
         <p className="text-white/35 text-[10px] leading-relaxed">
-          Left-drag: orbit · Scroll: zoom · Middle-drag: pan · Right-drag: tilt
+          {compassHint}
         </p>
       </div>
     </div>

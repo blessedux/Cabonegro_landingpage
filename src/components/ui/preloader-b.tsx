@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { usePreloader } from '@/contexts/PreloaderContext'
-import AmChartGlobePreloader from '@/components/ui/amchart-globe-preloader'
+import PreloaderGlobeVideo from '@/components/ui/PreloaderGlobeVideo'
 import PreloaderTopographicBackdrop from '@/components/ui/PreloaderTopographicBackdrop'
 import PreloaderTopographicCenterBlur from '@/components/ui/PreloaderTopographicCenterBlur'
 
@@ -15,6 +15,8 @@ interface PreloaderBProps {
   globeSpin?: 'east' | 'west'
   /** Hydration boot: show full topo + globe, skip internal timers (parent hides overlay). */
   bootOnly?: boolean
+  /** Pause video globe (CSS ring spinner remains). */
+  suspended?: boolean
 }
 
 export default function PreloaderB({
@@ -25,6 +27,7 @@ export default function PreloaderB({
   shouldAutoHide = false,
   globeSpin = 'west',
   bootOnly = false,
+  suspended = false,
 }: PreloaderBProps) {
   const { preloaderDrainHeavy } = usePreloader()
   const [isVisible, setIsVisible] = useState(true)
@@ -165,7 +168,7 @@ export default function PreloaderB({
             className="relative z-[50] w-full px-6 sm:px-10 max-w-2xl transition-opacity duration-1000 ease-in-out"
             style={{ opacity: isFadingOut ? 0 : 1 }}
           >
-            <AmChartGlobePreloader spin={globeSpin} suspended={preloaderDrainHeavy} />
+            <PreloaderGlobeVideo globeSpin={globeSpin} suspended={suspended || preloaderDrainHeavy || isFadingOut} />
             <p className="mt-10 text-center text-xs sm:text-sm uppercase tracking-[0.24em] text-black/70">
               Loading Cabo Negro
             </p>

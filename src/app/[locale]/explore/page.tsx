@@ -10,10 +10,11 @@ export default async function ExplorePage({ params }: ExplorePageProps) {
   return (
     <div
       style={{
-        position: 'absolute',
+        position: 'fixed',
         inset: 0,
         width: '100%',
-        height: '100%',
+        height: '100vh',
+        minHeight: '100vh',
       }}
     >
       <CesiumExplorerLoader locale={locale} />
