@@ -1,7 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { usePathname, useRouter } from 'next/navigation'
+import { useLocale } from 'next-intl'
 import { AnimatePresence, motion } from 'framer-motion'
+import { routing } from '@/i18n/routing'
+import { buildLocaleHref } from '@/lib/navigation-path'
+import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
+import { warmAlternateLocalesForPath } from '@/lib/prefetch-alternate-locales-client'
+import { EXPLORE_UI_Z } from '@/lib/cesium/exploreUiLayers'
 import type { Waypoint } from '@/lib/cesium/waypoints'
 
 function getLabel(wp: Waypoint, locale: string): string {
@@ -25,10 +33,24 @@ const LOCALE_LABELS: Record<string, { title: string; subtitle: string }> = {
 }
 
 const COMPASS_HINTS: Record<string, string> = {
-  en: 'Left-drag: pan · Right-drag: rotate & tilt · Pinch: zoom · Scroll (desktop menu): waypoints',
-  es: 'Arrastrar izq.: desplazar · Arrastrar der.: girar e inclinar · Pellizco: zoom',
-  zh: '左拖：平移 · 右拖：旋转与俯仰 · 双指：缩放',
-  fr: 'Glisser gauche : panoramique · Glisser droit : rotation & inclinaison · Pincement : zoom',
+  en: 'One finger: pan · Two fingers: rotate & tilt · Pinch: zoom · Desktop: left-drag pan, right-drag look, scroll menu for waypoints',
+  es: 'Un dedo: desplazar · Dos dedos: girar e inclinar · Pellizco: zoom',
+  zh: '单指：平移 · 双指：旋转与俯仰 · 双指捏合：缩放',
+  fr: 'Un doigt : panoramique · Deux doigts : rotation & inclinaison · Pincement : zoom',
+}
+
+const LANGUAGES: { code: string; name: string; flag: string }[] = [
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'es', name: 'Español', flag: '🇨🇱' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+]
+
+const LANGUAGE_SECTION_TITLE: Record<string, string> = {
+  en: 'Language',
+  es: 'Idioma',
+  zh: '语言',
+  fr: 'Langue',
 }
 
 type ExplorerMobileDrawerProps = {
@@ -39,6 +61,8 @@ type ExplorerMobileDrawerProps = {
   isFlying: boolean
   locale: string
   onSelectWaypoint: (waypoint: Waypoint) => void
+  onBackToSite: () => void
+  backAriaLabel: string
 }
 
 export default function ExplorerMobileDrawer({
@@ -49,9 +73,21 @@ export default function ExplorerMobileDrawer({
   isFlying,
   locale,
   onSelectWaypoint,
+  onBackToSite,
+  backAriaLabel,
 }: ExplorerMobileDrawerProps) {
   const labels = LOCALE_LABELS[locale] ?? LOCALE_LABELS.en
   const compassHint = COMPASS_HINTS[locale] ?? COMPASS_HINTS.en
+  const languageSectionTitle = LANGUAGE_SECTION_TITLE[locale] ?? LANGUAGE_SECTION_TITLE.en
+  const pathname = usePathname()
+  const router = useRouter()
+  const activeLocale = useLocale()
+  const { push } = useNavigateWithPreloader()
+
+  useEffect(() => {
+    if (!open) return
+    warmAlternateLocalesForPath(pathname, router, { forceHeavy: true })
+  }, [open, pathname, router])
 
   useEffect(() => {
     if (!open) return
@@ -67,7 +103,20 @@ export default function ExplorerMobileDrawer({
     }
   }, [open, onOpenChange])
 
-  return (
+  const changeLanguage = (code: string) => {
+    if (code === activeLocale || !(routing.locales as readonly string[]).includes(code)) return
+    const targetPath = buildLocaleHref(code, pathname)
+    router.prefetch(targetPath)
+    onOpenChange(false)
+    push(targetPath, { languageSwitch: true })
+  }
+
+  const [bodyMount, setBodyMount] = useState<HTMLElement | null>(null)
+  useLayoutEffect(() => {
+    setBodyMount(document.body)
+  }, [])
+
+  const sheet = (
     <AnimatePresence mode="sync">
       {open ? (
         <>
@@ -75,7 +124,7 @@ export default function ExplorerMobileDrawer({
             key="explore-m-backdrop"
             type="button"
             aria-label="Close menu"
-            className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-sm md:hidden"
+            className={`fixed inset-0 ${EXPLORE_UI_Z.mobileDrawerBackdrop} bg-black/55 backdrop-blur-sm md:hidden`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -87,7 +136,7 @@ export default function ExplorerMobileDrawer({
             role="dialog"
             aria-modal="true"
             aria-label={labels.title}
-            className="fixed inset-y-0 left-0 z-[70] flex w-full max-w-md flex-col md:hidden"
+            className={`fixed inset-y-0 left-0 ${EXPLORE_UI_Z.mobileDrawerPanel} flex w-full max-w-md flex-col md:hidden`}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -98,11 +147,30 @@ export default function ExplorerMobileDrawer({
               borderRight: '1px solid rgba(255,255,255,0.08)',
             }}
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-              <div>
+            <div className="flex items-start gap-3 border-b border-white/10 px-5 py-4">
+              <button
+                type="button"
+                onClick={() => {
+                  onBackToSite()
+                  onOpenChange(false)
+                }}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-white/80 active:bg-white/10"
+                aria-label={backAriaLabel}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path
+                    d="M15 18l-6-6 6-6"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <div className="min-w-0 flex-1 pt-0.5">
                 <p className="text-white/40 text-[10px] tracking-[0.2em] uppercase">Cabo Negro</p>
                 <h2 className="text-white text-lg font-medium tracking-wide">{labels.title}</h2>
-                <p className="text-white/45 text-xs mt-1 leading-snug max-w-[280px]">{labels.subtitle}</p>
+                <p className="text-white/45 text-xs mt-1 leading-snug max-w-[240px]">{labels.subtitle}</p>
               </div>
               <button
                 type="button"
@@ -160,6 +228,37 @@ export default function ExplorerMobileDrawer({
               <p className="text-white/35 text-[11px] leading-relaxed">{compassHint}</p>
             </div>
 
+            <div className="border-t border-white/10 px-5 py-4 shrink-0">
+              <p className="text-white/40 text-[10px] tracking-[0.2em] uppercase mb-3">{languageSectionTitle}</p>
+              <div className="grid grid-cols-4 gap-2">
+                {LANGUAGES.map((lang) => {
+                  const active = lang.code === activeLocale
+                  return (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      onClick={() => changeLanguage(lang.code)}
+                      className={[
+                        'flex flex-col items-center justify-center gap-1 rounded-xl border py-3 px-1 text-[11px] transition-colors min-h-[72px]',
+                        active
+                          ? 'border-cyan-400/50 bg-white/12 text-white'
+                          : 'border-white/10 bg-white/[0.04] text-white/70 active:bg-white/10',
+                      ].join(' ')}
+                      aria-pressed={active}
+                      aria-label={lang.name}
+                    >
+                      <span className="text-xl leading-none" aria-hidden>
+                        {lang.flag}
+                      </span>
+                      <span className="font-medium tracking-wide uppercase text-[10px] opacity-90">
+                        {lang.code}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
             <div className="border-t border-white/10 px-5 py-5 shrink-0">
               <p className="text-center text-white/45 text-[13px] font-medium tracking-[0.35em] uppercase">
                 Cabonegro
@@ -170,4 +269,7 @@ export default function ExplorerMobileDrawer({
       ) : null}
     </AnimatePresence>
   )
+
+  if (!bodyMount) return null
+  return createPortal(sheet, bodyMount)
 }

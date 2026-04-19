@@ -115,6 +115,7 @@ function ExploreHudInner({
 }: ExploreHudProps) {
   const src = imagerySourceCopy(imageryLabel)
   const [narrState, setNarrState] = useState<'collapsed' | 'mid' | 'full'>('collapsed')
+
   const narr = useMemo(() => {
     if (!sceneNarrative) return null
     const lines = sceneNarrative.split('\n')

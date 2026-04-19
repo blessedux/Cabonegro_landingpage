@@ -29,41 +29,71 @@ export function estimateFlyDurationSec(
   return Math.min(14, Math.max(3.4, d / 420_000))
 }
 
+export type ExplorerCameraSchemeOptions = {
+  /**
+   * When true (typical mobile), PINCH is wired into rotate/tilt/zoom for two-finger gestures.
+   * When false (typical desktop), omit PINCH from rotate/tilt — mixing it in can break left-drag pan with mouse.
+   */
+  includePinchInRotateTilt?: boolean
+}
+
 /**
- * Left-drag = pan camera; right-drag = rotate + tilt.
+ * Explorer camera: left-drag orbits the globe (same feel as “pan”); right-drag tilts; wheel reserved in app.
+ *
+ * **SCENE3D wiring (Cesium `update3D`):** only `rotateEventTypes`→`spin3D`, `tiltEventTypes`→`tilt3D`, and
+ * `zoom`/`look` are used. `translateEventTypes` apply to **2D / Columbus view only** — assigning
+ * `LEFT_DRAG` to `translateEventTypes` does nothing in 3D, so left-drag must map to **`rotateEventTypes`**.
+ *
  * Wheel-zoom disabled at controller level (reserved for waypoint navigation).
  */
 export function applyExplorerCameraInteractionScheme(
   Cesium: CesiumModule,
   viewer: CesiumViewer,
+  options?: ExplorerCameraSchemeOptions,
 ): void {
   const CameraEventType = Cesium.CameraEventType
   const KeyboardEventModifier = Cesium.KeyboardEventModifier
   const ctrl = viewer.scene.screenSpaceCameraController
+  ctrl.enableInputs = true
 
   const left = CameraEventType.LEFT_DRAG
   const right = CameraEventType.RIGHT_DRAG
+  const middle = CameraEventType.MIDDLE_DRAG
   const M = KeyboardEventModifier
 
-  const translateInputs = [
+  /** Drives `spin3D` in SCENE3D — primary globe drag (orbit / “pan”). */
+  const orbitDragInputs = [
     left,
     { eventType: left, modifier: M.CTRL },
     { eventType: left, modifier: M.SHIFT },
     { eventType: left, modifier: M.ALT },
   ]
-  const angleInputs = [
+  /** Drives `tilt3D` — right-drag pitch / look on globe. */
+  const tiltDragInputs = [
     right,
     { eventType: right, modifier: M.CTRL },
     { eventType: right, modifier: M.SHIFT },
     { eventType: right, modifier: M.ALT },
   ]
+  /** Used in 2D/Columbus only; keep off LEFT_DRAG so it never conflicts with orbit in those modes. */
+  const translateForMapModes = [
+    middle,
+    { eventType: middle, modifier: M.CTRL },
+    { eventType: middle, modifier: M.SHIFT },
+    { eventType: middle, modifier: M.ALT },
+  ]
+  const pinch = CameraEventType.PINCH
+  const includePinch = options?.includePinchInRotateTilt ?? true
+  const tiltTypes = (
+    includePinch ? [...tiltDragInputs, pinch] : tiltDragInputs
+  ) as typeof ctrl.tiltEventTypes
 
-  ctrl.translateEventTypes = translateInputs as typeof ctrl.translateEventTypes
+  ctrl.translateEventTypes = translateForMapModes as typeof ctrl.translateEventTypes
   ctrl.enableTranslate = true
-  ctrl.rotateEventTypes = angleInputs as typeof ctrl.rotateEventTypes
+  ctrl.rotateEventTypes = orbitDragInputs as typeof ctrl.rotateEventTypes
   ctrl.enableRotate = true
-  ctrl.tiltEventTypes = angleInputs as typeof ctrl.tiltEventTypes
-  ctrl.zoomEventTypes = [CameraEventType.PINCH]
+  ctrl.tiltEventTypes = tiltTypes
+  ctrl.zoomEventTypes = [pinch]
   ctrl.enableTilt = true
   ctrl.enableLook = false
   ctrl.enableZoom = true

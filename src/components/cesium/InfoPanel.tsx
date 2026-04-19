@@ -1,9 +1,12 @@
 'use client'
 
-import { memo, useEffect, useState } from 'react'
+import { memo, useEffect, useLayoutEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { Waypoint } from '@/lib/cesium/waypoints'
 import { pickExploreCard } from '@/lib/cesium/exploreCardText'
 import { getParcelExploreCard } from '@/lib/cesium/exploreParcelNarratives'
+import { EXPLORE_UI_Z } from '@/lib/cesium/exploreUiLayers'
+import InfoPanelContactChat from './InfoPanelContactChat'
 
 export interface ParcelSalePick {
   title: string
@@ -42,6 +45,41 @@ const EXPAND_LABEL: Record<string, string> = {
   fr: 'Développer le panneau',
 }
 
+const CTA_PARCEL: Record<string, string> = {
+  en: 'Ask about this lot',
+  es: 'Consultar sobre este lote',
+  zh: '咨询此地块',
+  fr: 'Renseignements sur ce lot',
+}
+
+const CTA_WAYPOINT: Record<string, string> = {
+  en: 'Ask about this area',
+  es: 'Consultar sobre esta zona',
+  zh: '咨询此区域',
+  fr: 'Renseignements sur cette zone',
+}
+
+function NarrativePanelLayer({ children }: { children: React.ReactNode }) {
+  const [mount, setMount] = useState<HTMLElement | null>(null)
+  useLayoutEffect(() => {
+    setMount(document.body)
+  }, [])
+  if (!mount) return null
+  return createPortal(
+    <div
+      className={`fixed inset-x-0 bottom-0 ${EXPLORE_UI_Z.narrative} pointer-events-none flex items-end justify-end`}
+      style={{
+        paddingLeft: 24,
+        paddingRight: 24,
+        paddingBottom: 'max(2rem, env(safe-area-inset-bottom, 0px))',
+      }}
+    >
+      {children}
+    </div>,
+    mount,
+  )
+}
+
 function CollapsedFab({
   variant,
   locale,
@@ -62,16 +100,13 @@ function CollapsedFab({
     transition: 'transform 0.35s cubic-bezier(0.16,1,0.3,1), opacity 0.35s ease',
   } as const
   return (
-    <div
-      className="absolute bottom-8 right-0 z-10 pointer-events-none flex justify-end"
-      style={{ paddingRight: 24 }}
-    >
+    <NarrativePanelLayer>
       <div className="pointer-events-auto flex items-center justify-end" style={shell}>
         <button
           type="button"
           aria-label={expandLabel}
           onClick={onExpand}
-          className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full select-none"
+          className="touch-manipulation flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full select-none"
           style={{
             background: 'rgba(10, 15, 26, 0.85)',
             backdropFilter: 'blur(20px)',
@@ -91,7 +126,7 @@ function CollapsedFab({
           </svg>
         </button>
       </div>
-    </div>
+    </NarrativePanelLayer>
   )
 }
 
@@ -99,6 +134,7 @@ const InfoPanel = memo(function InfoPanel({ waypoint, parcelSale, locale, closab
   const [visible, setVisible] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
 
   useEffect(() => {
     if (waypoint || parcelSale) {
@@ -111,6 +147,7 @@ const InfoPanel = memo(function InfoPanel({ waypoint, parcelSale, locale, closab
   useEffect(() => {
     setExpanded(false)
     setCollapsed(false)
+    setChatOpen(false)
   }, [waypoint, parcelSale])
 
   if (!waypoint && !parcelSale) return null
@@ -137,29 +174,35 @@ const InfoPanel = memo(function InfoPanel({ waypoint, parcelSale, locale, closab
       )
     }
 
+    const parcelSubline = [
+      parcelSale.areaHa != null && Number.isFinite(parcelSale.areaHa)
+        ? `${parcelSale.areaHa.toFixed(2)} ha`
+        : null,
+      `${Math.abs(parcelSale.latitude).toFixed(3)}°${parcelSale.latitude < 0 ? 'S' : 'N'}, ${Math.abs(parcelSale.longitude).toFixed(3)}°${parcelSale.longitude < 0 ? 'W' : 'E'}`,
+    ]
+      .filter(Boolean)
+      .join(' · ')
+
     return (
-      <div
-        className="absolute bottom-8 right-0 z-10 pointer-events-none flex justify-end"
-        style={{ paddingRight: 24 }}
-      >
+      <NarrativePanelLayer>
         <div
-          role="button"
-          tabIndex={0}
-          className="pointer-events-auto rounded-2xl overflow-hidden cursor-pointer select-none"
+          role={chatOpen ? undefined : 'button'}
+          tabIndex={chatOpen ? -1 : 0}
+          className={`pointer-events-auto touch-manipulation rounded-2xl overflow-hidden select-none [-webkit-tap-highlight-color:transparent] ${chatOpen ? '' : 'cursor-pointer'}`}
           style={{
             background: 'rgba(10, 15, 26, 0.8)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(0, 229, 255, 0.22)',
             boxShadow: '0 12px 48px rgba(0,0,0,0.6)',
-            maxWidth: expanded ? 400 : 320,
+            maxWidth: expanded || chatOpen ? 400 : 320,
             transform: visible ? 'translateY(0)' : 'translateY(16px)',
             opacity: visible ? 1 : 0,
             transition:
               'transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease, max-width 0.35s cubic-bezier(0.16,1,0.3,1)',
           }}
-          onClick={() => setExpanded((e) => !e)}
-          onKeyDown={(e) => {
+          onClick={chatOpen ? undefined : () => setExpanded((e) => !e)}
+          onKeyDown={chatOpen ? undefined : (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault()
               setExpanded((x) => !x)
@@ -181,7 +224,7 @@ const InfoPanel = memo(function InfoPanel({ waypoint, parcelSale, locale, closab
                 </p>
               ) : null}
             </div>
-            {closable ? (
+            {closable && !chatOpen ? (
               <button
                 type="button"
                 onClick={(e) => {
@@ -200,36 +243,77 @@ const InfoPanel = memo(function InfoPanel({ waypoint, parcelSale, locale, closab
 
           <div className="mx-5 border-t border-white/8" />
 
-          <div
-            className="px-5 py-4 text-white/55 leading-relaxed space-y-3"
-            style={{ fontSize: expanded ? 14 : 13 }}
-          >
-            <p>{parcelCard.summary}</p>
-            {expanded ? <p className="text-white/45 border-t border-white/8 pt-3">{parcelCard.detail}</p> : null}
-          </div>
+          {chatOpen ? (
+            <InfoPanelContactChat
+              contextLabel={parcelSale.title}
+              contextSubline={parcelSubline}
+              tone="parcel"
+              locale={locale}
+              onClose={() => setChatOpen(false)}
+            />
+          ) : (
+            <>
+              <div
+                className="px-5 py-4 text-white/55 leading-relaxed space-y-3"
+                style={{ fontSize: expanded ? 14 : 13 }}
+              >
+                <p>{parcelCard.summary}</p>
+                {expanded ? <p className="text-white/45 border-t border-white/8 pt-3">{parcelCard.detail}</p> : null}
+              </div>
 
-          <div className="px-5 pb-5 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <span className="text-white/25 text-[11px] font-mono">
-              {Math.abs(parcelSale.latitude).toFixed(4)}°{parcelSale.latitude < 0 ? 'S' : 'N'}
-            </span>
-            <span className="text-white/15 text-[11px]">·</span>
-            <span className="text-white/25 text-[11px] font-mono">
-              {Math.abs(parcelSale.longitude).toFixed(4)}°{parcelSale.longitude < 0 ? 'W' : 'E'}
-            </span>
-            {expanded ? (
-              <span className="text-white/20 text-[10px] w-full pt-1">
-                {locale === 'es'
-                  ? 'Toca de nuevo para contraer'
-                  : locale === 'zh'
-                    ? '再次点击收起'
-                    : locale === 'fr'
-                      ? 'Touchez à nouveau pour réduire'
-                      : 'Tap again to collapse'}
-              </span>
-            ) : null}
-          </div>
+              {expanded ? (
+                <div className="px-5 pb-4">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setChatOpen(true)
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10.5px] tracking-[0.14em] uppercase transition-colors"
+                    style={{
+                      color: 'rgba(0, 229, 255, 0.85)',
+                      border: '1px solid rgba(0, 229, 255, 0.28)',
+                      background: 'rgba(0, 229, 255, 0.06)',
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path
+                        d="M7 8h10M7 12h6m-6 4h4m-6-12h14a2 2 0 012 2v12a2 2 0 01-2 2h-7l-5 4v-4H5a2 2 0 01-2-2V6a2 2 0 012-2z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {CTA_PARCEL[locale] ?? CTA_PARCEL.en}
+                  </button>
+                </div>
+              ) : null}
+
+              <div className="px-5 pb-5 max-md:pb-6 max-md:pt-1 flex flex-wrap items-center max-md:items-end max-md:justify-end gap-x-4 gap-y-1 max-md:min-h-[48px]">
+                <span className="text-white/25 text-[11px] font-mono max-md:shrink-0">
+                  {Math.abs(parcelSale.latitude).toFixed(4)}°{parcelSale.latitude < 0 ? 'S' : 'N'}
+                </span>
+                <span className="text-white/15 text-[11px] max-md:shrink-0">·</span>
+                <span className="text-white/25 text-[11px] font-mono max-md:shrink-0 max-md:inline-flex max-md:min-h-[44px] max-md:items-center max-md:pl-1 max-md:pr-1 max-md:-mr-1">
+                  {Math.abs(parcelSale.longitude).toFixed(4)}°{parcelSale.longitude < 0 ? 'W' : 'E'}
+                </span>
+                {expanded ? (
+                  <span className="text-white/20 text-[10px] w-full pt-1">
+                    {locale === 'es'
+                      ? 'Toca de nuevo para contraer'
+                      : locale === 'zh'
+                        ? '再次点击收起'
+                        : locale === 'fr'
+                          ? 'Touchez à nouveau pour réduire'
+                          : 'Tap again to collapse'}
+                  </span>
+                ) : null}
+              </div>
+            </>
+          )}
         </div>
-      </div>
+      </NarrativePanelLayer>
     )
   }
 
@@ -248,46 +332,45 @@ const InfoPanel = memo(function InfoPanel({ waypoint, parcelSale, locale, closab
     )
   }
 
+  const waypointLabel = getLabel(waypoint, locale)
+  const waypointSubline = `${Math.abs(waypoint.latitude).toFixed(3)}°${waypoint.latitude < 0 ? 'S' : 'N'}, ${Math.abs(waypoint.longitude).toFixed(3)}°${waypoint.longitude < 0 ? 'W' : 'E'}`
+
   return (
-    <div
-      className="absolute bottom-8 right-0 z-10 pointer-events-none flex justify-end"
-      style={{ paddingRight: 24 }}
-    >
+    <NarrativePanelLayer>
       <div
-        role="button"
-        tabIndex={0}
-        className="pointer-events-auto rounded-2xl overflow-hidden cursor-pointer select-none"
+        role={chatOpen ? undefined : 'button'}
+        tabIndex={chatOpen ? -1 : 0}
+        className={`pointer-events-auto touch-manipulation rounded-2xl overflow-hidden select-none [-webkit-tap-highlight-color:transparent] ${chatOpen ? '' : 'cursor-pointer'}`}
         style={{
           background: 'rgba(10, 15, 26, 0.8)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.1)',
           boxShadow: '0 12px 48px rgba(0,0,0,0.6)',
-          maxWidth: expanded ? 400 : 320,
+          maxWidth: expanded || chatOpen ? 400 : 320,
           transform: visible ? 'translateY(0)' : 'translateY(16px)',
           opacity: visible ? 1 : 0,
           transition:
             'transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.4s ease, max-width 0.35s cubic-bezier(0.16,1,0.3,1)',
         }}
-        onClick={() => setExpanded((e) => !e)}
-        onKeyDown={(e) => {
+        onClick={chatOpen ? undefined : () => setExpanded((e) => !e)}
+        onKeyDown={chatOpen ? undefined : (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
             setExpanded((x) => !x)
           }
         }}
       >
-        {/* Top bar */}
         <div className="flex items-start justify-between px-5 pt-5 pb-4">
           <div>
             <p className="text-white/35 text-[10px] tracking-[0.2em] uppercase mb-1.5">
               Cabo Negro
             </p>
             <h3 className="text-white text-base font-medium leading-snug">
-              {getLabel(waypoint, locale)}
+              {waypointLabel}
             </h3>
           </div>
-          {closable ? (
+          {closable && !chatOpen ? (
             <button
               type="button"
               onClick={(e) => {
@@ -304,41 +387,79 @@ const InfoPanel = memo(function InfoPanel({ waypoint, parcelSale, locale, closab
           ) : null}
         </div>
 
-        {/* Divider */}
         <div className="mx-5 border-t border-white/8" />
 
-        {/* Summary + optional detail */}
-        <div
-          className="px-5 py-4 text-white/55 leading-relaxed space-y-3"
-          style={{ fontSize: expanded ? 14 : 13 }}
-        >
-          <p>{waypointCard.summary}</p>
-          {expanded ? <p className="text-white/45 border-t border-white/8 pt-3">{waypointCard.detail}</p> : null}
-        </div>
+        {chatOpen ? (
+          <InfoPanelContactChat
+            contextLabel={waypointLabel}
+            contextSubline={waypointSubline}
+            tone="waypoint"
+            locale={locale}
+            onClose={() => setChatOpen(false)}
+          />
+        ) : (
+          <>
+            <div
+              className="px-5 py-4 text-white/55 leading-relaxed space-y-3"
+              style={{ fontSize: expanded ? 14 : 13 }}
+            >
+              <p>{waypointCard.summary}</p>
+              {expanded ? <p className="text-white/45 border-t border-white/8 pt-3">{waypointCard.detail}</p> : null}
+            </div>
 
-        {/* Coordinates */}
-        <div className="px-5 pb-5 flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="text-white/25 text-[11px] font-mono">
-            {Math.abs(waypoint.latitude).toFixed(4)}°{waypoint.latitude < 0 ? 'S' : 'N'}
-          </span>
-          <span className="text-white/15 text-[11px]">·</span>
-          <span className="text-white/25 text-[11px] font-mono">
-            {Math.abs(waypoint.longitude).toFixed(4)}°{waypoint.longitude < 0 ? 'W' : 'E'}
-          </span>
-          {expanded ? (
-            <span className="text-white/20 text-[10px] w-full pt-1">
-              {locale === 'es'
-                ? 'Toca de nuevo para contraer'
-                : locale === 'zh'
-                  ? '再次点击收起'
-                  : locale === 'fr'
-                    ? 'Touchez à nouveau pour réduire'
-                    : 'Tap again to collapse'}
-            </span>
-          ) : null}
-        </div>
+            {expanded ? (
+              <div className="px-5 pb-4">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setChatOpen(true)
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10.5px] tracking-[0.14em] uppercase transition-colors"
+                  style={{
+                    color: 'rgba(255,255,255,0.75)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    background: 'rgba(255,255,255,0.04)',
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path
+                      d="M7 8h10M7 12h6m-6 4h4m-6-12h14a2 2 0 012 2v12a2 2 0 01-2 2h-7l-5 4v-4H5a2 2 0 01-2-2V6a2 2 0 012-2z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {CTA_WAYPOINT[locale] ?? CTA_WAYPOINT.en}
+                </button>
+              </div>
+            ) : null}
+
+            <div className="px-5 pb-5 max-md:pb-6 max-md:pt-1 flex flex-wrap items-center max-md:items-end max-md:justify-end gap-x-4 gap-y-1 max-md:min-h-[48px]">
+              <span className="text-white/25 text-[11px] font-mono max-md:shrink-0">
+                {Math.abs(waypoint.latitude).toFixed(4)}°{waypoint.latitude < 0 ? 'S' : 'N'}
+              </span>
+              <span className="text-white/15 text-[11px] max-md:shrink-0">·</span>
+              <span className="text-white/25 text-[11px] font-mono max-md:shrink-0 max-md:inline-flex max-md:min-h-[44px] max-md:items-center max-md:pl-1 max-md:pr-1 max-md:-mr-1">
+                {Math.abs(waypoint.longitude).toFixed(4)}°{waypoint.longitude < 0 ? 'W' : 'E'}
+              </span>
+              {expanded ? (
+                <span className="text-white/20 text-[10px] w-full pt-1">
+                  {locale === 'es'
+                    ? 'Toca de nuevo para contraer'
+                    : locale === 'zh'
+                      ? '再次点击收起'
+                      : locale === 'fr'
+                        ? 'Touchez à nouveau pour réduire'
+                        : 'Tap again to collapse'}
+                </span>
+              ) : null}
+            </div>
+          </>
+        )}
       </div>
-    </div>
+    </NarrativePanelLayer>
   )
 })
 export default InfoPanel

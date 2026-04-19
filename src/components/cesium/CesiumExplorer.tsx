@@ -7,9 +7,11 @@ import ExploreLoadingSurface from '@/components/ui/ExploreLoadingSurface'
 import type { Waypoint } from '@/lib/cesium/waypoints'
 import { WAYPOINTS } from '@/lib/cesium/waypoints'
 import ExplorerControls from './ExplorerControls'
+import ExploreBodyPortal from './ExploreBodyPortal'
 import ExplorerMobileDrawer from './ExplorerMobileDrawer'
 import ExploreHud from './ExploreHud'
 import { resolveExploreCaption } from '@/lib/cesium/exploreNarrative'
+import { EXPLORE_UI_Z } from '@/lib/cesium/exploreUiLayers'
 import CursorCrosshair from './CursorCrosshair'
 import InfoPanel, { type ParcelSalePick } from './InfoPanel'
 import VintageOverlay from './VintageOverlay'
@@ -34,9 +36,6 @@ declare global {
 }
 
 const OVERVIEW_WAYPOINT = WAYPOINTS[0]
-
-/** Waypoints where left-drag pans the camera (orbit auto-resumes after idle). */
-const SITE_WAYPOINT_IDS = new Set(['terminal-maritimo', 'parque-logistico', 'parque-tecnologico'])
 
 const WAYPOINT_HUD_HOLD_MS = 4000
 
@@ -69,21 +68,16 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
   // ── Shared motion refs (passed to both runtime and waypoint-flights hooks) ──
   const isFlyingRef = useRef(false)
   const cancelWaypointAnimRef = useRef<(() => void) | null>(null)
-  const localOrbitRef = useRef<{
-    active: boolean; target?: unknown
-    offsetEnu?: { x: number; y: number; z: number }
-    dir?: number; radPerSecAt1km?: number; radPerSecMin?: number
-  }>({ active: false })
   const cameraFlightToSite1Ref = useRef(false)
   const site1OrbitActiveRef = useRef(false)
-  const autoMotionEnabledRef = useRef(true)
   const flyToCaboSite1Ref = useRef<(() => void) | null>(null)
   const navigateWaypointsByScrollRef = useRef<(dir: 1 | -1) => void>(() => {})
   const pointerButtonsRef = useRef(0)
+  const primaryMouseButtonDownRef = useRef(false)
   const lastUserInputMsRef = useRef<number>(typeof performance !== 'undefined' ? performance.now() : 0)
   const exploreMenuSelectionIdRef = useRef<string>(OVERVIEW_WAYPOINT?.id ?? 'overview')
-  /** True only for the three site waypoints where drag-to-pan is desired. */
-  const translateEnabledRef = useRef(false)
+  /** Drives `ScreenSpaceCameraController.enableTranslate` + canvas drag gating — keep true so left-drag pans on every waypoint. */
+  const translateEnabledRef = useRef(true)
 
   // ── Caption ref (re-assigned each render so Cesium closures see fresh locale) ──
   const lastSceneCaptionRef = useRef<string | null>(null)
@@ -104,14 +98,13 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
   const sharedRefs = useRef<CesiumRuntimeSharedRefs>({
     isFlyingRef,
     cancelWaypointAnimRef,
-    localOrbitRef,
     cameraFlightToSite1Ref,
     site1OrbitActiveRef,
-    autoMotionEnabledRef,
     flyToCaboSite1Ref,
     navigateWaypointsByScrollRef,
     commitExploreCaptionRef,
     pointerButtonsRef,
+    primaryMouseButtonDownRef,
     lastUserInputMsRef,
     exploreMenuSelectionIdRef,
     translateEnabledRef,
@@ -136,7 +129,6 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
   const { flyToWaypoint, flyToCaboNegroSite1, navigateWaypointsByScroll } = useWaypointFlights({
     viewerRef,
     orbitMathRef,
-    localOrbitRef,
     isFlyingRef,
     cameraFlightToSite1Ref,
     site1OrbitActiveRef,
@@ -162,16 +154,6 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
   useEffect(() => {
     if (activeWaypoint) exploreMenuSelectionIdRef.current = activeWaypoint.id
   }, [activeWaypoint])
-
-  // ── Effect: auto-motion enabled/disabled based on waypoint ──────────────────
-  useEffect(() => {
-    autoMotionEnabledRef.current = activeWaypoint !== null
-  }, [activeWaypoint])
-
-  // ── Effect: enable drag-to-translate only for the three site waypoints ───────
-  useEffect(() => {
-    translateEnabledRef.current = SITE_WAYPOINT_IDS.has(activeWaypoint?.id ?? '')
-  }, [activeWaypoint?.id])
 
   // ── Effect: caption sync for jump-only waypoints ─────────────────────────────
   useEffect(() => {
@@ -208,31 +190,65 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
     }
   }, [isFlying])
 
+  // ── Callback: briefly reveal menu during camera flight (e.g. pointer move) ──
+  const bumpMenuFromActivity = useCallback(() => {
+    if (!isFlyingRef.current) return
+    setMenuOpacity(1)
+    if (menuFadeTimerRef.current) clearTimeout(menuFadeTimerRef.current)
+    menuFadeTimerRef.current = setTimeout(() => {
+      if (isFlyingRef.current) setMenuOpacity(0)
+    }, 2200)
+  }, [])
+
   // ── Effect: pointer button sync from OS (prevents stuck "buttons down") ──────
+  // Window-level listeners keep refs in sync when the canvas does not bubble to React; also drive menu bump.
   useEffect(() => {
     const sync = (e: PointerEvent) => { pointerButtonsRef.current = e.buttons }
-    const resetButtons = () => { pointerButtonsRef.current = 0 }
-    const onVis = () => { if (document.visibilityState === 'visible') pointerButtonsRef.current = 0 }
-    window.addEventListener('pointerdown', sync, true)
-    window.addEventListener('pointermove', sync, true)
-    window.addEventListener('pointerup', sync, true)
+    const onMove = (e: PointerEvent) => {
+      sync(e)
+      if (e.buttons !== 0) lastUserInputMsRef.current = performance.now()
+      bumpMenuFromActivity()
+    }
+    const onDown = (e: PointerEvent) => {
+      sync(e)
+      if (e.button === 0) primaryMouseButtonDownRef.current = true
+      lastUserInputMsRef.current = performance.now()
+    }
+    const onUp = (e: PointerEvent) => {
+      sync(e)
+      if (e.button === 0) primaryMouseButtonDownRef.current = false
+    }
+    const resetButtons = () => {
+      pointerButtonsRef.current = 0
+      primaryMouseButtonDownRef.current = false
+    }
+    const onVis = () => {
+      if (document.visibilityState === 'visible') {
+        pointerButtonsRef.current = 0
+        primaryMouseButtonDownRef.current = false
+      }
+    }
+    window.addEventListener('pointerdown', onDown, true)
+    window.addEventListener('pointermove', onMove, true)
+    window.addEventListener('pointerup', onUp, true)
     window.addEventListener('pointercancel', sync, true)
     window.addEventListener('blur', resetButtons)
     document.addEventListener('visibilitychange', onVis)
     return () => {
-      window.removeEventListener('pointerdown', sync, true)
-      window.removeEventListener('pointermove', sync, true)
-      window.removeEventListener('pointerup', sync, true)
+      window.removeEventListener('pointerdown', onDown, true)
+      window.removeEventListener('pointermove', onMove, true)
+      window.removeEventListener('pointerup', onUp, true)
       window.removeEventListener('pointercancel', sync, true)
       window.removeEventListener('blur', resetButtons)
       document.removeEventListener('visibilitychange', onVis)
     }
-  }, [])
+  }, [bumpMenuFromActivity])
 
   // ── Effect: reset pointer buttons on viewer reload ──────────────────────────
   useEffect(() => {
     if (!isLoaded) return
     pointerButtonsRef.current = 0
+    primaryMouseButtonDownRef.current = false
   }, [isLoaded, viewerNonce])
 
   // ── Effect: responsive breakpoint ──────────────────────────────────────────
@@ -250,16 +266,6 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
   useEffect(() => () => {
     if (menuFadeTimerRef.current) clearTimeout(menuFadeTimerRef.current)
     if (waypointTargetingTimerRef.current) clearTimeout(waypointTargetingTimerRef.current)
-  }, [])
-
-  // ── Callback: briefly reveal menu during camera flight (e.g. pointer move) ──
-  const bumpMenuFromActivity = useCallback(() => {
-    if (!isFlyingRef.current) return
-    setMenuOpacity(1)
-    if (menuFadeTimerRef.current) clearTimeout(menuFadeTimerRef.current)
-    menuFadeTimerRef.current = setTimeout(() => {
-      if (isFlyingRef.current) setMenuOpacity(0)
-    }, 2200)
   }, [])
 
   // ── Memoised time display ───────────────────────────────────────────────────
@@ -288,18 +294,14 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
-      style={{ position: 'fixed', inset: 0, width: '100%', height: '100vh', background: isLoaded ? '#0a0f1a' : '#ffffff', cursor: isLoaded ? 'none' : undefined }}
-      onPointerMove={(e) => {
-        // Only update ref state — no setState call, so no re-renders here.
-        pointerButtonsRef.current = e.buttons
-        if (e.buttons !== 0) lastUserInputMsRef.current = performance.now()
-        bumpMenuFromActivity()
+      style={{
+        position: 'fixed',
+        inset: 0,
+        width: '100%',
+        height: '100vh',
+        background: isLoaded ? '#0a0f1a' : '#ffffff',
+        cursor: isLoaded ? 'none' : undefined,
       }}
-      onPointerDown={(e) => {
-        pointerButtonsRef.current = e.buttons
-        lastUserInputMsRef.current = performance.now()
-      }}
-      onPointerUp={(e) => { pointerButtonsRef.current = e.buttons }}
     >
       {!isLoaded && (
         <ExploreLoadingSurface
@@ -311,7 +313,14 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
       {/* Cesium canvas mount point */}
       <div
         ref={containerRef}
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 1,
+          touchAction: 'none',
+        }}
       />
 
       {/* Vintage overlay — scanlines, vignette, grain, phosphor tint */}
@@ -335,27 +344,18 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
         </div>
       )}
 
-      {/* Top bar */}
+      {/* Top bar — back link only on md+; mobile uses drawer */}
       {isLoaded && (
         <div
-          className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-5 py-4 pointer-events-none"
+          className="absolute top-0 left-0 right-0 z-10 flex items-center justify-end px-5 py-4 pointer-events-none md:justify-between"
           style={{ background: 'linear-gradient(to bottom, rgba(10,15,26,0.7) 0%, transparent 100%)' }}
         >
           <a
             href={`/${locale}`}
-            className="pointer-events-auto flex items-center justify-center text-white/60 hover:text-white transition-colors duration-200 md:justify-start md:text-xs md:tracking-wider"
+            className="pointer-events-auto hidden items-center justify-start text-white/60 hover:text-white transition-colors duration-200 text-xs tracking-wider md:flex"
             onClick={(e) => { e.preventDefault(); push(`/${locale}`) }}
           >
-            <span className="sr-only md:hidden">{backLabel[locale] ?? backLabel.en}</span>
-            <span
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 md:hidden"
-              aria-hidden
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-            <span className="hidden md:inline">{backLabel[locale] ?? backLabel.en}</span>
+            {backLabel[locale] ?? backLabel.en}
           </a>
 
           <span className="hidden text-white/30 text-[11px] tracking-[0.3em] uppercase md:inline">
@@ -425,24 +425,26 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
       {isLoaded && (
         <>
           {!isDesktop ? (
-            <button
-              type="button"
-              className="pointer-events-auto fixed left-4 z-[75] md:hidden flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-[rgba(10,15,26,0.9)] backdrop-blur-md shadow-lg"
-              style={{ top: '4.25rem' }}
-              aria-label={mobileExploreOpen ? 'Close explore menu' : 'Open explore menu'}
-              aria-expanded={mobileExploreOpen}
-              onClick={() => setMobileExploreOpen(o => !o)}
-            >
-              {mobileExploreOpen ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M6 6l12 12M18 6L6 18" stroke="rgba(255,255,255,0.85)" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M4 7h16M4 12h16M4 17h10" stroke="rgba(255,255,255,0.85)" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-              )}
-            </button>
+            <ExploreBodyPortal>
+              <button
+                type="button"
+                className={`pointer-events-auto fixed left-4 ${EXPLORE_UI_Z.mobileBurger} md:hidden flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-[rgba(10,15,26,0.9)] backdrop-blur-md shadow-lg`}
+                style={{ top: '4.25rem' }}
+                aria-label={mobileExploreOpen ? 'Close explore menu' : 'Open explore menu'}
+                aria-expanded={mobileExploreOpen}
+                onClick={() => setMobileExploreOpen(o => !o)}
+              >
+                {mobileExploreOpen ? (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path d="M6 6l12 12M18 6L6 18" stroke="rgba(255,255,255,0.85)" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                ) : (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path d="M4 7h16M4 12h16M4 17h10" stroke="rgba(255,255,255,0.85)" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                )}
+              </button>
+            </ExploreBodyPortal>
           ) : null}
 
           {!isDesktop && (
@@ -454,6 +456,8 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
               isFlying={isFlying}
               locale={locale}
               onSelectWaypoint={flyToWaypoint}
+              onBackToSite={() => push(`/${locale}`)}
+              backAriaLabel={backLabel[locale] ?? backLabel.en}
             />
           )}
 

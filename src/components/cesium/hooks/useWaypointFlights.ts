@@ -36,28 +36,8 @@ type OrbitMathModule = {
   sampleCameraSceneAt: (kf: CameraKeyframe[], t: number) => { keyframe: CameraKeyframe; caption: string | undefined }
 }
 
-type LocalOrbitState = {
-  active: boolean
-  target?: unknown
-  offsetEnu?: { x: number; y: number; z: number }
-  dir?: number
-  radPerSecAt1km?: number
-  radPerSecMin?: number
-}
-
 const WAYPOINT_HUD_HOLD_MS = 4000
 const FLY_TO_SITE1_DURATION_SEC = 4.8
-const AUTO_ORBIT_WEST_SIGN = -1
-/** Must match idle gate in `useCesiumViewerRuntime` postUpdate orbit. */
-const DRIFT_IDLE_AFTER_INPUT_MS = 900
-
-// ─── Per-site orbit speed constants ──────────────────────────────────────────
-const LOCAL_ORBIT_RAD_PER_SEC_AT_1KM = 0.035
-const LOCAL_ORBIT_RAD_PER_SEC_MIN = 0.006
-const OVERVIEW_STATION_ORBIT_RAD_PER_SEC_AT_1KM = 0.038
-const OVERVIEW_STATION_ORBIT_RAD_PER_SEC_MIN = 0.007
-const PUNTA_ORBIT_RAD_PER_SEC_AT_1KM = 0.048
-const PUNTA_ORBIT_RAD_PER_SEC_MIN = 0.01
 
 const PUNTA_ARENAS_START_POSE: FlyPose = {
   longitude: -70.921316, latitude: -53.214332, height: 1252,
@@ -84,7 +64,6 @@ const OVERVIEW_WAYPOINT = WAYPOINTS[0]
 interface UseWaypointFlightsOptions {
   viewerRef: MutableRefObject<CesiumViewer | null>
   orbitMathRef: MutableRefObject<OrbitMathModule | null>
-  localOrbitRef: MutableRefObject<LocalOrbitState>
   isFlyingRef: MutableRefObject<boolean>
   cameraFlightToSite1Ref: MutableRefObject<boolean>
   site1OrbitActiveRef: MutableRefObject<boolean>
@@ -106,7 +85,6 @@ interface UseWaypointFlightsOptions {
 export function useWaypointFlights({
   viewerRef,
   orbitMathRef,
-  localOrbitRef,
   isFlyingRef,
   cameraFlightToSite1Ref,
   site1OrbitActiveRef,
@@ -182,22 +160,18 @@ export function useWaypointFlights({
 
     site1OrbitActiveRef.current = false
     cameraFlightToSite1Ref.current = false
-    localOrbitRef.current.active = false
-    localOrbitRef.current.target = undefined
-    localOrbitRef.current.offsetEnu = undefined
     try { viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY) } catch { /* noop */ }
 
     cancelWaypointAnimRef.current?.()
     cancelWaypointAnimRef.current = null
     try { viewer.camera.cancelFlight() } catch { /* noop */ }
 
-    /** Helper: fly to a curated pose then start auto-orbit on completion. */
-    const flyToPoseThenOrbit = (pose: FlyPose, narrKey: string, setupOrbit: () => void) => {
+    /** Fly to a curated pose; camera stays user-controlled afterward (no postUpdate orbit). */
+    const flyToPoseThen = (pose: FlyPose, narrKey: string) => {
       isFlyingRef.current = true
       setIsFlying(true)
       setActiveWaypoint(waypoint)
       commitExploreCaptionRef.current(narrKey)
-      localOrbitRef.current.active = false
       try { viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY) } catch { /* noop */ }
       const destination = Cesium.Cartesian3.fromDegrees(pose.longitude, pose.latitude, pose.height)
       const finalOrientation = { heading: pose.heading, pitch: pose.pitch, roll: pose.roll }
@@ -205,12 +179,7 @@ export function useWaypointFlights({
       const finishFlight = () => {
         isFlyingRef.current = false
         setIsFlying(false)
-        setupOrbit()
-        // Overview: start Cabo orbit immediately after fly (same as cold load).
-        lastUserInputMsRef.current =
-          waypoint.id === 'overview'
-            ? performance.now() - DRIFT_IDLE_AFTER_INPUT_MS - 1
-            : performance.now()
+        lastUserInputMsRef.current = performance.now()
       }
       const cancelFlight = () => { isFlyingRef.current = false; setIsFlying(false) }
       try {
@@ -220,60 +189,35 @@ export function useWaypointFlights({
           complete: finishFlight, cancel: cancelFlight,
         })
       } catch (err) {
-        console.error('[CesiumExplorer] camera.flyTo (waypoint orbit scene) failed:', err)
+        console.error('[CesiumExplorer] camera.flyTo (waypoint) failed:', err)
         cancelFlight()
       }
     }
 
-    const makeLocalOrbitSetup = (dir: number) => () => {
-      // Target and offsetEnu are intentionally left unset here.
-      // postUpdate auto-picks the orbit pivot from the screen-center ray on the first idle tick,
-      // giving the point the camera is actually looking at rather than the point directly below it.
-      localOrbitRef.current.active = true
-      localOrbitRef.current.dir = dir
-      localOrbitRef.current.radPerSecAt1km = LOCAL_ORBIT_RAD_PER_SEC_AT_1KM
-      localOrbitRef.current.radPerSecMin = LOCAL_ORBIT_RAD_PER_SEC_MIN
-    }
-
     if (waypoint.id === 'punta-arenas') {
-      flyToPoseThenOrbit({ ...PUNTA_ARENAS_START_POSE }, 'narr:punta-arenas', () => {
-        localOrbitRef.current.active = true
-        localOrbitRef.current.dir = -1
-        localOrbitRef.current.radPerSecAt1km = PUNTA_ORBIT_RAD_PER_SEC_AT_1KM
-        localOrbitRef.current.radPerSecMin = PUNTA_ORBIT_RAD_PER_SEC_MIN
-        // Target auto-picked by postUpdate on first idle tick.
-      })
+      flyToPoseThen({ ...PUNTA_ARENAS_START_POSE }, 'narr:punta-arenas')
       return
     }
 
     if (waypoint.id === 'overview' && OVERVIEW_WAYPOINT) {
       const pose = orbitMath.getDefaultExplorePose(OVERVIEW_WAYPOINT)
       if (!pose) return
-      flyToPoseThenOrbit({ ...pose }, 'narr:overview-2', () => {
-        localOrbitRef.current.active = true
-        localOrbitRef.current.dir = AUTO_ORBIT_WEST_SIGN
-        localOrbitRef.current.radPerSecAt1km = OVERVIEW_STATION_ORBIT_RAD_PER_SEC_AT_1KM
-        localOrbitRef.current.radPerSecMin = OVERVIEW_STATION_ORBIT_RAD_PER_SEC_MIN
-        // Target auto-picked by postUpdate on first idle tick.
-      })
+      flyToPoseThen({ ...pose }, 'narr:overview-2')
       return
     }
 
     if (waypoint.id === 'parque-logistico') {
-      flyToPoseThenOrbit({ ...LOGISTICS_PARK_START_POSE }, 'narr:parque-logistico',
-        makeLocalOrbitSetup(+1))
+      flyToPoseThen({ ...LOGISTICS_PARK_START_POSE }, 'narr:parque-logistico')
       return
     }
 
     if (waypoint.id === 'terminal-maritimo') {
-      flyToPoseThenOrbit({ ...MARITIME_TERMINAL_START_POSE }, 'narr:terminal-maritimo',
-        makeLocalOrbitSetup(+1))
+      flyToPoseThen({ ...MARITIME_TERMINAL_START_POSE }, 'narr:terminal-maritimo')
       return
     }
 
     if (waypoint.id === 'parque-tecnologico') {
-      flyToPoseThenOrbit({ ...TECHNOLOGY_PARK_START_POSE }, 'narr:parque-tecnologico',
-        makeLocalOrbitSetup(+1))
+      flyToPoseThen({ ...TECHNOLOGY_PARK_START_POSE }, 'narr:parque-tecnologico')
       return
     }
 

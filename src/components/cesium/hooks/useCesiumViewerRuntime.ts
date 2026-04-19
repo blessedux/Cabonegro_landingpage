@@ -8,7 +8,6 @@ import type { Waypoint } from '@/lib/cesium/waypoints'
 import {
   applyKmlLayerTargetForWaypoint,
   createInitialKmlLayerAlphas,
-  stepKmlLayerAlphas,
   type KmlLayerAlphas,
 } from '@/lib/cesium/kmlLayers'
 import {
@@ -25,26 +24,21 @@ import {
   PATAGON_VALLEY_PARTITION_TOTAL_HA,
   PPG_PIER_LABEL,
 } from '@/lib/cesium/subdivisionParcelCatalog'
-import {
-  applyExplorerCameraInteractionScheme,
-  syncOrbitOffsetEnuFromCamera,
-  applyOrbitCameraFromEnuOffset,
-  rotateOrbitOffsetEnuAroundUp,
-  cardinal8,
-  formatAlt,
-  isClickLikeGesture,
-} from '@/lib/cesium/cameraUtils'
+import { applyExplorerCameraInteractionScheme } from '@/lib/cesium/cameraUtils'
 import {
   entityKmlRawName,
   centroidLonLatFromEntity,
   centroidLonLatFromPositions,
   polygonAreaSqmFromHierarchy,
-  findParcelEntityUnderCursor,
   parcelAreaHaFromPolygonEntity,
-  entityDisplayName,
 } from '@/lib/cesium/entityUtils'
 import type { ParcelSalePick } from '@/components/cesium/InfoPanel'
 import type { FlyPose } from '@/lib/cesium/cameraUtils'
+import {
+  createPostUpdateHandler,
+  type HudState,
+} from '@/components/cesium/runtime/createPostUpdateHandler'
+import { wireCanvasInteractions } from '@/components/cesium/runtime/wireCanvasInteractions'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CesiumModule = any
@@ -56,6 +50,8 @@ declare global {
   }
 }
 
+export type { HudState }
+
 // ─── KMZ URL constants ─────────────────────────────────────────────────────────
 const SUBDIVISION_KMZ_URL = '/cesium/subdivision-vigente.kmz'
 const SOCIEDADES_CN_KMZ_URL = '/cesium/sociedades-cn.kmz'
@@ -66,17 +62,6 @@ const SUBDIVISION_PARCEL_WALL_HEIGHT_M = 60
 // ─── Scene health constants ────────────────────────────────────────────────────
 const SCENE_BUSY_GAP_MS = 900
 const SCENE_STALL_GAP_MS = 2800
-const TERRAIN_UNDER_CAMERA_MS = 400
-const DRIFT_IDLE_AFTER_INPUT_MS = 900
-const ORBIT_MIN_STEP_RAD = 1e-12
-
-// ─── Orbit speed constants ─────────────────────────────────────────────────────
-const LOCAL_ORBIT_RAD_PER_SEC_AT_1KM = 0.035
-const LOCAL_ORBIT_RAD_PER_SEC_MIN = 0.006
-const OVERVIEW_STATION_ORBIT_RAD_PER_SEC_AT_1KM = 0.038
-const OVERVIEW_STATION_ORBIT_RAD_PER_SEC_MIN = 0.007
-const PUNTA_ORBIT_RAD_PER_SEC_AT_1KM = 0.048
-const PUNTA_ORBIT_RAD_PER_SEC_MIN = 0.01
 
 const PUNTA_ARENAS_START_POSE: FlyPose = {
   longitude: -70.921316, latitude: -53.214332, height: 1252,
@@ -84,22 +69,6 @@ const PUNTA_ARENAS_START_POSE: FlyPose = {
 }
 
 const OVERVIEW_WAYPOINT = WAYPOINTS[0]
-
-export type HudState = {
-  cardinal: string
-  headingDeg: number
-  subsatLonDeg: number
-  subsatLatDeg: number
-}
-
-type LocalOrbitState = {
-  active: boolean
-  target?: unknown
-  offsetEnu?: { x: number; y: number; z: number }
-  dir?: number
-  radPerSecAt1km?: number
-  radPerSecMin?: number
-}
 
 type CameraKeyframe = { t: number; longitude: number; latitude: number; height: number; heading: number; pitch: number; roll: number; caption?: string }
 
@@ -117,18 +86,17 @@ type OrbitMathModule = {
 export interface CesiumRuntimeSharedRefs {
   isFlyingRef: MutableRefObject<boolean>
   cancelWaypointAnimRef: MutableRefObject<(() => void) | null>
-  localOrbitRef: MutableRefObject<LocalOrbitState>
   cameraFlightToSite1Ref: MutableRefObject<boolean>
   site1OrbitActiveRef: MutableRefObject<boolean>
-  autoMotionEnabledRef: MutableRefObject<boolean>
   flyToCaboSite1Ref: MutableRefObject<(() => void) | null>
   navigateWaypointsByScrollRef: MutableRefObject<(dir: 1 | -1) => void>
   commitExploreCaptionRef: MutableRefObject<(raw: string | null) => void>
   pointerButtonsRef: MutableRefObject<number>
   lastUserInputMsRef: MutableRefObject<number>
   exploreMenuSelectionIdRef: MutableRefObject<string>
-  /** When true, left-drag translates the camera and orbit auto-resumes after idle. */
+  /** When true, left-drag translates the camera (ScreenSpaceCameraController). */
   translateEnabledRef: MutableRefObject<boolean>
+  primaryMouseButtonDownRef: MutableRefObject<boolean>
 }
 
 interface UseCesiumViewerRuntimeOptions {
@@ -167,8 +135,15 @@ function shouldDebugCesium(): boolean {
   } catch { return false }
 }
 
+function shouldDebugCesiumInput(): boolean {
+  try {
+    if (typeof window === 'undefined') return false
+    return new URLSearchParams(window.location.search).has('debugCesiumInput')
+  } catch { return false }
+}
+
 function dbg(...args: unknown[]): void {
-  if (!shouldDebugCesium()) return
+  if (!shouldDebugCesium() && !shouldDebugCesiumInput()) return
   // eslint-disable-next-line no-console
   console.log('[CesiumExplorer]', ...args)
 }
@@ -176,7 +151,6 @@ function dbg(...args: unknown[]): void {
 function shouldLogCameraPose(): boolean {
   try {
     if (typeof window === 'undefined') return false
-    if (process.env.NODE_ENV !== 'production') return true
     const qs = new URLSearchParams(window.location.search)
     return qs.has('logCamera') || qs.has('logPose') || shouldDebugCesium()
   } catch { return false }
@@ -262,7 +236,6 @@ export function useCesiumViewerRuntime({
   const nightTintStageRef = useRef<unknown>(null)
   const postUpdateRemoveRef = useRef<(() => void) | null>(null)
   const viewerInteractionsCleanupRef = useRef<(() => void) | null>(null)
-  const canvasPointerDownRef = useRef<{ x: number; y: number; t: number; button: number } | null>(null)
   const initSeqRef = useRef(0)
   const groundHeightRef = useRef(0)
 
@@ -272,16 +245,11 @@ export function useCesiumViewerRuntime({
   const lastAglCommittedRef = useRef<number | null>(null)
   const lastHudCommittedRef = useRef<HudState | null>({ cardinal: 'N', headingDeg: 0, subsatLonDeg: 0, subsatLatDeg: 0 })
 
-  // Terrain sampling refs
-  const lastTerrainSampleMsRef = useRef(0)
-  const lastTerrainSampleLonLatRef = useRef<{ lon: number; lat: number } | null>(null)
   const lastSceneHeartbeatAtMsRef = useRef<number | null>(null)
-  const lastPostUpdateMsRef = useRef<number | null>(null)
 
-  // Debug / telemetry refs
+  // Debug / telemetry refs (consumed by the postUpdate handler via refs)
   const postUpdateTickRef = useRef(0)
   const lastOrbitHeadingRef = useRef<number | null>(null)
-  const lastOrbitAppliedTickRef = useRef(0)
   const lastDebugMsRef = useRef(0)
   const lastPoseLogMsRef = useRef(0)
   const lastPoseLoggedRef = useRef('')
@@ -311,12 +279,17 @@ export function useCesiumViewerRuntime({
     let cancelled = false
 
     const {
-      isFlyingRef, cancelWaypointAnimRef, localOrbitRef, cameraFlightToSite1Ref,
-      site1OrbitActiveRef, autoMotionEnabledRef, flyToCaboSite1Ref,
-      navigateWaypointsByScrollRef, commitExploreCaptionRef,
-      pointerButtonsRef, lastUserInputMsRef, exploreMenuSelectionIdRef,
-      translateEnabledRef,
+      isFlyingRef, cancelWaypointAnimRef, cameraFlightToSite1Ref,
+      site1OrbitActiveRef,
+      navigateWaypointsByScrollRef, exploreMenuSelectionIdRef,
+      pointerButtonsRef, lastUserInputMsRef,
+      translateEnabledRef, primaryMouseButtonDownRef,
     } = shared
+    // Capture for createPostUpdateHandler closure (refs are stable across renders)
+    const orbitLastUserInputMsRef = lastUserInputMsRef
+    const orbitIsFlyingRef = isFlyingRef
+    const orbitPrimaryMouseButtonDownRef = primaryMouseButtonDownRef
+    const orbitPointerButtonsRef = pointerButtonsRef
 
     const initCesium = async () => {
       setBootError(null)
@@ -406,7 +379,18 @@ export function useCesiumViewerRuntime({
       window.Cesium = Cesium
       if (cancelled || initSeqRef.current !== mySeq) return
 
-      applyExplorerCameraInteractionScheme(Cesium, viewer)
+      applyExplorerCameraInteractionScheme(Cesium, viewer, {
+        includePinchInRotateTilt: isMobile,
+      })
+
+      // Let the browser send uninterrupted pointer drags to the WebGL canvas (maps / globes).
+      try {
+        const canvas = viewer.scene.canvas as HTMLCanvasElement
+        canvas.style.touchAction = 'none'
+        canvas.style.userSelect = 'none'
+      } catch {
+        /* noop */
+      }
 
       viewer.scene.verticalExaggeration = isMobile ? 1.5 : TERRAIN_EXAGGERATION
       viewer.scene.globe.enableLighting = true
@@ -519,18 +503,15 @@ export function useCesiumViewerRuntime({
                 }
               } catch { /* optional */ }
 
-              // ── PHASE 4 OPTIMIZATION: precompute static catalog data once ────
-              // All string lookups, catalog reads and CSS color parsing happen here
-              // (once per entity), not inside the per-frame CallbackProperty.
+              // Precompute static catalog data once per entity so the per-frame
+              // CallbackProperty stays at ref-check + one multiply.
               const cachedRaw = entityKmlRawName(viewerForKml, entity)
               const cachedCat = getSubdivisionCatalogEntry(cachedRaw)
               const cachedBaseFill = (cachedCat
                 ? Cesium.Color.fromCssColorString(cachedCat.fillCss)
                 : fillBase.clone()) as typeof fillBase
               const cachedNoTint = cachedCat?.showPolygonFill === false
-              // Scratch Color reused by this entity's callback — avoids per-frame allocation.
               const fillScratch = cachedBaseFill.clone()
-              // Now the callback is just a ref-check + one multiply — no string/catalog lookups
               entity.polygon.material = new Cesium.ColorMaterialProperty(
                 new Cesium.CallbackProperty(() => {
                   const isSelected = selectedParcelEntityRef.current === entity
@@ -722,203 +703,35 @@ export function useCesiumViewerRuntime({
         } catch (err) { warnOnce('sociedades-cn1-kmz', 'Sociedades CN-1 KMZ failed to load.', err) }
       })()
 
-      // ── Orbit scratch vectors (created once, reused per frame) ─────────────
-      const scratchOrbitEnu = new Cesium.Matrix4()
-      const scratchOrbitInv = new Cesium.Matrix4()
-      const scratchOrbitTmp = new Cesium.Cartesian3()
-      const scratchOrbitWorldPos = new Cesium.Cartesian3()
-      const scratchOrbitForward = new Cesium.Cartesian3()
-      const scratchOrbitViewUp = new Cesium.Cartesian3()
-      const scratchOrbitViewRight = new Cesium.Cartesian3()
-      const scratchOrbitViewTmp = new Cesium.Cartesian3()
-      const pickFallback = new Cesium.Cartesian3()
-      const centerPx = new Cesium.Cartesian2()
-      const scratchCamCarto = new Cesium.Cartographic()
-      const terrainSampleCarto = new Cesium.Cartographic()
-      let hudPostSkip = 0
-      let lastTerrainUnderCamMs = 0
-
-      // ── postUpdate: orbit, HUD, terrain sampling ───────────────────────────
-      function onPostUpdate() {
-        const v = viewerRef.current
-        const C: CesiumModule = window.Cesium
-        if (!v || v.isDestroyed() || !C) return
-
-        lastSceneHeartbeatAtMsRef.current = performance.now()
-        stepKmlLayerAlphas(kmlLayerAlphaRef)
-
-        postUpdateTickRef.current++
-        const scene = v.scene
-        const cam = v.camera
-        const ellipsoid = scene.globe.ellipsoid
-
-        // ── Auto motion (orbit) ──────────────────────────────────────────────
-        if (!autoMotionEnabledRef.current) {
-          lastPostUpdateMsRef.current = null
-        } else if (!isFlyingRef.current && !cameraFlightToSite1Ref.current) {
-          const w = scene.canvas.clientWidth
-          const h = scene.canvas.clientHeight
-          const idleEnough = (performance.now() - lastUserInputMsRef.current) >= DRIFT_IDLE_AFTER_INPUT_MS
-          const notDragging = pointerButtonsRef.current === 0
-          if (w >= 2 && h >= 2 && idleEnough && notDragging) {
-            const tNow = performance.now()
-            const tPrev = lastPostUpdateMsRef.current ?? tNow
-            lastPostUpdateMsRef.current = tNow
-            const dt = Math.max(0, Math.min(0.15, (tNow - tPrev) / 1000))
-
-            if (localOrbitRef.current.active) {
-              if (!localOrbitRef.current.target) {
-                C.Cartesian2.fromElements(w * 0.5, h * 0.5, centerPx)
-                let surfacePoint = cam.pickEllipsoid(centerPx, ellipsoid)
-                if (!C.defined(surfacePoint)) {
-                  C.Cartographic.fromCartesian(cam.positionWC, ellipsoid, scratchCamCarto)
-                  C.Cartesian3.fromRadians(scratchCamCarto.longitude, scratchCamCarto.latitude, 0, ellipsoid, pickFallback)
-                  surfacePoint = pickFallback
-                }
-                localOrbitRef.current.target = surfacePoint
-              }
-
-              if (!localOrbitRef.current.offsetEnu && localOrbitRef.current.target) {
-                syncOrbitOffsetEnuFromCamera(C, v, localOrbitRef, scratchOrbitEnu, scratchOrbitInv, scratchOrbitTmp)
-              }
-
-              const target = localOrbitRef.current.target as { x: number; y: number; z: number } | undefined
-              const offsetEnu = localOrbitRef.current.offsetEnu
-              if (!target || !offsetEnu) {
-                lastOrbitAppliedTickRef.current = postUpdateTickRef.current
-              } else {
-                C.Cartographic.fromCartesian(cam.positionWC, ellipsoid, scratchCamCarto)
-                const asl = scratchCamCarto.height
-                const at1km = localOrbitRef.current.radPerSecAt1km ?? LOCAL_ORBIT_RAD_PER_SEC_AT_1KM
-                const min = localOrbitRef.current.radPerSecMin ?? LOCAL_ORBIT_RAD_PER_SEC_MIN
-                const dir = localOrbitRef.current.dir ?? +1
-                const radPerSec = Math.max(min, Math.min(at1km, at1km * (1200 / Math.max(600, asl))))
-                const dh = dir * radPerSec * dt
-                rotateOrbitOffsetEnuAroundUp(offsetEnu, dh)
-                if (Math.abs(dh) > ORBIT_MIN_STEP_RAD) {
-                  applyOrbitCameraFromEnuOffset(
-                    C, cam, ellipsoid, target, offsetEnu,
-                    scratchOrbitEnu, scratchOrbitWorldPos, scratchOrbitForward,
-                    scratchOrbitViewUp, scratchOrbitViewRight, scratchOrbitViewTmp,
-                  )
-                }
-                lastOrbitAppliedTickRef.current = postUpdateTickRef.current
-              }
-            }
-          }
-        } else {
-          lastPostUpdateMsRef.current = null
-        }
-
-        // ── Sync ctrl.enableTranslate with current waypoint ─────────────────
-        const wantTranslate = translateEnabledRef.current
-        const ctrl = scene.screenSpaceCameraController
-        if (ctrl.enableTranslate !== wantTranslate) ctrl.enableTranslate = wantTranslate
-
-        // ── Debug / pose logging ─────────────────────────────────────────────
-        const now = performance.now()
-        if (shouldDebugCesium() && now - lastDebugMsRef.current > 2500) {
-          lastDebugMsRef.current = now
-          const headingNow = cam.heading
-          const prevHeading = lastOrbitHeadingRef.current
-          const headingDelta = prevHeading === null ? null
-            : Number((((headingNow - prevHeading + Math.PI) % (2 * Math.PI)) - Math.PI).toFixed(6))
-          lastOrbitHeadingRef.current = headingNow
-          dbg('tick', {
-            tick: postUpdateTickRef.current,
-            canvas: { w: scene.canvas.clientWidth, h: scene.canvas.clientHeight },
-            flying: isFlyingRef.current, flightSite: cameraFlightToSite1Ref.current,
-            buttons: pointerButtonsRef.current, heading: Number(cam.heading.toFixed(3)), headingDelta,
-            orbitAppliedTick: lastOrbitAppliedTickRef.current,
-          })
-          if (scene.canvas.clientWidth < 2 || scene.canvas.clientHeight < 2) {
-            warnOnce('canvas-0', 'canvas is ~0x0; WebGL will break.', { w: scene.canvas.clientWidth, h: scene.canvas.clientHeight })
-          }
-        }
-
-        C.Cartographic.fromCartesian(cam.positionWC, ellipsoid, scratchCamCarto)
-        const aslRounded = Math.round(scratchCamCarto.height)
-
-        if (shouldLogCameraPose()) {
-          const t = performance.now()
-          if (t - lastPoseLogMsRef.current >= 700) {
-            lastPoseLogMsRef.current = t
-            const pose = {
-              longitude: Number(C.Math.toDegrees(scratchCamCarto.longitude).toFixed(6)),
-              latitude: Number(C.Math.toDegrees(scratchCamCarto.latitude).toFixed(6)),
-              height: Math.round(scratchCamCarto.height),
-              heading: Number(cam.heading.toFixed(6)), pitch: Number(cam.pitch.toFixed(6)), roll: Number(cam.roll.toFixed(6)),
-            }
-            const key = JSON.stringify(pose)
-            if (key !== lastPoseLoggedRef.current) {
-              lastPoseLoggedRef.current = key
-              // eslint-disable-next-line no-console
-              console.log('[CesiumExplorer] camera pose', pose)
-            }
-          }
-        }
-
-        // ── HUD React state (throttled, diff-gated) ─────────────────────────
-        if (++hudPostSkip >= 2) {
-          hudPostSkip = 0
-          const commitDue = now - lastHudCommitMsRef.current >= 220
-          if (commitDue) {
-            lastHudCommitMsRef.current = now
-            if (lastAslCommittedRef.current !== aslRounded) {
-              lastAslCommittedRef.current = aslRounded
-              setAltitudeAsl(aslRounded)
-            }
-            const wantAgl = aslRounded < 5000
-            if (wantAgl) {
-              const agl = Math.max(0, aslRounded - Math.round(groundHeightRef.current))
-              if (lastAglCommittedRef.current !== agl) {
-                lastAglCommittedRef.current = agl
-                setAltitudeAgl(agl)
-              }
-            } else if (lastAglCommittedRef.current !== null) {
-              lastAglCommittedRef.current = null
-              setAltitudeAgl(null)
-            }
-            const lonDeg = C.Math.toDegrees(scratchCamCarto.longitude)
-            const latDeg = C.Math.toDegrees(scratchCamCarto.latitude)
-            const nextHud: HudState = {
-              cardinal: cardinal8(cam.heading),
-              headingDeg: Number(C.Math.toDegrees(cam.heading).toFixed(1)),
-              subsatLonDeg: Number(lonDeg.toFixed(5)),
-              subsatLatDeg: Number(latDeg.toFixed(5)),
-            }
-            const prevHud = lastHudCommittedRef.current!
-            if (nextHud.cardinal !== prevHud.cardinal || nextHud.headingDeg !== prevHud.headingDeg ||
-              nextHud.subsatLonDeg !== prevHud.subsatLonDeg || nextHud.subsatLatDeg !== prevHud.subsatLatDeg) {
-              lastHudCommittedRef.current = nextHud
-              setHud(nextHud)
-            }
-          }
-        }
-
-        // ── AGL terrain sampling (throttled + movement-gated) ───────────────
-        if (aslRounded < 5000) {
-          const movedEnough = (() => {
-            const last = lastTerrainSampleLonLatRef.current
-            if (!last) return true
-            const dLon = scratchCamCarto.longitude - last.lon
-            const dLat = scratchCamCarto.latitude - last.lat
-            return (dLon * dLon + dLat * dLat) >= (0.00015 * 0.00015)
-          })()
-          if (movedEnough && now - lastTerrainSampleMsRef.current >= Math.max(800, TERRAIN_UNDER_CAMERA_MS)) {
-            lastTerrainSampleMsRef.current = now
-            lastTerrainSampleLonLatRef.current = { lon: scratchCamCarto.longitude, lat: scratchCamCarto.latitude }
-            if (now - lastTerrainUnderCamMs >= TERRAIN_UNDER_CAMERA_MS) {
-              lastTerrainUnderCamMs = now
-              C.Cartographic.fromRadians(scratchCamCarto.longitude, scratchCamCarto.latitude, 0, terrainSampleCarto)
-              C.sampleTerrainMostDetailed(v.terrainProvider, [terrainSampleCarto])
-                .then((sampled: unknown[]) => { groundHeightRef.current = (sampled[0] as { height?: number })?.height ?? 0 })
-                .catch(() => { /* ellipsoid / unsupported */ })
-            }
-          }
-        }
-      }
-
+      // ── postUpdate: orbit + HUD + terrain sampling ────────────────────────
+      const onPostUpdate = createPostUpdateHandler({
+        viewerRef,
+        translateEnabledRef,
+        kmlLayerAlphaRef,
+        lastSceneHeartbeatAtMsRef,
+        groundHeightRef,
+        lastHudCommitMsRef,
+        lastAslCommittedRef,
+        lastAglCommittedRef,
+        lastHudCommittedRef,
+        setAltitudeAsl,
+        setAltitudeAgl,
+        setHud,
+        shouldLogCameraPose,
+        lastPoseLogMsRef,
+        lastPoseLoggedRef,
+        lastUserInputMsRef: orbitLastUserInputMsRef,
+        isFlyingRef: orbitIsFlyingRef,
+        primaryMouseButtonDownRef: orbitPrimaryMouseButtonDownRef,
+        pointerButtonsRef: orbitPointerButtonsRef,
+        shouldDebugCesium,
+        shouldDebugCesiumInput,
+        debug: dbg,
+        warnOnce,
+        postUpdateTickRef,
+        lastOrbitHeadingRef,
+        lastDebugMsRef,
+      })
       viewer.scene.postUpdate.addEventListener(onPostUpdate)
       const viewerForPost = viewer
       postUpdateRemoveRef.current = () => {
@@ -937,13 +750,6 @@ export function useCesiumViewerRuntime({
           destination: Cesium.Cartesian3.fromDegrees(pose.longitude, pose.latitude, pose.height),
           orientation: { heading: pose.heading, pitch: pose.pitch, roll: pose.roll },
         })
-        localOrbitRef.current.active = true
-        localOrbitRef.current.dir = -1 // AUTO_ORBIT_WEST_SIGN
-        localOrbitRef.current.radPerSecAt1km = OVERVIEW_STATION_ORBIT_RAD_PER_SEC_AT_1KM
-        localOrbitRef.current.radPerSecMin = OVERVIEW_STATION_ORBIT_RAD_PER_SEC_MIN
-        // Target is intentionally left unset; postUpdate auto-picks from screen center on first tick.
-        // Satisfy idle gate immediately so overview auto-orbit begins on first frames (no 900ms wait after load).
-        lastUserInputMsRef.current = performance.now() - DRIFT_IDLE_AFTER_INPUT_MS - 1
       } else {
         viewer.camera.setView({
           destination: Cesium.Cartesian3.fromDegrees(PUNTA_ARENAS_START_POSE.longitude, PUNTA_ARENAS_START_POSE.latitude, PUNTA_ARENAS_START_POSE.height),
@@ -967,155 +773,43 @@ export function useCesiumViewerRuntime({
       selectedParcelEntityRef.current = null
       setSelectedParcelSale(null)
 
-      const canvas = viewer.scene.canvas
-      const mousePx = new Cesium.Cartesian2()
-
-      const onContextMenu = (e: Event) => e.preventDefault()
-
-      const markInput = () => {
-        lastUserInputMsRef.current = performance.now()
-        cancelWaypointAnimRef.current?.()
-        // Clear target/offsetEnu so the orbit auto-picks a fresh anchor after the
-        // idle period expires. Do NOT set active=false — the idleEnough gate already
-        // pauses orbit during interaction, and keeping active=true allows orbit to
-        // resume automatically once the user stops dragging.
-        localOrbitRef.current.target = undefined
-        localOrbitRef.current.offsetEnu = undefined
-        const v = viewerRef.current
-        if (v && !v.isDestroyed()) { try { v.camera.cancelFlight() } catch { /* noop */ } }
-      }
-
-      const onCanvasClick = (e: MouseEvent) => {
-        if (shouldDebugCesium()) dbg('canvas:click', { btn: e.button })
-        const v = viewerRef.current
-        const C: CesiumModule = window.Cesium
-        if (!v || v.isDestroyed() || !C) return
-        const boundsRect = canvas.getBoundingClientRect()
-        C.Cartesian2.fromElements(e.clientX - boundsRect.left, e.clientY - boundsRect.top, mousePx)
-        const parcelEntities = subdivisionParcelEntitiesRef.current
-        const subdivisionVisible = kmlLayerAlphaRef.current.subdivision > 0.45
-        if (parcelEntities.size > 0 && subdivisionVisible) {
-          const id = findParcelEntityUnderCursor(v, C, mousePx, parcelEntities)
-          if (id) {
-            const ll = centroidLonLatFromEntity(C, v, id)
-            selectedParcelEntityRef.current = id
-            const raw = entityKmlRawName(v, id)
-            const cat = getSubdivisionCatalogEntry(raw)
-            const computedHa = parcelAreaHaFromPolygonEntity(C, v, id, patagonValleyHaByKmlNameRef.current)
-            const areaHa = cat?.areaHa != null && Number.isFinite(cat.areaHa) ? cat.areaHa : computedHa ?? undefined
-            setSelectedParcelSale({
-              title: cat?.displayName ?? entityDisplayName(C, v, id),
-              longitude: ll?.lon ?? -70.86, latitude: ll?.lat ?? -52.93,
-              areaHa, kmlRawName: raw,
-            })
-            try { v.scene.requestRender() } catch { /* noop */ }
-            lastUserInputMsRef.current = performance.now()
-            return
-          }
-        }
-        markInput()
-      }
-
-      const onCanvasPointerDown = () => {
-        if (translateEnabledRef.current) {
-          // Stop orbit immediately so Cesium can process the drag on this frame.
-          markInput()
-        } else {
-          // Non-translate waypoints: gate orbit during click without disturbing anchor.
-          lastUserInputMsRef.current = performance.now()
-        }
-      }
-
-      let wheelAccPx = 0
-      const onCanvasWheel = (e: WheelEvent) => {
-        const v = viewerRef.current
-        const C: CesiumModule = window.Cesium
-        if (!v || v.isDestroyed() || !C) return
-        e.preventDefault()
-        e.stopPropagation()
-        if (e.ctrlKey || e.metaKey) {
-          markInput()
-          const ellipsoid = v.scene.globe.ellipsoid
-          const scratch = new C.Cartographic()
-          C.Cartographic.fromCartesian(v.camera.positionWC, ellipsoid, scratch)
-          const asl = Math.max(120, scratch.height)
-          const amt = Math.max(80, Math.min(1_500_000, Math.abs(e.deltaY) * (asl * 0.008)))
-          try { if (e.deltaY > 0) v.camera.zoomOut(amt); else v.camera.zoomIn(amt) } catch { /* noop */ }
-          return
-        }
-        wheelAccPx += e.deltaY
-        const stepPx = Math.max(260, Math.min(1200, Math.floor(window.innerHeight)))
-        if (Math.abs(wheelAccPx) < stepPx) return
-        const dir = wheelAccPx > 0 ? 1 : -1
-        wheelAccPx = 0
-        markInput()
-        navigateWaypointsByScrollRef.current(dir as 1 | -1)
-      }
-
-      const onCanvasPointerMove = (e: PointerEvent) => {
-        if (e.buttons !== 0 && translateEnabledRef.current) markInput()
-      }
-
-      const onCanvasPointerDownZoomGate = (e: PointerEvent) => {
-        canvasPointerDownRef.current = { x: e.clientX, y: e.clientY, t: performance.now(), button: e.button }
-      }
-      const onCanvasPointerUpZoomGate = (e: PointerEvent) => {
-        const down = canvasPointerDownRef.current
-        canvasPointerDownRef.current = null
-        if (!down) return
-        if (!isClickLikeGesture({ x: down.x, y: down.y, t: down.t }, e.clientX, e.clientY)) return
-        if (down.button === 0) onCanvasClick(e as unknown as MouseEvent)
-      }
-
-      canvas.addEventListener('pointerdown', onCanvasPointerDownZoomGate, true)
-      canvas.addEventListener('pointerup', onCanvasPointerUpZoomGate, true)
-      canvas.addEventListener('click', (e) => e.preventDefault(), true)
-      canvas.addEventListener('contextmenu', onContextMenu)
-      canvas.addEventListener('pointerdown', onCanvasPointerDown)
-      canvas.addEventListener('wheel', onCanvasWheel, { passive: false })
-      canvas.addEventListener('pointermove', onCanvasPointerMove)
-
-      const ro = new ResizeObserver(() => {
-        const v = viewerRef.current
-        if (!v || v.isDestroyed()) return
-        v.resize()
+      viewerInteractionsCleanupRef.current = wireCanvasInteractions({
+        viewer,
+        Cesium,
+        container: containerRef.current!,
+        kmlLayerAlphaRef,
+        subdivisionParcelEntitiesRef,
+        selectedParcelEntityRef,
+        patagonValleyHaByKmlNameRef,
+        lastUserInputMsRef,
+        pointerButtonsRef,
+        primaryMouseButtonDownRef,
+        cancelWaypointAnimRef,
+        navigateWaypointsByScrollRef,
+        isFlyingRef,
+        translateEnabledRef,
+        viewerRef,
+        setSelectedParcelSale,
+        debug: (label, payload) => dbg(label, payload),
       })
-      ro.observe(containerRef.current!)
-
-      const resizeKick = window.setInterval(() => {
-        const v = viewerRef.current
-        if (!v || v.isDestroyed()) return
-        if (v.scene.canvas.clientWidth < 2 || v.scene.canvas.clientHeight < 2) v.resize()
-      }, 1200)
-
-      const onLost = (ev: Event) => { ev.preventDefault?.(); dbg('webgl:context-lost') }
-      const onRestored = () => {
-        dbg('webgl:context-restored')
-        const v = viewerRef.current
-        if (!v || v.isDestroyed()) return
-        v.resize()
-      }
-      canvas.addEventListener('webglcontextlost', onLost as EventListener, false)
-      canvas.addEventListener('webglcontextrestored', onRestored as EventListener, false)
-
-      const renderErr = (viewer.scene as unknown as { renderError?: { addEventListener?: (fn: (e: unknown) => void) => void; removeEventListener?: (fn: (e: unknown) => void) => void } }).renderError
-      const onRenderErr = (e: unknown) => { console.error('[CesiumExplorer] scene.renderError', e) }
-      renderErr?.addEventListener?.(onRenderErr)
-
-      viewerInteractionsCleanupRef.current = () => {
-        canvas.removeEventListener('pointerdown', onCanvasPointerDownZoomGate, true)
-        canvas.removeEventListener('pointerup', onCanvasPointerUpZoomGate, true)
-        canvas.removeEventListener('contextmenu', onContextMenu)
-        canvas.removeEventListener('pointerdown', onCanvasPointerDown)
-        canvas.removeEventListener('wheel', onCanvasWheel as unknown as EventListener)
-        canvas.removeEventListener('pointermove', onCanvasPointerMove)
-        canvas.removeEventListener('webglcontextlost', onLost as EventListener, false)
-        canvas.removeEventListener('webglcontextrestored', onRestored as EventListener, false)
-        renderErr?.removeEventListener?.(onRenderErr)
-        window.clearInterval(resizeKick)
-        ro.disconnect()
-      }
       dbg('init:interactions-wired')
+      // Re-apply after the current frame — some Cesium wiring completes after first tick.
+      requestAnimationFrame(() => {
+        const v2 = viewerRef.current
+        if (cancelled || initSeqRef.current !== mySeq || !v2 || v2.isDestroyed()) return
+        applyExplorerCameraInteractionScheme(Cesium, v2, { includePinchInRotateTilt: isMobile })
+        try {
+          (v2.scene.canvas as HTMLCanvasElement).style.touchAction = 'none'
+        } catch {
+          /* noop */
+        }
+      })
+      if (shouldDebugCesiumInput()) {
+        // eslint-disable-next-line no-console
+        console.info(
+          '[CesiumExplorer] Input debug: watch `[CesiumExplorer/input]` and `tick` logs; drag on the globe and confirm `primaryMouseDown` stays true while holding LMB.',
+        )
+      }
       if (cancelled || initSeqRef.current !== mySeq) return
 
       pointerButtonsRef.current = 0
