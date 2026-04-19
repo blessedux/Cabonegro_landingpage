@@ -319,6 +319,18 @@ body {
 }
 
 /*
+ * Paint containment: ~100 animated paths inside this container would otherwise
+ * invalidate the whole page on every frame. `contain: paint` scopes paint to
+ * the backdrop layer, and `content-visibility: auto` lets the browser skip
+ * rendering when the element is offscreen (e.g. after fade-out).
+ */
+.preloader-topographic {
+  contain: paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 100vh 100vw;
+}
+
+/*
  * Contact full-page topo: positioned in CSS (not Tailwind inset-0) so mobile can bleed into
  * safe areas without fighting shorthand. Desktop: edge-to-edge width via 100vw on the SVG.
  */
@@ -381,8 +393,12 @@ body {
   }
 }
 
+/*
+ * Per-path animation. `will-change` used to be set here, but duplicating it
+ * across ~100 paths spawned 100 composite layers and tanked mobile GPUs.
+ * The parent `.preloader-topographic` already owns paint containment.
+ */
 .preloader-topographic path {
-  will-change: stroke-dashoffset;
   fill: #e2e8f0;
   stroke: #64748b;
   stroke-width: 1.15;
@@ -391,6 +407,15 @@ body {
   stroke-dashoffset: 1000;
   -webkit-animation: preloader-topo-dash 10s linear alternate infinite;
   animation: preloader-topo-dash 10s linear alternate infinite;
+}
+
+/*
+ * Pause the dash animation as soon as the backdrop starts fading out. Saves a
+ * last 1000 ms burst of compositing while the overlay is disappearing.
+ */
+.preloader-topographic[style*="opacity: 0"] path {
+  animation-play-state: paused;
+  -webkit-animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {

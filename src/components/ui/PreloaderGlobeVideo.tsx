@@ -49,17 +49,25 @@ export default function PreloaderGlobeVideo({
         className="absolute left-1/2 top-1/2 z-[10] aspect-square -translate-x-1/2 -translate-y-[calc(50%+2px)] overflow-hidden rounded-full bg-slate-100/80 shadow-inner"
         style={{ width: `${GLOBE_DIAMETER_PCT}%`, maxWidth: `${GLOBE_DIAMETER_PCT}%` }}
       >
-        <video
-          ref={videoRef}
-          className="h-full w-full object-cover object-center opacity-[0.98]"
-          style={{ opacity: suspended ? 0.35 : 0.98, transition: 'opacity 280ms ease' }}
-          src={src}
-          muted
-          playsInline
-          loop
-          preload="metadata"
-          aria-hidden
-        />
+        {/*
+         * Unmount the <video> element entirely when suspended. Pausing alone
+         * keeps the decoder + GPU textures resident, which on low-end devices
+         * holds ~20–40 MB of video memory while the preloader is idle.
+         * The ring SVG below keeps the "loading" affordance visible.
+         */}
+        {!suspended && (
+          <video
+            ref={videoRef}
+            className="h-full w-full object-cover object-center opacity-[0.98]"
+            style={{ opacity: 0.98 }}
+            src={src}
+            muted
+            playsInline
+            loop
+            preload="metadata"
+            aria-hidden
+          />
+        )}
       </div>
 
       <svg

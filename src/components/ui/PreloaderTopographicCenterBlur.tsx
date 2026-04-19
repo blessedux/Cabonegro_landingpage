@@ -1,7 +1,9 @@
 'use client'
 
+import { memo } from 'react'
+
 /** Softens topographic lines in the viewport center via masked backdrop-filter */
-export default function PreloaderTopographicCenterBlur({ isFadingOut }: { isFadingOut: boolean }) {
+function PreloaderTopographicCenterBlurImpl({ isFadingOut }: { isFadingOut: boolean }) {
   return (
     <div
       aria-hidden
@@ -10,3 +12,6 @@ export default function PreloaderTopographicCenterBlur({ isFadingOut }: { isFadi
     />
   )
 }
+
+const PreloaderTopographicCenterBlur = memo(PreloaderTopographicCenterBlurImpl)
+export default PreloaderTopographicCenterBlur

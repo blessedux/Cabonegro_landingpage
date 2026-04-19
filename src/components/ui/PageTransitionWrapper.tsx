@@ -109,8 +109,20 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
 
   return (
     <>
+      {/*
+       * 50 ms flicker guard during route/locale swaps. Used to mount a full
+       * PreloaderB here (topo SVG + video), which cost ~15 ms of paint per
+       * toggle for no visual benefit — a solid white scrim is indistinguishable
+       * to the user for that window. The real animated preloader lives in
+       * `routeOverlayNode` below.
+       */}
       {showWhiteBlocker && isBootLayoutDone ? (
-        <PreloaderB key="white-blocker-preloader-b" duration={0.5} shouldAutoHide={false} suspended />
+        <div
+          key="white-blocker"
+          aria-hidden
+          className="pointer-events-none fixed inset-0 bg-white"
+          style={{ zIndex: 100002 }}
+        />
       ) : null}
 
       <div
