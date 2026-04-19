@@ -79,10 +79,9 @@ export const SUBDIVISION_PARCEL_CATALOG: Record<string, SubdivisionParcelCatalog
     labelOffsetDeg: { lon: 0.0058, lat: -0.0024 },
     labelPixelOffset: { x: 22, y: -12 },
   },
-  /** Port-side continuation — same J&P 24 ha line as Sitio 7 in deck copy. */
+  /** Port-side extension of J&P — marketed as J&P II. */
   'J&P Continuadora': {
-    displayName: 'J&P',
-    areaHa: 24,
+    displayName: 'J&P II',
     ...PV_WALLS_ONLY,
     wallHeightM: 60,
     labelOffsetDeg: { lon: -0.0022, lat: 0.0014 },
@@ -125,6 +124,24 @@ export const KML_NAME_JP_24HA = 'Sitio 7'
 
 /** Same lot is merged into `subdivision-vigente.kmz`; hide Sociedades duplicate polygons. */
 export const KML_NAME_JP_CONTINUADORA = 'J&P Continuadora'
+
+/**
+ * The Patagon Valley "small lots" — individual lots within the tech-park cluster.
+ * Clicking any one highlights the whole group and shows the combined block card.
+ */
+export const PV_SMALL_LOT_KML_KEYS = [
+  'Sitio 4',
+  'Sitio 5',
+  'Sitio N°3',
+  'C1-7',
+  'Lote C1-7-2',
+  'Sitio N°2 Lote C1',
+] as const
+
+export const PV_SMALL_LOT_KEY_SET = new Set<string>(PV_SMALL_LOT_KML_KEYS)
+
+/** Synthetic kmlRawName used when the whole PV small-lot group is selected together. */
+export const PV_GROUP_KML_KEY = 'PATAGON_VALLEY_GROUP'
 
 /** Pier / muelle — not a closed polygon in KMZ; label placed at long jetty polyline centroid */
 export const PPG_PIER_LABEL = {

@@ -514,7 +514,10 @@ export function useCesiumViewerRuntime({
               const fillScratch = cachedBaseFill.clone()
               entity.polygon.material = new Cesium.ColorMaterialProperty(
                 new Cesium.CallbackProperty(() => {
-                  const isSelected = selectedParcelEntityRef.current === entity
+                  const sel = selectedParcelEntityRef.current
+                  const isSelected =
+                    sel === entity ||
+                    (sel instanceof Set && (sel as Set<unknown>).has(entity))
                   const base = isSelected ? fillSelected : cachedBaseFill
                   const a = cachedNoTint ? 0 : isSelected ? 0.62 : 0.42
                   return base.withAlpha(a * kmlLayerAlphaRef.current.subdivision, fillScratch)
@@ -555,7 +558,10 @@ export function useCesiumViewerRuntime({
                 return cat?.wallHeightM ?? SUBDIVISION_PARCEL_WALL_HEIGHT_M
               },
               () => kmlLayerAlphaRef.current.subdivision,
-              (e) => selectedParcelEntityRef.current === e,
+              (e) => {
+                const sel = selectedParcelEntityRef.current
+                return sel === e || (sel instanceof Set && (sel as Set<unknown>).has(e))
+              },
             )
           }
 

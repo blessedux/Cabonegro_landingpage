@@ -12,7 +12,12 @@ import {
   findParcelEntityUnderCursor,
   parcelAreaHaFromPolygonEntity,
 } from '@/lib/cesium/entityUtils'
-import { getSubdivisionCatalogEntry } from '@/lib/cesium/subdivisionParcelCatalog'
+import {
+  getSubdivisionCatalogEntry,
+  PATAGON_VALLEY_PARTITION_TOTAL_HA,
+  PV_GROUP_KML_KEY,
+  PV_SMALL_LOT_KEY_SET,
+} from '@/lib/cesium/subdivisionParcelCatalog'
 import type { KmlLayerAlphas } from '@/lib/cesium/kmlLayers'
 import type { ParcelSalePick } from '@/components/cesium/InfoPanel'
 
@@ -110,26 +115,46 @@ export function wireCanvasInteractions(opts: WireCanvasInteractionsOptions): () 
       const id = findParcelEntityUnderCursor(v, Cesium, mousePx, parcelEntities)
       if (id) {
         const ll = centroidLonLatFromEntity(Cesium, v, id)
-        selectedParcelEntityRef.current = id
         const raw = entityKmlRawName(v, id)
-        const cat = getSubdivisionCatalogEntry(raw)
-        const computedHa = parcelAreaHaFromPolygonEntity(
-          Cesium,
-          v,
-          id,
-          patagonValleyHaByKmlNameRef.current,
-        )
-        const areaHa =
-          cat?.areaHa != null && Number.isFinite(cat.areaHa)
-            ? cat.areaHa
-            : computedHa ?? undefined
-        setSelectedParcelSale({
-          title: cat?.displayName ?? entityDisplayName(Cesium, v, id),
-          longitude: ll?.lon ?? -70.86,
-          latitude: ll?.lat ?? -52.93,
-          areaHa,
-          kmlRawName: raw,
-        })
+
+        if (PV_SMALL_LOT_KEY_SET.has(raw)) {
+          // ── Patagon Valley group: select every small-lot entity together ──
+          const pvGroup = new Set<unknown>()
+          for (const ent of parcelEntities) {
+            if (PV_SMALL_LOT_KEY_SET.has(entityKmlRawName(v, ent as never))) {
+              pvGroup.add(ent)
+            }
+          }
+          selectedParcelEntityRef.current = pvGroup
+          setSelectedParcelSale({
+            title: 'Patagon Valley',
+            longitude: ll?.lon ?? -70.86,
+            latitude: ll?.lat ?? -52.93,
+            areaHa: PATAGON_VALLEY_PARTITION_TOTAL_HA,
+            kmlRawName: PV_GROUP_KML_KEY,
+          })
+        } else {
+          // ── Single-parcel selection ──
+          selectedParcelEntityRef.current = id
+          const cat = getSubdivisionCatalogEntry(raw)
+          const computedHa = parcelAreaHaFromPolygonEntity(
+            Cesium,
+            v,
+            id,
+            patagonValleyHaByKmlNameRef.current,
+          )
+          const areaHa =
+            cat?.areaHa != null && Number.isFinite(cat.areaHa)
+              ? cat.areaHa
+              : computedHa ?? undefined
+          setSelectedParcelSale({
+            title: cat?.displayName ?? entityDisplayName(Cesium, v, id),
+            longitude: ll?.lon ?? -70.86,
+            latitude: ll?.lat ?? -52.93,
+            areaHa,
+            kmlRawName: raw,
+          })
+        }
         try {
           v.scene.requestRender()
         } catch {

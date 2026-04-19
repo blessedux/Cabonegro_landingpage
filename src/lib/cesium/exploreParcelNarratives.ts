@@ -90,27 +90,27 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
   'J&P Continuadora': {
     en: {
       summary:
-        'J&P continuation — same commercial line as Sitio 7, extending developable frontage along the port-side fabric.',
+        'J&P II — port-side extension of J&P (Sitio 7), adding operational depth and internal-access frontage to the waterfront industrial line.',
       detail:
-        'This polygon carries the same J&P marketing envelope as Sitio 7: it exists to give investors flexibility on how the ~24 ha story is assembled on the ground (waterfront continuity vs. internal circulation). It is sold for the same strategic purpose — securing industrial and logistics tenants for the Cabo Negro maritime project — and follows the same masterplan phasing. Technical due diligence should treat it as part of one shoreline strategy with Sitio 7, not an unrelated small plot.',
+        'This polygon extends the J&P lot toward the port-side interior: sold to investors who want the combined waterfront + back-of-quay depth, or who prefer the back-parcel access story independently. It shares the same strategic envelope as Sitio 7 — industrial and logistics uses tied to the maritime terminal, the Strait corridor, and the Magallanes energy narrative — but sits at the seam between coastal circulation and the wider site. Due diligence should review both J&P and J&P II together; phasing, permits, and pricing follow the same project timeline.',
     },
     es: {
       summary:
-        'Continuación J&P — misma línea comercial que Sitio 7, extendiendo frente desarrollable en el tejido portuario.',
+        'J&P II — extensión portuaria de J&P (Sitio 7), agregando profundidad operacional y frente de acceso interior a la línea industrial costera.',
       detail:
-        'Este polígono comparte el mismo encaje comercial J&P que Sitio 7: da flexibilidad en cómo se arma en terreno la historia ~24 ha (continuidad costera vs. circulación interna). Se vende con el mismo fin estratégico — asegurar ocupación industrial y logística para el proyecto marítimo Cabo Negro — y sigue el mismo phasing del plan maestro. En due diligence debe verse como parte de una estrategia de frente marítimo con Sitio 7, no como un lote aislado.',
+        'Este polígono amplía el lote J&P hacia el interior del lado portuario: se vende a inversores que quieren profundidad combinada frente costa + tras muelle, o que prefieren la historia de acceso trasero de forma independiente. Comparte el mismo encuadre estratégico que Sitio 7 — usos industriales y logísticos ligados al terminal marítimo, el corredor del Estrecho y la narrativa energética de Magallanes — pero se ubica en la unión entre la circulación costera y el resto del sitio. En due diligence se recomienda revisar J&P y J&P II en conjunto; phasing, permisos y precios siguen el mismo calendario del proyecto.',
     },
     zh: {
       summary:
-        'J&P 延伸地块——与 7 号地块同一商业线，沿港区肌理延伸可开发岸线。',
+        'J&P II——J&P（7 号地块）的港区延伸，为滨水工业线增加运营纵深与内侧通道。',
       detail:
-        '该地块与 Sitio 7 共用 J&P 营销边界：为地面如何组合约 24 公顷叙事提供灵活性（岸线连续或内部交通）。出让目的相同——为卡沃内格罗海运项目锁定工业与物流租户，并遵循同一总体规划分期。尽调应将其与 Sitio 7 视为同一岸线策略的一部分，而非孤立小宗地块。',
+        '该地块将 J&P 地块向港区内侧延伸：面向希望获得岸线加码头后方综合纵深的投资者，也可独立作为后方通道价值。与 Sitio 7 共用相同战略框架——与海运码头、海峡走廊及麦哲伦能源叙事挂钩的工业与物流用途——但位于沿岸流线与更大用地之间的衔接处。尽调建议 J&P 与 J&P II 一并审视；分期、许可与定价遵循同一项目时间线。',
     },
     fr: {
       summary:
-        'Prolongement J&P — même ligne commerciale que le site 7, étendant le front développable côté port.',
+        'J&P II — prolongement côté port de J&P (site 7), ajoutant profondeur opérationnelle et façade d'accès interne à la ligne industrielle littorale.',
       detail:
-        'Ce polygone partage la même enveloppe marketing J&P que le site 7 : il permet d’assembler sur le terrain le récit ~24 ha (continuité du front mer vs. circulation interne). Il est cédé pour le même objectif — ancrer industrie et logistique sur le projet maritime Cabo Negro — et suit le même phasing du schéma directeur. La due diligence doit le traiter comme un volet d’une stratégie de rivage avec le site 7, pas comme une parcelle isolée.',
+        'Ce polygone étend le lot J&P vers l'intérieur côté port : cédé aux investisseurs qui veulent la profondeur combinée front mer + arrière quai, ou qui préfèrent la thèse d'accès arrière de manière indépendante. Il partage la même enveloppe stratégique que le site 7 — usages industriels et logistiques liés au terminal maritime, au corridor du détroit et au récit énergétique de Magellan — mais se situe à la jonction entre la circulation littorale et le reste du site. La due diligence devrait examiner J&P et J&P II ensemble ; phasing, permis et prix suivent le même calendrier projet.',
     },
   },
 
@@ -270,6 +270,33 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
     fr: {
       summary:
         'Patagon Valley (lot C1-7-2) — tranche secondaire pour un occupant plus petit ou une construction phasée dans la ligne de planification C1-7.',
+      detail: GENERIC_PV.fr.detail,
+    },
+  },
+
+  /**
+   * Synthetic key used when the entire Patagon Valley small-lot cluster is selected
+   * together (clicking any individual lot highlights the whole group).
+   */
+  PATAGON_VALLEY_GROUP: {
+    en: {
+      summary:
+        'Patagon Valley (~33 ha) — consolidated technology-park block of individually purchasable lots along the Cabo Negro corridor.',
+      detail: GENERIC_PV.en.detail,
+    },
+    es: {
+      summary:
+        'Patagon Valley (~33 ha) — bloque de parque tecnológico consolidado, con lotes individuales adquiribles a lo largo del corredor Cabo Negro.',
+      detail: GENERIC_PV.es.detail,
+    },
+    zh: {
+      summary:
+        '巴塔哥尼亚谷（约 33 公顷）——卡沃内格罗走廊沿线的科技园区综合地块，可分宗独立购入。',
+      detail: GENERIC_PV.zh.detail,
+    },
+    fr: {
+      summary:
+        'Patagon Valley (~33 ha) — bloc de parc technologique consolidé composé de lots achetables individuellement le long du corridor Cabo Negro.',
       detail: GENERIC_PV.fr.detail,
     },
   },
