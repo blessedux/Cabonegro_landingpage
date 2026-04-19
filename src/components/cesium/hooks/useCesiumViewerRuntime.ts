@@ -19,6 +19,9 @@ import {
   getSubdivisionCatalogEntry,
   KML_NAME_JP_24HA,
   KML_NAME_JP_CONTINUADORA,
+  KML_NAME_JP_DOS,
+  KML_NAME_JP_TRES,
+  KML_NAME_PPG_POLYGON,
   PATAGON_VALLEY_33HA_KML_KEYS,
   PATAGON_VALLEY_33HA_KML_KEY_SET,
   PATAGON_VALLEY_PARTITION_TOTAL_HA,
@@ -640,7 +643,8 @@ export function useCesiumViewerRuntime({
             })
           }
 
-          subdivisionParcelEntitiesRef.current = entitySet
+          // Add rather than replace so Sociedades CN entities added concurrently are not lost.
+          for (const ent of entitySet) subdivisionParcelEntitiesRef.current.add(ent)
 
           // Default parcel selection: J&P (24 ha)
           if (!cancelled && initSeqRef.current === mySeq && !viewerForKml.isDestroyed()) {
@@ -677,12 +681,119 @@ export function useCesiumViewerRuntime({
           await viewerForKml.dataSources.add(ds)
           ds.show = false
           await applySociedadesKmlStyling(viewerForKml, Cesium, ds, () => kmlLayerAlphaRef.current.sociedadesCn, SOCIEDADES_WALL_HEIGHT_M)
+
+          // ── Make J&P Dos, J&P Tres, and PPG boundary polygons clickable ───
+          const wallLine = Cesium.Color.fromCssColorString('#00fff0')
+          const wallLineSel = Cesium.Color.fromCssColorString('#fff2b2')
+          const wallScratch = wallLine.clone()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const clickableJobs: { entity: any; cartos: any[] }[] = []
+          const t = viewerForKml.clock.currentTime
+
           for (const entity of ds.entities.values) {
             if (entity.billboard) entity.billboard.show = new Cesium.ConstantProperty(false)
             if (entity.label) entity.label.show = new Cesium.ConstantProperty(false)
             if (entity.point) entity.point.show = new Cesium.ConstantProperty(false)
-            if (entityKmlRawName(viewerForKml, entity) === KML_NAME_JP_CONTINUADORA) entity.show = false
+            const raw = entityKmlRawName(viewerForKml, entity)
+            if (raw === KML_NAME_JP_CONTINUADORA) { entity.show = false; continue }
+
+            const isJP = raw === KML_NAME_JP_DOS || raw === KML_NAME_JP_TRES
+            const isPpgPolygon = raw === '' && entity.polygon != null
+            if (!isJP && !isPpgPolygon) continue
+
+            // Assign the synthetic PPG name so catalog and narrative lookup work.
+            if (isPpgPolygon) entity.name = KML_NAME_PPG_POLYGON
+            const resolvedRaw = isPpgPolygon ? KML_NAME_PPG_POLYGON : raw
+
+            // Add to clickable set — subdivision loading uses .add() so no race.
+            subdivisionParcelEntitiesRef.current.add(entity)
+
+            // Override polygon material with selection-aware, walls-only fill.
+            if (entity.polygon) {
+              const cat = getSubdivisionCatalogEntry(resolvedRaw)
+              const fillBase = Cesium.Color.fromCssColorString(cat?.fillCss ?? '#0f766e')
+              const fillSel = fillBase.brighten(0.5, fillBase.clone())
+              const noTint = cat?.showPolygonFill === false
+              const fillScratch = fillBase.clone()
+              entity.polygon.material = new Cesium.ColorMaterialProperty(
+                new Cesium.CallbackProperty(() => {
+                  const sel = selectedParcelEntityRef.current
+                  const isSel = sel === entity || (sel instanceof Set && (sel as Set<unknown>).has(entity))
+                  const a = noTint ? 0 : isSel ? 0.62 : 0.42
+                  return (isSel ? fillSel : fillBase).withAlpha(
+                    a * kmlLayerAlphaRef.current.sociedadesCn,
+                    fillScratch,
+                  )
+                }, false),
+              )
+              entity.polygon.outline = new Cesium.ConstantProperty(false)
+            }
+
+            // Collect polygon outer ring for terrain-sampled wall.
+            if (entity.polygon?.hierarchy) {
+              try {
+                const hierarchy = entity.polygon.hierarchy.getValue(t)
+                const positions = hierarchy?.positions as unknown[] | undefined
+                if (positions?.length) {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const cartos = positions.map((p: any) => Cesium.Cartographic.fromCartesian(p))
+                  const a0 = cartos[0]!
+                  const aN = cartos[cartos.length - 1]!
+                  if (Math.abs(a0.longitude - aN.longitude) > 1e-12 || Math.abs(a0.latitude - aN.latitude) > 1e-12) {
+                    cartos.push(Cesium.Cartographic.clone(a0))
+                  }
+                  clickableJobs.push({ entity, cartos })
+                }
+              } catch { /* skip */ }
+            }
           }
+
+          // Batch terrain sample for wall heights.
+          if (clickableJobs.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const flat: any[] = []
+            const ranges: { entity: unknown; start: number; len: number }[] = []
+            for (const j of clickableJobs) {
+              ranges.push({ entity: j.entity, start: flat.length, len: j.cartos.length })
+              flat.push(...j.cartos)
+            }
+            try {
+              await Cesium.sampleTerrainMostDetailed(viewerForKml.terrainProvider, flat).catch(() => undefined)
+            } catch { /* ellipsoid fallback */ }
+
+            for (const r of ranges) {
+              try {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const ent = r.entity as any
+                const entRaw = entityKmlRawName(viewerForKml, ent)
+                const cat = getSubdivisionCatalogEntry(entRaw)
+                const wallM = cat?.wallHeightM ?? SUBDIVISION_PARCEL_WALL_HEIGHT_M
+                const cartos = flat.slice(r.start, r.start + r.len)
+                const minH = cartos.map((c: { height: number }) => c.height)
+                const maxH = minH.map((h: number) => h + wallM)
+                const wallPositions = cartos.map((c: { longitude: number; latitude: number; height: number }) =>
+                  Cesium.Cartesian3.fromRadians(c.longitude, c.latitude, c.height),
+                )
+                ent.wall = new Cesium.WallGraphics({
+                  positions: new Cesium.ConstantProperty(wallPositions),
+                  minimumHeights: new Cesium.ConstantProperty(minH),
+                  maximumHeights: new Cesium.ConstantProperty(maxH),
+                  material: new Cesium.ColorMaterialProperty(
+                    new Cesium.CallbackProperty(() => {
+                      const sel = selectedParcelEntityRef.current
+                      const isSel = sel === ent || (sel instanceof Set && (sel as Set<unknown>).has(ent))
+                      return (isSel ? wallLineSel : wallLine).withAlpha(
+                        0.88 * kmlLayerAlphaRef.current.sociedadesCn,
+                        wallScratch,
+                      )
+                    }, false),
+                  ),
+                })
+              } catch { /* skip */ }
+            }
+          }
+          // ─────────────────────────────────────────────────────────────────
+
           ds.show = true
           dbg('init:sociedades-cn-kmz', { entities: ds.entities.values.length })
         } catch (err) { warnOnce('sociedades-cn-kmz', 'Sociedades CN KMZ failed to load.', err) }

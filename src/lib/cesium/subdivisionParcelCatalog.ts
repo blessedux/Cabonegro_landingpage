@@ -1,13 +1,14 @@
 /**
- * Maps SUBDIVISIÓN VIGENTE.kmz placemark `<name>` values to marketing labels, authoritative
+ * Maps KMZ placemark `<name>` values to marketing labels, authoritative
  * hectare figures (sales / deck), colors aligned with the project map, and label placement.
- * KML geometry names are internal (Sitio N, C1-7, etc.); this is the single source for UI copy.
+ * Covers both SUBDIVISIÓN VIGENTE.kmz and Sociedades CN / CN-1 KMZs.
+ * KML geometry names are internal (Sitio N, J&P Dos, etc.); this is the single source for UI copy.
  */
 
 export type SubdivisionParcelCatalogEntry = {
   /** Shown on globe + InfoPanel (full marketing line) */
   displayName: string
-  /** If set, overrides planar geometry (ha); else computed from polygon — only CN2 uses this */
+  /** If set, overrides planar geometry (ha); else computed from polygon */
   areaHa?: number
   fillCss: string
   outlineCss: string
@@ -27,12 +28,15 @@ export type SubdivisionParcelCatalogEntry = {
 const PV = { fillCss: '#0f766e', outlineCss: '#5eead4' }
 const PV_WALLS_ONLY = { fillCss: PV.fillCss, outlineCss: PV.outlineCss, showPolygonFill: false as const }
 
+/** Maritime terminal (PPG) fill — distinct blue so selection highlight reads clearly. */
+const PPG_WALLS_ONLY = { fillCss: '#1565c0', outlineCss: '#90caf9', showPolygonFill: false as const }
+
 /** Single marketing line for every Patagon Valley lot in explorer UI + globe tags. */
 const PV_DISPLAY = 'Patagon Valley'
 
 /**
- * The six polygons under `SD Lote C1-7` in SUBDIVISIÓN VIGENTE.kmz — combined developable area is **33 ha**.
- * Hectares per lot are proportional to each polygon’s net area (outer minus holes), scaled to that total.
+ * The polygons under `SD Lote C1-7` in SUBDIVISIÓN VIGENTE.kmz used for proportional-ha calculation.
+ * Combined developable area is **33 ha**.
  */
 export const PATAGON_VALLEY_PARTITION_TOTAL_HA = 33
 export const PATAGON_VALLEY_33HA_KML_KEYS = [
@@ -54,12 +58,19 @@ export const SUBDIVISION_PARCEL_CATALOG: Record<string, SubdivisionParcelCatalog
     fillCss: '#8d6e63',
     outlineCss: '#bcaaa4',
   },
-  /** Adjoining J&P (Sitio 7) — marketing lot line. */
-  'Sitio 6': {
-    displayName: 'J&P III',
-    areaHa: 31,
+
+  // ── Patagon Valley lots (Subdivision KMZ) ─────────────────────────────────
+  'Sitio 7': {
+    displayName: PV_DISPLAY,
     ...PV_WALLS_ONLY,
-    wallHeightM: 60,
+  },
+  'Sitio 6': {
+    displayName: PV_DISPLAY,
+    ...PV_WALLS_ONLY,
+  },
+  'Sitio 5': {
+    displayName: PV_DISPLAY,
+    ...PV_WALLS_ONLY,
   },
   'Sitio 4': {
     displayName: PV_DISPLAY,
@@ -69,38 +80,50 @@ export const SUBDIVISION_PARCEL_CATALOG: Record<string, SubdivisionParcelCatalog
     displayName: PV_DISPLAY,
     ...PV_WALLS_ONLY,
   },
-  /** Waterfront J&P lot — authoritative 24 ha (not proportional slice of the 33 ha fabric). */
-  'Sitio 7': {
-    displayName: 'J&P',
-    areaHa: 24,
+  'Sitio N°2 Lote C1': {
+    displayName: PV_DISPLAY,
     ...PV_WALLS_ONLY,
-    wallHeightM: 60,
-    /** Southeast into the widest part of the polygon (right / below centroid on map). */
-    labelOffsetDeg: { lon: 0.0058, lat: -0.0024 },
-    labelPixelOffset: { x: 22, y: -12 },
-  },
-  /** Port-side extension of J&P — marketed as J&P II. */
-  'J&P Continuadora': {
-    displayName: 'J&P II',
-    ...PV_WALLS_ONLY,
-    wallHeightM: 60,
-    labelOffsetDeg: { lon: -0.0022, lat: 0.0014 },
   },
   'C1-7': {
-    displayName: PV_DISPLAY,
-    ...PV_WALLS_ONLY,
-  },
-  'Sitio 5': {
-    displayName: PV_DISPLAY,
-    ...PV_WALLS_ONLY,
-  },
-  'Sitio N°2 Lote C1': {
     displayName: PV_DISPLAY,
     ...PV_WALLS_ONLY,
   },
   'Lote C1-7-2': {
     displayName: PV_DISPLAY,
     ...PV_WALLS_ONLY,
+  },
+
+  // ── J&P lots ──────────────────────────────────────────────────────────────
+  /** The main J&P waterfront lot — authoritative 24 ha. Lives in Subdivision KMZ. */
+  'J&P Continuadora': {
+    displayName: 'J&P',
+    areaHa: 24,
+    ...PV_WALLS_ONLY,
+    wallHeightM: 60,
+    labelOffsetDeg: { lon: -0.0022, lat: 0.0014 },
+  },
+  /** J&P II lot — Sociedades CN KMZ polygon `J&P Dos`. */
+  'J&P Dos': {
+    displayName: 'J&P II',
+    ...PV_WALLS_ONLY,
+    wallHeightM: 60,
+  },
+  /** J&P III lot — Sociedades CN KMZ polygon `J&P Tres`. */
+  'J&P Tres': {
+    displayName: 'J&P III',
+    ...PV_WALLS_ONLY,
+    wallHeightM: 60,
+  },
+
+  // ── Maritime terminal ─────────────────────────────────────────────────────
+  /**
+   * PPG CM61260 boundary polygons — unnamed in KMZ; code assigns this key to every
+   * empty-name polygon entity found in the Sociedades CN dataset.
+   */
+  'PPG CM61260': {
+    displayName: 'PPG CM61260',
+    ...PPG_WALLS_ONLY,
+    wallHeightM: 30,
   },
 }
 
@@ -119,17 +142,30 @@ export function formatSubdivisionGlobeLabel(
   return `${title}\n${areaHa.toFixed(1)} ha`
 }
 
-/** KML `<name>` for J&P (24 ha) — default featured lot on explore load */
-export const KML_NAME_JP_24HA = 'Sitio 7'
+/** KML `<name>` for the J&P main lot in the Subdivision KMZ — used as default featured lot on explore load */
+export const KML_NAME_JP_24HA = 'J&P Continuadora'
 
-/** Same lot is merged into `subdivision-vigente.kmz`; hide Sociedades duplicate polygons. */
+/** Hidden in Sociedades CN/CN-1 because Subdivision KMZ carries the authoritative polygon. */
 export const KML_NAME_JP_CONTINUADORA = 'J&P Continuadora'
 
+/** Sociedades CN KMZ polygon names for J&P II and J&P III. */
+export const KML_NAME_JP_DOS = 'J&P Dos'
+export const KML_NAME_JP_TRES = 'J&P Tres'
+
 /**
- * The Patagon Valley "small lots" — individual lots within the tech-park cluster.
+ * Synthetic name assigned by code to every unnamed polygon entity in the Sociedades CN
+ * dataset (PPG document folder). Allows catalog + narrative lookup.
+ */
+export const KML_NAME_PPG_POLYGON = 'PPG CM61260'
+
+/**
+ * The Patagon Valley "small lots" — every individual lot within the tech-park cluster
+ * (including Sitio 7 and Sitio 6, both now Patagon Valley).
  * Clicking any one highlights the whole group and shows the combined block card.
  */
 export const PV_SMALL_LOT_KML_KEYS = [
+  'Sitio 7',
+  'Sitio 6',
   'Sitio 4',
   'Sitio 5',
   'Sitio N°3',

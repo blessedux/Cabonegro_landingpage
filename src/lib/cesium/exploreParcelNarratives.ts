@@ -1,6 +1,7 @@
 /**
- * Investor-facing copy for subdivision parcels (SUBDIVISIÓN VIGENTE KMZ placemark names).
- * Summary = collapsed card; detail = expanded. Keys must match KML `<name>` exactly.
+ * Investor-facing copy for subdivision parcels (SUBDIVISIÓN VIGENTE + Sociedades CN KMZ names).
+ * Summary = collapsed card; detail = expanded. Keys must match KML `<name>` exactly,
+ * or be a synthetic key assigned by code (e.g. PATAGON_VALLEY_GROUP, PPG CM61260).
  */
 
 import type { ExploreCardLocales } from './exploreCardText'
@@ -10,7 +11,7 @@ const GENERIC_PV: ExploreCardLocales = {
     summary:
       'Patagon Valley lot — developable slice within the ~33 ha technology-park fabric next to the Cabo Negro corridor.',
     detail:
-      'This parcel is part of the current Cabo Negro subdivision and is positioned for port-linked innovation uses: R&D, light manufacturing, data and control rooms, and services that benefit from Magallanes’ renewable power story. Plots are offered to bring forward a coordinated technology district beside the maritime terminal and logistics stack, shortening time-to-operation for tenants who need power, space, and access to the Strait. Commercially, it is a land play in a region where energy-intensive industry is actively recruiting capacity — with phased delivery tied to the wider master development rather than a distant speculative horizon.',
+      'This parcel is part of the current Cabo Negro subdivision and is positioned for port-linked innovation uses: R&D, light manufacturing, data and control rooms, and services that benefit from Magallanes\' renewable power story. Plots are offered to bring forward a coordinated technology district beside the maritime terminal and logistics stack, shortening time-to-operation for tenants who need power, space, and access to the Strait. Commercially, it is a land play in a region where energy-intensive industry is actively recruiting capacity — with phased delivery tied to the wider master development rather than a distant speculative horizon.',
   },
   es: {
     summary:
@@ -28,7 +29,7 @@ const GENERIC_PV: ExploreCardLocales = {
     summary:
       'Lot Patagon Valley — parcelle développable dans le tissu ~33 ha du parc technologique longeant le corridor Cabo Negro.',
     detail:
-      'Cette parcelle relève du plan de subdivision en vigueur à Cabo Negro et vise des usages d’innovation liés au port : R&D, fabrication légère, salles de données et de contrôle, et services tirant parti du récit énergétique renouvelable de Magellan. Les lots sont cédés pour faire émerger un district technologique coordonné près du terminal maritime et de la pile logistique, réduisant les délais pour des opérateurs qui ont besoin de puissance, de surface et d’accès au détroit. Commercialement, il s’agit d’un positionnement foncier dans une région où l’industrie intensive en énergie recrute de la capacité — avec une livraison phasée alignée sur le schéma directeur, plutôt qu’un horizon spéculatif lointain.',
+      "Cette parcelle relève du plan de subdivision en vigueur à Cabo Negro et vise des usages d'innovation liés au port : R&D, fabrication légère, salles de données et de contrôle, et services tirant parti du récit énergétique renouvelable de Magellan. Les lots sont cédés pour faire émerger un district technologique coordonné près du terminal maritime et de la pile logistique, réduisant les délais pour des opérateurs qui ont besoin de puissance, de surface et d'accès au détroit. Commercialement, il s'agit d'un positionnement foncier dans une région où l'industrie intensive en énergie recrute de la capacité — avec une livraison phasée alignée sur le schéma directeur, plutôt qu'un horizon spéculatif lointain.",
   },
 }
 
@@ -38,7 +39,7 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
       summary:
         'Cabo Negro Dos (~173 ha) — large-format industrial and logistics platform at the heart of the Strait sector.',
       detail:
-        'This is the flagship land block for heavy footprint uses: port-related industry, bulk and container back-up, energy conversion plants, and staging that needs depth and distance from urban centers. It is being sold to secure anchor investment for the Cabo Negro complex — linking Punta Arenas’ workforce and services to a greenfield site with room for quay-aligned supply chains. For an Asian or global investor, the value is geographic: you sit on the Magellan corridor where Atlantic and Pacific routing options converge, with year-round navigation and a political narrative around hydrogen and southern logistics. Timing follows project infrastructure phasing; the lot is priced as strategic land bank for multi-year industrial rollout.',
+        'This is the flagship land block for heavy footprint uses: port-related industry, bulk and container back-up, energy conversion plants, and staging that needs depth and distance from urban centers. It is being sold to secure anchor investment for the Cabo Negro complex — linking Punta Arenas\' workforce and services to a greenfield site with room for quay-aligned supply chains. For an Asian or global investor, the value is geographic: you sit on the Magellan corridor where Atlantic and Pacific routing options converge, with year-round navigation and a political narrative around hydrogen and southern logistics. Timing follows project infrastructure phasing; the lot is priced as strategic land bank for multi-year industrial rollout.',
     },
     es: {
       summary:
@@ -56,62 +57,16 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
       summary:
         'Cabo Negro Dos (~173 ha) — grande plateforme industrielle et logistique au cœur du secteur du détroit.',
       detail:
-        'Il s’agit du bloc phare pour les usages lourds : industrie portuaire, secours vrac et conteneurs, conversion énergétique et aires de staging nécessitant profondeur et éloignement des centres urbains. La vente vise à ancrer l’investissement dans le complexe Cabo Negro — reliant la main-d’œuvre et les services de Punta Arenas à un site vert avec place pour des chaînes d’approvisionnement alignées quai. Pour un investisseur asiatique ou mondial, la valeur est géographique : position sur le corridor de Magellan où se croisent options de routage Atlantique et Pacifique, navigation à l’année et récit politique hydrogène / logistique australe. Le calendrier suit le phasing des infrastructures ; le lot est positionné comme réserve foncière industrielle pluriannuelle.',
+        "Il s'agit du bloc phare pour les usages lourds : industrie portuaire, secours vrac et conteneurs, conversion énergétique et aires de staging nécessitant profondeur et éloignement des centres urbains. La vente vise à ancrer l'investissement dans le complexe Cabo Negro — reliant la main-d'œuvre et les services de Punta Arenas à un site vert avec place pour des chaînes d'approvisionnement alignées quai. Pour un investisseur asiatique ou mondial, la valeur est géographique : position sur le corridor de Magellan où se croisent options de routage Atlantique et Pacifique, navigation à l'année et récit politique hydrogène / logistique australe. Le calendrier suit le phasing des infrastructures ; le lot est positionné comme réserve foncière industrielle pluriannuelle.",
     },
   },
 
+  // ── Patagon Valley lots ────────────────────────────────────────────────────
   'Sitio 7': {
-    en: {
-      summary:
-        'J&P (~24 ha) — waterfront-facing parcel sized for port-linked industry and high-visibility logistics.',
-      detail:
-        'This lot is marketed as the premium shoreline slice in the offering: closer visual and operational coupling to the maritime terminal and coastal circulation. It suits investors who want their asset story tied directly to the Strait — cold chain, fuels and chemicals under modern safety regimes, marshalling for project cargo, or advanced manufacturing that feeds ship operations. Sales are part of the current Cabo Negro land release to fund parallel port and park works; expect alignment with concession timelines and environmental permitting rather than immediate small-lot retail subdivision.',
-    },
-    es: {
-      summary:
-        'J&P (~24 ha) — frente costero, dimensionado para industria vinculada al puerto y logística de alta visibilidad.',
-      detail:
-        'Es la fracción premium de costa en la oferta: mayor acoplamiento visual y operacional al terminal marítimo y a la circulación costera. Apunta a inversores que quieren que su activo narre el Estrecho — frío, combustibles y químicos bajo normas de seguridad, acopio de carga proyecto o manufactura avanzada que alimente operaciones navales. La venta forma parte de la liberación de suelo actual de Cabo Negro para cofinanciar obras portuarias y de parque; el calendonar se alinea a concesiones y permisos ambientales, no a un loteo menor inmediato.',
-    },
-    zh: {
-      summary:
-        'J&P（约 24 公顷）——滨水朝向、适合港航关联产业与高可见度物流的规模地块。',
-      detail:
-        '该出让强调岸线价值：与海运码头及沿岸交通在视觉与运营上更紧密。适合希望资产叙事与海峡直接绑定的投资者——冷链、现代安全体系下的燃料与化工、项目货集散，或服务船舶作业的先进制造。销售属于卡沃内格罗当前土地释放，用于配套港口与园区建设；节奏与特许与环境许可衔接，而非即时小块零售式分割。',
-    },
-    fr: {
-      summary:
-        'J&P (~24 ha) — parcelle front de mer pour industrie liée au port et logistique très visible.',
-      detail:
-        'C’est la tranche côtière premium : couplage visuel et opérationnel plus fort avec le terminal maritime et les circulations littorales. Elle s’adresse aux investisseurs qui veulent un actif explicitement lié au détroit — froid, carburants et chimie sous normes de sécurité, groupage de cargaisons projet ou fabrication avancée alimentant les opérations portuaires. La vente s’inscrit dans la libération foncière actuelle de Cabo Negro pour cofinancer infrastructures portuaires et parcs ; calendrier aligné sur concessions et permis environnementaux, pas sur un lotissement retail immédiat.',
-    },
-  },
-
-  'J&P Continuadora': {
-    en: {
-      summary:
-        'J&P II — port-side extension of J&P (Sitio 7), adding operational depth and internal-access frontage to the waterfront industrial line.',
-      detail:
-        'This polygon extends the J&P lot toward the port-side interior: sold to investors who want the combined waterfront + back-of-quay depth, or who prefer the back-parcel access story independently. It shares the same strategic envelope as Sitio 7 — industrial and logistics uses tied to the maritime terminal, the Strait corridor, and the Magallanes energy narrative — but sits at the seam between coastal circulation and the wider site. Due diligence should review both J&P and J&P II together; phasing, permits, and pricing follow the same project timeline.',
-    },
-    es: {
-      summary:
-        'J&P II — extensión portuaria de J&P (Sitio 7), agregando profundidad operacional y frente de acceso interior a la línea industrial costera.',
-      detail:
-        'Este polígono amplía el lote J&P hacia el interior del lado portuario: se vende a inversores que quieren profundidad combinada frente costa + tras muelle, o que prefieren la historia de acceso trasero de forma independiente. Comparte el mismo encuadre estratégico que Sitio 7 — usos industriales y logísticos ligados al terminal marítimo, el corredor del Estrecho y la narrativa energética de Magallanes — pero se ubica en la unión entre la circulación costera y el resto del sitio. En due diligence se recomienda revisar J&P y J&P II en conjunto; phasing, permisos y precios siguen el mismo calendario del proyecto.',
-    },
-    zh: {
-      summary:
-        'J&P II——J&P（7 号地块）的港区延伸，为滨水工业线增加运营纵深与内侧通道。',
-      detail:
-        '该地块将 J&P 地块向港区内侧延伸：面向希望获得岸线加码头后方综合纵深的投资者，也可独立作为后方通道价值。与 Sitio 7 共用相同战略框架——与海运码头、海峡走廊及麦哲伦能源叙事挂钩的工业与物流用途——但位于沿岸流线与更大用地之间的衔接处。尽调建议 J&P 与 J&P II 一并审视；分期、许可与定价遵循同一项目时间线。',
-    },
-    fr: {
-      summary:
-        "J&P II — prolongement côté port de J&P (site 7), ajoutant profondeur opérationnelle et façade d'accès interne à la ligne industrielle littorale.",
-      detail:
-        "Ce polygone étend le lot J&P vers l'intérieur côté port : cédé aux investisseurs qui veulent la profondeur combinée front mer + arrière quai, ou qui préfèrent la thèse d'accès arrière de manière indépendante. Il partage la même enveloppe stratégique que le site 7 — usages industriels et logistiques liés au terminal maritime, au corridor du détroit et au récit énergétique de Magellan — mais se situe à la jonction entre la circulation littorale et le reste du site. La due diligence devrait examiner J&P et J&P II ensemble ; phasing, permis et prix suivent le même calendrier projet.",
-    },
+    en: { summary: GENERIC_PV.en.summary, detail: GENERIC_PV.en.detail },
+    es: { summary: GENERIC_PV.es.summary, detail: GENERIC_PV.es.detail },
+    zh: { summary: GENERIC_PV.zh.summary, detail: GENERIC_PV.zh.detail },
+    fr: { summary: GENERIC_PV.fr.summary, detail: GENERIC_PV.fr.detail },
   },
 
   'Sitio 6': {
@@ -196,7 +151,7 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
     },
     zh: {
       summary:
-        '巴塔哥尼亚谷（3 号地块）——33 公顷轮廓内偏“锚点”角色的区段，适合希望在园区内具辨识度的运营商。',
+        '巴塔哥尼亚谷（3 号地块）——33 公顷轮廓内偏"锚点"角色的区段，适合希望在园区内具辨识度的运营商。',
       detail: GENERIC_PV.zh.detail,
     },
     fr: {
@@ -274,10 +229,7 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
     },
   },
 
-  /**
-   * Synthetic key used when the entire Patagon Valley small-lot cluster is selected
-   * together (clicking any individual lot highlights the whole group).
-   */
+  /** Synthetic key — entire PV small-lot cluster selected together. */
   PATAGON_VALLEY_GROUP: {
     en: {
       summary:
@@ -298,6 +250,123 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
       summary:
         'Patagon Valley (~33 ha) — bloc de parc technologique consolidé composé de lots achetables individuellement le long du corridor Cabo Negro.',
       detail: GENERIC_PV.fr.detail,
+    },
+  },
+
+  // ── J&P lots ────────────────────────────────────────────────────────────────
+  /** Main J&P waterfront lot — lives in Subdivision KMZ as 'J&P Continuadora'. */
+  'J&P Continuadora': {
+    en: {
+      summary:
+        'J&P (~24 ha) — waterfront-facing parcel sized for port-linked industry and high-visibility logistics.',
+      detail:
+        'This lot is marketed as the premium shoreline slice in the offering: closer visual and operational coupling to the maritime terminal and coastal circulation. It suits investors who want their asset story tied directly to the Strait — cold chain, fuels and chemicals under modern safety regimes, marshalling for project cargo, or advanced manufacturing that feeds ship operations. Sales are part of the current Cabo Negro land release to fund parallel port and park works; expect alignment with concession timelines and environmental permitting rather than immediate small-lot retail subdivision.',
+    },
+    es: {
+      summary:
+        'J&P (~24 ha) — frente costero, dimensionado para industria vinculada al puerto y logística de alta visibilidad.',
+      detail:
+        'Es la fracción premium de costa en la oferta: mayor acoplamiento visual y operacional al terminal marítimo y a la circulación costera. Apunta a inversores que quieren que su activo narre el Estrecho — frío, combustibles y químicos bajo normas de seguridad, acopio de carga proyecto o manufactura avanzada que alimente operaciones navales. La venta forma parte de la liberación de suelo actual de Cabo Negro para cofinanciar obras portuarias y de parque; el calendonar se alinea a concesiones y permisos ambientales, no a un loteo menor inmediato.',
+    },
+    zh: {
+      summary:
+        'J&P（约 24 公顷）——滨水朝向、适合港航关联产业与高可见度物流的规模地块。',
+      detail:
+        '该出让强调岸线价值：与海运码头及沿岸交通在视觉与运营上更紧密。适合希望资产叙事与海峡直接绑定的投资者——冷链、现代安全体系下的燃料与化工、项目货集散，或服务船舶作业的先进制造。销售属于卡沃内格罗当前土地释放，用于配套港口与园区建设；节奏与特许与环境许可衔接，而非即时小块零售式分割。',
+    },
+    fr: {
+      summary:
+        'J&P (~24 ha) — parcelle front de mer pour industrie liée au port et logistique très visible.',
+      detail:
+        "C'est la tranche côtière premium : couplage visuel et opérationnel plus fort avec le terminal maritime et les circulations littorales. Elle s'adresse aux investisseurs qui veulent un actif explicitement lié au détroit — froid, carburants et chimie sous normes de sécurité, groupage de cargaisons projet ou fabrication avancée alimentant les opérations portuaires. La vente s'inscrit dans la libération foncière actuelle de Cabo Negro pour cofinancer infrastructures portuaires et parcs ; calendrier aligné sur concessions et permis environnementaux, pas sur un lotissement retail immédiat.",
+    },
+  },
+
+  /** J&P II — Sociedades CN KMZ polygon 'J&P Dos'. */
+  'J&P Dos': {
+    en: {
+      summary:
+        'J&P II — second J&P parcel forming the mid-section of the waterfront industrial line alongside J&P.',
+      detail:
+        'J&P II extends the J&P land package with a contiguous parcel of comparable scale positioned between the main J&P lot and J&P III. Suited to the same range of maritime and industrial uses — deep-sea logistics, energy infrastructure, advanced manufacturing — it offers an investor the ability to take a larger combined footprint or an independent stake in the Cabo Negro shoreline strategy. Phasing and permitting follow the same project timeline as J&P; the lots can be acquired separately or as part of a consolidated J&P corridor purchase.',
+    },
+    es: {
+      summary:
+        'J&P II — segunda parcela J&P que forma la sección central de la línea industrial costera junto a J&P.',
+      detail:
+        'J&P II amplía el paquete de suelo J&P con una parcela contigua de escala comparable, ubicada entre el lote principal J&P y J&P III. Apta para los mismos usos marítimos e industriales —logística de gran calado, infraestructura energética, manufactura avanzada— permite a un inversor acceder a una huella combinada mayor o una participación independiente en la estrategia costera de Cabo Negro. Plazos y permisos siguen el mismo calendario del proyecto que J&P; los lotes pueden adquirirse por separado o como parte de una compra consolidada del corredor J&P.',
+    },
+    zh: {
+      summary:
+        'J&P II——第二块 J&P 地块，构成滨水工业线 J&P 旁的中段。',
+      detail:
+        'J&P II 以规模相近的毗邻地块延伸 J&P 土地包，位于主 J&P 地块与 J&P III 之间。适合相同的海运与工业用途——深水物流、能源基础设施、先进制造——使投资者既可获得更大的联合体量，也可作为卡沃内格罗岸线战略中的独立持股。分期与许可遵循与 J&P 相同的项目时间线；各地块可独立购入，也可作为 J&P 走廊整体收购的一部分。',
+    },
+    fr: {
+      summary:
+        'J&P II — deuxième parcelle J&P formant la section médiane de la ligne industrielle littorale aux côtés de J&P.',
+      detail:
+        "J&P II prolonge le package foncier J&P avec une parcelle contiguë de taille comparable, positionnée entre le lot J&P principal et J&P III. Adaptée aux mêmes usages maritimes et industriels — logistique hauturière, infrastructure énergétique, fabrication avancée — elle permet à un investisseur de prendre une empreinte combinée plus large ou une participation indépendante dans la stratégie littorale de Cabo Negro. Phasage et permis suivent le même calendrier projet que J&P ; les lots peuvent être acquis séparément ou dans le cadre d'un achat consolidé du corridor J&P.",
+    },
+  },
+
+  /** J&P III — Sociedades CN KMZ polygon 'J&P Tres'. */
+  'J&P Tres': {
+    en: {
+      summary:
+        'J&P III — third J&P parcel completing the waterfront industrial corridor adjacent to J&P and J&P II.',
+      detail:
+        'J&P III closes the J&P corridor on the outer side, providing a third parcel of similar scale in the same maritime-industrial zone. It shares the strategic positioning of J&P and J&P II — direct coupling to the Strait of Magellan shipping lane, the Cabo Negro port infrastructure, and the Punta Arenas logistics hub — and is marketed for the same class of heavy industrial, energy, and logistics end-uses. It can be acquired as a standalone lot or as the third leg of a corridor package with J&P and J&P II.',
+    },
+    es: {
+      summary:
+        'J&P III — tercera parcela J&P que completa el corredor industrial costero junto a J&P y J&P II.',
+      detail:
+        'J&P III cierra el corredor J&P por el lado exterior, aportando una tercera parcela de escala similar en la misma zona marítimo-industrial. Comparte el posicionamiento estratégico de J&P y J&P II — acoplamiento directo al canal de navegación del Estrecho de Magallanes, la infraestructura portuaria de Cabo Negro y el hub logístico de Punta Arenas — y se comercializa para la misma clase de usos finales industriales pesados, energéticos y logísticos. Puede adquirirse como lote independiente o como tercer tramo de un paquete de corredor con J&P y J&P II.',
+    },
+    zh: {
+      summary:
+        'J&P III——第三块 J&P 地块，与 J&P 及 J&P II 共同完成滨水工业走廊布局。',
+      detail:
+        'J&P III 从外侧收尾 J&P 走廊，在同一海运工业区提供第三块规模相近的地块。与 J&P 及 J&P II 共享战略定位——与麦哲伦海峡航道、卡沃内格罗港口基础设施及蓬塔阿雷纳斯物流枢纽的直接衔接——面向同类重工业、能源与物流最终用途。可作为独立地块购入，也可作为 J&P 与 J&P II 走廊整包的第三段。',
+    },
+    fr: {
+      summary:
+        'J&P III — troisième parcelle J&P complétant le corridor industriel littoral aux côtés de J&P et J&P II.',
+      detail:
+        "J&P III ferme le corridor J&P côté extérieur, apportant une troisième parcelle de taille similaire dans la même zone maritime-industrielle. Elle partage le positionnement stratégique de J&P et J&P II — couplage direct au chenal de navigation du détroit de Magellan, l'infrastructure portuaire de Cabo Negro et le hub logistique de Punta Arenas — et est commercialisée pour la même classe d'usages finaux industriels lourds, énergétiques et logistiques. Elle peut être acquise comme lot autonome ou comme troisième volet d'un package de corridor avec J&P et J&P II.",
+    },
+  },
+
+  // ── Maritime terminal ──────────────────────────────────────────────────────
+  /**
+   * PPG CM61260 — boundary polygons of the maritime terminal.
+   * Entity names assigned in code to unnamed polygon entities in the PPG dataset.
+   */
+  'PPG CM61260': {
+    en: {
+      summary:
+        'PPG CM61260 — maritime terminal boundary at the heart of the Cabo Negro port complex.',
+      detail:
+        'PPG CM61260 marks the concession boundary of the Cabo Negro maritime terminal — the operational core of the port infrastructure fronting the Strait of Magellan. This is where ship movements, quay allocation, and cargo handling intersect with the broader project logistics. The terminal footprint defines the interface between the land parcels (J&P corridor, Patagon Valley, CN2) and the navigable waterway; its concession status and phasing directly govern the timing of adjacent land development. Any investor evaluating the surrounding lots should assess PPG CM61260 as the anchor infrastructure around which the Cabo Negro masterplan is structured.',
+    },
+    es: {
+      summary:
+        'PPG CM61260 — límite del terminal marítimo en el corazón del complejo portuario Cabo Negro.',
+      detail:
+        'PPG CM61260 delimita la concesión del terminal marítimo de Cabo Negro — el núcleo operacional de la infraestructura portuaria frente al Estrecho de Magallanes. Aquí convergen los movimientos de naves, la asignación de muelles y la manipulación de carga con la logística global del proyecto. La huella del terminal define la interfaz entre los lotes terrestres (corredor J&P, Patagon Valley, CN2) y la vía navegable; su estado concesional y su phasing gobiernan directamente el calendario del desarrollo de suelo adyacente. Todo inversor que evalúe los lotes circundantes debe considerar PPG CM61260 como la infraestructura ancla en torno a la cual se estructura el plan maestro de Cabo Negro.',
+    },
+    zh: {
+      summary:
+        'PPG CM61260——卡沃内格罗港口综合体核心的海运码头边界。',
+      detail:
+        'PPG CM61260 标示卡沃内格罗海运码头特许经营边界——面向麦哲伦海峡的港口基础设施的运营核心。船舶动态、泊位分配与货物装卸在此与整体项目物流交汇。码头用地界定了陆地地块（J&P 走廊、巴塔哥尼亚谷、CN2）与可航水道之间的接口；其特许状态与分期节奏直接决定毗邻土地的开发时序。评估周边地块的投资者应将 PPG CM61260 视为卡沃内格罗总体规划围绕其构建的锚定基础设施。',
+    },
+    fr: {
+      summary:
+        'PPG CM61260 — périmètre du terminal maritime au cœur du complexe portuaire Cabo Negro.',
+      detail:
+        "PPG CM61260 délimite la concession du terminal maritime de Cabo Negro — le noyau opérationnel de l'infrastructure portuaire face au détroit de Magellan. C'est ici que se croisent les mouvements de navires, l'affectation des quais et la manutention des marchandises avec la logistique globale du projet. L'empreinte du terminal définit l'interface entre les parcelles terrestres (corridor J&P, Patagon Valley, CN2) et la voie navigable ; son statut de concession et son phasage gouvernent directement le calendrier de développement des terrains adjacents. Tout investisseur évaluant les lots environnants devrait considérer PPG CM61260 comme l'infrastructure d'ancrage autour de laquelle le schéma directeur de Cabo Negro est structuré.",
     },
   },
 }
@@ -321,7 +390,7 @@ const FALLBACK: ExploreCardLocales = {
   fr: {
     summary: 'Parcelle développable dans le plan de subdivision en vigueur à Cabo Negro.',
     detail:
-      'Ce lot figure sur la couche maîtresse de subdivision du projet Cabo Negro. Il est proposé dans la stratégie régionale de valoriser le foncier stratégique près du détroit de Magellan — reliant routage Atlantique et Pacifique, services de Punta Arenas et le cluster hydrogène / logistique émergent. Demandez à l’équipe projet les derniers termes commerciaux et le calendrier d’infrastructure.',
+      "Ce lot figure sur la couche maîtresse de subdivision du projet Cabo Negro. Il est proposé dans la stratégie régionale de valoriser le foncier stratégique près du détroit de Magellan — reliant routage Atlantique et Pacifique, services de Punta Arenas et le cluster hydrogène / logistique émergent. Demandez à l'équipe projet les derniers termes commerciaux et le calendrier d'infrastructure.",
   },
 }
 
