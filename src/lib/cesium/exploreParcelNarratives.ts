@@ -108,9 +108,9 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
     },
     fr: {
       summary:
-        'J&P II — prolongement côté port de J&P (site 7), ajoutant profondeur opérationnelle et façade d'accès interne à la ligne industrielle littorale.',
+        "J&P II — prolongement côté port de J&P (site 7), ajoutant profondeur opérationnelle et façade d'accès interne à la ligne industrielle littorale.",
       detail:
-        'Ce polygone étend le lot J&P vers l'intérieur côté port : cédé aux investisseurs qui veulent la profondeur combinée front mer + arrière quai, ou qui préfèrent la thèse d'accès arrière de manière indépendante. Il partage la même enveloppe stratégique que le site 7 — usages industriels et logistiques liés au terminal maritime, au corridor du détroit et au récit énergétique de Magellan — mais se situe à la jonction entre la circulation littorale et le reste du site. La due diligence devrait examiner J&P et J&P II ensemble ; phasing, permis et prix suivent le même calendrier projet.',
+        "Ce polygone étend le lot J&P vers l'intérieur côté port : cédé aux investisseurs qui veulent la profondeur combinée front mer + arrière quai, ou qui préfèrent la thèse d'accès arrière de manière indépendante. Il partage la même enveloppe stratégique que le site 7 — usages industriels et logistiques liés au terminal maritime, au corridor du détroit et au récit énergétique de Magellan — mais se situe à la jonction entre la circulation littorale et le reste du site. La due diligence devrait examiner J&P et J&P II ensemble ; phasing, permis et prix suivent le même calendrier projet.",
     },
   },
 
