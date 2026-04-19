@@ -185,8 +185,8 @@ export default function Contact() {
                   {locale === 'zh' && '来源: '}
                   {origin === 'patagon-valley' && (locale === 'es' ? 'Patagon Valley' : locale === 'zh' ? '巴塔哥尼亚谷' : 'Patagon Valley')}
                   {origin === 'terminal-maritimo' && (locale === 'es' ? 'Terminal Marítimo' : locale === 'zh' ? '海上码头' : 'Maritime Terminal')}
-                  {origin === 'parque-logistico' && (locale === 'es' ? 'Parque Logístico' : locale === 'zh' ? '物流园区' : 'Logistics Park')}
-                  {origin === 'macro-lote' && (locale === 'es' ? 'Parque Logístico (Macro Lote)' : locale === 'zh' ? '物流园区（大地块）' : 'Logistics Park (Macro Lot)')}
+                  {origin === 'parque-logistico' && (locale === 'es' ? 'Parque Logístico' : locale === 'zh' ? '物流园区' : 'Logistic Park')}
+                  {origin === 'macro-lote' && (locale === 'es' ? 'Parque Logístico (Macro Lote)' : locale === 'zh' ? '物流园区（大地块）' : 'Logistic Park (Macro Lot)')}
                 </p>
               )}
               <form onSubmit={handleSubmit} className="space-y-6">

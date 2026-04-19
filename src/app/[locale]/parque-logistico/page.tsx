@@ -25,18 +25,18 @@ export default function ParqueLogisticoPage() {
       en: {
         back: 'Back',
         hero: {
-          title: 'Cabo Negro II Logistics Park',
+          title: 'Cabo Negro II Logistic Park',
           subtitle: 'Macro Development Industrial Zone'
         },
         terrain: {
           title: 'Available Terrain',
-          description: 'The Cabo Negro II Logistics Park offers extensive industrial terrain ready for development. The area provides strategic advantages for logistics operations, industrial facilities, and support services for the maritime terminal and surrounding projects.',
+          description: 'The Cabo Negro II Logistic Park offers extensive industrial terrain ready for development. The area provides strategic advantages for logistics operations, industrial facilities, and support services for the maritime terminal and surrounding projects.',
           size: 'Extensive hectares available for development',
           readyText: 'Ready for immediate development and investment'
         },
         uses: {
           title: 'Recommended Uses',
-          description: 'The logistics park is designed to accommodate various industrial and logistics activities:',
+          description: 'The logistic park is designed to accommodate various industrial and logistics activities:',
           items: [
             { icon: Warehouse, title: 'Warehouses', description: 'Storage and distribution facilities' },
             { icon: Truck, title: 'Logistics', description: 'Transportation and cargo handling operations' },
@@ -50,14 +50,14 @@ export default function ParqueLogisticoPage() {
         },
         contact: {
           title: 'Get in Touch',
-          description: 'Interested in the Logistics Park? Contact us for more information.',
+          description: 'Interested in the Logistic Park? Contact us for more information.',
           contactBtn: 'Contact',
           scheduleBtn: 'Schedule Meeting',
           downloadBtn: 'Download Fact Sheet'
         },
         strategicLocation: {
           title: 'Strategic Location',
-          description: 'The logistics park is strategically positioned to serve as a support hub for the maritime terminal and surrounding industrial projects. Its proximity to Route 9 and the port provides excellent connectivity for logistics operations.',
+          description: 'The logistic park is strategically positioned to serve as a support hub for the maritime terminal and surrounding industrial projects. Its proximity to Route 9 and the port provides excellent connectivity for logistics operations.',
           items: [
             'Direct access to Route 9 North',
             'Close proximity to maritime terminal',
@@ -232,7 +232,7 @@ export default function ParqueLogisticoPage() {
           {/* Background Image */}
           <Image
             src="/cabonegro_astillero.webp"
-            alt="Cabo Negro II Logistics Park"
+            alt="Cabo Negro II Logistic Park"
             fill
             className="object-cover"
             priority

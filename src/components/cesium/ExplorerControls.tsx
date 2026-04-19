@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import type { Waypoint } from '@/lib/cesium/waypoints'
 
 interface ExplorerControlsProps {
@@ -33,22 +33,22 @@ const LOCALE_LABELS: Record<string, { title: string; subtitle: string }> = {
 
 const COMPASS_HINTS: Record<string, string> = {
   en:
-    'Left-click: staged zoom · Right-click: zoom out · Left-drag / middle-drag: pan (travel) · Ctrl/Cmd+drag: orbit heading · Right-drag: tilt pitch',
+    'Scroll: move between waypoints · Left-drag: pan · Right-drag: rotate & tilt',
   es:
-    'Clic izq.: zoom por etapas · Clic der.: alejar · Arrastrar izq./centro: paneo (viaje) · Ctrl/Cmd+arrastrar: rumbo · Arrastrar der.: inclinación',
+    'Scroll: moverse entre puntos · Arrastrar izq.: desplazar · Arrastrar der.: girar e inclinar',
   zh:
-    '左键：分级缩放 · 右键：拉远 · 左/中键拖：平移（移动）· Ctrl/Cmd+拖：水平转向 · 右拖：俯仰',
+    '滚动：航点切换 · 左拖：平移 · 右拖：旋转与俯仰',
   fr:
-    'Clic gauche : zoom par paliers · Clic droit : zoom arrière · Glisser gauche/milieu : panoramique (déplacement) · Ctrl/Cmd+glisser : cap · Glisser droit : inclinaison',
+    'Défilement : waypoints · Glisser gauche : panoramique · Glisser droit : rotation & inclinaison',
 }
 
 function wheelStepPx(): number {
-  // About one viewport height per waypoint step (user request).
+  // One full viewport height per waypoint step.
   // Clamp avoids extremes on huge displays / tiny windows.
-  return Math.max(260, Math.min(1200, Math.floor(window.innerHeight * 0.9)))
+  return Math.max(260, Math.min(1200, Math.floor(window.innerHeight)))
 }
 
-export default function ExplorerControls({
+const ExplorerControls = memo(function ExplorerControls({
   waypoints,
   activeWaypoint,
   isFlying,
@@ -168,4 +168,5 @@ export default function ExplorerControls({
       </div>
     </div>
   )
-}
+})
+export default ExplorerControls

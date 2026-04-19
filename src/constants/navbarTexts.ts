@@ -9,7 +9,7 @@ export const NAVBAR_TEXTS = {
   en: {
     maritimeTerminal: 'Maritime Terminal',
     technologyPark: 'Technology Park',
-    logisticsPark: 'Logistics Park',
+    logisticsPark: 'Logistic Park',
     faq: 'FAQ',
     contactUs: 'Contact Us',
     language: 'Language:'

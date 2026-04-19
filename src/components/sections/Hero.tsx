@@ -335,7 +335,7 @@ export default function Hero() {
                     zIndex: 50
                   }}
                 >
-                  Logistics Park
+                  Logistic Park
                 </Button>
               </motion.div>
             )}

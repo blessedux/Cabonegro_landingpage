@@ -12,7 +12,7 @@ const siteUrl = "https://www.cabonegro.cl";
 export const metadata: Metadata = {
   title: "Cabo Negro | Real Estate Investment Opportunities in Patagonia",
   description: "Strategic industrial and maritime hub in Patagonia. Discover premier real estate investment opportunities in Punta Arenas, Magallanes. Gateway to Antarctica and the future of green hydrogen infrastructure.",
-  keywords: ["Cabo Negro", "Patagonia real estate", "investment opportunities", "Punta Arenas", "Magallanes", "green hydrogen", "industrial development", "maritime terminal", "logistics park"],
+  keywords: ["Cabo Negro", "Patagonia real estate", "investment opportunities", "Punta Arenas", "Magallanes", "green hydrogen", "industrial development", "maritime terminal", "logistic park"],
   authors: [{ name: "Cabo Negro" }],
   icons: {
     icon: [

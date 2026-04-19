@@ -21,19 +21,18 @@ export function createInitialKmlLayerAlphas(): KmlLayerAlphas {
   }
 }
 
-/** Maritime terminal → Sociedades CN. Logistics park → Sociedades CN-1. Everything else → subdivision only. */
+/** Keep subdivision visible; optionally add Sociedades overlays by waypoint. */
 export function applyKmlLayerTargetForWaypoint(waypointId: string, ref: MutableRefObject<KmlLayerAlphas>): void {
   const a = ref.current
+  // Subdivision (parcel) overlay stays on for all waypoints per UX request.
+  a.targetSubdivision = 1
   if (waypointId === 'terminal-maritimo') {
-    a.targetSubdivision = 0
     a.targetCn = 1
     a.targetCn1 = 0
-  } else if (waypointId === 'parque-logistico') {
-    a.targetSubdivision = 0
+  } else if (waypointId === 'parque-logistico' || waypointId === 'parque-tecnologico') {
     a.targetCn = 0
     a.targetCn1 = 1
   } else {
-    a.targetSubdivision = 1
     a.targetCn = 0
     a.targetCn1 = 0
   }

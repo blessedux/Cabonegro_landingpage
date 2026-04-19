@@ -13,7 +13,7 @@ const getFAQs = (locale: string) => {
     en: [
       {
         question: 'What is Cabo Negro and how is the project structured?',
-        answer: 'Cabo Negro is a territorial platform composed of three independent projects, each with distinct purposes, scales, and opportunities:\n\n1. Cabo Negro Maritime Terminal,\n2. Technology & Logistics Park – Patagon Valley,\n3. Cabo Negro II Macro Lot.\n\nCompanies can be interested in one, two, or all three projects, depending on their needs. There is no dependency between them, although their proximity generates high-value logistical, technological, and operational synergies.'
+        answer: 'Cabo Negro is a territorial platform composed of three independent projects, each with distinct purposes, scales, and opportunities:\n\n1. Cabo Negro Maritime Terminal,\n2. Technology & Logistic Park – Patagon Valley,\n3. Cabo Negro II Macro Lot.\n\nCompanies can be interested in one, two, or all three projects, depending on their needs. There is no dependency between them, although their proximity generates high-value logistical, technological, and operational synergies.'
       },
       {
         question: 'Where is Cabo Negro located?',
@@ -36,7 +36,7 @@ const getFAQs = (locale: string) => {
         answer: 'The Cabo Negro Maritime Terminal is born to become the new entry point to the southern end of the continent. A protected multipurpose port, designed to receive the projects that are transforming Magallanes: energy, industry, technology, exploration, and Antarctic supply.\n\nIts strategic location, backup areas, and direct accessibility from Route 9 make it a next-generation logistics center.\n\nDeveloped together with Compas Marine, recognized experts in maritime terminal management in Chile, the project incorporates efficiency, security, and operational continuity standards that respond to current industry needs.\n\nIt is a port designed for the present, but prepared for the future growth of the region.'
       },
       {
-        question: 'What advantages does Patagon Valley (technology and logistics park) offer?',
+        question: 'What advantages does Patagon Valley (technology and logistic park) offer?',
         answer: 'Patagon Valley is designed for companies that require:\n\n· energy availability,\n· low latency and fiber optic connectivity,\n· LEO satellite communications,\n· operational proximity to a port,\n· scalable land for technological or logistical facilities.\n\nIt is ideal for technology, data centers, telecommunications, satellite, AI, marine robotics, and companies associated with green hydrogen.'
       },
       {

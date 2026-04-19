@@ -136,7 +136,7 @@ const NARR: Record<string, Record<ExploreLocale, string[]>> = {
   },
   'parque-logistico': {
     en: [
-      '> zone: logistics park — distribution gateway',
+      '> zone: logistic park — distribution gateway',
       '  bonded flow · cold chain · back-of-port staging',
       '  sized for southern cone import/export corridors',
     ],
@@ -252,7 +252,7 @@ const NARR: Record<string, Record<ExploreLocale, string[]>> = {
   },
   'logistico-kf-0': {
     en: [
-      '> orbit: logistics park — yard grid',
+      '> orbit: logistic park — yard grid',
       '  highway + port tributary flows',
     ],
     es: [

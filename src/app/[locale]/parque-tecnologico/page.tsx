@@ -38,7 +38,7 @@ export default function ParqueTecnologicoPage() {
         back: 'Back',
         hero: {
           title: 'Patagon Valley',
-          subtitle: 'Technological & Logistics Park'
+          subtitle: 'Technological & Logistic Park'
         },
         vision: {
           title: 'Technological Ecosystem of the Southernmost End of the World',

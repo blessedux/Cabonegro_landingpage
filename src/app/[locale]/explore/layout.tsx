@@ -5,7 +5,7 @@ import 'cesium/Build/Cesium/Widgets/widgets.css'
 export const metadata: Metadata = {
   title: 'Explore Cabo Negro | 3D Interactive Map',
   description:
-    'Explore Cabo Negro in an immersive 3D environment. Discover the Maritime Terminal, Logistics Park, Technology Park and the dramatic Patagonian coastline.',
+    'Explore Cabo Negro in an immersive 3D environment. Discover the Maritime Terminal, Logistic Park, Technology Park and the dramatic Patagonian coastline.',
 }
 
 export default function ExploreLayout({ children }: { children: React.ReactNode }) {

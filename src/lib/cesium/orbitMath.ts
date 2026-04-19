@@ -52,6 +52,8 @@ export function orbitHeadingFromCameraHeading(cameraHeadingRad: number): number 
 /**
  * Vista General — three authored stations (left-click advances, right-click retreats).
  * Stage 0: regional; 1: approach; 2: site vicinity. Ellipsoid height + camera radians as logged from Cesium.
+ *
+ * Stage 2: default Vista General / Cabo Negro site orbit start (authored from live camera pose).
  */
 export const OVERVIEW_CAMERA_STAGES = [
   {
@@ -71,11 +73,11 @@ export const OVERVIEW_CAMERA_STAGES = [
     roll: 0,
   },
   {
-    longitude: -70.891306,
-    latitude: -52.87756,
-    height: 2586,
-    heading: 2.712233,
-    pitch: -0.476913,
+    longitude: -76.503743,
+    latitude: -51.697263,
+    height: 201_300,
+    heading: 1.87882,
+    pitch: -0.495432,
     roll: 0,
   },
 ] as const
@@ -290,7 +292,10 @@ export function getOverviewCameraPose(index: number): {
   }
 }
 
-/** Lon/lat/height + orientation for default explore load (overview stage 0). */
+/** Vista General default: site-vicinity overview (stage 2), not the distant regional pass (stage 0). */
+const DEFAULT_EXPLORE_OVERVIEW_STAGE = 2
+
+/** Lon/lat/height + orientation for default explore load. */
 export function getDefaultExplorePose(_focus: Pick<Waypoint, 'longitude' | 'latitude'>): {
   longitude: number
   latitude: number
@@ -300,7 +305,7 @@ export function getDefaultExplorePose(_focus: Pick<Waypoint, 'longitude' | 'lati
   roll: number
 } {
   void _focus
-  return getOverviewCameraPose(0)
+  return getOverviewCameraPose(DEFAULT_EXPLORE_OVERVIEW_STAGE)
 }
 
 /** Scripted “Vista General” fly-through: three poses match manual overview stages + `narr:overview-{0,1,2}`. */
@@ -361,8 +366,26 @@ export const CAMERA_SCENES: Record<string, CameraKeyframe[]> = {
     },
   ],
   'parque-logistico': [
-    keyframeFromWaypoint(wp('parque-logistico'), 0, 'narr:logistico-kf-0'),
-    keyframeFromWaypoint(wp('parque-logistico'), 8, 'narr:logistico-kf-1'),
+    {
+      t: 0,
+      longitude: -70.911794,
+      latitude: -52.916795,
+      height: 1250,
+      heading: 1.698834,
+      pitch: -0.450194,
+      roll: 0,
+      caption: 'narr:logistico-kf-0',
+    },
+    {
+      t: 8,
+      longitude: -70.911794,
+      latitude: -52.916795,
+      height: 1250,
+      heading: 1.698834,
+      pitch: -0.450194,
+      roll: 0,
+      caption: 'narr:logistico-kf-1',
+    },
   ],
   'parque-tecnologico': [
     {
@@ -385,10 +408,6 @@ export const CAMERA_SCENES: Record<string, CameraKeyframe[]> = {
       roll: 0,
       caption: 'narr:tecnologico-kf-1',
     },
-  ],
-  coastline: [
-    keyframeFromWaypoint(wp('coastline'), 0, 'narr:coast-0'),
-    keyframeFromWaypoint(wp('coastline'), 8, 'narr:coast-1'),
   ],
 }
 
