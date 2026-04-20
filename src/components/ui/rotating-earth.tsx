@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react"
 
-import * as d3 from "d3"
+import { geoOrthographic, geoPath, geoBounds, geoGraticule } from "d3-geo"
+import { timer } from "d3-timer"
+import type { GeoPermissibleObjects } from "d3-geo"
 
 interface RotatingEarthProps {
   width?: number
@@ -47,13 +49,12 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
     context.scale(dpr, dpr)
 
     // Create projection and path generator for Canvas
-    const projection = d3
-      .geoOrthographic()
+    const projection = geoOrthographic()
       .scale(radius)
       .translate([containerWidth / 2, containerHeight / 2])
       .clipAngle(90)
 
-    const path = d3.geoPath().projection(projection).context(context)
+    const path = geoPath().projection(projection).context(context)
 
     const pointInPolygon = (point: [number, number], polygon: number[][]): boolean => {
       const [x, y] = point
@@ -113,7 +114,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
 
     const generateDotsInPolygon = (feature: any, dotSpacing = 16) => {
       const dots: [number, number][] = []
-      const bounds = d3.geoBounds(feature)
+      const bounds = geoBounds(feature as GeoPermissibleObjects)
       const [[minLng, minLat], [maxLng, maxLat]] = bounds
 
       const stepSize = dotSpacing * 0.08
@@ -173,7 +174,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
 
       if (landFeatures) {
         // Draw graticule
-        const graticule = d3.geoGraticule()
+        const graticule = geoGraticule()
         context.beginPath()
         path(graticule())
         context.strokeStyle = vectorColor
@@ -303,7 +304,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
     projection.rotate(rotation)
 
     // Glow animation timer
-    const glowTimer = d3.timer(() => {
+    const glowTimer = timer(() => {
       glowAnimationRef.current += 0.05
       setGlowAnimation(glowAnimationRef.current)
       render()
@@ -318,7 +319,7 @@ export default function RotatingEarth({ width = 800, height = 600, className = "
     }
 
     // Auto-rotation timer
-    const rotationTimer = d3.timer(rotate)
+    const rotationTimer = timer(rotate)
 
     const handleMouseDown = (event: MouseEvent) => {
       autoRotate = false

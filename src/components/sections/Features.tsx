@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import { Globe2, Zap, Building2, Anchor, FileCheck, TrendingUp } from 'lucide-react'
 import { MagicText } from '@/components/ui/magic-text'
 import { 
@@ -11,8 +11,18 @@ import {
   TextStaggerHover,
   useHoverSliderContext
 } from '@/components/ui/animated-slideshow'
-import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
 
 // Features will be created dynamically using translations
 
@@ -28,21 +38,10 @@ interface Feature {
 }
 
 // Custom component to handle conditional overlay
-function FeatureImageWithOverlay({ feature, index }: { feature: Feature, index: number }) {
+function FeatureImageWithOverlay({ feature, index, isMobile }: { feature: Feature, index: number, isMobile: boolean }) {
   const { activeSlide } = useHoverSliderContext()
   const isActive = activeSlide === index
   const [showMobileOverlay, setShowMobileOverlay] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  
-  // Check if device is mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
   
   // Trigger mobile overlay when this image becomes active
   useEffect(() => {
@@ -139,31 +138,20 @@ function FeatureImageWithOverlay({ feature, index }: { feature: Feature, index: 
 export default function Features() {
   const t = useTranslations('features')
   const featuresRef = useRef(null)
-  const [isMobile, setIsMobile] = useState(false)
+  const isMobile = useIsMobile()
   const [activeSlide, setActiveSlide] = useState(0)
-  
-  // Check if device is mobile
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   // Scroll-based animations scoped to Features component
   const { scrollYProgress } = useScroll({
     target: featuresRef,
     offset: ["start end", "end start"]
   })
-  // const galleryWidth = useTransform(scrollYProgress, [0, 1], ['60%', '80%'])
-  const galleryWidth = '80%' // Fixed width for now
+  const galleryWidth = '80%'
   const galleryTranslateY = useTransform(scrollYProgress, [0, 1], [0, 100])
   const galleryTranslateX = useTransform(scrollYProgress, [0, 1], [0, -20])
 
-  // Create features array using translations
-  const features = [
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const features = useMemo(() => [
     {
       id: 'strategic-gateway',
       title: t('strategicGateway.title'),
@@ -224,7 +212,8 @@ export default function Features() {
       image: '/h2_hydrogen.png',
       highlights: Array.isArray(t.raw('h2vOpportunity.highlights')) ? t.raw('h2vOpportunity.highlights') : []
     }
-  ]
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ], [t])
 
   // Handle slide changes on mobile (triggered by title hover)
   const handleSlideChange = (index: number) => {
@@ -371,11 +360,12 @@ export default function Features() {
                      >
                        <HoverSliderImageWrap className="w-full max-w-none overflow-visible rounded-3xl">
                        {features.map((feature, index) => (
-                         <FeatureImageWithOverlay 
-                           key={feature.id} 
-                           feature={feature} 
-                           index={index} 
-                         />
+                        <FeatureImageWithOverlay 
+                          key={feature.id} 
+                          feature={feature} 
+                          index={index}
+                          isMobile={isMobile}
+                        />
                        ))}
                      </HoverSliderImageWrap>
                      </motion.div>
