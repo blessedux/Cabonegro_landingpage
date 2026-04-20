@@ -168,6 +168,32 @@ function warnOnceFactory() {
 
 const warnOnce = warnOnceFactory()
 
+function isChunkLoadError(err: unknown): boolean {
+  const msg =
+    err instanceof Error
+      ? `${err.name ?? ''} ${err.message ?? ''}`
+      : String(err ?? '')
+  return (
+    /ChunkLoadError/i.test(msg) ||
+    /Loading chunk/i.test(msg) ||
+    /failed\./i.test(msg) && /chunk/i.test(msg) ||
+    /missing:\s*https?:\/\//i.test(msg)
+  )
+}
+
+function attemptChunkRecoveryReload(): void {
+  try {
+    const key = 'explore-chunk-reload'
+    if (typeof window === 'undefined') return
+    if (sessionStorage.getItem(key)) return
+    sessionStorage.setItem(key, '1')
+    window.location.reload()
+  } catch {
+    // If sessionStorage is blocked, fallback to a plain reload once.
+    try { window.location.reload() } catch { /* noop */ }
+  }
+}
+
 function addBoatAnimation(viewer: CesiumViewer, Cesium: CesiumModule) {
   const startTime = Cesium.JulianDate.fromDate(new Date())
   const stopTime = Cesium.JulianDate.addSeconds(startTime, 300, new Cesium.JulianDate())
@@ -1008,6 +1034,12 @@ export function useCesiumViewerRuntime({
     initCesium().catch((err) => {
       const msg = err instanceof Error ? err.message : String(err)
       console.error('[CesiumExplorer] Init failed:', err)
+      if (isChunkLoadError(err)) {
+        // Stale HTML pointing at old chunk hashes (common after redeploy).
+        // Reload once so the browser fetches the latest HTML + matching chunks.
+        attemptChunkRecoveryReload()
+        return
+      }
       // Surface the real error message in prod so it appears in Vercel function logs.
       // Ion auth failures show "Unauthorized" or "401"; asset failures show the URL.
       if (!cancelled && initSeqRef.current === mySeq) {
