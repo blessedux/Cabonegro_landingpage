@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 // Cesium widget CSS — scoped to explore route, required for the viewer canvas to fill its container
 import 'cesium/Build/Cesium/Widgets/widgets.css'
 
@@ -21,20 +20,6 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
         dangerouslySetInnerHTML={{
           __html: "window.CESIUM_BASE_URL='/_next/static/cesium/';",
         }}
-      />
-      {/*
-        Load the pre-built Cesium.js from our static directory.
-        This replaces the 4 MB webpack chunk — the file is served at a
-        stable path (/_next/static/cesium/Cesium.js) that never changes
-        between deployments, so it can be cached indefinitely by the browser.
-
-        NOTE: strategy="beforeInteractive" only works in the root layout;
-        in a route layout Next.js ignores it. We use "afterInteractive" here
-        and poll for window.Cesium in useCesiumViewerRuntime before proceeding.
-      */}
-      <Script
-        src="/_next/static/cesium/Cesium.js"
-        strategy="afterInteractive"
       />
       <div
         style={{

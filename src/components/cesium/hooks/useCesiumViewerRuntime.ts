@@ -307,61 +307,10 @@ export function useCesiumViewerRuntime({
         return `${a}${b}`
       }
 
-      const ensureCesiumScript = async (): Promise<void> => {
-        // If the layout <Script> failed to load (assetPrefix/basePath/CDN),
-        // inject the Cesium.js script manually using Next's runtime assetPrefix.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((window as any).Cesium) return
-        const existing = document.getElementById('cesium-js') as HTMLScriptElement | null
-        if (existing) return
-
-        const srcCandidates = [
-          joinUrl(getAssetPrefix(), '/_next/static/cesium/Cesium.js'),
-          '/_next/static/cesium/Cesium.js',
-        ]
-        const chosen = srcCandidates.find(Boolean) ?? '/_next/static/cesium/Cesium.js'
-
-        await new Promise<void>((resolve, reject) => {
-          const s = document.createElement('script')
-          s.id = 'cesium-js'
-          s.async = true
-          s.src = chosen
-          s.onload = () => resolve()
-          s.onerror = () => reject(new Error(`Failed to load Cesium.js at ${chosen}`))
-          document.head.appendChild(s)
-        })
-      }
-
-      // cesium is a webpack external — the library is loaded via a <Script>
-      // tag in the explore layout (/_next/static/cesium/Cesium.js).
-      // strategy="afterInteractive" means it arrives shortly after hydration,
-      // so we poll until window.Cesium is defined rather than assuming it's
-      // already there.  30 s timeout surfaces a clear error if the file fails.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Cesium: any = await new Promise<unknown>((resolve, reject) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((window as any).Cesium) { resolve((window as any).Cesium); return }
-        const deadline = Date.now() + 30_000
-        let injected = false
-        const id = setInterval(() => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          if ((window as any).Cesium) {
-            clearInterval(id)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            resolve((window as any).Cesium)
-          } else if (Date.now() > deadline) {
-            clearInterval(id)
-            reject(new Error(
-              'Cesium.js did not load within 30 s. ' +
-              'Check that /_next/static/cesium/Cesium.js is reachable.'
-            ))
-          } else if (!injected && Date.now() + 5000 > deadline) {
-            // Last-chance fallback: try injecting the script ourselves (prod pathing issues).
-            injected = true
-            ensureCesiumScript().catch(() => undefined)
-          }
-        }, 50)
-      })
+      // Import Cesium as a module instead of relying on a global `window.Cesium`.
+      // Some production environments/extensions (SES "lockdown") can harden the
+      // global object and prevent scripts from installing globals reliably.
+      const Cesium: any = await import('cesium')
       if (cancelled || initSeqRef.current !== mySeq) return
 
       if (!orbitMathRef.current) {
@@ -456,7 +405,9 @@ export function useCesiumViewerRuntime({
       }, 3000)
 
       viewerRef.current = createdViewer
-      window.Cesium = Cesium
+      // Preserve the old global for any dev/debug tooling that expects it.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(window as any).Cesium = Cesium
       if (cancelled || initSeqRef.current !== mySeq) return
 
       applyExplorerCameraInteractionScheme(Cesium, createdViewer, {

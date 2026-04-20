@@ -29,18 +29,9 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Treat the cesium npm package as a global so webpack never bundles it
-      // into a content-hashed chunk (previously ~4 MB).  The pre-built
-      // Cesium.js is served from /_next/static/cesium/Cesium.js instead.
-      config.externals = {
-        ...(config.externals ?? {}),
-        cesium: 'Cesium',
-      };
-
       config.plugins.push(
         new CopyPlugin({
           patterns: [
-            // Pre-built Cesium JS — loaded via <script> tag, not webpack
             { from: path.join(cesiumSource, 'Cesium.js'), to: path.join(cesiumStaticDest, 'Cesium.js') },
             { from: path.join(cesiumSource, 'Workers'), to: path.join(cesiumStaticDest, 'Workers') },
             { from: path.join(cesiumSource, 'ThirdParty'), to: path.join(cesiumStaticDest, 'ThirdParty') },
