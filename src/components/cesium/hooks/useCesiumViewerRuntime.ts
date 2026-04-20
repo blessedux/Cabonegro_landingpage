@@ -432,6 +432,16 @@ export function useCesiumViewerRuntime({
       createdViewer.scene.globe.atmosphereLightIntensity = 12.0
       createdViewer.scene.globe.atmosphereRayleighCoefficient = new Cesium.Cartesian3(5.5e-6, 13.0e-6, 28.4e-6)
 
+      // Reduce main-thread work when the scene is static (helps cut Chrome's
+      // "[Violation] requestAnimationFrame handler took …ms" spam).
+      try {
+        createdViewer.scene.requestRenderMode = true
+        createdViewer.scene.maximumRenderTimeChange = 1 / 30
+        createdViewer.scene.requestRender()
+      } catch {
+        /* optional */
+      }
+
       const initDate = new Date()
       initDate.setUTCHours(17, 0, 0, 0)
       createdViewer.clock.currentTime = Cesium.JulianDate.fromDate(initDate)
@@ -503,9 +513,24 @@ export function useCesiumViewerRuntime({
       // ── Subdivision KMZ ───────────────────────────────────────────────────
       ;(async () => {
         try {
-          const ds = await Cesium.KmlDataSource.load(SUBDIVISION_KMZ_URL, {
-            camera: viewerForKml.scene.camera, canvas: viewerForKml.scene.canvas,
-          })
+          const prevWarn = console.warn
+          console.warn = (...args: unknown[]) => {
+            const msg = typeof args[0] === 'string' ? args[0] : ''
+            if (
+              msg.startsWith('KML - Unsupported StyleMap key: highlight') ||
+              msg.startsWith('KML - SchemaData is unsupported') ||
+              msg.startsWith('KML Tour unsupported node ')
+            ) {
+              return
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(prevWarn as any)(...args)
+          }
+          const ds = await Cesium.KmlDataSource.load(
+            SUBDIVISION_KMZ_URL,
+            { camera: viewerForKml.scene.camera, canvas: viewerForKml.scene.canvas },
+          )
+          console.warn = prevWarn
           if (cancelled || initSeqRef.current !== mySeq || viewerForKml.isDestroyed()) return
           await viewerForKml.dataSources.add(ds)
 
@@ -683,9 +708,24 @@ export function useCesiumViewerRuntime({
       // ── Sociedades CN KMZ ──────────────────────────────────────────────────
       ;(async () => {
         try {
-          const ds = await Cesium.KmlDataSource.load(SOCIEDADES_CN_KMZ_URL, {
-            camera: viewerForKml.scene.camera, canvas: viewerForKml.scene.canvas,
-          })
+          const prevWarn = console.warn
+          console.warn = (...args: unknown[]) => {
+            const msg = typeof args[0] === 'string' ? args[0] : ''
+            if (
+              msg.startsWith('KML - Unsupported StyleMap key: highlight') ||
+              msg.startsWith('KML - SchemaData is unsupported') ||
+              msg.startsWith('KML Tour unsupported node ')
+            ) {
+              return
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(prevWarn as any)(...args)
+          }
+          const ds = await Cesium.KmlDataSource.load(
+            SOCIEDADES_CN_KMZ_URL,
+            { camera: viewerForKml.scene.camera, canvas: viewerForKml.scene.canvas },
+          )
+          console.warn = prevWarn
           if (cancelled || initSeqRef.current !== mySeq || viewerForKml.isDestroyed()) return
           await viewerForKml.dataSources.add(ds)
           ds.show = false
@@ -811,9 +851,24 @@ export function useCesiumViewerRuntime({
       // ── Sociedades CN-1 KMZ ────────────────────────────────────────────────
       ;(async () => {
         try {
-          const ds = await Cesium.KmlDataSource.load(SOCIEDADES_CN1_KMZ_URL, {
-            camera: viewerForKml.scene.camera, canvas: viewerForKml.scene.canvas,
-          })
+          const prevWarn = console.warn
+          console.warn = (...args: unknown[]) => {
+            const msg = typeof args[0] === 'string' ? args[0] : ''
+            if (
+              msg.startsWith('KML - Unsupported StyleMap key: highlight') ||
+              msg.startsWith('KML - SchemaData is unsupported') ||
+              msg.startsWith('KML Tour unsupported node ')
+            ) {
+              return
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(prevWarn as any)(...args)
+          }
+          const ds = await Cesium.KmlDataSource.load(
+            SOCIEDADES_CN1_KMZ_URL,
+            { camera: viewerForKml.scene.camera, canvas: viewerForKml.scene.canvas },
+          )
+          console.warn = prevWarn
           if (cancelled || initSeqRef.current !== mySeq || viewerForKml.isDestroyed()) return
           await viewerForKml.dataSources.add(ds)
           ds.show = false
@@ -984,7 +1039,6 @@ export function useCesiumViewerRuntime({
         v.destroy()
       }
       viewerRef.current = null
-      delete window.Cesium
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

@@ -127,8 +127,11 @@ function ExploreHudInner({
     return { text: '', canToggle: true }
   }, [narrState, sceneNarrative])
 
-  const cardWidth = narrState === 'full' ? 360 : narrState === 'mid' ? 300 : 54
   const showCard = narrState !== 'collapsed'
+  const isFull = narrState === 'full'
+
+  const expand = () => setNarrState((s) => (s === 'collapsed' ? 'mid' : s === 'mid' ? 'full' : 'full'))
+  const collapse = () => setNarrState((s) => (s === 'full' ? 'mid' : s === 'mid' ? 'collapsed' : 'collapsed'))
 
   const navFixRows = (compact: boolean) => (
     <div
@@ -181,38 +184,36 @@ function ExploreHudInner({
     <>
       <div
         className="pointer-events-none fixed z-20 flex flex-col items-end gap-2"
-        style={{ top: '4.25rem', right: '1.25rem' }}
+        style={{
+          right: '1.25rem',
+          bottom: '1.25rem',
+          paddingBottom: 'max(0px, env(safe-area-inset-bottom, 0px))',
+        }}
       >
         {narrState === 'collapsed' && (
           <button
             type="button"
-            className="pointer-events-auto text-left"
-            aria-label="Open nav fix and live stack"
-            onClick={() => setNarrState('mid')}
+            className="pointer-events-auto"
+            aria-label="Open narrative"
+            onClick={expand}
             style={{
-              ...navShell,
-              borderRadius: 10,
-              padding: '8px 10px 10px',
-              minWidth: 186,
-              maxWidth: 240,
+              width: 56,
+              height: 56,
+              borderRadius: 999,
+              border: '1px solid rgba(0, 229, 255, 0.18)',
+              background: 'rgba(6, 10, 18, 0.72)',
+              boxShadow: '0 10px 34px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,255,255,0.04)',
               cursor: 'pointer',
+              display: 'grid',
+              placeItems: 'center',
+              userSelect: 'none',
             }}
           >
-            {navFixRows(true)}
-            <div
-              style={{
-                marginTop: 8,
-                paddingTop: 8,
-                borderTop: '1px solid rgba(0, 229, 255, 0.12)',
-                textAlign: 'center',
-                fontFamily: mono,
-                fontSize: 9,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: 'rgba(200, 235, 255, 0.55)',
-              }}
-            >
-              SAT · img / narrative
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div style={{ fontFamily: mono, fontSize: 14, lineHeight: 1, color: 'rgba(255,255,255,0.85)' }}>⦿</div>
+              <div style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(0, 230, 200, 0.70)' }}>
+                LOG
+              </div>
             </div>
           </button>
         )}
@@ -222,51 +223,68 @@ function ExploreHudInner({
             className="pointer-events-auto"
             style={{
               position: 'relative',
-              background: 'rgba(6, 10, 18, 0.32)',
-              border: '1px solid rgba(0, 229, 255, 0.10)',
-              borderRadius: 10,
-              padding: '10px 12px',
-              minWidth: 220,
-              maxWidth: cardWidth,
+              background: isFull ? 'rgba(6, 10, 18, 0.92)' : 'rgba(6, 10, 18, 0.40)',
+              border: '1px solid rgba(0, 229, 255, 0.12)',
+              borderRadius: isFull ? 16 : 12,
+              padding: isFull ? '14px 14px 12px' : '12px 12px 10px',
+              width: isFull ? 'min(560px, calc(100vw - 2.5rem))' : 320,
+              maxWidth: 'calc(100vw - 2.5rem)',
+              maxHeight: isFull ? 'min(86vh, 760px)' : 360,
               fontFamily: mono,
               fontSize: 9,
               lineHeight: 1.45,
               letterSpacing: '0.03em',
               color: 'rgba(180, 220, 255, 0.82)',
-              boxShadow: '0 0 0 1px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.03)',
+              boxShadow: isFull
+                ? '0 18px 90px rgba(0,0,0,0.70), inset 0 1px 0 rgba(255,255,255,0.04)'
+                : '0 14px 52px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.03)',
               userSelect: 'none',
             }}
           >
+            {/* Fullscreen overlay shell */}
+            {isFull && (
+              <div
+                className="pointer-events-auto"
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  background: 'rgba(0,0,0,0.55)',
+                  backdropFilter: 'blur(6px)',
+                  WebkitBackdropFilter: 'blur(6px)',
+                  zIndex: -1,
+                }}
+                onClick={(e) => {
+                  // Clicking outside the card collapses back to mid.
+                  if (e.target === e.currentTarget) collapse()
+                }}
+              />
+            )}
+
+            {/* Top tap zone: expand */}
             <button
               type="button"
-              aria-label="Close live stack"
-              onClick={(e) => {
-                e.stopPropagation()
-                setNarrState('collapsed')
-              }}
+              aria-label={isFull ? 'Narrative expanded' : 'Expand narrative'}
+              onClick={expand}
               style={{
-                position: 'absolute',
-                right: 10,
-                top: 10,
-                width: 26,
-                height: 26,
-                borderRadius: 999,
-                border: '1px solid rgba(255,255,255,0.10)',
-                background: 'rgba(0,0,0,0.10)',
-                color: 'rgba(255,255,255,0.55)',
-                fontFamily: mono,
-                fontSize: 12,
-                lineHeight: '24px',
-                textAlign: 'center',
-                zIndex: 2,
+                ...navShell,
+                width: '100%',
+                borderRadius: 10,
+                padding: isFull ? '10px 12px' : '8px 10px',
+                marginBottom: 10,
+                cursor: isFull ? 'default' : 'pointer',
+                textAlign: 'left',
               }}
             >
-              ×
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div style={{ opacity: 0.92 }}>{navFixRows(isFull ? false : true)}</div>
+                <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                  <div style={{ fontSize: 8, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(200, 235, 255, 0.55)' }}>
+                    tap top
+                  </div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.80)' }}>{isFull ? '⤢' : '⤢'}</div>
+                </div>
+              </div>
             </button>
-
-            <div style={{ paddingRight: 36, marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid rgba(0, 229, 255, 0.10)' }}>
-              {navFixRows(false)}
-            </div>
 
             <div style={{ color: 'rgba(120, 200, 255, 0.4)', marginBottom: 8, fontSize: 8, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
               img_downlink · live stack
@@ -301,29 +319,15 @@ function ExploreHudInner({
 
             {narr && narr.text ? (
               <div
-                role={narr.canToggle ? 'button' : undefined}
-                tabIndex={narr.canToggle ? 0 : undefined}
-                onClick={() => {
-                  if (narr.canToggle) setNarrState((s) => (s === 'mid' ? 'full' : 'mid'))
-                }}
-                onKeyDown={(e) => {
-                  if (!narr.canToggle) return
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    setNarrState((s) => (s === 'mid' ? 'full' : 'mid'))
-                  }
-                }}
                 style={{
                   marginTop: 10,
                   paddingTop: 10,
                   borderTop: '1px solid rgba(0, 229, 255, 0.08)',
                   opacity: 0.92,
-                  cursor: narr.canToggle ? 'pointer' : 'default',
                 }}
               >
                 <div style={{ color: 'rgba(120, 200, 255, 0.42)', marginBottom: 6, fontSize: 8, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-                  scene_narrative · sys.log · {narrState === 'full' ? 'big' : 'mid'}
-                  {narr.canToggle ? ' · tap' : ''}
+                  scene_narrative · sys.log · {narrState === 'full' ? 'full' : 'mid'}
                 </div>
                 <pre
                   style={{
@@ -334,12 +338,37 @@ function ExploreHudInner({
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-word',
                     color: 'rgba(200, 235, 255, 0.78)',
+                    maxHeight: isFull ? '52vh' : 120,
+                    overflow: 'auto',
                   }}
                 >
                   {narr.text}
                 </pre>
               </div>
             ) : null}
+
+            {/* Bottom tap zone: collapse */}
+            <button
+              type="button"
+              aria-label={narrState === 'mid' ? 'Collapse narrative' : 'Shrink narrative'}
+              onClick={collapse}
+              style={{
+                width: '100%',
+                marginTop: 12,
+                padding: '10px 12px',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.10)',
+                background: 'rgba(255,255,255,0.04)',
+                color: 'rgba(200, 235, 255, 0.62)',
+                fontFamily: mono,
+                fontSize: 9,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}
+            >
+              tap bottom · {narrState === 'full' ? 'shrink' : 'collapse'}
+            </button>
           </div>
         )}
       </div>

@@ -13,7 +13,7 @@ import { usePrefetchAlternateLocales } from '@/hooks/usePrefetchAlternateLocales
 // Suspense fallback when a route segment is still loading (chunks)
 function LoadingFallback() {
   // Use the same globe + topo overlay (no logo flash).
-  return <PreloaderB key="suspense-fallback-preloader-b" duration={0.5} shouldAutoHide={false} suspended />
+  return <PreloaderB key="suspense-fallback-preloader-b" duration={0.5} shouldAutoHide={false} />
 }
 
 export function PageTransitionWrapper({ children }: { children: React.ReactNode }) {
@@ -100,7 +100,6 @@ export function PageTransitionWrapper({ children }: { children: React.ReactNode 
       bootOnly={!isBootLayoutDone}
       duration={0.5}
       shouldAutoHide={false}
-      suspended
     />
   ) : null
 
