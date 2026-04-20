@@ -282,36 +282,8 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
     },
   },
 
-  /** J&P II — Sociedades CN KMZ polygon 'J&P Dos'. */
+  /** J&P III — Sociedades CN KMZ polygon 'J&P Dos'. */
   'J&P Dos': {
-    en: {
-      summary:
-        'J&P II — second J&P parcel forming the mid-section of the waterfront industrial line alongside J&P.',
-      detail:
-        'J&P II extends the J&P land package with a contiguous parcel of comparable scale positioned between the main J&P lot and J&P III. Suited to the same range of maritime and industrial uses — deep-sea logistics, energy infrastructure, advanced manufacturing — it offers an investor the ability to take a larger combined footprint or an independent stake in the Cabo Negro shoreline strategy. Phasing and permitting follow the same project timeline as J&P; the lots can be acquired separately or as part of a consolidated J&P corridor purchase.',
-    },
-    es: {
-      summary:
-        'J&P II — segunda parcela J&P que forma la sección central de la línea industrial costera junto a J&P.',
-      detail:
-        'J&P II amplía el paquete de suelo J&P con una parcela contigua de escala comparable, ubicada entre el lote principal J&P y J&P III. Apta para los mismos usos marítimos e industriales —logística de gran calado, infraestructura energética, manufactura avanzada— permite a un inversor acceder a una huella combinada mayor o una participación independiente en la estrategia costera de Cabo Negro. Plazos y permisos siguen el mismo calendario del proyecto que J&P; los lotes pueden adquirirse por separado o como parte de una compra consolidada del corredor J&P.',
-    },
-    zh: {
-      summary:
-        'J&P II——第二块 J&P 地块，构成滨水工业线 J&P 旁的中段。',
-      detail:
-        'J&P II 以规模相近的毗邻地块延伸 J&P 土地包，位于主 J&P 地块与 J&P III 之间。适合相同的海运与工业用途——深水物流、能源基础设施、先进制造——使投资者既可获得更大的联合体量，也可作为卡沃内格罗岸线战略中的独立持股。分期与许可遵循与 J&P 相同的项目时间线；各地块可独立购入，也可作为 J&P 走廊整体收购的一部分。',
-    },
-    fr: {
-      summary:
-        'J&P II — deuxième parcelle J&P formant la section médiane de la ligne industrielle littorale aux côtés de J&P.',
-      detail:
-        "J&P II prolonge le package foncier J&P avec une parcelle contiguë de taille comparable, positionnée entre le lot J&P principal et J&P III. Adaptée aux mêmes usages maritimes et industriels — logistique hauturière, infrastructure énergétique, fabrication avancée — elle permet à un investisseur de prendre une empreinte combinée plus large ou une participation indépendante dans la stratégie littorale de Cabo Negro. Phasage et permis suivent le même calendrier projet que J&P ; les lots peuvent être acquis séparément ou dans le cadre d'un achat consolidé du corridor J&P.",
-    },
-  },
-
-  /** J&P III — Sociedades CN KMZ polygon 'J&P Tres'. */
-  'J&P Tres': {
     en: {
       summary:
         'J&P III — third J&P parcel completing the waterfront industrial corridor adjacent to J&P and J&P II.',
@@ -335,6 +307,34 @@ export const PARCEL_EXPLORE_CARDS: Record<string, ExploreCardLocales> = {
         'J&P III — troisième parcelle J&P complétant le corridor industriel littoral aux côtés de J&P et J&P II.',
       detail:
         "J&P III ferme le corridor J&P côté extérieur, apportant une troisième parcelle de taille similaire dans la même zone maritime-industrielle. Elle partage le positionnement stratégique de J&P et J&P II — couplage direct au chenal de navigation du détroit de Magellan, l'infrastructure portuaire de Cabo Negro et le hub logistique de Punta Arenas — et est commercialisée pour la même classe d'usages finaux industriels lourds, énergétiques et logistiques. Elle peut être acquise comme lot autonome ou comme troisième volet d'un package de corridor avec J&P et J&P II.",
+    },
+  },
+
+  /** J&P II — Sociedades CN KMZ polygon 'J&P Tres'. */
+  'J&P Tres': {
+    en: {
+      summary:
+        'J&P II — second J&P parcel forming the mid-section of the waterfront industrial line alongside J&P.',
+      detail:
+        'J&P II extends the J&P land package with a contiguous parcel of comparable scale positioned between the main J&P lot and J&P III. Suited to the same range of maritime and industrial uses — deep-sea logistics, energy infrastructure, advanced manufacturing — it offers an investor the ability to take a larger combined footprint or an independent stake in the Cabo Negro shoreline strategy. Phasing and permitting follow the same project timeline as J&P; the lots can be acquired separately or as part of a consolidated J&P corridor purchase.',
+    },
+    es: {
+      summary:
+        'J&P II — segunda parcela J&P que forma la sección central de la línea industrial costera junto a J&P.',
+      detail:
+        'J&P II amplía el paquete de suelo J&P con una parcela contigua de escala comparable, ubicada entre el lote principal J&P y J&P III. Apta para los mismos usos marítimos e industriales —logística de gran calado, infraestructura energética, manufactura avanzada— permite a un inversor acceder a una huella combinada mayor o una participación independiente en la estrategia costera de Cabo Negro. Plazos y permisos siguen el mismo calendario del proyecto que J&P; los lotes pueden adquirirse por separado o como parte de una compra consolidada del corredor J&P.',
+    },
+    zh: {
+      summary:
+        'J&P II——第二块 J&P 地块，构成滨水工业线 J&P 旁的中段。',
+      detail:
+        'J&P II 以规模相近的毗邻地块延伸 J&P 土地包，位于主 J&P 地块与 J&P III 之间。适合相同的海运与工业用途——深水物流、能源基础设施、先进制造——使投资者既可获得更大的联合体量，也可作为卡沃内格罗岸线战略中的独立持股。分期与许可遵循与 J&P 相同的项目时间线；各地块可独立购入，也可作为 J&P 走廊整体收购的一部分。',
+    },
+    fr: {
+      summary:
+        'J&P II — deuxième parcelle J&P formant la section médiane de la ligne industrielle littorale aux côtés de J&P.',
+      detail:
+        "J&P II prolonge le package foncier J&P avec une parcelle contiguë de taille comparable, positionnée entre le lot J&P principal et J&P III. Adaptée aux mêmes usages maritimes et industriels — logistique hauturière, infrastructure énergétique, fabrication avancée — elle permet à un investisseur de prendre une empreinte combinée plus large ou une participation indépendante dans la stratégie littorale de Cabo Negro. Phasage et permis suivent le même calendrier projet que J&P ; les lots peuvent être acquis séparément ou dans le cadre d'un achat consolidé du corridor J&P.",
     },
   },
 

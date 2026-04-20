@@ -97,8 +97,9 @@ export function createPostUpdateHandler(opts: CreatePostUpdateHandlerOptions): (
 
   /** Start slow idle orbit after this many ms of no user input. */
   const ORBIT_IDLE_MS = 3000
-  /** ~1.5 degrees per second at 60 fps — gentle screensaver-style rotation. */
-  const ORBIT_RAD_PER_FRAME = (1.5 * Math.PI / 180) / 60
+  /** 0.6 degrees per second — gentle screensaver orbit (full 360° in ~10 min). */
+  const ORBIT_DEG_PER_SEC = 0.6
+  const ORBIT_RAD_PER_MS = (ORBIT_DEG_PER_SEC * Math.PI / 180) / 1000
 
   const C: CesiumModule = (typeof window !== 'undefined' ? window.Cesium : null) as CesiumModule
   if (!C) {
@@ -107,6 +108,22 @@ export function createPostUpdateHandler(opts: CreatePostUpdateHandlerOptions): (
 
   const scratchCamCarto = new C.Cartographic()
   const terrainSampleCarto = new C.Cartographic()
+
+  // ── Orbit scratch objects (allocated once, reused every frame) ──────────
+  const scratchOrbitAxis    = new C.Cartesian3()
+  const scratchOrbitRel     = new C.Cartesian3()
+  const scratchOrbitRotated = new C.Cartesian3()
+  const scratchOrbitDir     = new C.Cartesian3()
+  const scratchOrbitUp      = new C.Cartesian3()
+  const scratchOrbitQ       = new C.Quaternion()
+  const scratchOrbitMat     = new C.Matrix3()
+  const scratchOrbitPick2D  = new C.Cartesian2()
+
+  // Orbit state — persists across frames but resets when orbit stops
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let orbitCenter: any = null   // Cartesian3 of the locked look-at point
+  let wasOrbiting = false
+  let lastOrbitMs: number | null = null
 
   let hudPostSkip = 0
   let lastTerrainUnderCamMs = 0
@@ -121,6 +138,7 @@ export function createPostUpdateHandler(opts: CreatePostUpdateHandlerOptions): (
     stepKmlLayerAlphas(kmlLayerAlphaRef)
 
     if (postUpdateTickRef) postUpdateTickRef.current++
+    const now = performance.now()
     const scene = v.scene
     const cam = v.camera
     const ellipsoid = scene.globe.ellipsoid
@@ -137,10 +155,13 @@ export function createPostUpdateHandler(opts: CreatePostUpdateHandlerOptions): (
     if (ctrl.enableTranslate !== wantTranslate) ctrl.enableTranslate = wantTranslate
 
     // ── Idle orbit (auto-rotation) ───────────────────────────────────────
-    // After landing at a waypoint the camera stays still; after ORBIT_IDLE_MS of no
-    // pointer/scroll input it slowly rotates. Any user interaction resets the timer
-    // (via lastUserInputMsRef in wireCanvasInteractions) which immediately stops the orbit.
-    if (
+    // After ORBIT_IDLE_MS of no pointer/scroll input the camera slowly orbits
+    // around the scene's current look-at point (ellipsoid intersection at screen
+    // centre). Rotation is around the surface-normal axis at that point so the
+    // camera sweeps in a clean horizontal arc — not `rotateRight` which tumbles
+    // the camera around its own axis.  Speed is time-delta driven so it's
+    // frame-rate independent.
+    const shouldOrbit = !!(
       lastUserInputMsRef &&
       isFlyingRef &&
       primaryMouseButtonDownRef &&
@@ -149,12 +170,54 @@ export function createPostUpdateHandler(opts: CreatePostUpdateHandlerOptions): (
       !primaryMouseButtonDownRef.current &&
       pointerButtonsRef.current === 0 &&
       now - lastUserInputMsRef.current > ORBIT_IDLE_MS
-    ) {
-      try { cam.rotateRight(ORBIT_RAD_PER_FRAME) } catch { /* noop */ }
+    )
+
+    if (shouldOrbit) {
+      // On the first orbit frame: lock the look-at point from the screen centre.
+      if (!wasOrbiting) {
+        wasOrbiting = true
+        lastOrbitMs = null
+        scratchOrbitPick2D.x = scene.canvas.clientWidth  / 2
+        scratchOrbitPick2D.y = scene.canvas.clientHeight / 2
+        orbitCenter = cam.pickEllipsoid(scratchOrbitPick2D) ??
+          C.Cartesian3.fromDegrees(-70.8290556, -52.9263056, 0)
+      }
+
+      if (orbitCenter) {
+        const dtMs = lastOrbitMs !== null ? Math.min(now - lastOrbitMs, 100) : 0
+        lastOrbitMs = now
+
+        if (dtMs > 0) {
+          const angle = ORBIT_RAD_PER_MS * dtMs
+
+          // Rotation axis = surface normal at orbit centre (vertical through site).
+          C.Ellipsoid.WGS84.geodeticSurfaceNormal(orbitCenter, scratchOrbitAxis)
+          C.Quaternion.fromAxisAngle(scratchOrbitAxis, angle, scratchOrbitQ)
+          C.Matrix3.fromQuaternion(scratchOrbitQ, scratchOrbitMat)
+
+          // Rotate camera position around orbit centre.
+          C.Cartesian3.subtract(cam.position, orbitCenter, scratchOrbitRel)
+          C.Matrix3.multiplyByVector(scratchOrbitMat, scratchOrbitRel, scratchOrbitRotated)
+          cam.position = C.Cartesian3.add(orbitCenter, scratchOrbitRotated, new C.Cartesian3())
+
+          // Rotate direction and up by the same matrix so pitch stays constant.
+          C.Matrix3.multiplyByVector(scratchOrbitMat, cam.direction, scratchOrbitDir)
+          cam.direction = C.Cartesian3.normalize(scratchOrbitDir, new C.Cartesian3())
+
+          C.Matrix3.multiplyByVector(scratchOrbitMat, cam.up, scratchOrbitUp)
+          cam.up = C.Cartesian3.normalize(scratchOrbitUp, new C.Cartesian3())
+        }
+      }
+    } else {
+      // Reset orbit state when user takes control or camera flies.
+      if (wasOrbiting) {
+        wasOrbiting = false
+        orbitCenter = null
+        lastOrbitMs = null
+      }
     }
 
     // ── Debug / pose logging ─────────────────────────────────────────────
-    const now = performance.now()
     const tickDebugIntervalMs =
       shouldDebugCesiumInput?.() && !shouldDebugCesium?.() ? 900 : 2500
     if (

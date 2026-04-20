@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback, useState, useMemo, type MutableRefObject } from 'react'
+import { useEffect, useRef, useCallback, useState, type MutableRefObject } from 'react'
 import { AnimatePresence, motion, type Variants } from 'framer-motion'
 import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
 import ExploreLoadingSurface from '@/components/ui/ExploreLoadingSurface'
@@ -37,6 +37,32 @@ declare global {
 
 const OVERVIEW_WAYPOINT = WAYPOINTS[0]
 
+/** Isolated component so the 1 Hz tick never re-renders the CesiumExplorer tree. */
+function LiveClock({ timeOfDay, dayOffset }: { timeOfDay: number; dayOffset: number }) {
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const id = window.setInterval(() => setTick(t => (t + 1) % 1_000_000), 1000)
+    return () => window.clearInterval(id)
+  }, [])
+  const now = new Date()
+  const sel = new Date(now)
+  if (Number.isFinite(dayOffset) && dayOffset !== 0) sel.setUTCDate(sel.getUTCDate() + dayOffset)
+  sel.setUTCHours((timeOfDay + 3) % 24, 0, 0, 0)
+  const deltaHours = (sel.getTime() - now.getTime()) / (60 * 60 * 1000)
+  return (
+    <div className="hidden md:flex flex-col items-end leading-tight">
+      <span className="text-white/30 text-[10px] tracking-[0.18em] uppercase">
+        Now {now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+      </span>
+      <span className="text-white/50 text-[10px] font-mono">
+        Sel {sel.toLocaleString(undefined, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })}
+        {' · '}
+        {deltaHours >= 0 ? '+' : '−'}{Math.abs(deltaHours).toFixed(1)}h
+      </span>
+    </div>
+  )
+}
+
 const WAYPOINT_HUD_HOLD_MS = 4000
 
 const waypointHudOverlayVariants: Variants = {
@@ -59,7 +85,6 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
   const [sceneCaption, setSceneCaption] = useState<string | null>(null)
   const [timeOfDay, setTimeOfDay] = useState(14)
   const [dayOffset, setDayOffset] = useState(0)
-  const [nowTick, setNowTick] = useState(0)
   const [isDesktop, setIsDesktop] = useState(false)
   const [mobileExploreOpen, setMobileExploreOpen] = useState(false)
   const [menuOpacity, setMenuOpacity] = useState(1)
@@ -174,12 +199,6 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
     setViewerTimeOfDay(timeOfDay, dayOffset)
   }, [timeOfDay, dayOffset, isLoaded, viewerNonce, setViewerTimeOfDay])
 
-  // ── Effect: 1 Hz clock tick ────────────────────────────────────────────────
-  useEffect(() => {
-    const id = window.setInterval(() => setNowTick(t => (t + 1) % 1_000_000), 1000)
-    return () => window.clearInterval(id)
-  }, [])
-
   // ── Effect: menu fade when flying ──────────────────────────────────────────
   useEffect(() => {
     if (!isFlying) {
@@ -267,16 +286,6 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
     if (menuFadeTimerRef.current) clearTimeout(menuFadeTimerRef.current)
     if (waypointTargetingTimerRef.current) clearTimeout(waypointTargetingTimerRef.current)
   }, [])
-
-  // ── Memoised time display ───────────────────────────────────────────────────
-  const selectedClock = useMemo(() => {
-    const now = new Date()
-    const sel = new Date(now)
-    if (Number.isFinite(dayOffset) && dayOffset !== 0) sel.setUTCDate(sel.getUTCDate() + dayOffset)
-    sel.setUTCHours((timeOfDay + 3) % 24, 0, 0, 0)
-    const deltaHours = (sel.getTime() - now.getTime()) / (60 * 60 * 1000)
-    return { now, sel, deltaHours }
-  }, [dayOffset, timeOfDay, nowTick])
 
   // ── Stable handlers for top-bar controls ───────────────────────────────────
   const onTimeDialChange = useCallback((v: number | string) => setTimeOfDay(Number(v)), [])
@@ -391,16 +400,7 @@ export default function CesiumExplorer({ locale = 'en' }: CesiumExplorerProps) {
                   +DAY
                 </button>
               </div>
-              <div className="hidden md:flex flex-col items-end leading-tight">
-                <span className="text-white/30 text-[10px] tracking-[0.18em] uppercase">
-                  Now {selectedClock.now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                </span>
-                <span className="text-white/50 text-[10px] font-mono">
-                  Sel {selectedClock.sel.toLocaleString(undefined, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })}
-                  {' · '}
-                  {selectedClock.deltaHours >= 0 ? '+' : '−'}{Math.abs(selectedClock.deltaHours).toFixed(1)}h
-                </span>
-              </div>
+              <LiveClock timeOfDay={timeOfDay} dayOffset={dayOffset} />
             </div>
           </div>
         </div>

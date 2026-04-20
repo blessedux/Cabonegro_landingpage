@@ -17,7 +17,6 @@ import {
 import {
   formatSubdivisionGlobeLabel,
   getSubdivisionCatalogEntry,
-  KML_NAME_JP_24HA,
   KML_NAME_JP_CONTINUADORA,
   KML_NAME_JP_DOS,
   KML_NAME_JP_TRES,
@@ -30,10 +29,8 @@ import {
 import { applyExplorerCameraInteractionScheme } from '@/lib/cesium/cameraUtils'
 import {
   entityKmlRawName,
-  centroidLonLatFromEntity,
   centroidLonLatFromPositions,
   polygonAreaSqmFromHierarchy,
-  parcelAreaHaFromPolygonEntity,
 } from '@/lib/cesium/entityUtils'
 import type { ParcelSalePick } from '@/components/cesium/InfoPanel'
 import type { FlyPose } from '@/lib/cesium/cameraUtils'
@@ -645,28 +642,6 @@ export function useCesiumViewerRuntime({
 
           // Add rather than replace so Sociedades CN entities added concurrently are not lost.
           for (const ent of entitySet) subdivisionParcelEntitiesRef.current.add(ent)
-
-          // Default parcel selection: J&P (24 ha)
-          if (!cancelled && initSeqRef.current === mySeq && !viewerForKml.isDestroyed()) {
-            for (const entity of ds.entities.values) {
-              if (!entity.polygon) continue
-              if (entityKmlRawName(viewerForKml, entity) !== KML_NAME_JP_24HA) continue
-              selectedParcelEntityRef.current = entity
-              const ll = centroidLonLatFromEntity(Cesium, viewerForKml, entity)
-              const jp = getSubdivisionCatalogEntry(KML_NAME_JP_24HA)
-              const defaultHa = jp?.areaHa != null && Number.isFinite(jp.areaHa)
-                ? jp.areaHa
-                : patagonValleyHaByKmlNameRef.current[KML_NAME_JP_24HA] ??
-                  parcelAreaHaFromPolygonEntity(Cesium, viewerForKml, entity, patagonValleyHaByKmlNameRef.current) ??
-                  undefined
-              setSelectedParcelSale({
-                title: jp?.displayName ?? 'Patagon Valley',
-                longitude: ll?.lon ?? -70.841, latitude: ll?.lat ?? -52.935,
-                areaHa: defaultHa, kmlRawName: KML_NAME_JP_24HA,
-              })
-              break
-            }
-          }
           dbg('init:subdivision-kmz', { entities: ds.entities.values.length })
         } catch (err) { warnOnce('subdivision-kmz', 'Subdivision KMZ failed to load.', err) }
       })()

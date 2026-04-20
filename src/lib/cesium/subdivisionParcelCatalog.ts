@@ -102,15 +102,15 @@ export const SUBDIVISION_PARCEL_CATALOG: Record<string, SubdivisionParcelCatalog
     wallHeightM: 60,
     labelOffsetDeg: { lon: -0.0022, lat: 0.0014 },
   },
-  /** J&P II lot — Sociedades CN KMZ polygon `J&P Dos`. */
+  /** J&P III lot — Sociedades CN KMZ polygon `J&P Dos`. */
   'J&P Dos': {
-    displayName: 'J&P II',
+    displayName: 'J&P III',
     ...PV_WALLS_ONLY,
     wallHeightM: 60,
   },
-  /** J&P III lot — Sociedades CN KMZ polygon `J&P Tres`. */
+  /** J&P II lot — Sociedades CN KMZ polygon `J&P Tres`. */
   'J&P Tres': {
-    displayName: 'J&P III',
+    displayName: 'J&P II',
     ...PV_WALLS_ONLY,
     wallHeightM: 60,
   },
