@@ -294,6 +294,44 @@ export function useCesiumViewerRuntime({
       setBootError(null)
       dbg('init:start', { seq: mySeq })
 
+      const getAssetPrefix = (): string => {
+        try {
+          const p = (window.__NEXT_DATA__?.assetPrefix ?? '') as unknown
+          return typeof p === 'string' ? p : ''
+        } catch { return '' }
+      }
+
+      const joinUrl = (prefix: string, path: string): string => {
+        const a = (prefix ?? '').replace(/\/+$/, '')
+        const b = path.startsWith('/') ? path : `/${path}`
+        return `${a}${b}`
+      }
+
+      const ensureCesiumScript = async (): Promise<void> => {
+        // If the layout <Script> failed to load (assetPrefix/basePath/CDN),
+        // inject the Cesium.js script manually using Next's runtime assetPrefix.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if ((window as any).Cesium) return
+        const existing = document.getElementById('cesium-js') as HTMLScriptElement | null
+        if (existing) return
+
+        const srcCandidates = [
+          joinUrl(getAssetPrefix(), '/_next/static/cesium/Cesium.js'),
+          '/_next/static/cesium/Cesium.js',
+        ]
+        const chosen = srcCandidates.find(Boolean) ?? '/_next/static/cesium/Cesium.js'
+
+        await new Promise<void>((resolve, reject) => {
+          const s = document.createElement('script')
+          s.id = 'cesium-js'
+          s.async = true
+          s.src = chosen
+          s.onload = () => resolve()
+          s.onerror = () => reject(new Error(`Failed to load Cesium.js at ${chosen}`))
+          document.head.appendChild(s)
+        })
+      }
+
       // cesium is a webpack external — the library is loaded via a <Script>
       // tag in the explore layout (/_next/static/cesium/Cesium.js).
       // strategy="afterInteractive" means it arrives shortly after hydration,
@@ -304,6 +342,7 @@ export function useCesiumViewerRuntime({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((window as any).Cesium) { resolve((window as any).Cesium); return }
         const deadline = Date.now() + 30_000
+        let injected = false
         const id = setInterval(() => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if ((window as any).Cesium) {
@@ -316,6 +355,10 @@ export function useCesiumViewerRuntime({
               'Cesium.js did not load within 30 s. ' +
               'Check that /_next/static/cesium/Cesium.js is reachable.'
             ))
+          } else if (!injected && Date.now() + 5000 > deadline) {
+            // Last-chance fallback: try injecting the script ourselves (prod pathing issues).
+            injected = true
+            ensureCesiumScript().catch(() => undefined)
           }
         }, 50)
       })
@@ -335,7 +378,10 @@ export function useCesiumViewerRuntime({
         dbg('init:orbitMath-loaded')
       }
 
-      window.CESIUM_BASE_URL = `${window.location.origin}/_next/static/cesium/`
+      // Ensure Cesium's internal buildModuleUrl points to the right place
+      // even when Next is served with an assetPrefix/CDN.
+      const assetPrefix = getAssetPrefix()
+      window.CESIUM_BASE_URL = joinUrl(assetPrefix || window.location.origin, '/_next/static/cesium/')
       if (!CESIUM_ION_TOKEN) {
         console.warn(
           '[CesiumExplorer] NEXT_PUBLIC_CESIUM_ION_TOKEN is not set. ' +
