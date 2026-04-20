@@ -44,7 +44,7 @@ const nextConfig = {
   },
   // Enable experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion', '@mdi/react', 'react-icons', 'd3'],
+    optimizePackageImports: ['lucide-react', 'framer-motion', '@mdi/react', 'react-icons', 'd3-geo', 'd3-timer'],
   },
   // Reduce bundle size
   // Note: swcMinify is enabled by default in Next.js 15, no need to specify

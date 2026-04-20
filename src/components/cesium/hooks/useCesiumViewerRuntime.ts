@@ -312,6 +312,12 @@ export function useCesiumViewerRuntime({
       }
 
       window.CESIUM_BASE_URL = `${window.location.origin}/_next/static/cesium/`
+      if (!CESIUM_ION_TOKEN) {
+        console.warn(
+          '[CesiumExplorer] NEXT_PUBLIC_CESIUM_ION_TOKEN is not set. ' +
+          'Ion imagery and terrain will fail. Set this env var in your deployment environment.'
+        )
+      }
       Cesium.Ion.defaultAccessToken = CESIUM_ION_TOKEN
 
       if (!containerRef.current) return
@@ -920,9 +926,14 @@ export function useCesiumViewerRuntime({
     }, 8000)
 
     initCesium().catch((err) => {
+      const msg = err instanceof Error ? err.message : String(err)
       console.error('[CesiumExplorer] Init failed:', err)
+      // Surface the real error message in prod so it appears in Vercel function logs.
+      // Ion auth failures show "Unauthorized" or "401"; asset failures show the URL.
       if (!cancelled && initSeqRef.current === mySeq) {
-        setBootError('Unable to load the 3D globe. Check the console or your connection, then refresh.')
+        setBootError(
+          `Unable to load the 3D globe. ${msg ? `(${msg}) ` : ''}Check the console or your connection, then refresh.`
+        )
       }
     })
 
