@@ -17,12 +17,14 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
         This replaces the 4 MB webpack chunk — the file is served at a
         stable path (/_next/static/cesium/Cesium.js) that never changes
         between deployments, so it can be cached indefinitely by the browser.
-        strategy="beforeInteractive" ensures window.Cesium is defined before
-        any client-side React effects run.
+
+        NOTE: strategy="beforeInteractive" only works in the root layout;
+        in a route layout Next.js ignores it. We use "afterInteractive" here
+        and poll for window.Cesium in useCesiumViewerRuntime before proceeding.
       */}
       <Script
         src="/_next/static/cesium/Cesium.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
       <div
         style={{
