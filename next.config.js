@@ -20,6 +20,35 @@ const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 const cesiumSource = path.join(__dirname, 'node_modules/cesium/Build/Cesium');
 const cesiumStaticDest = path.join(__dirname, '.next/static/cesium');
 
+function sanitizeCopiedCesiumJs(outPath) {
+  if (!fs.existsSync(outPath)) return;
+  const src = fs.readFileSync(outPath, 'utf8');
+
+  const collapseNulEscapes = (input) => {
+    let next = input;
+    for (let i = 0; i < 8; i++) {
+      const prev = next;
+      next = next.replaceAll('\\000', '\\0').replaceAll('\\00', '\\0');
+      if (next === prev) break;
+    }
+    return next;
+  };
+
+  const fixOctalAfterNul = (input) => {
+    // In template literals, `\0` followed by a digit is treated as an octal escape
+    // (e.g. `\010`), which is illegal in modern JS engines.
+    //
+    // NOTE: We intentionally do this as a global text transform (not a JS AST walk).
+    // Cesium's minified bundle is effectively one giant template literal blob; a naive
+    // split on `` ` `` breaks on nested `${ ... }` expressions.
+    return input.replaceAll(/\\0(?=[0-9])/g, '\\x00');
+  };
+
+  let next = collapseNulEscapes(src);
+  next = fixOctalAfterNul(next);
+  if (next !== src) fs.writeFileSync(outPath, next, 'utf8');
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Parent dirs may contain other lockfiles (e.g. pnpm); pin tracing to this app root.
@@ -50,26 +79,15 @@ const nextConfig = {
         })
       );
 
-      // Some Cesium builds embed WASM byte strings in template literals using
-      // `\\00` which browsers reject ("Octal escape sequences are not allowed in template strings").
-      // Normalize `\\00` → `\\0` in the copied Cesium.js so it parses everywhere.
+      // Some Cesium builds embed byte blobs in template literals using escapes that
+      // modern JS engines reject as "octal escapes in template strings" (notably `\010...`).
+      // Post-process the copied `Cesium.js` so it parses in browsers.
       config.plugins.push({
         apply: (compiler) => {
           compiler.hooks.afterEmit.tap('CesiumTemplateEscapeFix', () => {
             try {
               const outPath = path.join(cesiumStaticDest, 'Cesium.js');
-              if (!fs.existsSync(outPath)) return;
-              const src = fs.readFileSync(outPath, 'utf8');
-              if (!src.includes('\\00') && !src.includes('\\000')) return;
-              // Collapse \00 and \000 to \0 (octal escapes are rejected in template strings).
-              // Do it to a fixed point because collapsing \000 -> \0 can reveal a new \00.
-              let next = src;
-              for (let i = 0; i < 5; i++) {
-                const prev = next;
-                next = next.replaceAll('\\000', '\\0').replaceAll('\\00', '\\0');
-                if (next === prev) break;
-              }
-              fs.writeFileSync(outPath, next, 'utf8');
+              sanitizeCopiedCesiumJs(outPath);
             } catch {
               // Non-fatal: worst case Cesium parse error will surface in the console.
             }
