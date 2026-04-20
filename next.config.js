@@ -17,6 +17,7 @@ try {
 const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 const cesiumSource = path.join(__dirname, 'node_modules/cesium/Build/Cesium');
+const cesiumStaticDest = path.join(__dirname, '.next/static/cesium');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -28,13 +29,23 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
+      // Treat the cesium npm package as a global so webpack never bundles it
+      // into a content-hashed chunk (previously ~4 MB).  The pre-built
+      // Cesium.js is served from /_next/static/cesium/Cesium.js instead.
+      config.externals = {
+        ...(config.externals ?? {}),
+        cesium: 'Cesium',
+      };
+
       config.plugins.push(
         new CopyPlugin({
           patterns: [
-            { from: path.join(cesiumSource, 'Workers'), to: path.join(__dirname, '.next/static/cesium/Workers') },
-            { from: path.join(cesiumSource, 'ThirdParty'), to: path.join(__dirname, '.next/static/cesium/ThirdParty') },
-            { from: path.join(cesiumSource, 'Assets'), to: path.join(__dirname, '.next/static/cesium/Assets') },
-            { from: path.join(cesiumSource, 'Widgets'), to: path.join(__dirname, '.next/static/cesium/Widgets') },
+            // Pre-built Cesium JS — loaded via <script> tag, not webpack
+            { from: path.join(cesiumSource, 'Cesium.js'), to: path.join(cesiumStaticDest, 'Cesium.js') },
+            { from: path.join(cesiumSource, 'Workers'), to: path.join(cesiumStaticDest, 'Workers') },
+            { from: path.join(cesiumSource, 'ThirdParty'), to: path.join(cesiumStaticDest, 'ThirdParty') },
+            { from: path.join(cesiumSource, 'Assets'), to: path.join(cesiumStaticDest, 'Assets') },
+            { from: path.join(cesiumSource, 'Widgets'), to: path.join(cesiumStaticDest, 'Widgets') },
           ],
         })
       );

@@ -291,11 +291,38 @@ export function useCesiumViewerRuntime({
     const orbitPrimaryMouseButtonDownRef = primaryMouseButtonDownRef
     const orbitPointerButtonsRef = pointerButtonsRef
 
+    /** Returns true if the thrown error is a webpack chunk-load failure. */
+    const isChunkError = (e: unknown) =>
+      (e instanceof Error && e.name === 'ChunkLoadError') ||
+      /loading chunk/i.test((e as Error)?.message ?? '')
+
     const initCesium = async () => {
       setBootError(null)
       dbg('init:start', { seq: mySeq })
-      const Cesium = await import('cesium')
+
+      // Dynamic import creates a webpack chunk for the cesium package.
+      // If the chunk hash changed since the user last loaded the app (new
+      // deployment), the browser's in-memory chunk manifest is stale and the
+      // fetch 404s.  Detect this and force a full reload to pick up the new
+      // manifest — guard with sessionStorage to avoid infinite loops.
+      let Cesium: typeof import('cesium')
+      try {
+        Cesium = await import('cesium')
+      } catch (e) {
+        if (isChunkError(e)) {
+          const key = 'cesium-chunk-reload'
+          if (!sessionStorage.getItem(key)) {
+            sessionStorage.setItem(key, '1')
+            window.location.reload()
+            return
+          }
+        }
+        throw e
+      }
       if (cancelled || initSeqRef.current !== mySeq) return
+
+      // Clear the stale-chunk guard once we've successfully loaded cesium.
+      sessionStorage.removeItem('cesium-chunk-reload')
 
       if (!orbitMathRef.current) {
         const orbitMath = await import('@/lib/cesium/orbitMath')
