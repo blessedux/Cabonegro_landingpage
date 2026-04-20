@@ -274,7 +274,6 @@ export function useCesiumViewerRuntime({
   // ── Main viewer init ───────────────────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current) return
-    let viewer: CesiumViewer | null = null
     const mySeq = ++initSeqRef.current
     let cancelled = false
 
@@ -383,7 +382,7 @@ export function useCesiumViewerRuntime({
       }
       if (cancelled || initSeqRef.current !== mySeq) return
 
-      viewer = new Cesium.Viewer(containerRef.current, {
+      const createdViewer = new Cesium.Viewer(containerRef.current, {
         terrainProvider, baseLayer: false,
         baseLayerPicker: false, geocoder: false, homeButton: false,
         sceneModePicker: false, navigationHelpButton: false,
@@ -392,69 +391,73 @@ export function useCesiumViewerRuntime({
         creditContainer: document.createElement('div'),
         msaaSamples: isMobile ? 1 : 4,
       })
-      viewer.imageryLayers.add(baseLayer)
+      createdViewer.imageryLayers.add(baseLayer)
       dbg('init:viewer-created', { isMobile })
       if (cancelled || initSeqRef.current !== mySeq) {
-        try { viewer.destroy() } catch { /* noop */ }
+        try { createdViewer.destroy() } catch { /* noop */ }
         return
       }
 
-      const osmViewer = viewer
+      // Alias used by legacy init code below.
+      // (Keeps changes small while ensuring viewer is non-null by construction.)
+      const viewer = createdViewer
+
+      const osmViewer = createdViewer
       setTimeout(async () => {
         if (cancelled || initSeqRef.current !== mySeq) return
         if (!osmViewer || osmViewer.isDestroyed()) return
         try { osmViewer.scene.primitives.add(await Cesium.createOsmBuildingsAsync()) } catch { /* optional */ }
       }, 3000)
 
-      viewerRef.current = viewer
+      viewerRef.current = createdViewer
       window.Cesium = Cesium
       if (cancelled || initSeqRef.current !== mySeq) return
 
-      applyExplorerCameraInteractionScheme(Cesium, viewer, {
+      applyExplorerCameraInteractionScheme(Cesium, createdViewer, {
         includePinchInRotateTilt: isMobile,
       })
 
       // Let the browser send uninterrupted pointer drags to the WebGL canvas (maps / globes).
       try {
-        const canvas = viewer.scene.canvas as HTMLCanvasElement
+        const canvas = createdViewer.scene.canvas as HTMLCanvasElement
         canvas.style.touchAction = 'none'
         canvas.style.userSelect = 'none'
       } catch {
         /* noop */
       }
 
-      viewer.scene.verticalExaggeration = isMobile ? 1.5 : TERRAIN_EXAGGERATION
-      viewer.scene.globe.enableLighting = true
-      viewer.scene.globe.dynamicAtmosphereLighting = false
-      viewer.scene.globe.atmosphereLightIntensity = 12.0
-      viewer.scene.globe.atmosphereRayleighCoefficient = new Cesium.Cartesian3(5.5e-6, 13.0e-6, 28.4e-6)
+      createdViewer.scene.verticalExaggeration = isMobile ? 1.5 : TERRAIN_EXAGGERATION
+      createdViewer.scene.globe.enableLighting = true
+      createdViewer.scene.globe.dynamicAtmosphereLighting = false
+      createdViewer.scene.globe.atmosphereLightIntensity = 12.0
+      createdViewer.scene.globe.atmosphereRayleighCoefficient = new Cesium.Cartesian3(5.5e-6, 13.0e-6, 28.4e-6)
 
       const initDate = new Date()
       initDate.setUTCHours(17, 0, 0, 0)
-      viewer.clock.currentTime = Cesium.JulianDate.fromDate(initDate)
+      createdViewer.clock.currentTime = Cesium.JulianDate.fromDate(initDate)
 
-      viewer.scene.atmosphere.brightnessShift = 0.45
-      viewer.scene.atmosphere.saturationShift = 0.15
-      viewer.scene.fog.enabled = false
-      viewer.scene.globe.depthTestAgainstTerrain = true
-      viewer.scene.backgroundColor = new Cesium.Color(0.0, 0.04, 0.1, 1.0)
+      createdViewer.scene.atmosphere.brightnessShift = 0.45
+      createdViewer.scene.atmosphere.saturationShift = 0.15
+      createdViewer.scene.fog.enabled = false
+      createdViewer.scene.globe.depthTestAgainstTerrain = true
+      createdViewer.scene.backgroundColor = new Cesium.Color(0.0, 0.04, 0.1, 1.0)
 
-      try { viewer.scene.globe.showWaterEffect = true; viewer.scene.globe.material = undefined } catch { /* optional */ }
+      try { createdViewer.scene.globe.showWaterEffect = true; createdViewer.scene.globe.material = undefined } catch { /* optional */ }
 
-      const skyBox = viewer.scene.skyBox as { show?: boolean } | undefined
+      const skyBox = createdViewer.scene.skyBox as { show?: boolean } | undefined
       if (skyBox) skyBox.show = false
-      const skyAtmosphere = viewer.scene.skyAtmosphere as { show?: boolean } | undefined
+      const skyAtmosphere = createdViewer.scene.skyAtmosphere as { show?: boolean } | undefined
       if (skyAtmosphere) skyAtmosphere.show = false
-      try { viewer.scene.globe.showGroundAtmosphere = false } catch { /* optional */ }
+      try { createdViewer.scene.globe.showGroundAtmosphere = false } catch { /* optional */ }
 
-      viewer.shadows = !isMobile
-      viewer.terrainShadows = isMobile ? Cesium.ShadowMode.DISABLED : Cesium.ShadowMode.ENABLED
-      viewer.scene.postProcessStages.fxaa.enabled = true
+      createdViewer.shadows = !isMobile
+      createdViewer.terrainShadows = isMobile ? Cesium.ShadowMode.DISABLED : Cesium.ShadowMode.ENABLED
+      createdViewer.scene.postProcessStages.fxaa.enabled = true
       if (!isMobile) {
-        viewer.scene.postProcessStages.bloom.enabled = true
-        viewer.scene.postProcessStages.bloom.uniforms.contrast = 80
-        viewer.scene.postProcessStages.bloom.uniforms.brightness = -0.1
-        viewer.scene.postProcessStages.bloom.uniforms.glowOnly = false
+        createdViewer.scene.postProcessStages.bloom.enabled = true
+        createdViewer.scene.postProcessStages.bloom.uniforms.contrast = 80
+        createdViewer.scene.postProcessStages.bloom.uniforms.brightness = -0.1
+        createdViewer.scene.postProcessStages.bloom.uniforms.glowOnly = false
       }
 
       try {
@@ -475,23 +478,23 @@ export function useCesiumViewerRuntime({
           `,
           uniforms: { u_nightAmount: 0.0 },
         })
-        viewer.scene.postProcessStages.add(stage)
+        createdViewer.scene.postProcessStages.add(stage)
         nightTintStageRef.current = stage
       } catch { /* optional */ }
 
-      viewer.resolutionScale = isMobile ? 0.70 : 0.88
-      viewer.scene.globe.maximumScreenSpaceError = isMobile ? 5 : 3
-      if (!isMobile) viewer.scene.globe.tileCacheSize = 200
+      createdViewer.resolutionScale = isMobile ? 0.70 : 0.88
+      createdViewer.scene.globe.maximumScreenSpaceError = isMobile ? 5 : 3
+      if (!isMobile) createdViewer.scene.globe.tileCacheSize = 200
 
-      addBoatAnimation(viewer, Cesium)
-      viewer.clock.shouldAnimate = false
+      addBoatAnimation(createdViewer, Cesium)
+      createdViewer.clock.shouldAnimate = false
 
       subdivisionParcelEntitiesRef.current = new Set()
       patagonValleyHaByKmlNameRef.current = {}
       kmlLayerAlphaRef.current = createInitialKmlLayerAlphas()
       applyKmlLayerTargetForWaypoint(exploreMenuSelectionIdRef.current, kmlLayerAlphaRef)
 
-      const viewerForKml = viewer
+      const viewerForKml = createdViewer
       // Pre-compute base colors — shared across CallbackProperty closures
       const fillBase = Cesium.Color.fromCssColorString('#00e5ff')
       const fillSelected = Cesium.Color.fromCssColorString('#ffd54a')
@@ -975,9 +978,10 @@ export function useCesiumViewerRuntime({
       viewerInteractionsCleanupRef.current = null
       postUpdateRemoveRef.current?.()
       postUpdateRemoveRef.current = null
-      if (viewer && !viewer.isDestroyed()) {
-        try { viewer.camera.cancelFlight() } catch { /* noop */ }
-        viewer.destroy()
+      const v = viewerRef.current
+      if (v && !v.isDestroyed()) {
+        try { v.camera.cancelFlight() } catch { /* noop */ }
+        v.destroy()
       }
       viewerRef.current = null
       delete window.Cesium
