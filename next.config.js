@@ -1,6 +1,7 @@
 const createNextIntlPlugin = require('next-intl/plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const path = require('path');
+const fs = require('fs');
 
 // Bundle analyzer is optional - only load if available
 let withBundleAnalyzer = (config) => config;
@@ -48,6 +49,34 @@ const nextConfig = {
           ],
         })
       );
+
+      // Some Cesium builds embed WASM byte strings in template literals using
+      // `\\00` which browsers reject ("Octal escape sequences are not allowed in template strings").
+      // Normalize `\\00` → `\\0` in the copied Cesium.js so it parses everywhere.
+      config.plugins.push({
+        apply: (compiler) => {
+          compiler.hooks.afterEmit.tap('CesiumTemplateEscapeFix', () => {
+            try {
+              const outPath = path.join(cesiumStaticDest, 'Cesium.js');
+              if (!fs.existsSync(outPath)) return;
+              const src = fs.readFileSync(outPath, 'utf8');
+              if (!src.includes('\\00') && !src.includes('\\000')) return;
+              // Collapse \00 and \000 to \0 (octal escapes are rejected in template strings).
+              // Do it to a fixed point because collapsing \000 -> \0 can reveal a new \00.
+              let next = src;
+              for (let i = 0; i < 5; i++) {
+                const prev = next;
+                next = next.replaceAll('\\000', '\\0').replaceAll('\\00', '\\0');
+                if (next === prev) break;
+              }
+              fs.writeFileSync(outPath, next, 'utf8');
+            } catch {
+              // Non-fatal: worst case Cesium parse error will surface in the console.
+            }
+          });
+        },
+      });
+
       config.resolve.fallback = { ...config.resolve.fallback, fs: false };
     }
     return config;
