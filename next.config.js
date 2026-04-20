@@ -29,6 +29,14 @@ const nextConfig = {
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
+      // Treat the cesium npm package as a global so webpack never bundles it
+      // into a content-hashed chunk. We load the pre-built Cesium.js from
+      // /_next/static/cesium/Cesium.js instead.
+      config.externals = {
+        ...(config.externals ?? {}),
+        cesium: 'Cesium',
+      };
+
       config.plugins.push(
         new CopyPlugin({
           patterns: [
