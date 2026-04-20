@@ -22,7 +22,7 @@ const partnerLogos = [
   { 
     name: "Cabo Negro", 
     id: 1, 
-    src: "/logos/cabonegro_logo.png", 
+    src: "/logos/CaboNegro_logo_white.png", 
     alt: "Cabo Negro Logo",
     description: "Strategic industrial and maritime development hub in Chile's southern region"
   },

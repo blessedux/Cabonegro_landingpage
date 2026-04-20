@@ -47,7 +47,7 @@ function NavbarLogo({
         onMouseEnter={handleMouseEnter}
       >
         <img
-          src="/cabonegro_logo.png"
+          src="/logos/CaboNegro_logo_white.png"
           alt="Cabo Negro"
           className="h-[62.4px] w-auto object-contain flex-shrink-0 hover:opacity-80 transition-all duration-300"
           style={{

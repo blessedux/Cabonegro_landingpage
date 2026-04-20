@@ -407,7 +407,7 @@ const InfoPanel = memo(function InfoPanel({ waypoint, parcelSale, locale, closab
               {expanded ? <p className="text-white/45 border-t border-white/8 pt-3">{waypointCard.detail}</p> : null}
             </div>
 
-            {expanded ? (
+            {expanded && waypoint.id !== 'punta-arenas' ? (
               <div className="px-5 pb-4">
                 <button
                   type="button"

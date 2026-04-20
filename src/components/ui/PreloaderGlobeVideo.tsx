@@ -46,7 +46,7 @@ export default function PreloaderGlobeVideo({
       aria-live="polite"
     >
       <div
-        className="absolute left-1/2 top-1/2 z-[10] aspect-square -translate-x-1/2 -translate-y-[calc(50%+2px)] overflow-hidden rounded-full bg-slate-100/80 shadow-inner"
+        className="absolute left-1/2 top-1/2 z-[10] aspect-square -translate-x-1/2 -translate-y-[calc(50%+2px)] overflow-hidden rounded-full"
         style={{ width: `${GLOBE_DIAMETER_PCT}%`, maxWidth: `${GLOBE_DIAMETER_PCT}%` }}
       >
         {/*
@@ -58,8 +58,7 @@ export default function PreloaderGlobeVideo({
         {!suspended && (
           <video
             ref={videoRef}
-            className="h-full w-full object-cover object-center opacity-[0.98]"
-            style={{ opacity: 0.98 }}
+            className="h-full w-full object-cover object-center"
             src={src}
             muted
             playsInline
@@ -70,33 +69,41 @@ export default function PreloaderGlobeVideo({
         )}
       </div>
 
-      <svg
-        className="preloader-globe-spinner-island pointer-events-none absolute inset-0 z-[25] h-full w-full text-black"
-        viewBox="0 0 100 100"
-        aria-hidden
-      >
-        <g transform="translate(50 50)">
-          <circle cx="0" cy="0" r={R} fill="none" stroke="currentColor" strokeOpacity={0.12} strokeWidth={2.25} />
-          <g
-            className="animate-globe-spinner-arc-rotate"
-            style={globeSpin === 'east' ? { animationDirection: 'reverse' } : undefined}
-          >
+      {/*
+       * Spinner ring split into two layers so the rotating arc lives on an HTML
+       * element. HTML `transform` is reliably promoted to its own compositor
+       * layer, which means the ring keeps ticking even while the main thread is
+       * busy hydrating the homepage. Animating `stroke-dasharray` used to be
+       * the "pulse" — but that property is paint-bound and was the primary
+       * cause of the spinner freezing on low-end devices during boot.
+       */}
+      <div className="preloader-globe-spinner-island pointer-events-none absolute inset-0 z-[25] text-black">
+        {/* Static background ring */}
+        <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" aria-hidden>
+          <circle cx="50" cy="50" r={R} fill="none" stroke="currentColor" strokeOpacity={0.12} strokeWidth={2.25} />
+        </svg>
+        {/* Rotating arc: HTML wrapper owns the transform so the compositor animates it */}
+        <div
+          className="preloader-globe-spinner-rotor absolute inset-0"
+          style={globeSpin === 'east' ? { animationDirection: 'reverse' } : undefined}
+          aria-hidden
+        >
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100">
             <circle
-              className="animate-globe-spinner-arc-dash"
-              cx="0"
-              cy="0"
+              cx="50"
+              cy="50"
               r={R}
               fill="none"
               stroke="currentColor"
               strokeOpacity={0.48}
               strokeWidth={2.25}
               strokeLinecap="round"
-              strokeDasharray="34 300"
-              transform="rotate(-90)"
+              strokeDasharray="90 300"
+              transform="rotate(-90 50 50)"
             />
-          </g>
-        </g>
-      </svg>
+          </svg>
+        </div>
+      </div>
     </div>
   )
 }

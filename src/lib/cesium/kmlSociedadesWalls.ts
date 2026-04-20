@@ -128,7 +128,7 @@ export async function applySubdivisionParcelTerrainWalls(
   Cesium: AnyCesium,
   dataSource: AnyCesium,
   getWallHeightM: (entity: AnyCesium) => number,
-  getParcelAlpha: () => number,
+  getParcelAlpha: (entity: AnyCesium) => number,
   isSelected: (entity: AnyCesium) => boolean,
 ): Promise<void> {
   const t = viewer.clock.currentTime
@@ -196,7 +196,7 @@ export async function applySubdivisionParcelTerrainWalls(
           new Cesium.CallbackProperty(
             () => {
               const base = isSelected(ent) ? lineSel : lineCol
-              return base.withAlpha(0.88 * getParcelAlpha(), wallScratch)
+              return base.withAlpha(0.88 * getParcelAlpha(ent), wallScratch)
             },
             false,
           ),

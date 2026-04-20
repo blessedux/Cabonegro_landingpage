@@ -242,36 +242,30 @@ body {
   opacity: 0.8;
 }
 
-/* Preloader globe: spinner arc rotates while stroke length pulses (almost full → short) */
-@keyframes globe-spinner-arc-spin {
+/*
+ * Preloader spinner ring.
+ *
+ * Previously the arc animated `stroke-dasharray` (pulse) + `transform` on an SVG
+ * `<g>` element. Both were paint-bound on most browsers, and on low-end devices
+ * the homepage hydration long-tasks would starve the paint queue, freezing the
+ * ring. The current implementation rotates an HTML wrapper `<div>` instead, so
+ * the compositor owns the animation and it keeps ticking under main-thread
+ * contention. No stroke-dasharray animation — the arc length is static.
+ */
+@keyframes preloader-spinner-rotate {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
   to {
-    transform: rotate(360deg);
+    transform: translate3d(0, 0, 0) rotate(360deg);
   }
 }
 
-/* R=47 → C≈295.3; dash grows from ~12% to ~92% of perimeter */
-@keyframes globe-spinner-arc-dash {
-  0%,
-  100% {
-    stroke-dasharray: 34 300;
-  }
-  50% {
-    stroke-dasharray: 254 300;
-  }
-}
-
-.animate-globe-spinner-arc-rotate {
-  transform-origin: 0 0;
-  /* Compositor layer: keeps ring moving when the main thread is busy (RSC/navigation long tasks) */
+.preloader-globe-spinner-rotor {
   will-change: transform;
+  transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  animation: globe-spinner-arc-spin 2.4s linear infinite;
-}
-
-.animate-globe-spinner-arc-dash {
-  will-change: stroke-dasharray;
-  backface-visibility: hidden;
-  animation: globe-spinner-arc-dash 2s ease-in-out infinite;
+  animation: preloader-spinner-rotate 2.4s linear infinite;
 }
 
 /* Own compositing layer so CSS + canvas animations keep running during heavy RSC/route work */
@@ -280,16 +274,21 @@ body {
   backface-visibility: hidden;
 }
 
-/* Isolate the SVG spinner from the rest of the preloader paint (topo + canvas globe) */
+/* Isolate the spinner from the rest of the preloader paint (topo + canvas globe) */
 .preloader-globe-spinner-island {
   contain: layout style paint;
   isolation: isolate;
   transform: translateZ(0);
 }
 
-.preloader-b-surface .animate-globe-spinner-arc-rotate,
-.preloader-b-surface .animate-globe-spinner-arc-dash {
+.preloader-b-surface .preloader-globe-spinner-rotor {
   animation-play-state: running;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preloader-globe-spinner-rotor {
+    animation: none;
+  }
 }
 
 /* In-app navigation: drop heavy topo line animation (many paths) so the ring keeps moving */
@@ -394,9 +393,19 @@ body {
 }
 
 /*
- * Per-path animation. `will-change` used to be set here, but duplicating it
- * across ~100 paths spawned 100 composite layers and tanked mobile GPUs.
- * The parent `.preloader-topographic` already owns paint containment.
+ * Per-path topographic backdrop.
+ *
+ * Animating `stroke-dashoffset` across ~100 paths simultaneously is paint-bound
+ * and was competing with the spinner for paint slots during homepage hydration,
+ * which made the ring stutter on low-end devices. Default state is now STATIC
+ * lines (no animation), and the decorative dash animation is opt-in under
+ * strict conditions: desktop width, fine pointer, motion preference. That
+ * guarantees the preloader ring stays smooth everywhere, while desktops with
+ * adequate GPUs still get the animated visual.
+ *
+ * Also: `will-change` used to be set here but duplicating it across ~100 paths
+ * spawned 100 composite layers and tanked mobile GPUs. The parent owns paint
+ * containment; keep the paths free of promotion hints.
  */
 .preloader-topographic path {
   fill: #e2e8f0;
@@ -404,25 +413,28 @@ body {
   stroke-width: 1.15;
   stroke-miterlimit: 0;
   stroke-dasharray: 500;
-  stroke-dashoffset: 1000;
-  -webkit-animation: preloader-topo-dash 10s linear alternate infinite;
-  animation: preloader-topo-dash 10s linear alternate infinite;
+  stroke-dashoffset: 500;
 }
 
 /*
- * Pause the dash animation as soon as the backdrop starts fading out. Saves a
- * last 1000 ms burst of compositing while the overlay is disappearing.
+ * Desktop + fine pointer + motion allowed: enable the dash animation.
+ * Slowed from 10s alternate to 18s single-direction so paint churn per
+ * second is ~1.8x cheaper while the visual still feels alive.
  */
-.preloader-topographic[style*="opacity: 0"] path {
-  animation-play-state: paused;
-  -webkit-animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
+@media (min-width: 1024px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   .preloader-topographic path {
-    -webkit-animation: none;
-    animation: none;
-    stroke-dashoffset: 500;
+    stroke-dashoffset: 1000;
+    -webkit-animation: preloader-topo-dash 18s linear infinite;
+    animation: preloader-topo-dash 18s linear infinite;
+  }
+
+  /*
+   * Pause the dash animation as soon as the backdrop starts fading out. Saves a
+   * last 1000 ms burst of compositing while the overlay is disappearing.
+   */
+  .preloader-topographic[style*="opacity: 0"] path {
+    animation-play-state: paused;
+    -webkit-animation-play-state: paused;
   }
 }
 

@@ -1,16 +1,18 @@
 'use client'
 
 import { useParams, usePathname } from 'next/navigation'
-import { Download, Calendar, Mail, Warehouse, Truck, Factory, Zap, Wrench } from 'lucide-react'
+import { Warehouse, Truck, Factory, Zap, Wrench } from 'lucide-react'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Navbar from '@/components/sections/Navbar'
 import NavbarEs from '@/components/sections/Navbar-es'
 import NavbarZh from '@/components/sections/Navbar-zh'
 import Footer from '@/components/sections/Footer'
 import CookieBanner from '@/components/sections/CookieBanner'
+import { ParqueLogisticoHero } from '@/components/sections/ParqueLogisticoHero'
 import { Card, CardContent } from '@/components/ui/card'
-import Link from 'next/link'
+import { motion, useSpring, useTransform, useReducedMotion } from 'framer-motion'
+import { useHeroBridgeProgress } from '@/hooks/useHeroBridgeProgress'
 
 export default function ParqueLogisticoPage() {
   const params = useParams()
@@ -26,7 +28,8 @@ export default function ParqueLogisticoPage() {
         back: 'Back',
         hero: {
           title: 'Cabo Negro II Logistic Park',
-          subtitle: 'Macro Development Industrial Zone'
+          subtitle: 'Macro Development Industrial Zone',
+          imageAlt: 'Cabo Negro II Logistic Park — industrial development zone'
         },
         terrain: {
           title: 'Available Terrain',
@@ -72,7 +75,8 @@ export default function ParqueLogisticoPage() {
         back: 'Volver',
         hero: {
           title: 'Parque Logístico Cabo Negro II',
-          subtitle: 'Macro Lote - Zona Industrial'
+          subtitle: 'Macro Lote - Zona Industrial',
+          imageAlt: 'Parque Logístico Cabo Negro II — zona industrial'
         },
         terrain: {
           title: 'Terreno Disponible',
@@ -118,7 +122,8 @@ export default function ParqueLogisticoPage() {
         back: '返回',
         hero: {
           title: '卡波内格罗二期物流园区',
-          subtitle: '大型开发工业区'
+          subtitle: '大型开发工业区',
+          imageAlt: '卡波内格罗二期物流园区'
         },
         terrain: {
           title: '可用土地',
@@ -164,7 +169,8 @@ export default function ParqueLogisticoPage() {
         back: 'Retour',
         hero: {
           title: 'Parc Logistique Cabo Negro II',
-          subtitle: 'Macro Lot - Zone Industrielle'
+          subtitle: 'Macro Lot - Zone Industrielle',
+          imageAlt: 'Parc logistique Cabo Negro II — zone industrielle'
         },
         terrain: {
           title: 'Terrain Disponible',
@@ -212,6 +218,26 @@ export default function ParqueLogisticoPage() {
 
   const localizedText = getLocalizedText()
 
+  const heroVisionBridgeRef = useRef<HTMLDivElement>(null)
+  const prefersReducedMotion = useReducedMotion()
+  const bridgeMotionEnabled = prefersReducedMotion !== true
+  const rawBridgeProgress = useHeroBridgeProgress(heroVisionBridgeRef, bridgeMotionEnabled, pathname)
+
+  const smoothHeroVision = useSpring(rawBridgeProgress, {
+    stiffness: 128,
+    damping: 28,
+    mass: 0.2,
+  })
+
+  const hv = prefersReducedMotion === true ? rawBridgeProgress : smoothHeroVision
+
+  const heroMediaScale = useTransform(hv, [0, 0.42, 1], [1.38, 1.12, 1])
+  const heroMediaY = useTransform(hv, [0, 1], ['0%', '0%'])
+  const heroMediaBlur = useTransform(hv, [0, 1], [0, 10])
+  const heroContentY = useTransform(hv, [0, 1], [0, -150])
+  const terrainParallaxY = useTransform(hv, [0.35, 0.92], [72, 0])
+  const terrainParallaxOpacity = useTransform(hv, [0.25, 0.55], [0.88, 1])
+
   // Get appropriate Navbar component
   const getNavbar = () => {
     if (locale === 'es') return <NavbarEs />
@@ -219,39 +245,57 @@ export default function ParqueLogisticoPage() {
     return <Navbar />
   }
 
-  const contactPath = `/${locale}/contact?from=parque-logistico`
-
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* Navigation */}
-      {getNavbar()}
+      <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
+        <div className="pointer-events-auto">{getNavbar()}</div>
+      </div>
 
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          {/* Background Image */}
-          <Image
-            src="/cabonegro_astillero.webp"
-            alt="Cabo Negro II Logistic Park"
-            fill
-            className="object-cover"
-            priority
-            quality={90}
+      {/* Hero → first section: scroll bridge (sticky hero + zoom / parallax; same pattern as terminal marítimo) */}
+      <div
+        ref={heroVisionBridgeRef}
+        className={prefersReducedMotion ? 'relative' : 'relative h-[168vh] min-h-[168vh]'}
+      >
+        <div
+          className={
+            prefersReducedMotion
+              ? 'relative'
+              : 'sticky top-0 z-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden'
+          }
+        >
+          <ParqueLogisticoHero
+            text={{
+              title: localizedText.hero.title,
+              subtitle: localizedText.hero.subtitle,
+            }}
+            imageAlt={localizedText.hero.imageAlt}
+            scrollMotion={
+              prefersReducedMotion
+                ? undefined
+                : {
+                    mediaScale: heroMediaScale,
+                    mediaY: heroMediaY,
+                    contentY: heroContentY,
+                    mediaBlur: heroMediaBlur,
+                  }
+            }
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white" style={{ zIndex: 1 }} />
         </div>
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
-            {localizedText.hero.title}
-          </h1>
-          <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
-            {localizedText.hero.subtitle}
-          </p>
-        </div>
-      </section>
+      </div>
 
       {/* Available Terrain Section */}
-      <section className="py-20 px-6">
+      <motion.section
+        data-white-background="true"
+        className="relative z-10 py-20 px-6 bg-white"
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                y: terrainParallaxY,
+                opacity: terrainParallaxOpacity,
+              }
+        }
+      >
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             {localizedText.terrain.title}
@@ -275,7 +319,7 @@ export default function ParqueLogisticoPage() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Recommended Uses Section */}
       <section className="py-20 px-6 bg-gray-50">

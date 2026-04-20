@@ -14,11 +14,10 @@ import {
   useSpring,
   useTransform,
   useReducedMotion,
-  useMotionValue,
-  type MotionValue,
 } from 'framer-motion'
-import { useLayoutEffect, useRef } from 'react'
+import { useRef } from 'react'
 import React from 'react'
+import { useHeroBridgeProgress } from '@/hooks/useHeroBridgeProgress'
 
 // Code-split navigation components - only load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -31,56 +30,6 @@ const Footer = dynamic(() => import('@/components/sections/Footer'), {
   ssr: true
 })
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
-
-/**
- * Framer `useScroll({ target })` is unreliable here (stuck progress after client navigations / accelerated scroll timeline).
- * We derive 0→1 progress while the bridge element moves through the viewport using the same geometry as `["start start","end start"]`.
- */
-function useTerminalBridgeProgress(
-  bridgeRef: React.RefObject<HTMLDivElement | null>,
-  active: boolean,
-  /** Remeasure after client-side navigations (same ref instance can persist). */
-  layoutKey: string
-): MotionValue<number> {
-  const progress = useMotionValue(0)
-
-  useLayoutEffect(() => {
-    if (!active) {
-      progress.set(0)
-      return
-    }
-
-    const update = () => {
-      const node = bridgeRef.current
-      if (!node) return
-      const rect = node.getBoundingClientRect()
-      const sy = window.scrollY
-      const topDocument = rect.top + sy
-      const h = node.offsetHeight
-      if (h <= 0) return
-      const p = (sy - topDocument) / h
-      progress.set(Math.min(1, Math.max(0, p)))
-    }
-
-    update()
-    const raf = requestAnimationFrame(update)
-
-    window.addEventListener('scroll', update, { passive: true })
-    window.addEventListener('resize', update)
-    const ro = new ResizeObserver(update)
-    const el = bridgeRef.current
-    if (el) ro.observe(el)
-
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('scroll', update)
-      window.removeEventListener('resize', update)
-      ro.disconnect()
-    }
-  }, [active, bridgeRef, progress, layoutKey])
-
-  return progress
-}
 
 // Bold phrases + viewport stagger (same pattern as `magic-text.tsx`).
 function MagicTextWithBold({ text, className = "" }: { text: string; className?: string }) {
@@ -150,7 +99,7 @@ export default function TerminalMaritimoPage() {
   const prefersReducedMotion = useReducedMotion()
 
   const bridgeMotionEnabled = prefersReducedMotion !== true
-  const rawBridgeProgress = useTerminalBridgeProgress(heroVisionBridgeRef, bridgeMotionEnabled, pathname)
+  const rawBridgeProgress = useHeroBridgeProgress(heroVisionBridgeRef, bridgeMotionEnabled, pathname)
 
   const smoothHeroVision = useSpring(rawBridgeProgress, {
     stiffness: 128,

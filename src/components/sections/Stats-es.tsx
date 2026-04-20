@@ -188,9 +188,9 @@ export default function StatsEs() {
                 {/* Logo Icon */}
                 <div className="mb-6">
                   <img 
-                    src="/cabonegro_logo.png" 
+                    src="/logos/CaboNegro_logo_white.png" 
                     alt="Cabo Negro Logo" 
-                    className="w-20 h-20 mx-auto object-contain filter brightness-0 invert"
+                    className="w-20 h-20 mx-auto object-contain"
                   />
                 </div>
                 
@@ -216,9 +216,9 @@ export default function StatsEs() {
                 {/* Logo Icon */}
                 <div className="mb-6">
                   <img 
-                    src="/cabonegro_logo.png" 
+                    src="/logos/CaboNegro_logo_white.png" 
                     alt="Cabo Negro Logo" 
-                    className="w-20 h-20 mx-auto object-contain filter brightness-0 invert"
+                    className="w-20 h-20 mx-auto object-contain"
                   />
                 </div>
                 

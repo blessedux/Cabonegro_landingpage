@@ -14,6 +14,7 @@ import {
 } from '@/lib/cesium/entityUtils'
 import {
   getSubdivisionCatalogEntry,
+  KML_NAME_LOTE_A_CN2,
   PATAGON_VALLEY_PARTITION_TOTAL_HA,
   PV_GROUP_KML_KEY,
   PV_SMALL_LOT_KEY_SET,
@@ -30,6 +31,7 @@ export interface WireCanvasInteractionsOptions {
   container: HTMLDivElement
   // Shared refs
   kmlLayerAlphaRef: MutableRefObject<KmlLayerAlphas>
+  exploreMenuSelectionIdRef: MutableRefObject<string>
   subdivisionParcelEntitiesRef: MutableRefObject<Set<unknown>>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selectedParcelEntityRef: MutableRefObject<any>
@@ -62,6 +64,7 @@ export function wireCanvasInteractions(opts: WireCanvasInteractionsOptions): () 
     Cesium,
     container,
     kmlLayerAlphaRef,
+    exploreMenuSelectionIdRef,
     subdivisionParcelEntitiesRef,
     selectedParcelEntityRef,
     patagonValleyHaByKmlNameRef,
@@ -116,6 +119,11 @@ export function wireCanvasInteractions(opts: WireCanvasInteractionsOptions): () 
       if (id) {
         const ll = centroidLonLatFromEntity(Cesium, v, id)
         const raw = entityKmlRawName(v, id)
+
+        if (exploreMenuSelectionIdRef.current === 'parque-logistico' && raw !== KML_NAME_LOTE_A_CN2) {
+          markInput()
+          return
+        }
 
         if (PV_SMALL_LOT_KEY_SET.has(raw)) {
           // ── Patagon Valley group: select every small-lot entity together ──

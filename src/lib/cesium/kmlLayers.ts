@@ -29,9 +29,13 @@ export function applyKmlLayerTargetForWaypoint(waypointId: string, ref: MutableR
   if (waypointId === 'terminal-maritimo') {
     a.targetCn = 1
     a.targetCn1 = 0
-  } else if (waypointId === 'parque-logistico' || waypointId === 'parque-tecnologico') {
+  } else if (waypointId === 'parque-tecnologico') {
     a.targetCn = 0
     a.targetCn1 = 1
+  } else if (waypointId === 'parque-logistico') {
+    /* Logistics park: only Subdivision KMZ (CN2 focus); hide Sociedades CN / CN-1 overlays. */
+    a.targetCn = 0
+    a.targetCn1 = 0
   } else {
     a.targetCn = 0
     a.targetCn1 = 0

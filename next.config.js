@@ -99,9 +99,28 @@ const nextConfig = {
     }
     return config;
   },
-  // Enable experimental features for better performance
+  // Enable experimental features for better performance.
+  // optimizePackageImports rewrites barrel imports to specific module paths so
+  // webpack can tree-shake them. Packages added in Phase 2 per bundle-analyzer findings:
+  //   - use-intl        (46.5 KB, barrel-heavy)
+  //   - @radix-ui/react-slot (52.3 KB across 20+ chunks; duplicated per consumer)
+  //   - class-variance-authority (20.1 KB; often imported via barrel)
+  //   - @mdi/js         (icon barrel)
+  //   - @studio-freight/lenis (barrel)
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion', '@mdi/react', 'react-icons', 'd3-geo', 'd3-timer'],
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      '@mdi/react',
+      '@mdi/js',
+      'react-icons',
+      'd3-geo',
+      'd3-timer',
+      'use-intl',
+      '@radix-ui/react-slot',
+      'class-variance-authority',
+      '@studio-freight/lenis',
+    ],
   },
   // Reduce bundle size
   // Note: swcMinify is enabled by default in Next.js 15, no need to specify
@@ -149,7 +168,7 @@ const nextConfig = {
         ? " http://127.0.0.1:7887 http://localhost:7887"
         : ''
 
-    const csp = `frame-src 'self' https://my.spline.design https://*.spline.design https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://cesium.com https://*.cesium.com; script-src-elem 'self' 'unsafe-inline' blob: https://my.spline.design https://*.spline.design https://vercel.live https://*.vercel.live https://cesium.com https://*.cesium.com; style-src 'self' 'unsafe-inline' https://my.spline.design https://*.spline.design https://fonts.cdnfonts.com https://fonts.googleapis.com; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self'${debugConnect} https://my.spline.design https://*.spline.design https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://api.cesium.com https://*.cesium.com https://ion.cesium.com https://dev.virtualearth.net https://*.virtualearth.net https://*.tiles.virtualearth.net http://dev.virtualearth.net http://*.virtualearth.net http://*.tiles.virtualearth.net https://services.arcgisonline.com https://*.arcgisonline.com http://services.arcgisonline.com http://*.arcgisonline.com https://tile.googleapis.com https://*.googleapis.com https://*.gstatic.com blob: data:; worker-src blob: 'self';`
+    const csp = `frame-src 'self' https://gamma.app https://*.gamma.app https://vercel.live; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://vercel.live https://*.vercel.live https://va.vercel-scripts.com https://cesium.com https://*.cesium.com; script-src-elem 'self' 'unsafe-inline' blob: https://vercel.live https://*.vercel.live https://va.vercel-scripts.com https://cesium.com https://*.cesium.com; style-src 'self' 'unsafe-inline' https://fonts.cdnfonts.com https://fonts.googleapis.com; font-src 'self' https://fonts.cdnfonts.com https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self'${debugConnect} https://raw.githubusercontent.com https://vercel.live https://*.vercel.live https://va.vercel-scripts.com https://vitals.vercel-insights.com https://api.cesium.com https://*.cesium.com https://ion.cesium.com https://dev.virtualearth.net https://*.virtualearth.net https://*.tiles.virtualearth.net http://dev.virtualearth.net http://*.virtualearth.net http://*.tiles.virtualearth.net https://services.arcgisonline.com https://*.arcgisonline.com http://services.arcgisonline.com http://*.arcgisonline.com https://tile.googleapis.com https://*.googleapis.com https://*.gstatic.com blob: data:; worker-src blob: 'self';`
 
     return [
       {

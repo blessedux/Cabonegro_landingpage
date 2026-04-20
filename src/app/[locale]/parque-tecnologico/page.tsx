@@ -1,12 +1,14 @@
 'use client'
 
-import { useParams, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
-import { Download, Calendar, Mail, Network, Route } from 'lucide-react'
+import { Network, Route } from 'lucide-react'
 import Image from 'next/image'
 import dynamic from 'next/dynamic'
-import Link from 'next/link'
 import Icon from '@mdi/react'
+import { motion, useSpring, useTransform, useReducedMotion } from 'framer-motion'
+import { ParqueTecnologicoHero } from '@/components/sections/ParqueTecnologicoHero'
+import { useHeroBridgeProgress } from '@/hooks/useHeroBridgeProgress'
 import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
 
 // Code-split navigation components - only load when needed
@@ -22,14 +24,9 @@ const Footer = dynamic(() => import('@/components/sections/Footer'), {
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
 
 export default function ParqueTecnologicoPage() {
-  const params = useParams()
   const pathname = usePathname()
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoError, setVideoError] = useState(false)
-  
-  const heroVideo = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
+  const HERO_VIDEO = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -38,7 +35,8 @@ export default function ParqueTecnologicoPage() {
         back: 'Back',
         hero: {
           title: 'Patagon Valley',
-          subtitle: 'Technological & Logistic Park'
+          subtitle: 'Technological & Logistic Park',
+          posterAlt: 'Patagon Valley — technological and logistics park'
         },
         vision: {
           title: 'Technological Ecosystem of the Southernmost End of the World',
@@ -95,7 +93,8 @@ export default function ParqueTecnologicoPage() {
         back: 'Volver',
         hero: {
           title: 'Parque Tecnológico & Logístico',
-          subtitle: 'Parque Tecnológico & Logístico'
+          subtitle: 'Parque Tecnológico & Logístico',
+          posterAlt: 'Parque Tecnológico y Logístico Patagon Valley'
         },
         vision: {
           title: 'Ecosistema tecnológico del extremo sur del mundo',
@@ -152,7 +151,8 @@ export default function ParqueTecnologicoPage() {
         back: '返回',
         hero: {
           title: 'Patagon Valley',
-          subtitle: '科技与物流园区'
+          subtitle: '科技与物流园区',
+          posterAlt: 'Patagon Valley 科技与物流园区'
         },
         vision: {
           title: '世界最南端的技术生态系统',
@@ -209,7 +209,8 @@ export default function ParqueTecnologicoPage() {
         back: 'Retour',
         hero: {
           title: 'Patagon Valley',
-          subtitle: 'Parc Technologique & Logistique'
+          subtitle: 'Parc Technologique & Logistique',
+          posterAlt: 'Patagon Valley — parc technologique et logistique'
         },
         vision: {
           title: 'Écosystème technologique de l\'extrémité la plus méridionale du monde',
@@ -267,7 +268,26 @@ export default function ParqueTecnologicoPage() {
   }
 
   const localizedText = getLocalizedText()
-  const homePath = locale === 'en' ? '/en' : `/${locale}`
+
+  const heroVisionBridgeRef = useRef<HTMLDivElement>(null)
+  const prefersReducedMotion = useReducedMotion()
+  const bridgeMotionEnabled = prefersReducedMotion !== true
+  const rawBridgeProgress = useHeroBridgeProgress(heroVisionBridgeRef, bridgeMotionEnabled, pathname)
+
+  const smoothHeroVision = useSpring(rawBridgeProgress, {
+    stiffness: 128,
+    damping: 28,
+    mass: 0.2,
+  })
+
+  const hv = prefersReducedMotion === true ? rawBridgeProgress : smoothHeroVision
+
+  const heroMediaScale = useTransform(hv, [0, 0.42, 1], [1.38, 1.12, 1])
+  const heroMediaY = useTransform(hv, [0, 1], ['0%', '0%'])
+  const heroMediaBlur = useTransform(hv, [0, 1], [0, 10])
+  const heroContentY = useTransform(hv, [0, 1], [0, -150])
+  const visionParallaxY = useTransform(hv, [0.35, 0.92], [72, 0])
+  const visionParallaxOpacity = useTransform(hv, [0.25, 0.55], [0.88, 1])
 
   // Get appropriate Navbar component
   const getNavbar = () => {
@@ -275,8 +295,6 @@ export default function ParqueTecnologicoPage() {
     if (locale === 'zh') return <NavbarZh />
     return <Navbar />
   }
-
-  const contactPath = `/${locale}/contact?from=patagon-valley`
 
   // Card hover/click state management (similar to AboutUs)
   const [hoveredCard, setHoveredCard] = useState<number | null>(null)
@@ -367,135 +385,55 @@ export default function ParqueTecnologicoPage() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      {/* Navigation */}
-      {getNavbar()}
+      <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
+        <div className="pointer-events-auto">{getNavbar()}</div>
+      </div>
 
-      {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-        {/* Placeholder Image - Shows while video loads */}
-        <div 
-          className="absolute inset-0 w-full h-full"
-          style={{ 
-            zIndex: 1,
-            opacity: videoLoaded ? 0 : 1,
-            transition: 'opacity 0.8s ease-in-out',
-            pointerEvents: 'none'
-          }}
+      {/* Hero → vision: scroll bridge (same pattern as terminal / parque logístico) */}
+      <div
+        ref={heroVisionBridgeRef}
+        className={prefersReducedMotion ? 'relative' : 'relative h-[168vh] min-h-[168vh]'}
+      >
+        <div
+          className={
+            prefersReducedMotion
+              ? 'relative'
+              : 'sticky top-0 z-0 h-[100dvh] min-h-[100dvh] w-full overflow-hidden'
+          }
         >
-          <Image
-            src="/cabonegro_slide3.webp"
-            alt="Patagon Valley"
-            fill
-            className="object-cover"
-            priority
-            quality={90}
+          <ParqueTecnologicoHero
+            title={localizedText.hero.title}
+            subtitle={localizedText.hero.subtitle}
+            posterSrc="/cabonegro_slide3.webp"
+            posterAlt={localizedText.hero.posterAlt}
+            videoSrc={HERO_VIDEO}
+            scrollMotion={
+              prefersReducedMotion
+                ? undefined
+                : {
+                    mediaScale: heroMediaScale,
+                    mediaY: heroMediaY,
+                    contentY: heroContentY,
+                    mediaBlur: heroMediaBlur,
+                  }
+            }
           />
         </div>
-        
-        <div className="absolute inset-0 z-0">
-          <video
-            ref={videoRef}
-            src={heroVideo}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            crossOrigin="anonymous"
-            className="w-full h-full object-cover"
-            style={{ 
-              zIndex: 2,
-              opacity: videoLoaded ? 1 : 0,
-              transition: 'opacity 0.8s ease-in-out',
-              backgroundColor: '#000000'
-            }}
-            onLoadedData={() => {
-              setVideoLoaded(true)
-            }}
-            onCanPlay={() => {
-              setVideoLoaded(true)
-            }}
-            onLoadedMetadata={() => {
-              // Video metadata loaded
-            }}
-            onStalled={() => {
-              // Video stalled - handled silently
-            }}
-            onWaiting={() => {
-              // Video waiting for data - handled silently
-            }}
-            onError={(e) => {
-              const video = e.currentTarget
-              const error = video.error
-              let errorMessage = 'Unknown error'
-              
-              if (error) {
-                switch (error.code) {
-                  case error.MEDIA_ERR_ABORTED:
-                    errorMessage = 'Video loading aborted'
-                    break
-                  case error.MEDIA_ERR_NETWORK:
-                    errorMessage = 'Network error while loading video'
-                    break
-                  case error.MEDIA_ERR_DECODE:
-                    errorMessage = 'Video decoding error'
-                    break
-                  case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                    errorMessage = 'Video format not supported or source not found'
-                    break
-                  default:
-                    errorMessage = `Video error code: ${error.code}`
-                }
-              }
-              
-              // Always log errors, but format appropriately
-              if (process.env.NODE_ENV === 'development') {
-                console.error('❌ Parque Tecnologico video loading error:', {
-                  message: errorMessage,
-                  error: error,
-                  src: heroVideo,
-                  networkState: video.networkState,
-                  readyState: video.readyState
-                })
-              } else {
-                console.error('❌ Parque Tecnologico video loading error:', errorMessage)
-              }
-              setVideoError(true)
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white z-0" />
-        </div>
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
-            {localizedText.hero.title.includes('&') ? (
-              <>
-                {localizedText.hero.title.split(' & ')[0]}
-                <br className="hidden md:block" />
-                & {localizedText.hero.title.split(' & ')[1]}
-              </>
-            ) : (
-              localizedText.hero.title
-            )}
-          </h1>
-          {localizedText.hero.subtitle && (
-            <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
-              {localizedText.hero.subtitle}
-            </p>
-          )}
-          <div className="flex justify-center mt-6">
-            <Image
-              src="/logos/patagon_white.png"
-              alt="Patagon Valley Logo"
-              width={160}
-              height={64}
-              className="object-contain"
-            />
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* Vision and Advantages Section */}
-      <section className="py-20 px-6">
+      <motion.section
+        data-white-background="true"
+        className="relative z-10 py-20 px-6 bg-white"
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                y: visionParallaxY,
+                opacity: visionParallaxOpacity,
+              }
+        }
+      >
         <div className="container mx-auto max-w-6xl">
           <div className="mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -572,7 +510,7 @@ export default function ParqueTecnologicoPage() {
             })}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Interactive Map Placeholder Section */}
       <section className="py-20 px-6 bg-gray-50">

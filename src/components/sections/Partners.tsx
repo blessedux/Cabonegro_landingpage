@@ -9,7 +9,7 @@ import Image from 'next/image'
 
 // Define the logos - only Cabo Negro, YLMV, and Patagon Valley
 const partnerLogos = [
-  { name: "Cabo Negro", id: 1, src: "/logos/cabonegro_logo.png", alt: "Cabo Negro Logo" },
+  { name: "Cabo Negro", id: 1, src: "/logos/CaboNegro_logo_white.png", alt: "Cabo Negro Logo" },
   { name: "YLMV", id: 2, src: "/logos/ylmv_blanco.png", alt: "YLMV Logo" },
   { name: "Patagon Valley", id: 3, src: "/logos/patagon_white.png", alt: "Patagon Valley Logo" },
 ]

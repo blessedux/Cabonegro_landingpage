@@ -3,7 +3,6 @@
 import { usePreloader } from '@/contexts/PreloaderContext'
 import PreloaderGlobeVideo from '@/components/ui/PreloaderGlobeVideo'
 import PreloaderTopographicBackdrop from '@/components/ui/PreloaderTopographicBackdrop'
-import PreloaderTopographicCenterBlur from '@/components/ui/PreloaderTopographicCenterBlur'
 import { usePreloaderFade } from '@/components/ui/hooks/usePreloaderFade'
 
 interface PreloaderBProps {
@@ -75,17 +74,6 @@ export default function PreloaderB({
       <PreloaderTopographicBackdrop
         isFadingOut={isFadingOut}
         pauseLineAnimation={preloaderDrainHeavy}
-      />
-      <PreloaderTopographicCenterBlur isFadingOut={isFadingOut} />
-      {/* Light vignette — keeps topo contours readable without an opaque white wash. */}
-      <div
-        className="pointer-events-none absolute inset-0 z-[2]"
-        style={{
-          background:
-            'radial-gradient(ellipse 85% 70% at 50% 45%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.06) 45%, transparent 72%)',
-          opacity: isFadingOut ? 0 : 1,
-          transition: 'opacity 1000ms ease-in-out',
-        }}
       />
       <div className="absolute inset-0 z-[40] flex items-center justify-center">
         <div

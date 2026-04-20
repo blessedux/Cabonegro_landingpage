@@ -212,7 +212,7 @@ export default function UnifiedNavbar() {
             <div className="flex items-center flex-shrink-0">
               <Link href={`/${currentLocale}`} className="cursor-pointer flex-shrink-0">
                 <img 
-                  src="/cabonegro_logo.png" 
+                  src="/logos/CaboNegro_logo_white.png" 
                   alt="Cabo Negro" 
                   className="h-[57.2px] w-auto object-contain flex-shrink-0 hover:opacity-80 transition-opacity"
                 />

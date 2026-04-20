@@ -50,9 +50,12 @@ export const PATAGON_VALLEY_33HA_KML_KEYS = [
 
 export const PATAGON_VALLEY_33HA_KML_KEY_SET = new Set<string>(PATAGON_VALLEY_33HA_KML_KEYS)
 
+/** Cabo Negro Dos — KML `<Placemark><name>` in SUBDIVISIÓN VIGENTE.kmz */
+export const KML_NAME_LOTE_A_CN2 = 'LOTE A (CN2)' as const
+
 /** Keys must match KML `<Placemark><name>` exactly */
 export const SUBDIVISION_PARCEL_CATALOG: Record<string, SubdivisionParcelCatalogEntry> = {
-  'LOTE A (CN2)': {
+  [KML_NAME_LOTE_A_CN2]: {
     displayName: 'Cabo Negro Dos',
     areaHa: 173,
     fillCss: '#8d6e63',

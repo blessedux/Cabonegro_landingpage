@@ -5,26 +5,20 @@ import { useInView, motion, useMotionTemplate, useMotionValue } from 'framer-mot
 import Image from 'next/image'
 import type { HeroBridgeScrollMotion } from '@/components/sections/heroBridgeScrollMotion'
 
-interface HeroText {
+interface ParqueTecnologicoHeroProps {
   title: string
   subtitle: string
-  learnMore: string
-}
-
-export type TerminalHeroScrollMotion = HeroBridgeScrollMotion
-
-interface TerminalMaritimoHeroProps {
-  text: HeroText
-  locale: string
+  posterSrc: string
+  videoSrc: string
+  posterAlt: string
   scrollMotion?: HeroBridgeScrollMotion | null
 }
 
-// Grain filter rendered as inline SVG — zero extra bytes, purely declarative
 function GrainFilter() {
   return (
     <svg width="0" height="0" className="absolute" aria-hidden>
       <defs>
-        <filter id="terminal-grain" x="0%" y="0%" width="100%" height="100%">
+        <filter id="parque-tecnologico-grain" x="0%" y="0%" width="100%" height="100%">
           <feTurbulence
             type="fractalNoise"
             baseFrequency="0.72"
@@ -43,14 +37,37 @@ function GrainFilter() {
   )
 }
 
-export function TerminalMaritimoHero({ text, locale, scrollMotion }: TerminalMaritimoHeroProps) {
+function HeroTitle({ title }: { title: string }) {
+  if (!title.includes('&')) {
+    return <>{title}</>
+  }
+  const parts = title.split(' & ')
+  const first = parts[0]
+  const rest = parts.slice(1).join(' & ')
+  return (
+    <>
+      {first}
+      <br className="hidden md:block" />
+      & {rest}
+    </>
+  )
+}
+
+export function ParqueTecnologicoHero({
+  title,
+  subtitle,
+  posterSrc,
+  videoSrc,
+  posterAlt,
+  scrollMotion,
+}: ParqueTecnologicoHeroProps) {
   const sectionRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoSrc, setVideoSrc] = useState<string | null>(null)
+  const [injectedVideoSrc, setInjectedVideoSrc] = useState<string | null>(null)
+  const [videoFailed, setVideoFailed] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
-  // Detect reduced-motion once on mount
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     setPrefersReducedMotion(mq.matches)
@@ -59,32 +76,27 @@ export function TerminalMaritimoHero({ text, locale, scrollMotion }: TerminalMar
     return () => mq.removeEventListener('change', handler)
   }, [])
 
-  // Watch hero entering the viewport; only then inject the video src
   const isInView = useInView(sectionRef, { once: true, amount: 0.01 })
 
   useEffect(() => {
-    if (!isInView || prefersReducedMotion) return
+    if (!isInView || prefersReducedMotion || videoFailed) return
 
-    // Respect data-saver mode
     const conn = (navigator as any).connection
     if (conn?.saveData) return
 
-    // Gate on connection quality — skip video on 2G / slow-2G
     const effective = conn?.effectiveType ?? '4g'
     if (effective === '2g' || effective === 'slow-2g') return
 
-    // Inject sources; browser picks the first supported type
-    setVideoSrc('/videos/terminal-hero-480p.mp4')
-  }, [isInView, prefersReducedMotion])
+    setInjectedVideoSrc(videoSrc)
+  }, [isInView, prefersReducedMotion, videoFailed, videoSrc])
 
-  // Re-load video once the src has been set
   useEffect(() => {
-    if (videoSrc && videoRef.current) {
+    if (injectedVideoSrc && videoRef.current) {
       videoRef.current.load()
     }
-  }, [videoSrc])
+  }, [injectedVideoSrc])
 
-  const showVideo = !!videoSrc && !prefersReducedMotion
+  const showVideo = !!injectedVideoSrc && !prefersReducedMotion && !videoFailed
 
   const mediaMotion = scrollMotion
     ? {
@@ -105,10 +117,8 @@ export function TerminalMaritimoHero({ text, locale, scrollMotion }: TerminalMar
       data-hero-section="true"
       className="relative h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-black"
     >
-      {/* Hidden SVG grain filter definition */}
       <GrainFilter />
 
-      {/* Media stack: scale on outer layer; blur on poster/video only; mediaY≈0 reads “fixed” vs scrolling copy */}
       <motion.div
         className="absolute inset-0 will-change-transform"
         style={{
@@ -118,18 +128,17 @@ export function TerminalMaritimoHero({ text, locale, scrollMotion }: TerminalMar
         }}
       >
         <motion.div className="absolute inset-0 will-change-[filter]" style={{ filter: mediaBlurFilter }}>
-          {/* Poster — always shown; fades out once video is playing */}
           <div
             className="absolute inset-0 w-full h-full"
             style={{
-              opacity: videoLoaded ? 0 : 1,
+              opacity: videoLoaded && showVideo ? 0 : 1,
               transition: 'opacity 1s ease-in-out',
               pointerEvents: 'none',
             }}
           >
             <Image
-              src="/cabonegro_slide2.webp"
-              alt="Cabo Negro Maritime Terminal"
+              src={posterSrc}
+              alt={posterAlt}
               fill
               className="object-cover object-top"
               priority
@@ -138,30 +147,30 @@ export function TerminalMaritimoHero({ text, locale, scrollMotion }: TerminalMar
             />
           </div>
 
-          {/* Video — lazy-loaded, fades in when ready */}
           {showVideo && (
             <video
               ref={videoRef}
+              src={injectedVideoSrc!}
               autoPlay
               muted
               loop
               playsInline
               preload="none"
+              crossOrigin="anonymous"
               className="absolute inset-0 h-full w-full object-cover object-top"
               style={{
                 opacity: videoLoaded ? 1 : 0,
                 transition: 'opacity 1s ease-in-out',
+                backgroundColor: '#000000',
               }}
               onCanPlay={() => setVideoLoaded(true)}
               onCanPlayThrough={() => setVideoLoaded(true)}
-            >
-              <source src="/videos/terminal-hero-480p.webm" type="video/webm" />
-              <source src="/videos/terminal-hero-480p.mp4" type="video/mp4" />
-            </video>
+              onLoadedData={() => setVideoLoaded(true)}
+              onError={() => setVideoFailed(true)}
+            />
           )}
         </motion.div>
 
-        {/* Film-grain overlay */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
@@ -176,7 +185,6 @@ export function TerminalMaritimoHero({ text, locale, scrollMotion }: TerminalMar
           }}
         />
 
-        {/* Gradient overlay for text readability */}
         <div
           aria-hidden
           className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/65"
@@ -184,7 +192,6 @@ export function TerminalMaritimoHero({ text, locale, scrollMotion }: TerminalMar
         />
       </motion.div>
 
-      {/* Hero content — moves faster than media for parallax */}
       <motion.div
         className="relative flex h-full flex-col items-center justify-center px-6 text-center"
         style={{
@@ -193,30 +200,19 @@ export function TerminalMaritimoHero({ text, locale, scrollMotion }: TerminalMar
         }}
       >
         <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
-          {text.title}
+          <HeroTitle title={title} />
         </h1>
-        <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
-          {text.subtitle}
-        </p>
-
-        {/* COMPAS Marine logo */}
-        <div className="mt-24">
-          <a
-            href="https://compasmarine.cl/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block transition-opacity hover:opacity-80"
-          >
-            <Image
-              src="/logos/COMPAS_MARINE.png"
-              alt="COMPAS Marine"
-              width={220}
-              height={110}
-              className="object-contain"
-              style={{ filter: 'brightness(0) invert(1)' }}
-            />
-          </a>
-          <p className="mt-4 text-sm italic text-white/70">{text.learnMore}</p>
+        {subtitle ? (
+          <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">{subtitle}</p>
+        ) : null}
+        <div className="flex justify-center mt-6">
+          <Image
+            src="/logos/patagon_white.png"
+            alt="Patagon Valley"
+            width={160}
+            height={64}
+            className="object-contain"
+          />
         </div>
       </motion.div>
     </section>

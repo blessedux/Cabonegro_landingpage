@@ -613,7 +613,7 @@ function Stats() {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                   >
                     <Image
-                      src="/terminal_maritimo_thumbnail.webp"
+                      src="/macrolote2_thumbnail.webp"
                       alt="Terminal Marítimo"
                       fill
                       className="object-cover"
@@ -631,7 +631,7 @@ function Stats() {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                   >
                     <Image
-                      src="/image16.webp"
+                      src="/image15.webp"
                       alt="Terminal Marítimo"
                       fill
                       className="object-cover"
@@ -697,7 +697,7 @@ function Stats() {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                   >
                     <Image
-                      src="/macrolote2_thumbnail.webp"
+                      src="/terminal_maritimo_thumbnail.webp"
                       alt="Cabo Negro Dos"
                       fill
                       className="object-cover"
@@ -715,7 +715,7 @@ function Stats() {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                   >
                     <Image
-                      src="/image15.webp"
+                      src="/image16.webp"
                       alt="Cabo Negro Dos"
                       fill
                       className="object-cover"

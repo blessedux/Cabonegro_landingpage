@@ -4,6 +4,8 @@ import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
 import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
 import { ThemeProvider } from 'next-themes';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 import FontLoader from '@/components/FontLoader';
 
 // Base URL for Open Graph - update this with your actual domain
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
     description: "Strategic industrial and maritime hub in Patagonia. Discover premier real estate investment opportunities in Punta Arenas, Magallanes. Gateway to Antarctica and the future of green hydrogen infrastructure.",
     images: [
       {
-        url: `${siteUrl}/logos/cabonegro_logo.png`,
+        url: `${siteUrl}/logos/CaboNegro_logo_white.png`,
         width: 813,
         height: 241,
         alt: "Cabo Negro - Strategic Industrial Hub in Patagonia",
@@ -48,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Cabo Negro | Real Estate Investment Opportunities in Patagonia",
     description: "Strategic industrial and maritime hub in Patagonia. Discover premier real estate investment opportunities in Punta Arenas, Magallanes.",
-    images: [`${siteUrl}/logos/cabonegro_logo.png`],
+    images: [`${siteUrl}/logos/CaboNegro_logo_white.png`],
   },
   robots: {
     index: true,
@@ -87,9 +89,13 @@ export default function RootLayout({
         {/* Preconnect to font origins for faster loading */}
         <link rel="preconnect" href="https://fonts.cdnfonts.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
-        {/* Preload LCP image for faster initial render */}
-        <link rel="preload" href="/cabonegro_frame1.webp" as="image" fetchPriority="high" />
-        {/* Preload critical CSS - Next.js will handle the actual CSS file */}
+        {/*
+          Removed: <link rel="preload" href="/cabonegro_frame1.webp"> (Phase 2 image audit).
+          The Hero <Image> uses next/image which fetches /_next/image?url=...&w=1920&q=85,
+          so preloading the raw asset downloaded the file twice on every route (including
+          /explore) and still missed the optimized URL. next/image with priority +
+          fetchPriority="high" already emits the correct preload for the optimized URL.
+        */}
       </head>
       <body className="font-primary">
         <FontLoader />
@@ -107,6 +113,10 @@ export default function RootLayout({
             </AnimationProvider>
           </PreloaderProvider>
         </ThemeProvider>
+        {/* Route-level RUM: LCP/INP/CLS per route, plus page-view analytics. Script
+            tags are injected by these components so CSP must allow Vercel domains. */}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

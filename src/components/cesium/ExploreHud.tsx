@@ -183,12 +183,7 @@ function ExploreHudInner({
   return (
     <>
       <div
-        className="pointer-events-none fixed z-20 flex flex-col items-end gap-2"
-        style={{
-          right: '1.25rem',
-          bottom: '1.25rem',
-          paddingBottom: 'max(0px, env(safe-area-inset-bottom, 0px))',
-        }}
+        className="pointer-events-none fixed z-20 flex flex-col items-end gap-2 right-5 bottom-5 top-auto pb-[max(0px,env(safe-area-inset-bottom,0px))] md:top-5 md:bottom-auto md:pb-0 md:pt-[max(0px,env(safe-area-inset-top,0px))]"
       >
         {narrState === 'collapsed' && (
           <button

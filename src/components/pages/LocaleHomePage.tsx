@@ -632,37 +632,6 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
 
   const { Hero: HeroComponent, Navbar: NavbarComponent, Partners: PartnersComponent, FAQ: FAQComponent, WorldMap: WorldMapComponent } = localeComponents
 
-  // Preload critical assets in background (non-blocking)
-  useEffect(() => {
-    const preloadAssets = async () => {
-      try {
-        // Preload Spline scene
-        const splineLink = document.createElement('link')
-        splineLink.rel = 'preload'
-        splineLink.href = 'https://my.spline.design/glowingplanetparticles-h1I1avgdDrha1naKidHdQVwA/'
-        splineLink.as = 'document'
-        document.head.appendChild(splineLink)
-
-        // Preload critical fonts
-        const fontLink = document.createElement('link')
-        fontLink.rel = 'preload'
-        fontLink.href = '/_next/static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2'
-        fontLink.rel = 'preload'
-        fontLink.as = 'font'
-        fontLink.type = 'font/woff2'
-        fontLink.crossOrigin = 'anonymous'
-        fontLink.crossOrigin = 'anonymous'
-        document.head.appendChild(fontLink)
-      } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Asset preloading failed:', error)
-        }
-      }
-    }
-
-    preloadAssets()
-  }, [])
-
   // Keep console logs for debugging - don't suppress them
   // Removed console suppression to help debug preloader issues
 

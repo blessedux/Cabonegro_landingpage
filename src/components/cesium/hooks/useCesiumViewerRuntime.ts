@@ -17,6 +17,7 @@ import {
 import {
   formatSubdivisionGlobeLabel,
   getSubdivisionCatalogEntry,
+  KML_NAME_LOTE_A_CN2,
   KML_NAME_JP_CONTINUADORA,
   KML_NAME_JP_DOS,
   KML_NAME_JP_TRES,
@@ -650,17 +651,27 @@ export function useCesiumViewerRuntime({
                     sel === entity ||
                     (sel instanceof Set && (sel as Set<unknown>).has(entity))
                   const base = isSelected ? fillSelected : cachedBaseFill
-                  const a = cachedNoTint ? 0 : isSelected ? 0.62 : 0.42
-                  return base.withAlpha(a * kmlLayerAlphaRef.current.subdivision, fillScratch)
+                  const plSoloCn2 =
+                    exploreMenuSelectionIdRef.current === 'parque-logistico' && cachedRaw !== KML_NAME_LOTE_A_CN2
+                  const vis = plSoloCn2 ? 0 : 1
+                  let a = cachedNoTint ? 0 : isSelected ? 0.62 : 0.42
+                  if (!cachedNoTint && isSelected && cachedRaw === KML_NAME_LOTE_A_CN2) {
+                    a = 0.72
+                  }
+                  return base.withAlpha(a * kmlLayerAlphaRef.current.subdivision * vis, fillScratch)
                 }, false),
               )
             }
             if (entity.polyline) {
               const lineScratch = lineBase.clone()
+              const polyRaw = entityKmlRawName(viewerForKml, entity)
               entity.polyline.material = new Cesium.ColorMaterialProperty(
-                new Cesium.CallbackProperty(
-                  () => lineBase.withAlpha(0.92 * kmlLayerAlphaRef.current.subdivision, lineScratch), false,
-                ),
+                new Cesium.CallbackProperty(() => {
+                  const hide =
+                    exploreMenuSelectionIdRef.current === 'parque-logistico' && polyRaw !== KML_NAME_LOTE_A_CN2
+                  const vis = hide ? 0 : 1
+                  return lineBase.withAlpha(0.92 * kmlLayerAlphaRef.current.subdivision * vis, lineScratch)
+                }, false),
               )
               entity.polyline.width = new Cesium.ConstantProperty(5)
               entity.polyline.arcType = new Cesium.ConstantProperty(Cesium.ArcType.GEODESIC)
@@ -688,7 +699,13 @@ export function useCesiumViewerRuntime({
                 const cat = getSubdivisionCatalogEntry(raw)
                 return cat?.wallHeightM ?? SUBDIVISION_PARCEL_WALL_HEIGHT_M
               },
-              () => kmlLayerAlphaRef.current.subdivision,
+              (ent) => {
+                const raw = entityKmlRawName(viewerForKml, ent)
+                if (exploreMenuSelectionIdRef.current === 'parque-logistico' && raw !== KML_NAME_LOTE_A_CN2) {
+                  return 0
+                }
+                return kmlLayerAlphaRef.current.subdivision
+              },
               (e) => {
                 const sel = selectedParcelEntityRef.current
                 return sel === e || (sel instanceof Set && (sel as Set<unknown>).has(e))
@@ -735,6 +752,11 @@ export function useCesiumViewerRuntime({
                 pixelOffset: new Cesium.Cartesian2(ox, oy),
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
                 distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 22_000),
+                show: new Cesium.CallbackProperty(
+                  () =>
+                    exploreMenuSelectionIdRef.current !== 'parque-logistico' || p.rawName === KML_NAME_LOTE_A_CN2,
+                  false,
+                ),
                 showBackground: true,
                 backgroundColor: Cesium.Color.fromCssColorString('rgba(6,10,18,0.25)'),
                 backgroundPadding: new Cesium.Cartesian2(6, 4),
@@ -763,6 +785,10 @@ export function useCesiumViewerRuntime({
                 pixelOffset: new Cesium.Cartesian2(PPG_PIER_LABEL.labelPixelOffset.x, PPG_PIER_LABEL.labelPixelOffset.y),
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
                 distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 28_000),
+                show: new Cesium.CallbackProperty(
+                  () => exploreMenuSelectionIdRef.current !== 'parque-logistico',
+                  false,
+                ),
                 showBackground: true,
                 backgroundColor: Cesium.Color.fromCssColorString('rgba(6,10,18,0.35)'),
                 backgroundPadding: new Cesium.Cartesian2(6, 4),
@@ -1031,6 +1057,7 @@ export function useCesiumViewerRuntime({
         Cesium,
         container: containerRef.current!,
         kmlLayerAlphaRef,
+        exploreMenuSelectionIdRef,
         subdivisionParcelEntitiesRef,
         selectedParcelEntityRef,
         patagonValleyHaByKmlNameRef,

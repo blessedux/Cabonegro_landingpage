@@ -20,7 +20,7 @@ export default function Page() {
           </div>
           <div className="flex justify-center">
             <img 
-              src="/logos/cabonegro_logo.png" 
+              src="/logos/CaboNegro_logo_white.png" 
               alt="Cabo Negro Logo" 
               className="h-12 w-auto object-contain"
             />

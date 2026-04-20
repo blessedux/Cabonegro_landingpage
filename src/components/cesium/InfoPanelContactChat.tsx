@@ -4,8 +4,10 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react'
 
 type Tone = 'parcel' | 'waypoint'
 
+type QuickSuggestion = { label: string; draft: string }
+
 type Message =
-  | { id: number; role: 'bot'; text: string; suggestions?: string[] }
+  | { id: number; role: 'bot'; text: string; suggestions?: QuickSuggestion[]; variant?: 'error' }
   | { id: number; role: 'user'; text: string }
 
 export interface InfoPanelContactChatProps {
@@ -75,18 +77,153 @@ const GREETING: Record<string, (ctx: string) => string> = {
     `Bonjour — des questions sur ${ctx} ? Laissez votre e-mail et un petit mot, nous reviendrons vers vous sous un jour ouvré.`,
 }
 
-const QUICK_REPLIES: Record<string, string[]> = {
-  en: ['Availability', 'Pricing', 'Request a visit'],
-  es: ['Disponibilidad', 'Precio', 'Agendar visita'],
-  zh: ['可用性', '价格', '预约考察'],
-  fr: ['Disponibilité', 'Prix', 'Planifier une visite'],
+/** Button label + fuller email draft (context = lot/area name; sub = optional line e.g. ha + coords). */
+function buildQuickSuggestions(
+  locale: string,
+  contextLabel: string,
+  contextSubline?: string,
+): QuickSuggestion[] {
+  const tail = contextSubline ? `\n${contextSubline}` : ''
+  const en: QuickSuggestion[] = [
+    {
+      label: 'Availability',
+      draft: `I'm writing from the Cabo Negro explore map about: ${contextLabel}.${tail}
+
+I'd like to understand current availability for this area or lot—whether it is open, reserved, or in process, and what the next realistic window would be if it is not immediately free.
+
+Please share the status, any conditions we should know, and the best way to move forward if it fits our plans.`,
+    },
+    {
+      label: 'Pricing',
+      draft: `I'm writing from the Cabo Negro explore map about: ${contextLabel}.${tail}
+
+I'm interested in indicative pricing or a commercial range for this selection, and what is included (or excluded) in that figure.
+
+If you need more detail on our intended use or timeline to refine the numbers, I'm happy to follow up.`,
+    },
+    {
+      label: 'Request a visit',
+      draft: `I'm writing from the Cabo Negro explore map about: ${contextLabel}.${tail}
+
+I'd like to schedule an on-site or virtual visit to review this location with your team.
+
+Please suggest a few suitable time slots and any access, safety, or logistics we should plan for.`,
+    },
+  ]
+  const es: QuickSuggestion[] = [
+    {
+      label: 'Disponibilidad',
+      draft: `Les escribo desde el mapa interactivo de Cabo Negro, consultando por: ${contextLabel}.${tail}
+
+Quisiera entender la disponibilidad actual de esta zona o lote—si está libre, reservado o en proceso, y cuál sería la ventana más realista si no está disponible de inmediato.
+
+Por favor indiquen el estado, condiciones relevantes y cómo podemos avanzar si encaja con nuestros planes.`,
+    },
+    {
+      label: 'Precio',
+      draft: `Les escribo desde el mapa interactivo de Cabo Negro, consultando por: ${contextLabel}.${tail}
+
+Me interesa conocer un rango de precios orientativo o referencial para esta selección, y qué incluye (o no) esa cifra.
+
+Si necesitan más detalle sobre nuestro uso previsto o plazos para afinar la propuesta, puedo ampliar la información.`,
+    },
+    {
+      label: 'Agendar visita',
+      draft: `Les escribo desde el mapa interactivo de Cabo Negro, consultando por: ${contextLabel}.${tail}
+
+Me gustaría coordinar una visita presencial o virtual para revisar esta ubicación con su equipo.
+
+Por favor sugieran algunos horarios posibles y cualquier requisito de acceso, seguridad o logística que debamos considerar.`,
+    },
+  ]
+  const zh: QuickSuggestion[] = [
+    {
+      label: '可用性',
+      draft: `我通过 Cabo Negro 探索地图联系，咨询：${contextLabel}。${tail}
+
+希望了解该地块或区域目前的可用性——是否可洽谈、预留或流程中，以及若暂不可用的预计时间窗口。
+
+请告知当前状态、需要注意的条件，以及若符合我方计划，后续推进方式。`,
+    },
+    {
+      label: '价格',
+      draft: `我通过 Cabo Negro 探索地图联系，咨询：${contextLabel}。${tail}
+
+希望了解该选择的参考价格区间或报价范围，以及价格包含与不包含的内容。
+
+若需补充用途或时间线以便细化方案，我可进一步说明。`,
+    },
+    {
+      label: '预约考察',
+      draft: `我通过 Cabo Negro 探索地图联系，咨询：${contextLabel}。${tail}
+
+希望安排现场或线上考察，与贵团队一同查看该位置。
+
+请提供若干可行时段，以及需要预留的准入、安全或后勤安排。`,
+    },
+  ]
+  const fr: QuickSuggestion[] = [
+    {
+      label: 'Disponibilité',
+      draft: `Je vous contacte depuis la carte interactive Cabo Negro au sujet de : ${contextLabel}.${tail}
+
+Je souhaite connaître la disponibilité actuelle de ce terrain ou secteur — libre, réservé ou en cours — et la fenêtre réaliste si ce n’est pas immédiatement disponible.
+
+Merci d’indiquer le statut, les conditions éventuelles et la meilleure façon d’avancer si cela correspond à notre projet.`,
+    },
+    {
+      label: 'Prix',
+      draft: `Je vous contacte depuis la carte interactive Cabo Negro au sujet de : ${contextLabel}.${tail}
+
+Je suis intéressé par une fourchette de prix indicative ou une fourchette commerciale pour cette sélection, et par ce qui est inclus (ou non) dans ce montant.
+
+Si vous avez besoin de précisions sur notre usage ou notre calendrier pour affiner, je peux détailler.`,
+    },
+    {
+      label: 'Planifier une visite',
+      draft: `Je vous contacte depuis la carte interactive Cabo Negro au sujet de : ${contextLabel}.${tail}
+
+Je souhaite planifier une visite sur site ou virtuelle pour examiner ce lieu avec votre équipe.
+
+Merci de proposer quelques créneaux possibles ainsi que les contraintes d’accès, sécurité ou logistique à prévoir.`,
+    },
+  ]
+
+  const map: Record<string, QuickSuggestion[]> = { en, es, zh, fr }
+  return map[locale] ?? en
 }
 
-const THANKS_BOT: Record<string, string> = {
-  en: "Thanks — we've logged your request. Our team will reply to the email you provided shortly.",
-  es: 'Gracias — tu consulta fue registrada. El equipo responderá al correo indicado pronto.',
-  zh: '感谢 — 我们已记录您的请求，团队将尽快通过您提供的邮箱与您联系。',
-  fr: "Merci — votre demande est enregistrée. L'équipe vous répondra prochainement à l'adresse indiquée.",
+/** Shown only after HTTP 200 — confirms delivery pipeline succeeded. */
+const THANKS_BOT: Record<string, (userEmail: string) => string> = {
+  en: (userEmail) =>
+    `Your message was sent successfully. Our team will reply to ${userEmail} within one business day.`,
+  es: (userEmail) =>
+    `Tu mensaje se envió correctamente. El equipo te responderá a ${userEmail} en un día hábil.`,
+  zh: (userEmail) =>
+    `消息已成功发送。我们将在一个工作日内回复您填写的邮箱：${userEmail}。`,
+  fr: (userEmail) =>
+    `Votre message a bien été envoyé. Notre équipe vous répondra à ${userEmail} sous un jour ouvré.`,
+}
+
+const SEND_FAILED_BOT: Record<string, string> = {
+  en: 'We could not send this through the form. Use “Email sales” below or try Send again.',
+  es: 'No pudimos enviar desde el formulario. Usa «Escribir a ventas» abajo o reintenta Enviar.',
+  zh: '表单未能发送。请使用下方「发邮件」或重试发送。',
+  fr: 'Envoi impossible depuis le formulaire. Utilisez « Écrire aux ventes » ci-dessous ou réessayez.',
+}
+
+const SEND_FAILED_NETWORK: Record<string, string> = {
+  en: 'Network error — check your connection and try again.',
+  es: 'Error de red — revisa tu conexión e inténtalo de nuevo.',
+  zh: '网络错误，请检查连接后重试。',
+  fr: 'Erreur réseau — vérifiez la connexion et réessayez.',
+}
+
+const EMAIL_FALLBACK_LINK: Record<string, string> = {
+  en: 'Email ventas@cabonegro.cl',
+  es: 'Escribir a ventas@cabonegro.cl',
+  zh: '发邮件至 ventas@cabonegro.cl',
+  fr: 'Écrire à ventas@cabonegro.cl',
 }
 
 const VALIDATION_EMAIL: Record<string, string> = {
@@ -123,8 +260,18 @@ function InfoPanelContactChatImpl({
     [locale, contextLabel],
   )
 
+  const quickSuggestions = useMemo(
+    () => buildQuickSuggestions(locale, contextLabel, contextSubline),
+    [locale, contextLabel, contextSubline],
+  )
+
   const [messages, setMessages] = useState<Message[]>(() => [
-    { id: 1, role: 'bot', text: initialGreeting, suggestions: QUICK_REPLIES[locale] ?? QUICK_REPLIES.en },
+    {
+      id: 1,
+      role: 'bot',
+      text: (GREETING[locale] ?? GREETING.en)(contextLabel),
+      suggestions: buildQuickSuggestions(locale, contextLabel, contextSubline),
+    },
   ])
   const [input, setInput] = useState('')
   const [email, setEmail] = useState('')
@@ -134,14 +281,12 @@ function InfoPanelContactChatImpl({
 
   // Reset conversation if context changes.
   useEffect(() => {
-    setMessages([
-      { id: 1, role: 'bot', text: initialGreeting, suggestions: QUICK_REPLIES[locale] ?? QUICK_REPLIES.en },
-    ])
+    setMessages([{ id: 1, role: 'bot', text: initialGreeting, suggestions: quickSuggestions }])
     setInput('')
     setEmail('')
     setError(null)
     setSubmitted(false)
-  }, [initialGreeting, locale])
+  }, [initialGreeting, locale, quickSuggestions])
 
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -164,40 +309,63 @@ function InfoPanelContactChatImpl({
       return
     }
     setError(null)
-    const nextId = messages.length + 1
-    setMessages((prev) => [...prev, { id: nextId, role: 'user', text: trimmed }])
+    const userId = messages.length + 1
+    const replyId = userId + 1
+    const userEmail = email.trim()
+
+    setMessages((prev) => [...prev, { id: userId, role: 'user', text: trimmed }])
     setInput('')
     setSending(true)
 
     const payload = {
       context: { label: contextLabel, subline: contextSubline, tone, locale },
-      email: email.trim(),
+      email: userEmail,
       message: trimmed,
       page: typeof window !== 'undefined' ? window.location.href : undefined,
       ts: new Date().toISOString(),
     }
 
+    const endpoint = process.env.NEXT_PUBLIC_EXPLORE_LEAD_ENDPOINT || '/api/explore-lead'
+
     try {
-      const endpoint = process.env.NEXT_PUBLIC_EXPLORE_LEAD_ENDPOINT || '/api/explore-lead'
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      // Treat any non-4xx/5xx that the browser didn't reject as success, since the
-      // project may not yet have a lead handler deployed. A 404 still counts as
-      // "received locally" — the user's intent is captured in our state either way.
-      if (!res.ok && res.status >= 500) throw new Error(`HTTP ${res.status}`)
+
+      type ErrBody = { error?: string; code?: string }
+      let data: ErrBody = {}
+      try {
+        const ct = res.headers.get('content-type') ?? ''
+        if (ct.includes('application/json')) data = (await res.json()) as ErrBody
+      } catch {
+        /* ignore parse errors */
+      }
+
+      if (!res.ok) {
+        const serverMsg = typeof data.error === 'string' ? data.error : null
+        setError(serverMsg || t(SEND_FAILED_NETWORK, locale))
+        setMessages((prev) => [
+          ...prev,
+          { id: replyId, role: 'bot', variant: 'error', text: t(SEND_FAILED_BOT, locale) },
+        ])
+        setInput(trimmed)
+        return
+      }
+
+      const thanks = (THANKS_BOT[locale] ?? THANKS_BOT.en)(userEmail)
+      setMessages((prev) => [...prev, { id: replyId, role: 'bot', text: thanks }])
+      setSubmitted(true)
     } catch {
-      // Soft-fail: still show the confirmation so the user isn't blocked. Console for ops.
-      // eslint-disable-next-line no-console
-      console.warn('[InfoPanelContactChat] lead submission network error; captured locally', payload)
-    } finally {
+      console.warn('[InfoPanelContactChat] lead submission failed', payload)
+      setError(t(SEND_FAILED_NETWORK, locale))
       setMessages((prev) => [
         ...prev,
-        { id: nextId + 1, role: 'bot', text: t(THANKS_BOT, locale) },
+        { id: replyId, role: 'bot', variant: 'error', text: t(SEND_FAILED_BOT, locale) },
       ])
-      setSubmitted(true)
+      setInput(trimmed)
+    } finally {
       setSending(false)
     }
   }
@@ -260,11 +428,19 @@ function InfoPanelContactChatImpl({
             <div key={m.id} className="flex flex-col gap-2">
               <div
                 className="self-start max-w-[86%] rounded-2xl rounded-tl-sm px-3.5 py-2 text-[12.5px] leading-relaxed"
-                style={{
-                  background: accentSoft,
-                  border: `1px solid ${accentBorder}`,
-                  color: 'rgba(255,255,255,0.78)',
-                }}
+                style={
+                  m.variant === 'error'
+                    ? {
+                        background: 'rgba(127, 29, 29, 0.28)',
+                        border: '1px solid rgba(251, 113, 133, 0.38)',
+                        color: 'rgba(254, 226, 230, 0.92)',
+                      }
+                    : {
+                        background: accentSoft,
+                        border: `1px solid ${accentBorder}`,
+                        color: 'rgba(255,255,255,0.78)',
+                      }
+                }
               >
                 {m.text}
               </div>
@@ -272,9 +448,9 @@ function InfoPanelContactChatImpl({
                 <div className="flex flex-wrap gap-1.5 pl-0.5">
                   {m.suggestions.map((s) => (
                     <button
-                      key={s}
+                      key={s.label}
                       type="button"
-                      onClick={() => setInput(s)}
+                      onClick={() => setInput(s.draft)}
                       className="rounded-full px-2.5 py-1 text-[10.5px] tracking-wide transition-colors"
                       style={{
                         border: `1px solid ${accentBorder}`,
@@ -282,7 +458,7 @@ function InfoPanelContactChatImpl({
                         background: 'transparent',
                       }}
                     >
-                      {s}
+                      {s.label}
                     </button>
                   ))}
                 </div>
@@ -371,7 +547,15 @@ function InfoPanelContactChatImpl({
             </div>
           </div>
           {error ? (
-            <p className="mt-2 text-[10.5px] text-rose-300/80 pl-1">{error}</p>
+            <div className="mt-2 pl-1 space-y-1.5">
+              <p className="text-[10.5px] text-rose-300/80">{error}</p>
+              <a
+                href={`mailto:ventas@cabonegro.cl?subject=${encodeURIComponent(`Explore — ${contextLabel}`)}&body=${encodeURIComponent(`${input}\n\n— ${email.trim()}`)}`}
+                className="inline-block text-[10.5px] text-cyan-300/90 underline underline-offset-2 hover:text-cyan-200/95"
+              >
+                {t(EMAIL_FALLBACK_LINK, locale)}
+              </a>
+            </div>
           ) : null}
         </div>
       ) : (

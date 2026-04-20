@@ -22,7 +22,9 @@ export function useNavbarVisibility() {
   const isSpecialPage = pathname.includes('/deck') ||
     pathname.includes('/explore') ||
     pathname.includes('/contact') ||
-    pathname.includes('/terminal-maritimo')
+    pathname.includes('/terminal-maritimo') ||
+    pathname.includes('/parque-logistico') ||
+    pathname.includes('/parque-tecnologico')
 
   // Consolidated visibility effect
   useEffect(() => {
