@@ -13,6 +13,16 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
   return (
     <>
       {/*
+        Ensure Cesium can resolve Workers/Assets/Widgets deterministically in production.
+        This must run before Cesium.js executes.
+      */}
+      <script
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: "window.CESIUM_BASE_URL='/_next/static/cesium/';",
+        }}
+      />
+      {/*
         Load the pre-built Cesium.js from our static directory.
         This replaces the 4 MB webpack chunk — the file is served at a
         stable path (/_next/static/cesium/Cesium.js) that never changes
