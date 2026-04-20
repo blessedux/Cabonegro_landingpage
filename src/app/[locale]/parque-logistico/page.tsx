@@ -3,7 +3,7 @@
 import { useParams, usePathname } from 'next/navigation'
 import { Download, Calendar, Mail, Warehouse, Truck, Factory, Zap, Wrench } from 'lucide-react'
 import Image from 'next/image'
-import { useRef, useState, useEffect } from 'react'
+import { useState } from 'react'
 import Navbar from '@/components/sections/Navbar'
 import NavbarEs from '@/components/sections/Navbar-es'
 import NavbarZh from '@/components/sections/Navbar-zh'
@@ -17,32 +17,7 @@ export default function ParqueLogisticoPage() {
   const pathname = usePathname()
   // Use pathname for consistent locale detection across all pages
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : (params?.locale as string || 'en')
-  const videoRef = useRef<HTMLVideoElement>(null)
   const [expandedCard, setExpandedCard] = useState<number | null>(null)
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoError, setVideoError] = useState(false)
-  
-  const heroVideo = 'https://storage.reimage.dev/mente-files/vid-81121d04042e/original.mp4'
-
-  // Check if video is already loaded (cached) when component mounts
-  useEffect(() => {
-    // Small delay to ensure video element is set up
-    const checkVideoState = () => {
-      if (videoRef.current) {
-        // Check if video is already loaded (readyState >= 3 means HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA)
-        if (videoRef.current.readyState >= 3) {
-          // Add small delay to ensure placeholder shows briefly
-          setTimeout(() => setVideoLoaded(true), 200)
-        }
-      }
-    }
-    
-    // Check immediately and after a short delay
-    checkVideoState()
-    const timeout = setTimeout(checkVideoState, 100)
-    
-    return () => clearTimeout(timeout)
-  }, [])
 
   // Get localized text based on locale
   const getLocalizedText = () => {
@@ -50,18 +25,18 @@ export default function ParqueLogisticoPage() {
       en: {
         back: 'Back',
         hero: {
-          title: 'Cabo Negro II Logistics Park',
+          title: 'Cabo Negro II Logistic Park',
           subtitle: 'Macro Development Industrial Zone'
         },
         terrain: {
           title: 'Available Terrain',
-          description: 'The Cabo Negro II Logistics Park offers extensive industrial terrain ready for development. The area provides strategic advantages for logistics operations, industrial facilities, and support services for the maritime terminal and surrounding projects.',
+          description: 'The Cabo Negro II Logistic Park offers extensive industrial terrain ready for development. The area provides strategic advantages for logistics operations, industrial facilities, and support services for the maritime terminal and surrounding projects.',
           size: 'Extensive hectares available for development',
           readyText: 'Ready for immediate development and investment'
         },
         uses: {
           title: 'Recommended Uses',
-          description: 'The logistics park is designed to accommodate various industrial and logistics activities:',
+          description: 'The logistic park is designed to accommodate various industrial and logistics activities:',
           items: [
             { icon: Warehouse, title: 'Warehouses', description: 'Storage and distribution facilities' },
             { icon: Truck, title: 'Logistics', description: 'Transportation and cargo handling operations' },
@@ -75,14 +50,14 @@ export default function ParqueLogisticoPage() {
         },
         contact: {
           title: 'Get in Touch',
-          description: 'Interested in the Logistics Park? Contact us for more information.',
+          description: 'Interested in the Logistic Park? Contact us for more information.',
           contactBtn: 'Contact',
           scheduleBtn: 'Schedule Meeting',
           downloadBtn: 'Download Fact Sheet'
         },
         strategicLocation: {
           title: 'Strategic Location',
-          description: 'The logistics park is strategically positioned to serve as a support hub for the maritime terminal and surrounding industrial projects. Its proximity to Route 9 and the port provides excellent connectivity for logistics operations.',
+          description: 'The logistic park is strategically positioned to serve as a support hub for the maritime terminal and surrounding industrial projects. Its proximity to Route 9 and the port provides excellent connectivity for logistics operations.',
           items: [
             'Direct access to Route 9 North',
             'Close proximity to maritime terminal',
@@ -247,108 +222,29 @@ export default function ParqueLogisticoPage() {
   const contactPath = `/${locale}/contact?from=parque-logistico`
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Navigation */}
       {getNavbar()}
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          {/* Lazy Loading Placeholder Image */}
-          <div 
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ 
-              zIndex: 1,
-              opacity: videoLoaded ? 0 : 1,
-              transition: 'opacity 0.6s ease-in-out',
-              pointerEvents: 'none'
-            }}
-          >
-            <Image
-              src="/cabonegro_slide3.webp"
-              alt="Cabo Negro II Logistics Park"
-              fill
-              className="object-cover"
-              priority
-              quality={90}
-            />
-          </div>
-          
-          <video
-            ref={videoRef}
-            src={heroVideo}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            crossOrigin="anonymous"
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ 
-              zIndex: 2,
-              opacity: videoLoaded ? 1 : 0,
-              transition: 'opacity 0.6s ease-in-out'
-            }}
-            onLoadedData={() => {
-              console.log('✅ Parque Logistico video loaded data:', heroVideo)
-              // Small delay to ensure placeholder is visible briefly
-              setTimeout(() => setVideoLoaded(true), 100)
-            }}
-            onCanPlay={() => {
-              console.log('✅ Parque Logistico video can play:', heroVideo)
-              // Small delay to ensure placeholder is visible briefly
-              setTimeout(() => setVideoLoaded(true), 100)
-            }}
-            onLoadedMetadata={() => {
-              console.log('✅ Parque Logistico video metadata loaded:', heroVideo)
-            }}
-            onStalled={() => {
-              console.warn('⚠️ Parque Logistico video stalled:', heroVideo)
-            }}
-            onWaiting={() => {
-              console.warn('⚠️ Parque Logistico video waiting for data:', heroVideo)
-            }}
-            onError={(e) => {
-              const video = e.currentTarget
-              const error = video.error
-              let errorMessage = 'Unknown error'
-              
-              if (error) {
-                switch (error.code) {
-                  case error.MEDIA_ERR_ABORTED:
-                    errorMessage = 'Video loading aborted'
-                    break
-                  case error.MEDIA_ERR_NETWORK:
-                    errorMessage = 'Network error while loading video'
-                    break
-                  case error.MEDIA_ERR_DECODE:
-                    errorMessage = 'Video decoding error'
-                    break
-                  case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                    errorMessage = 'Video format not supported or source not found'
-                    break
-                  default:
-                    errorMessage = `Video error code: ${error.code}`
-                }
-              }
-              
-              console.error('❌ Parque Logistico video loading error:', {
-                message: errorMessage,
-                error: error,
-                src: heroVideo,
-                networkState: video.networkState,
-                readyState: video.readyState
-              })
-              setVideoError(true)
-            }}
+          {/* Background Image */}
+          <Image
+            src="/cabonegro_astillero.webp"
+            alt="Cabo Negro II Logistic Park"
+            fill
+            className="object-cover"
+            priority
+            quality={90}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black" style={{ zIndex: 3 }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white" style={{ zIndex: 1 }} />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4">
+          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
             {localizedText.hero.title}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300">
+          <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
             {localizedText.hero.subtitle}
           </p>
         </div>
@@ -360,19 +256,19 @@ export default function ParqueLogisticoPage() {
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             {localizedText.terrain.title}
           </h2>
-          <p className="text-xl text-gray-300 mb-8 max-w-4xl leading-relaxed">
+          <p className="text-xl text-gray-700 mb-8 max-w-4xl leading-relaxed">
             {localizedText.terrain.description}
           </p>
-          <div className="bg-white/5 rounded-lg p-8 border border-white/10">
+          <div className="bg-gray-50 rounded-lg p-8 border border-gray-200">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center">
-                <Warehouse className="w-8 h-8 text-green-400" />
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <Warehouse className="w-8 h-8 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-400 mb-2">
+                <p className="text-2xl font-bold text-green-600 mb-2">
                   {localizedText.terrain.size}
                 </p>
-                <p className="text-gray-400">
+                <p className="text-gray-600">
                   {localizedText.terrain.readyText}
                 </p>
               </div>
@@ -382,22 +278,24 @@ export default function ParqueLogisticoPage() {
       </section>
 
       {/* Recommended Uses Section */}
-      <section className="py-20 px-6 bg-white/5">
+      <section className="py-20 px-6 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             {localizedText.uses.title}
           </h2>
-          <p className="text-xl text-gray-300 mb-12 max-w-4xl">
+          <p className="text-xl text-gray-700 mb-12 max-w-4xl">
             {localizedText.uses.description}
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {localizedText.uses.items.map((item: any, index: number) => {
               const IconComponent = item.icon
               const isExpanded = expandedCard === index
+              // Use title as stable unique key
+              const uniqueKey = `use-${item.title.toLowerCase().replace(/\s+/g, '-')}`
               return (
                 <Card 
-                  key={index} 
-                  className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors cursor-pointer relative overflow-hidden"
+                  key={uniqueKey} 
+                  className="bg-white border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer relative overflow-hidden shadow-sm"
                   onClick={() => setExpandedCard(isExpanded ? null : index)}
                 >
                   <CardContent className="p-6 min-h-[200px] flex flex-col items-center justify-center">
@@ -407,7 +305,7 @@ export default function ParqueLogisticoPage() {
                         isExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'
                       }`}
                     >
-                      <IconComponent className="w-16 h-16 text-green-400" />
+                      <IconComponent className="w-16 h-16 text-green-600" />
                     </div>
                     {/* Text - fades in when expanded */}
                     <div 
@@ -415,8 +313,8 @@ export default function ParqueLogisticoPage() {
                         isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
                       }`}
                     >
-                      <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                      <p className="text-gray-300">{item.description}</p>
+                      <h3 className="text-xl font-bold mb-2 text-gray-900">{item.title}</h3>
+                      <p className="text-gray-700">{item.description}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -427,17 +325,17 @@ export default function ParqueLogisticoPage() {
       </section>
 
       {/* Interactive Map Placeholder Section */}
-      <section className="py-20 px-6 bg-white/5">
+      <section className="py-20 px-6 bg-white">
         <div className="container mx-auto max-w-6xl">
-          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-white/10">
-            <div className="absolute inset-0 scale-110">
-              <Image
-                src="/Patagon_Valley_v2.webp"
-                alt="Parque Logístico Cabo Negro II"
-                fill
-                className="object-cover"
-              />
-            </div>
+          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-gray-200">
+            <Image
+              src="/macrolote.webp"
+              alt="Parque Logístico Cabo Negro II"
+              fill
+              className="object-cover"
+              priority
+              quality={90}
+            />
           </div>
         </div>
       </section>
@@ -448,16 +346,20 @@ export default function ParqueLogisticoPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h3 className="text-3xl font-bold mb-6">{localizedText.strategicLocation.title}</h3>
-              <p className="text-lg text-gray-300 mb-4 leading-relaxed">
+              <p className="text-lg text-gray-700 mb-4 leading-relaxed">
                 {localizedText.strategicLocation.description}
               </p>
-              <ul className="space-y-3 text-gray-300">
-                {localizedText.strategicLocation.items.map((item: string, index: number) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
+              <ul className="space-y-3 text-gray-700">
+                {localizedText.strategicLocation.items.map((item: string) => {
+                  // Use item text as stable unique key (items are unique strings)
+                  const uniqueKey = `location-${item.slice(0, 30).replace(/\s+/g, '-').toLowerCase()}`
+                  return (
+                    <li key={uniqueKey} className="flex items-start gap-3">
+                      <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
             <div className="relative h-[400px] rounded-lg overflow-hidden">

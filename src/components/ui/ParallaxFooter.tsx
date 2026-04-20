@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Link from 'next/link'
+import { LinkWithPreloader } from '@/components/ui/LinkWithPreloader'
 
 interface ParallaxFooterProps {
   locale?: 'en' | 'es' | 'zh' | 'fr'
@@ -85,7 +86,7 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
       title: 'CABO NEGRO',
       copyright: '© 2025 Cabo Negro Industrial Park',
       links: [
-        { href: '/explore', text: 'Explore Terrain' },
+        { href: '/en/explore', text: 'Explore Terrain' },
         { href: '/deck', text: 'View Deck' },
         { href: '/#FAQ', text: 'FAQ' }
       ]
@@ -206,17 +207,21 @@ export function ParallaxFooter({ locale = 'en' }: ParallaxFooterProps) {
             </div>
 
             <div className="flex flex-wrap gap-8">
-              {content.links.map((link, index) => (
-                <Link 
-                  key={index}
-                  href={link.href} 
-                  className={`text-sm uppercase hover:opacity-80 transition-opacity ${
-                    locale === 'es' ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  {link.text}
-                </Link>
-              ))}
+              {content.links.map((link, index) => {
+                const isExplore = link.href.includes('/explore')
+                const className = `text-sm uppercase hover:opacity-80 transition-opacity ${
+                  locale === 'es' ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-white'
+                }`
+                return isExplore ? (
+                  <LinkWithPreloader key={index} href={link.href} className={className}>
+                    {link.text}
+                  </LinkWithPreloader>
+                ) : (
+                  <Link key={index} href={link.href} className={className}>
+                    {link.text}
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </div>

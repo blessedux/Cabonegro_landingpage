@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { usePreloader } from '@/contexts/PreloaderContext'
+import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
 import { ReactNode, MouseEvent } from 'react'
 
 interface LinkWithPreloaderProps {
@@ -13,7 +13,11 @@ interface LinkWithPreloaderProps {
 
 export function LinkWithPreloader({ href, children, className, onClick }: LinkWithPreloaderProps) {
   const router = useRouter()
-  const { showPreloaderB } = usePreloader()
+  const { push } = useNavigateWithPreloader()
+
+  const handlePrefetch = () => {
+    router.prefetch(href)
+  }
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
@@ -22,15 +26,11 @@ export function LinkWithPreloader({ href, children, className, onClick }: LinkWi
       onClick()
     }
 
-    // Show preloader immediately
-    showPreloaderB()
-    
-    // Navigate immediately - no startTransition to avoid delays
-    router.push(href)
+    push(href)
   }
 
   return (
-    <a href={href} onClick={handleClick} className={className}>
+    <a href={href} onClick={handleClick} onMouseEnter={handlePrefetch} className={className}>
       {children}
     </a>
   )

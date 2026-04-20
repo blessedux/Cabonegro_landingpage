@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
-  // Always use production domain for robots.txt
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.cabonegro.cl';
 
   return {
@@ -12,15 +11,8 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/api/',
           '/_next/',
-          '/test/',
-          '/test-tiles/',
-          '/preloader-test/',
-          '/layout-preloader-test/',
-          '/procedural-terrain-test/',
-          '/gallery-backup/',
           '/footer2/',
           '/basic/',
-          '/scene-3d/',
           '/investors-deck/',
         ],
       },
@@ -29,15 +21,8 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: [
           '/api/',
-          '/test/',
-          '/test-tiles/',
-          '/preloader-test/',
-          '/layout-preloader-test/',
-          '/procedural-terrain-test/',
-          '/gallery-backup/',
           '/footer2/',
           '/basic/',
-          '/scene-3d/',
           '/investors-deck/',
         ],
       },
@@ -45,4 +30,3 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
-

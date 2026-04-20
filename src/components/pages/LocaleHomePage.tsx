@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useAnimation } from '@/contexts/AnimationContext'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import CookieBanner from '@/components/sections/CookieBanner'
 import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
-import PreloaderB from '@/components/ui/preloader-b'
+import { GradientBlurBg } from '@/components/ui/gradient-blur-bg'
+import ErrorBoundary from '@/components/ui/ErrorBoundary'
+import { getPathnameBeforeLastCommit } from '@/lib/client-pathname-sync'
 
 // Code-split world maps - only load when needed (named exports)
 const WorldMapDemo = dynamic(() => import('@/components/ui/world-map-demo').then(mod => ({ default: mod.WorldMapDemo })), { ssr: false })
@@ -28,9 +30,9 @@ const Press = dynamic(() => import('@/components/sections/Press'), {
   ssr: false,
   loading: () => <div className="min-h-[400px]" />
 })
+// Enable SSR for footer - it's lightweight and should render immediately
 const Footer = dynamic(() => import('@/components/sections/Footer'), { 
-  ssr: false,
-  loading: () => <div className="min-h-[200px]" />
+  ssr: true
 })
 
 // Code-split Partners components - locale-specific
@@ -43,11 +45,12 @@ const PartnersEs = dynamic(() => import('@/components/sections/Partners-es'), {
   loading: () => <div className="min-h-[400px]" />
 })
 
-// Code-split Hero components - load when needed
-const Hero = dynamic(() => import('@/components/sections/Hero'), { ssr: false })
-const HeroEs = dynamic(() => import('@/components/sections/Hero-es'), { ssr: false })
-const HeroZh = dynamic(() => import('@/components/sections/Hero-zh'), { ssr: false })
-const HeroFr = dynamic(() => import('@/components/sections/Hero-fr'), { ssr: false })
+// Code-split Hero — reserve viewport height while chunk loads (avoids About jumping above the fold)
+const heroLoading = () => <div className="min-h-[90vh] w-full shrink-0" aria-hidden />
+const Hero = dynamic(() => import('@/components/sections/Hero'), { ssr: false, loading: heroLoading })
+const HeroEs = dynamic(() => import('@/components/sections/Hero-es'), { ssr: false, loading: heroLoading })
+const HeroZh = dynamic(() => import('@/components/sections/Hero-zh'), { ssr: false, loading: heroLoading })
+const HeroFr = dynamic(() => import('@/components/sections/Hero-fr'), { ssr: false, loading: heroLoading })
 
 // Code-split Navbar components - load when needed
 const Navbar = dynamic(() => import('@/components/sections/Navbar'), { ssr: false })
@@ -72,261 +75,450 @@ interface LocaleHomePageProps {
   locale: string
 }
 
+/** Persist only after first-load preloader completes — early writes break DeferredHomeWhileOverlay (home unmounts mid-boot). */
+function markHomepageFirstVisitPersisted() {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem('cabonegro-homepage-visited', 'true')
+  } catch {
+    /* quota / private mode */
+  }
+}
+
+function isLocaleHomePath(path: string, loc: string): boolean {
+  const p = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path
+  return p === `/${loc}`
+}
+
 export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const { isFadingOut } = useAnimation()
-  const { isPreloaderBVisible, hidePreloaderB, hasSeenPreloader, isNavigating, setPreloaderComplete } = usePreloader()
+  const {
+    isPreloaderBVisible,
+    hidePreloaderB,
+    hasSeenPreloader,
+    isNavigating,
+    setPreloaderComplete,
+    navigationStartTime,
+    isLanguageSwitch,
+  } = usePreloader()
   const pathname = usePathname()
   // Always initialize to false to prevent hydration mismatch
   // We'll set the correct value in useEffect after hydration
   const [shouldShowContent, setShouldShowContent] = useState(false)
   const [isFirstLoad, setIsFirstLoad] = useState(false) // Track if this is the first load (not navigation)
   const [statsKey, setStatsKey] = useState(0) // Key to force Stats remount on navigation
+  const [contentOpacity, setContentOpacity] = useState(0) // Control content fade-in for crossfade - start at 0, set to 1 before preloader fades
+  const [componentsLoaded, setComponentsLoaded] = useState(false) // Track if all components are loaded
+  // Track which locales have their components loaded for smart preloading
+  const loadedLocalesRef = useRef<Set<string>>(new Set([locale]))
   // Track previous locale to detect language changes
   const prevLocaleRef = useRef(locale)
+  const firstLoadHidePollStarted = useRef(false)
+
+  /**
+   * Before first paint: show the page shell under the route overlay so there is never a white
+   * gap after the preloader (return visits + first visit). Syncs isFirstLoad with localStorage.
+   */
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    const visited = localStorage.getItem('cabonegro-homepage-visited')
+    setShouldShowContent(true)
+    setContentOpacity(1)
+    setIsFirstLoad(!visited)
+  }, [pathname, locale])
+
+  const checkContentReady = useCallback(() => {
+    if (isFirstLoad && contentRef.current) {
+      const computedStyle = window.getComputedStyle(contentRef.current)
+      const isContentVisible = parseFloat(computedStyle.opacity) > 0.5
+      if (!isContentVisible) {
+        return false
+      }
+    }
+
+    if (!contentRef.current) {
+      return false
+    }
+
+    const hasChildren = contentRef.current.children.length > 0
+
+    const navbarRendered =
+      contentRef.current.querySelector('nav') !== null || contentRef.current.children.length > 0
+
+    const mainRendered = contentRef.current.querySelector('main') !== null
+
+    const hasContent = contentRef.current.innerHTML.trim().length > 1000
+
+    const contentIsVisible = isFirstLoad ? contentOpacity >= 0.9 : true
+
+    const allSectionsRendered = navbarRendered && mainRendered
+    const heroRendered =
+      document.querySelector('section[class*="fixed"]') !== null ||
+      document.querySelector('section') !== null ||
+      document.querySelector('main') !== null
+
+    const isReady = isFirstLoad
+      ? (heroRendered || hasChildren) && allSectionsRendered && hasContent && contentIsVisible
+      : (heroRendered || hasChildren) && allSectionsRendered && hasContent
+
+    if (process.env.NODE_ENV === 'development' && !isReady) {
+      const timeSinceNav = navigationStartTime ? performance.now() - navigationStartTime : null
+      console.log('⏱️ [PERF] Content not ready', {
+        hasContent,
+        contentVisible: contentIsVisible,
+        timeSinceNav: timeSinceNav ? `${timeSinceNav.toFixed(2)}ms` : 'N/A'
+      })
+    }
+
+    return isReady
+  }, [isFirstLoad, contentOpacity, navigationStartTime])
+
+  /**
+   * SPA navigations remount this page with fresh state. The shell commits pathname
+   * first; `getPathnameBeforeLastCommit()` is the in-app route we left (e.g. `/en/contact`).
+   */
+  useLayoutEffect(() => {
+    if (!isLocaleHomePath(pathname, locale) || isLanguageSwitch) return
+    // Only during an active in-app navigation — avoids re-applying when `pathnameBeforeLastCommit`
+    // is still stale from an older transition after `isNavigating` is already false.
+    if (!isNavigating) return
+    const prev = getPathnameBeforeLastCommit()
+    if (!prev || prev === pathname) return
+
+    setShouldShowContent(true)
+    setContentOpacity(1)
+    setIsFirstLoad(false)
+    setPreloaderComplete(true)
+    // Hiding stays in usePageTransition (MIN_NAV_PRELOADER_MS) — do not hide here.
+  }, [pathname, locale, isLanguageSwitch, isNavigating, setPreloaderComplete])
+  
+  // OPTIMIZED: Smart preloading - track loaded locales and preload current + adjacent locales
+  useEffect(() => {
+    // For language switches, mark current locale as loaded immediately
+    if (isLanguageSwitch) {
+      loadedLocalesRef.current.add(locale)
+      setComponentsLoaded(true)
+      return
+    }
+    
+    // Check if current locale is already loaded
+    const isCurrentLocaleLoaded = loadedLocalesRef.current.has(locale)
+    
+    if (!isCurrentLocaleLoaded && !componentsLoaded) {
+      // Preload current locale's components
+      const preloadPromises = [
+        import('@/components/sections/AboutUs'),
+        import('@/components/sections/Stats'),
+        import('@/components/sections/Press'),
+        import('@/components/sections/Footer'),
+        // Preload current locale's components
+        locale === 'es' ? import('@/components/sections/Partners-es') : import('@/components/sections/Partners'),
+        locale === 'es' ? import('@/components/sections/Hero-es') : 
+        locale === 'zh' ? import('@/components/sections/Hero-zh') :
+        locale === 'fr' ? import('@/components/sections/Hero-fr') : import('@/components/sections/Hero'),
+        locale === 'es' ? import('@/components/sections/Navbar-es') :
+        locale === 'zh' ? import('@/components/sections/Navbar-zh') : import('@/components/sections/Navbar'),
+        locale === 'es' ? import('@/components/sections/FAQ-es') :
+        locale === 'zh' ? import('@/components/sections/FAQ-zh') : import('@/components/sections/FAQ'),
+        // World maps load on-demand - don't preload
+      ]
+      
+      // Mark as loaded immediately (components load on-demand)
+      setComponentsLoaded(true)
+      loadedLocalesRef.current.add(locale)
+
+      // Defer chunk preloads so route transition + preloader animations stay on the main thread first
+      const runPreload = () => {
+        Promise.all(preloadPromises)
+          .then(() => {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('⏱️ [PERF] Components preloaded for locale:', locale)
+            }
+          })
+          .catch((error) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.error('⏱️ [PERF] Component preload error', error)
+            }
+          })
+      }
+      if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => runPreload(), { timeout: 2500 })
+      } else {
+        setTimeout(runPreload, 400)
+      }
+    } else if (isCurrentLocaleLoaded) {
+      // Locale already loaded, just mark as ready
+      setComponentsLoaded(true)
+    }
+    
+    // Keep locale preloading scoped to the current locale only.
+    // Prefetching adjacent locales caused large background downloads.
+  }, [locale, componentsLoaded, isLanguageSwitch])
   
   // Initialize content visibility after hydration and reset on locale change
   useEffect(() => {
-    console.log('🔄 LocaleHomePage: Initialization effect running', {
-      locale,
-      prevLocale: prevLocaleRef.current,
-      isPreloaderBVisible,
-      isNavigating,
-      shouldShowContent
-    })
-    
     // Reset content visibility on locale change to ensure preloader shows
     if (prevLocaleRef.current !== locale) {
-      setShouldShowContent(false)
-      console.log('🔄 LocaleHomePage: Locale changed, resetting content visibility', { from: prevLocaleRef.current, to: locale })
+      // CRITICAL FIX: For language switches, KEEP content visible
+      // Don't hide content - just update it with new language
+      // This prevents flash of missing content during language switch
+      if (!isLanguageSwitch) {
+        // Only hide content for non-language-switch navigations
+        setShouldShowContent(false)
+        setContentOpacity(0) // Reset opacity for new transition
+      } else {
+        // For language switches, keep content visible and just update locale
+        // Content will smoothly transition to new language without disappearing
+        setShouldShowContent(true)
+        setContentOpacity(1) // Keep content visible
+      }
+      
+      // CRITICAL FIX: Don't reset componentsLoaded on locale change
+      // Components are already loaded in memory - resetting causes re-preloading
+      // Only reset if it's actually the first mount
+      if (!componentsLoaded) {
+        setComponentsLoaded(false)
+      }
       prevLocaleRef.current = locale
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⏱️ [PERF] Locale changed', { from: prevLocaleRef.current, to: locale, isLanguageSwitch })
+      }
+    }
+    
+    // Ensure contentOpacity doesn't get stuck at 0 after preloader completes
+    if (!isPreloaderBVisible && shouldShowContent && contentOpacity === 0) {
+      setContentOpacity(1)
+    }
+    
+    // CRITICAL: Set contentOpacity to 1 when content should be shown, BEFORE preloader fades
+    if (shouldShowContent && contentOpacity < 1) {
+      setContentOpacity(1)
+    }
+    
+    // If preloader is hidden but content isn't shown yet, recover — only for return visitors.
+    // On first visit (no localStorage flag yet), never force content here or we skip the first-load preloader.
+    if (typeof window !== 'undefined') {
+      const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
+      if (!isPreloaderBVisible && !shouldShowContent && hasVisited) {
+        setShouldShowContent(true)
+        setContentOpacity(1)
+        setPreloaderComplete(true)
+      }
     }
     
     if (typeof window !== 'undefined') {
       const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
-      console.log('🔄 LocaleHomePage: Checking localStorage', { hasVisited })
+      
+      // Don't reset shouldShowContent if it's already true
+      if (shouldShowContent) {
+        return
+      }
+      
+      // CRITICAL FIX: Language switches are NEVER first loads
+      // This prevents the 2-second minimum display timer from triggering
+      if (isLanguageSwitch) {
+        setIsFirstLoad(false)
+        // For language switches, show content immediately when preloader hides
+        if (!isPreloaderBVisible) {
+          setShouldShowContent(true)
+          setContentOpacity(1)
+        }
+        return
+      }
       
       if (!hasVisited) {
-        // First visit - mark as first load and DON'T show content yet
-        // PreloaderB will cover content until it completes (PreloaderContext sets isPreloaderBVisible=true)
         setIsFirstLoad(true)
-        setShouldShowContent(false) // Keep content hidden until preloader completes
-        console.log('🔄 LocaleHomePage: First visit detected, setting isFirstLoad=true, PreloaderB will show')
+        if (!shouldShowContent) {
+          setShouldShowContent(false)
+        }
       } else {
-        // Return visit - show PreloaderB briefly, then show content
-        // Ensure PreloaderB shows even if PreloaderContext didn't set it
         setIsFirstLoad(false)
-        setShouldShowContent(false) // Don't show content immediately - this ensures PreloaderB shows via condition
-        // PreloaderB will show via condition: (isPreloaderBVisible || !shouldShowContent)
-        // Since shouldShowContent is false, PreloaderB will show
-        console.log('🔄 LocaleHomePage: Return visit detected, PreloaderB will show briefly', { 
-          isPreloaderBVisible, 
-          isNavigating,
-          shouldShowContent: false 
-        })
       }
     }
-  }, [locale, isPreloaderBVisible, isNavigating]) // Include isPreloaderBVisible and isNavigating to track state
-
-  // Mark as visited when preloader shows (first load)
-  useEffect(() => {
-    if (isPreloaderBVisible && typeof window !== 'undefined') {
-      const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
-      if (!hasVisited) {
-        localStorage.setItem('cabonegro-homepage-visited', 'true')
-      }
-    }
-  }, [isPreloaderBVisible])
+  }, [locale, isPreloaderBVisible, isNavigating, isLanguageSwitch]) // Only depend on locale and preloader state, not shouldShowContent/contentOpacity to avoid loops
 
   // Handle preloader completion - show content and hide preloader only when content is ready
   // ALWAYS verify content is ready before hiding PreloaderB to prevent blank screens
   useEffect(() => {
-    // Check if content is actually rendered and ready
-    const checkContentReady = () => {
-      // Check if Hero section exists (don't wait for video to load - video can fail and we should still show content)
-      const heroRendered = document.querySelector('section[class*="fixed"]') !== null ||
-                           document.querySelector('section') !== null ||
-                           document.querySelector('main') !== null ||
-                           document.querySelector('video') !== null // Video element exists (even if not playing)
-      
-      // Check if contentRef div exists and has content
-      if (!contentRef.current) return false
-      
-      // Check if content has children (Navbar, main sections, etc.)
-      const hasChildren = contentRef.current.children.length > 0
-      
-      // Check if Navbar is rendered (should be first child)
-      const navbarRendered = contentRef.current.querySelector('nav') !== null ||
-                             contentRef.current.children.length > 0
-      
-      // Check if main content sections are rendered
-      const mainRendered = contentRef.current.querySelector('main') !== null
-      
-      // Check if content has meaningful HTML (more than just whitespace)
-      const hasContent = contentRef.current.innerHTML.trim().length > 500 // At least 500 chars of content
-      
-      // More lenient: Hero OR (contentRef has children AND (Navbar OR main))
-      // This allows preloader to complete even if video fails to load
-      const isReady = (heroRendered || hasChildren) && (navbarRendered || mainRendered) && hasContent
-      
-      if (process.env.NODE_ENV === 'development' && isReady) {
-        console.log('✅ Content readiness check passed:', {
-          heroRendered,
-          hasChildren,
-          navbarRendered,
-          mainRendered,
-          hasContent,
-          childrenCount: contentRef.current.children.length
-        })
+      // CRITICAL FIX: For language switches, skip ALL readiness checks
+      // Content is already rendered, just show it immediately
+      // Note: Language switch handling is done in other effects, so we can skip this effect
+      if (isLanguageSwitch) {
+        return // Early return - skip readiness checks for language switches
       }
       
-      return isReady
-    }
-
-    // For return visits (not first load, not navigating): show PreloaderB briefly then verify content
+    // For return visits (not first load, not navigating): show content immediately
+    // usePageTransition handles preloader hiding, so we just need to show content
     if (!isFirstLoad && !isNavigating && !shouldShowContent) {
-      console.log('🔄 LocaleHomePage: Return visit path - showing content and checking readiness')
-      // Show content first, then verify it's ready before hiding PreloaderB
-      setShouldShowContent(true)
-      
-      let checkCount = 0
-      // Poll for content readiness - check every 50ms until content is ready
-      const checkInterval = setInterval(() => {
-        checkCount++
-        const isReady = checkContentReady()
-        if (checkCount % 20 === 0) { // Log every 1 second (20 * 50ms)
-          console.log(`🔍 LocaleHomePage: Return visit - Content check #${checkCount}, ready: ${isReady}`)
-        }
-        
-        if (isReady) {
-          clearInterval(checkInterval)
-          console.log('✅ LocaleHomePage: Return visit - Content confirmed ready, hiding PreloaderB')
-          // Content is ready - hide PreloaderB smoothly
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              hidePreloaderB()
-              setPreloaderComplete(true) // Mark preloader as complete
-            })
-          })
-        }
-      }, 50) // Check every 50ms
-      
-      // Safety: Force hide after 1.5 seconds even if content check fails
-      const safetyTimer = setTimeout(() => {
-        console.log('⚠️ LocaleHomePage: Return visit - Safety timer triggered (1.5s)')
-        clearInterval(checkInterval)
-        if (isPreloaderBVisible) {
-          hidePreloaderB()
-          setPreloaderComplete(true) // Mark preloader as complete
-        }
-      }, 1500)
-      
-      return () => {
-        clearInterval(checkInterval)
-        clearTimeout(safetyTimer)
-      }
-    }
-    
-    // For first load: show content, then verify it's ready before hiding PreloaderB
-    if (isFirstLoad && isPreloaderBVisible && !shouldShowContent) {
-      console.log('🔄 LocaleHomePage: First load path - waiting 2s then showing content')
-      // Minimum display time for first load (2 seconds) - show content after this
-      const minDisplayTimer = setTimeout(() => {
-        console.log('🔄 LocaleHomePage: First load - 2s elapsed, showing content and checking readiness')
+      // CRITICAL: If preloader is already hidden, show content immediately to prevent white screen
+      if (!isPreloaderBVisible) {
         setShouldShowContent(true)
-        setIsFirstLoad(false)
-        
-        let checkCount = 0
-        // Now poll for content readiness
-        const checkInterval = setInterval(() => {
-          checkCount++
-          const isReady = checkContentReady()
-          if (checkCount % 20 === 0) { // Log every 1 second
-            console.log(`🔍 LocaleHomePage: First load - Content check #${checkCount}, ready: ${isReady}`)
-          }
-          
-          if (isReady) {
-            clearInterval(checkInterval)
-            console.log('✅ LocaleHomePage: First load - Content confirmed ready, hiding PreloaderB')
-            // Content is ready - hide PreloaderB smoothly
-            requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                hidePreloaderB()
-                setPreloaderComplete(true) // Mark preloader as complete
-              })
-            })
-          }
-        }, 50) // Check every 50ms
-        
-        // Safety: Force hide after additional 0.5 seconds if content check fails
-        const safetyTimer = setTimeout(() => {
-          console.log('⚠️ LocaleHomePage: First load - Safety timer triggered (2.5s total)')
-          clearInterval(checkInterval)
-          if (isPreloaderBVisible) {
-            hidePreloaderB()
-            setPreloaderComplete(true) // Mark preloader as complete
-          }
-        }, 500) // 0.5s after showing content = 2.5s total
-        
-        return () => {
-          clearInterval(checkInterval)
-          clearTimeout(safetyTimer)
-        }
-      }, 2000) // Minimum 2 seconds display for first load
+        setContentOpacity(1)
+        setPreloaderComplete(true)
+        return
+      }
       
-      return () => clearTimeout(minDisplayTimer)
+      // Show content immediately - usePageTransition will handle preloader hiding
+      // No delays needed - let usePageTransition control timing
+      setShouldShowContent(true)
+      setContentOpacity(1)
+      setPreloaderComplete(true)
     }
     
-    // For language switches/navigation: when content should be shown, verify it's ready before hiding preloader
-    if (!isFirstLoad && shouldShowContent && isPreloaderBVisible) {
-      console.log('🔄 LocaleHomePage: Language switch path - checking content readiness')
+    // CRITICAL FIX: For language switches, show content IMMEDIATELY
+    // Component keys ensure React properly remounts components with new locale
+    // Content should stay visible and update smoothly
+    if (isLanguageSwitch && isPreloaderBVisible && !shouldShowContent) {
+      // Ensure content is visible immediately - components will remount with keys
+      setShouldShowContent(true)
+      setContentOpacity(1)
+      setPreloaderComplete(true)
+      setIsFirstLoad(false) // Ensure it's not treated as first load
+      return // Skip all other checks
+    }
+    
+    // OPTIMIZED: For navigation (not first load), show content faster
+    // When navigating to home, show content immediately when preloader is visible
+    if (!isFirstLoad && !isLanguageSwitch && isNavigating && isPreloaderBVisible && !shouldShowContent) {
+      // Show content immediately on navigation - don't wait
+      setShouldShowContent(true)
+      setContentOpacity(1)
+      setPreloaderComplete(true)
+    }
+    
+    // CRITICAL FIX: For language switches, ensure content stays visible
+    // Component keys ensure React properly remounts components with new locale
+    // Content visibility should be maintained throughout the switch
+    if (isLanguageSwitch) {
+      // Ensure content is visible and at full opacity
+      // Component keys will force proper remounting, so content updates smoothly
+      setShouldShowContent(true)
+      setContentOpacity(1) // Keep at full opacity - no fade needed
+      setPreloaderComplete(true)
+      setIsFirstLoad(false) // Ensure it's not treated as first load
+      
+      // With locale-based keys, React will:
+      // 1. Unmount old locale's components
+      // 2. Mount new locale's components
+      // 3. Content stays visible throughout (opacity stays at 1)
+      // This creates smooth language switch without content disappearing
+    }
+    
+    // For regular navigation: when content should be shown
+    // usePageTransition handles preloader hiding, so we just ensure content is visible
+    if (!isFirstLoad && !isLanguageSwitch && shouldShowContent && isPreloaderBVisible) {
+      // Ensure content opacity is 1 - usePageTransition will handle hiding preloader
+      setContentOpacity(1)
+      setPreloaderComplete(true)
+      // Don't hide preloader here - let usePageTransition handle it
+    }
+    
+    // Safeguard: If preloader is not visible and we're not in first load or navigating,
+    // ensure content is shown (fallback for edge cases)
+    if (!isFirstLoad && !isNavigating && !isPreloaderBVisible && !shouldShowContent) {
+      setShouldShowContent(true)
+      setContentOpacity(1)
+      setPreloaderComplete(true)
+    }
+    
+    // Additional safeguard: If shouldShowContent is true but contentOpacity is still 0,
+    // force it to 1 to ensure content is visible
+    // OPTIMIZED: Set immediately, no delay
+    if (shouldShowContent && contentOpacity === 0) {
+      setContentOpacity(1)
+    }
+  }, [isPreloaderBVisible, shouldShowContent, isNavigating, isFirstLoad, hidePreloaderB, locale, componentsLoaded, isLanguageSwitch])
+
+  // First load only: poll until sections hydrate, then hide boot PreloaderB (useLayoutEffect already showed the shell)
+  useEffect(() => {
+    if (isLanguageSwitch) return
+    if (!isFirstLoad || !isPreloaderBVisible || firstLoadHidePollStarted.current) return
+
+    firstLoadHidePollStarted.current = true
+    setPreloaderComplete(true)
+
+    let checkInterval: ReturnType<typeof setInterval> | null = null
+    let safetyTimer: ReturnType<typeof setTimeout> | null = null
+    const rafId = requestAnimationFrame(() => {
       let checkCount = 0
-      // Poll for content readiness
-      const checkInterval = setInterval(() => {
+      checkInterval = setInterval(() => {
         checkCount++
         const isReady = checkContentReady()
-        if (checkCount % 20 === 0) { // Log every 1 second
-          console.log(`🔍 LocaleHomePage: Language switch - Content check #${checkCount}, ready: ${isReady}`)
-        }
-        
-        if (isReady) {
-          clearInterval(checkInterval)
-          console.log('✅ LocaleHomePage: Language switch - Content confirmed ready, hiding PreloaderB')
-          // Content is confirmed ready - hide preloader after ensuring it's painted
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              hidePreloaderB()
-              setPreloaderComplete(true) // Mark preloader as complete
-            })
+
+        if (process.env.NODE_ENV === 'development' && checkCount % 5 === 0) {
+          const timeSinceNav = navigationStartTime ? performance.now() - navigationStartTime : null
+          console.log(`⏱️ [PERF] First load check #${checkCount}`, {
+            ready: isReady,
+            timeSinceNav: timeSinceNav ? `${timeSinceNav.toFixed(2)}ms` : 'N/A',
           })
         }
-      }, 50) // Check every 50ms
-      
-      // Safety: Force hide after 1.5 seconds if content check fails
-      const safetyTimer = setTimeout(() => {
-        console.log('⚠️ LocaleHomePage: Language switch - Safety timer triggered (1.5s)')
-        clearInterval(checkInterval)
+
+        if (isReady && checkInterval) {
+          clearInterval(checkInterval)
+          checkInterval = null
+          setIsFirstLoad(false)
+          setContentOpacity(1)
+          if (process.env.NODE_ENV === 'development') {
+            const timeSinceNav = navigationStartTime ? performance.now() - navigationStartTime : null
+            console.log('⏱️ [PERF] First load - Content ready', {
+              timeSinceNav: timeSinceNav ? `${timeSinceNav.toFixed(2)}ms` : 'N/A',
+            })
+          }
+          requestAnimationFrame(() => {
+            markHomepageFirstVisitPersisted()
+            hidePreloaderB()
+            setPreloaderComplete(true)
+          })
+        }
+      }, 50)
+
+      safetyTimer = setTimeout(() => {
+        if (checkInterval) {
+          clearInterval(checkInterval)
+          checkInterval = null
+        }
         if (isPreloaderBVisible) {
-          hidePreloaderB()
-          setPreloaderComplete(true) // Mark preloader as complete
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⏱️ [PERF] First load - Safety timer (1.5s)')
+          }
+          setContentOpacity(1)
+          setPreloaderComplete(true)
+          setIsFirstLoad(false)
+          requestAnimationFrame(() => {
+            markHomepageFirstVisitPersisted()
+            hidePreloaderB()
+          })
         }
       }, 1500)
-      
-      return () => {
-        clearInterval(checkInterval)
-        clearTimeout(safetyTimer)
-      }
-    }
-    
-    // Log current state for debugging
-    console.log('🔄 LocaleHomePage: Preloader completion effect state', {
-      isFirstLoad,
-      isNavigating,
-      shouldShowContent,
-      isPreloaderBVisible,
-      locale
     })
-  }, [isPreloaderBVisible, shouldShowContent, isNavigating, isFirstLoad, hidePreloaderB, locale])
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      if (checkInterval) clearInterval(checkInterval)
+      if (safetyTimer) clearTimeout(safetyTimer)
+    }
+  }, [
+    isFirstLoad,
+    isPreloaderBVisible,
+    isLanguageSwitch,
+    checkContentReady,
+    hidePreloaderB,
+    setPreloaderComplete,
+    navigationStartTime,
+  ])
+
+  // CRITICAL: Set content opacity to 1 BEFORE preloader starts fading
+  // This ensures content is visible when preloader fades out, preventing white gaps
+  // Content should be fully visible (opacity 1) while preloader is still fading
+  useEffect(() => {
+    if (shouldShowContent && contentOpacity < 1) {
+      // Set opacity to 1 immediately when content should be shown
+      // Don't wait for preloader to hide - this creates the crossfade effect
+      setContentOpacity(1)
+      setPreloaderComplete(true)
+    }
+  }, [shouldShowContent, contentOpacity, setPreloaderComplete])
   
   // Force Stats component to remount on navigation to homepage or locale change
   useEffect(() => {
@@ -335,31 +527,73 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       // Increment key to force Stats remount, which resets scroll tracking
       // This triggers on both pathname and locale changes to ensure complete reset
       setStatsKey(prev => prev + 1)
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 LocaleHomePage: Navigation to homepage or locale change, forcing Stats remount', { locale, pathname })
-      }
     }
   }, [pathname, locale])
 
-  // Safety: If preloader is stuck, show content after max time
+  // CRITICAL FIX: Aggressive safety timer for language switches
+  // If preloader is stuck, show content after max time
   useEffect(() => {
     if (isPreloaderBVisible && !shouldShowContent) {
-      console.log('🔄 LocaleHomePage: Safety timer started - will force completion in 2s if stuck')
+      // CRITICAL: Language switches get very short timeout (200ms) to prevent getting stuck
+      // First load gets 3.5 seconds, regular navigation gets 800ms (reduced from 1500ms)
+      const timeoutDuration = isLanguageSwitch ? 200 : (isFirstLoad ? 3500 : 800)
+      
       const safetyTimer = setTimeout(() => {
-        if (isPreloaderBVisible) {
-          console.log('⚠️ LocaleHomePage: Safety timer - Preloader stuck, forcing completion')
-          // Preloader stuck, force show content
+        if (isPreloaderBVisible && !shouldShowContent) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⏱️ [PERF] Safety timer - Preloader stuck, forcing completion', {
+              isFirstLoad,
+              timeoutDuration,
+              isPreloaderBVisible,
+              shouldShowContent
+            })
+          }
+          // Force show content and hide preloader
           setShouldShowContent(true)
+          setContentOpacity(1)
+          setPreloaderComplete(true)
+          if (isFirstLoad) {
+            markHomepageFirstVisitPersisted()
+          }
           hidePreloaderB()
-          setPreloaderComplete(true) // Mark preloader as complete
+          
+          // If still stuck after timeout, mark first load as complete to prevent loops
+          if (isFirstLoad) {
+            setIsFirstLoad(false)
+          }
         }
-      }, 2000) // Max 2 seconds - don't wait too long
+      }, timeoutDuration)
+      
       return () => clearTimeout(safetyTimer)
     }
-  }, [isPreloaderBVisible, shouldShowContent, hidePreloaderB])
+  }, [isPreloaderBVisible, shouldShowContent, hidePreloaderB, setPreloaderComplete, isFirstLoad, isLanguageSwitch])
 
-  // Get locale-specific components
-  const getLocaleComponents = () => {
+  // Additional first-load fallback: Force show content after 3.5 seconds regardless of readiness
+  // This ensures users never get stuck on preloader on first visit
+  useEffect(() => {
+    if (isFirstLoad && isPreloaderBVisible) {
+      const firstLoadFallbackTimer = setTimeout(() => {
+        if (isPreloaderBVisible) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('⏱️ [PERF] First load fallback - Forcing content display after 3.5s')
+          }
+          // Force show content regardless of readiness checks
+          setShouldShowContent(true)
+          setContentOpacity(1)
+          setPreloaderComplete(true)
+          setIsFirstLoad(false)
+          markHomepageFirstVisitPersisted()
+          hidePreloaderB()
+        }
+      }, 3500) // 3.5 seconds - user requested 3-4 seconds
+      
+      return () => clearTimeout(firstLoadFallbackTimer)
+    }
+  }, [isFirstLoad, isPreloaderBVisible, hidePreloaderB, setPreloaderComplete])
+
+  // Get locale-specific components - MEMOIZED to prevent unnecessary re-renders
+  // Only recalculates when locale changes
+  const localeComponents = useMemo(() => {
     switch (locale) {
       case 'es':
         return {
@@ -394,9 +628,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
           WorldMap: WorldMapDemo,
         }
     }
-  }
+  }, [locale])
 
-  const { Hero: HeroComponent, Navbar: NavbarComponent, Partners: PartnersComponent, FAQ: FAQComponent, WorldMap: WorldMapComponent } = getLocaleComponents()
+  const { Hero: HeroComponent, Navbar: NavbarComponent, Partners: PartnersComponent, FAQ: FAQComponent, WorldMap: WorldMapComponent } = localeComponents
 
   // Preload critical assets in background (non-blocking)
   useEffect(() => {
@@ -420,7 +654,9 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
         fontLink.crossOrigin = 'anonymous'
         document.head.appendChild(fontLink)
       } catch (error) {
-        console.warn('Asset preloading failed:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Asset preloading failed:', error)
+        }
       }
     }
 
@@ -450,38 +686,17 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
 
   return (
     <>
-      {/* PreloaderB - ONLY preloader used throughout the app */}
-      {/* Show while loading or navigating, hide only when content is ready */}
-      {/* Keep preloader visible until content is ready to prevent white screen */}
-      {/* Show preloader if: explicitly visible OR content not ready (prevents white screen) */}
-      {(() => {
-        const shouldShowPreloader = isPreloaderBVisible || !shouldShowContent
-        console.log('🔄 LocaleHomePage: Render check', {
-          isPreloaderBVisible,
-          shouldShowContent,
-          shouldShowPreloader,
-          isFirstLoad,
-          isNavigating
-        })
-        return shouldShowPreloader ? (
-          <PreloaderB 
-            key={isFirstLoad ? "preloader-first-load" : "preloader-content-loading"} // Key to ensure it remounts
-            shouldAutoHide={false} // NEVER auto-hide - always wait for explicit hide when content is confirmed ready
-            onComplete={() => {
-              // onComplete is called by PreloaderB's safety timer (5s max)
-              // But we don't use it to hide - we only hide when content is ready
-              console.log('⚠️ LocaleHomePage: PreloaderB onComplete called (safety timer), but waiting for content to be ready', { 
-                isFirstLoad, 
-                shouldShowContent, 
-                isNavigating,
-                isPreloaderBVisible 
-              })
-              // Don't hide here - wait for content readiness check
-            }}
-            duration={isFirstLoad ? 2 : 0.5} // Duration only used for safety timer, not auto-hide
-          />
-        ) : null
-      })()}
+      {/* PreloaderB is rendered once in PageTransitionWrapper (above page tree) so topographic + globe stay visible on all navigations */}
+
+      {/* Shared Gradient Background - Spans Hero and AboutUs sections */}
+      {/* Fixed position to stay in viewport, behind all content - OUTSIDE contentRef to avoid stacking issues */}
+      {/* Using 'both' variant: top gradient for Hero section, bottom gradient for AboutUs section */}
+      {shouldShowContent && (
+        <GradientBlurBg 
+          height="200vh"
+          variant="both"
+        />
+      )}
 
       {/* Content - Show when ready, but keep preloader visible until content is confirmed rendered */}
       {/* Preloader will hide automatically when content is confirmed ready */}
@@ -490,27 +705,68 @@ export default function LocaleHomePage({ locale }: LocaleHomePageProps) {
       {shouldShowContent && (
         <>
           {/* Hero - Render after preloader */}
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <HeroComponent />
-          </div>
-
+          {/* Crossfade: hero fades in as preloader fades out */}
+          {/* Hero has its own animations, so we coordinate the fade-in with preloader fade-out */}
           {/* Main Content - Render after preloader, content loads progressively */}
+          {/* Crossfade: content fades in as preloader fades out */}
           <div 
-            ref={contentRef}
-            className={`min-h-screen bg-white text-foreground overflow-x-hidden max-w-full ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}
+            ref={(el) => {
+              if (contentRef) {
+                (contentRef as React.MutableRefObject<HTMLDivElement | null>).current = el
+              }
+            }}
+            className="min-h-screen bg-transparent text-foreground max-w-full"
+            style={{ 
+              position: 'relative', 
+              zIndex: 1, // Above gradient background (-1)
+              opacity: contentOpacity, // Use contentOpacity state for smooth crossfade
+              // CRITICAL: For language switches, disable transition to prevent flicker
+              // Content should stay visible instantly, no fade
+              transition: isLanguageSwitch ? 'none' : 'opacity 0.6s ease-out'
+            }}
           >
-        {/* Navigation */}
-        <NavbarComponent />
+        {/* overflow-x-hidden only on hero + main: it breaks position:sticky on descendants (footer) */}
+        <div className="overflow-x-hidden">
+        {/* Navigation - Render FIRST to ensure it's above Hero */}
+        {/* CRITICAL: Add locale-based key to force proper remounting on locale change */}
+        <ErrorBoundary fallback={<div className="p-4 text-center text-red-500">Navigation error. Please refresh the page.</div>}>
+          <NavbarComponent key={`navbar-${locale}`} />
+        </ErrorBoundary>
+        
+        {/* Hero - Render after Navbar to ensure proper stacking */}
+        {/* Hero wrapper - no z-index, let Hero section control its own z-index */}
+        {/* CRITICAL: Add locale-based key to force proper remounting on locale change */}
+        <ErrorBoundary fallback={<div className="p-8 text-center text-white bg-black/80">Hero section error. Please refresh the page.</div>}>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <HeroComponent key={`hero-${locale}`} />
+          </div>
+        </ErrorBoundary>
       
         {/* Main Sections */}
-        <main style={{ pointerEvents: 'auto' }}>
-          <AboutUs />
-          <Stats key={`stats-${locale}-${statsKey}`} />
-          <PartnersComponent />
-          <WorldMapComponent />
-          <Press />
-          <FAQComponent />
+        <main style={{ pointerEvents: 'auto', position: 'relative', zIndex: 1 }}>
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">About section error. Please refresh the page.</div>}>
+            <AboutUs />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">Stats section error. Please refresh the page.</div>}>
+            <Stats key={`stats-${locale}-${statsKey}`} />
+          </ErrorBoundary>
+          {/* CRITICAL: Add locale-based key to force proper remounting on locale change */}
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">Partners section error. Please refresh the page.</div>}>
+            <PartnersComponent key={`partners-${locale}`} />
+          </ErrorBoundary>
+          {/* CRITICAL: Add locale-based key to force proper remounting on locale change */}
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">World map error. Please refresh the page.</div>}>
+            <WorldMapComponent key={`worldmap-${locale}`} />
+          </ErrorBoundary>
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">Press section error. Please refresh the page.</div>}>
+            <Press />
+          </ErrorBoundary>
+          {/* CRITICAL: Add locale-based key to force proper remounting on locale change */}
+          <ErrorBoundary fallback={<div className="p-8 text-center text-gray-700">FAQ section error. Please refresh the page.</div>}>
+            <FAQComponent key={`faq-${locale}`} />
+          </ErrorBoundary>
         </main>
+        </div>
 
         {/* Footer */}
         <Footer />

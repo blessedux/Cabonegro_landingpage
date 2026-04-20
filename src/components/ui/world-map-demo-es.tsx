@@ -17,15 +17,6 @@ export function WorldMapDemoEs() {
   // Slides down at least 40px as user scrolls through the section
   const mapY = useTransform(scrollYProgress, [0, 1], ['0px', '40px']);
 
-  // Map slides horizontally from left to right as user scrolls
-  // Creates a side-to-side animation effect
-  const mapX = useTransform(scrollYProgress, [0, 1], [-50, 50]);
-
-  // Side margins increase (map width decreases) as user scrolls
-  // Start with larger margins (smaller width), increase to even larger margins (even smaller width)
-  // On mobile, keep full width (no margins) - handled via separate wrapper
-  const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]); // 48px to 120px (3rem to 7.5rem)
-
   return (
     <div 
       ref={containerRef} 
@@ -33,12 +24,10 @@ export function WorldMapDemoEs() {
       data-white-background="true"
       style={{ position: 'relative' }}
     >
-      {/* Mobile map - simple flow, no sticky, no wrapper */}
       <motion.div
-        className="md:hidden relative w-full bg-white mt-40"
+        className="md:hidden relative w-full max-w-7xl mx-auto px-3 md:px-6 bg-white mt-40"
         style={{
           y: mapY,
-          x: 0,
           height: '50vh'
         }}
       >
@@ -99,21 +88,15 @@ export function WorldMapDemoEs() {
         </div>
       </motion.div>
       
-      {/* Desktop sticky wrapper - with side margins and horizontal movement */}
+      <div className="hidden md:block w-full max-w-7xl mx-auto px-3 md:px-6">
       <motion.div 
-        className="hidden md:block sticky top-[6.5rem] flex items-start justify-center pt-0"
-        style={{
-          paddingLeft: sideMargin,
-          paddingRight: sideMargin,
-          zIndex: 1
-        }}
+        className="sticky top-[6.5rem] flex items-start justify-center pt-0 w-full"
+        style={{ zIndex: 1 }}
       >
-        {/* Desktop wrapper - with side margins and horizontal movement */}
         <motion.div
-          className="relative w-full max-w-full overflow-hidden bg-white"
+          className="relative w-full overflow-hidden bg-white"
           style={{
             y: mapY,
-            x: mapX,
             height: '100vh'
           }}
         >
@@ -174,6 +157,27 @@ export function WorldMapDemoEs() {
           </div>
         </motion.div>
       </motion.div>
+      </div>
+
+      {/* Strategic Description Section - Below the map */}
+      <div className="w-full bg-white py-16 md:py-24 px-4 md:px-6 relative z-30">
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6 text-center">
+            Puerta de Entrada Marítima Estratégica
+          </h3>
+          <div className="space-y-4 text-black text-base md:text-lg leading-relaxed">
+            <p>
+              Cabo Negro se ubica en el <strong>extremo sur de Chile</strong>, directamente sobre el <strong>Estrecho de Magallanes</strong>—uno de los corredores marítimos más críticos del mundo. Esta ubicación estratégica sirve como ruta alternativa natural al Canal de Panamá, conectando los océanos Atlántico y Pacífico sin peajes ni congestión.
+            </p>
+            <p>
+              El potencial industrial de la región está respaldado por <strong>más de 1,200 hectáreas</strong> de terreno desarrollable, con acceso directo a puertos de aguas profundas capaces de manejar embarcaciones de hasta <strong>200,000 DWT</strong>. El Estrecho de Magallanes registra aproximadamente <strong>más de 15,000 embarcaciones anuales</strong>, con tráfico creciente a medida que las rutas comerciales globales se diversifican.
+            </p>
+            <p>
+              La región de Magallanes alberga <strong>uno de los mayores potenciales eólicos del mundo</strong>, con velocidades promedio de viento superiores a <strong>12 m/s</strong>, lo que la hace ideal para la producción de hidrógeno verde. El desarrollo inmobiliario industrial está proyectado para respaldar <strong>más de $2 mil millones en inversiones de infraestructura</strong> durante la próxima década, posicionando a Cabo Negro como un centro logístico y energético clave para Sudamérica.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

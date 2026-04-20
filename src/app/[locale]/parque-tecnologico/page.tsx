@@ -15,9 +15,9 @@ const NavbarEs = dynamic(() => import('@/components/sections/Navbar-es'), { ssr:
 const NavbarZh = dynamic(() => import('@/components/sections/Navbar-zh'), { ssr: false })
 
 // Code-split footer and cookie banner - only load when needed
+// Enable SSR for footer - it's lightweight and should render immediately
 const Footer = dynamic(() => import('@/components/sections/Footer'), { 
-  ssr: false,
-  loading: () => <div className="min-h-[200px]" />
+  ssr: true
 })
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
 
@@ -38,7 +38,7 @@ export default function ParqueTecnologicoPage() {
         back: 'Back',
         hero: {
           title: 'Patagon Valley',
-          subtitle: 'Technological & Logistics Park'
+          subtitle: 'Technological & Logistic Park'
         },
         vision: {
           title: 'Technological Ecosystem of the Southernmost End of the World',
@@ -366,12 +366,32 @@ export default function ParqueTecnologicoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       {/* Navigation */}
       {getNavbar()}
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        {/* Placeholder Image - Shows while video loads */}
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{ 
+            zIndex: 1,
+            opacity: videoLoaded ? 0 : 1,
+            transition: 'opacity 0.8s ease-in-out',
+            pointerEvents: 'none'
+          }}
+        >
+          <Image
+            src="/cabonegro_slide3.webp"
+            alt="Patagon Valley"
+            fill
+            className="object-cover"
+            priority
+            quality={90}
+          />
+        </div>
+        
         <div className="absolute inset-0 z-0">
           <video
             ref={videoRef}
@@ -383,6 +403,12 @@ export default function ParqueTecnologicoPage() {
             preload="auto"
             crossOrigin="anonymous"
             className="w-full h-full object-cover"
+            style={{ 
+              zIndex: 2,
+              opacity: videoLoaded ? 1 : 0,
+              transition: 'opacity 0.8s ease-in-out',
+              backgroundColor: '#000000'
+            }}
             onLoadedData={() => {
               setVideoLoaded(true)
             }}
@@ -422,20 +448,25 @@ export default function ParqueTecnologicoPage() {
                 }
               }
               
-              console.error('❌ Parque Tecnologico video loading error:', {
-                message: errorMessage,
-                error: error,
-                src: heroVideo,
-                networkState: video.networkState,
-                readyState: video.readyState
-              })
+              // Always log errors, but format appropriately
+              if (process.env.NODE_ENV === 'development') {
+                console.error('❌ Parque Tecnologico video loading error:', {
+                  message: errorMessage,
+                  error: error,
+                  src: heroVideo,
+                  networkState: video.networkState,
+                  readyState: video.readyState
+                })
+              } else {
+                console.error('❌ Parque Tecnologico video loading error:', errorMessage)
+              }
               setVideoError(true)
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black z-0" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white z-0" />
         </div>
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <h1 className="text-5xl md:text-7xl font-bold mt-16 mb-4">
+          <h1 className="text-5xl md:text-6xl font-medium tracking-tighter mb-4 text-white">
             {localizedText.hero.title.includes('&') ? (
               <>
                 {localizedText.hero.title.split(' & ')[0]}
@@ -446,6 +477,11 @@ export default function ParqueTecnologicoPage() {
               localizedText.hero.title
             )}
           </h1>
+          {localizedText.hero.subtitle && (
+            <p className="mx-auto max-w-[42ch] text-xl md:text-2xl mb-6 text-white">
+              {localizedText.hero.subtitle}
+            </p>
+          )}
           <div className="flex justify-center mt-6">
             <Image
               src="/logos/patagon_white.png"
@@ -465,20 +501,22 @@ export default function ParqueTecnologicoPage() {
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               {localizedText.vision.title}
             </h2>
-            <p className="text-xl md:text-2xl text-blue-400 mb-6 font-semibold">
+            <p className="text-xl md:text-2xl text-blue-600 mb-6 font-semibold">
               {localizedText.vision.subtitle}
             </p>
-            <p className="text-xl text-gray-300 mb-8 max-w-4xl leading-relaxed">
+            <p className="text-xl text-gray-700 mb-8 max-w-4xl leading-relaxed">
               {localizedText.vision.description}
             </p>
           </div>
           <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full items-stretch">
             {localizedText.vision.items.map((item: any, index: number) => {
               const isHovered = hoveredCard === index
+              // Use title as stable unique key
+              const uniqueKey = `vision-${item.title.toLowerCase().replace(/\s+/g, '-').slice(0, 50)}`
               return (
                 <div
-                  key={index}
-                  className="relative flex flex-col items-start text-left p-6 rounded-lg border border-white/20 backdrop-blur-md transition-all duration-300 hover:border-white/30 h-full cursor-pointer overflow-hidden"
+                  key={uniqueKey}
+                  className="relative flex flex-col items-start text-left p-6 rounded-lg border border-white/30 backdrop-blur-md transition-all duration-300 hover:border-white/40 h-full cursor-pointer overflow-hidden"
                   style={{ 
                     opacity: iconOpacities[index] || 0,
                     transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,
@@ -504,7 +542,7 @@ export default function ParqueTecnologicoPage() {
                       fill
                       className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-black/70" />
+                    <div className="absolute inset-0 bg-black/50" />
                   </div>
                   
                   {/* Content */}
@@ -537,9 +575,9 @@ export default function ParqueTecnologicoPage() {
       </section>
 
       {/* Interactive Map Placeholder Section */}
-      <section className="py-20 px-6 bg-white/5">
+      <section className="py-20 px-6 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
-          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-white/10">
+          <div className="relative w-full h-[600px] md:h-[700px] rounded-lg overflow-hidden border border-gray-200">
             <div className="absolute inset-0 scale-110">
               <Image
                 src="/Patagon_Valley_v2.webp"
@@ -559,12 +597,12 @@ export default function ParqueTecnologicoPage() {
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               {localizedText.clients.title}
             </h2>
-            <p className="text-xl text-gray-300">
+            <p className="text-xl text-gray-700">
               {localizedText.clients.subtitle}
             </p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-12">
-            <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
+            <div className="flex items-center justify-center h-24 w-48 bg-black rounded-lg p-6">
               <Image
                 src="/logos/aws.png"
                 alt="AWS"
@@ -573,7 +611,7 @@ export default function ParqueTecnologicoPage() {
                 className="object-contain"
               />
             </div>
-            <div className="flex items-center justify-center h-24 w-48 bg-white/5 rounded-lg p-6">
+            <div className="flex items-center justify-center h-24 w-48 bg-black rounded-lg p-6">
               <Image
                 src="/gtd_white_logo.png"
                 alt="GTD"

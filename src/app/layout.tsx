@@ -1,5 +1,4 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PreloaderProvider } from '@/contexts/PreloaderContext';
 import { AnimationProvider } from '@/contexts/AnimationContext';
@@ -7,15 +6,13 @@ import { CookieBannerProvider } from '@/contexts/CookieBannerContext';
 import { ThemeProvider } from 'next-themes';
 import FontLoader from '@/components/FontLoader';
 
-const inter = Inter({ subsets: ["latin"] });
-
 // Base URL for Open Graph - update this with your actual domain
 const siteUrl = "https://www.cabonegro.cl";
 
 export const metadata: Metadata = {
   title: "Cabo Negro | Real Estate Investment Opportunities in Patagonia",
   description: "Strategic industrial and maritime hub in Patagonia. Discover premier real estate investment opportunities in Punta Arenas, Magallanes. Gateway to Antarctica and the future of green hydrogen infrastructure.",
-  keywords: ["Cabo Negro", "Patagonia real estate", "investment opportunities", "Punta Arenas", "Magallanes", "green hydrogen", "industrial development", "maritime terminal", "logistics park"],
+  keywords: ["Cabo Negro", "Patagonia real estate", "investment opportunities", "Punta Arenas", "Magallanes", "green hydrogen", "industrial development", "maritime terminal", "logistic park"],
   authors: [{ name: "Cabo Negro" }],
   icons: {
     icon: [
@@ -66,6 +63,13 @@ export const metadata: Metadata = {
   },
 };
 
+/** Lets fixed backgrounds use env(safe-area-inset-*) edge-to-edge on notched phones */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,7 +91,7 @@ export default function RootLayout({
         <link rel="preload" href="/cabonegro_frame1.webp" as="image" fetchPriority="high" />
         {/* Preload critical CSS - Next.js will handle the actual CSS file */}
       </head>
-      <body className={inter.className}>
+      <body className="font-primary">
         <FontLoader />
         <ThemeProvider
           attribute="class"

@@ -7,9 +7,11 @@ import { useLocale } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { useAnimation } from '@/contexts/AnimationContext'
+import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
 import { usePreloader } from '@/contexts/PreloaderContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { routing } from '@/i18n/routing'
+import { warmAlternateLocalesForPath } from '@/lib/prefetch-alternate-locales-client'
 
 export default function UnifiedNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -18,12 +20,14 @@ export default function UnifiedNavbar() {
   const pathname = usePathname()
   const locale = useLocale()
   const { startFadeOut, isNavbarHidden, setIsNavbarHidden } = useAnimation()
-  const { showPreloaderB, isPreloaderBVisible } = usePreloader()
+  const { push } = useNavigateWithPreloader()
+  const { isPreloaderBVisible } = usePreloader()
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'es', name: 'Español', flag: '🇨🇱' },
-    { code: 'zh', name: '中文', flag: '🇨🇳' }
+    { code: 'zh', name: '中文', flag: '🇨🇳' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
   ]
 
   // Use next-intl's useLocale hook instead of pathname parsing
@@ -49,6 +53,15 @@ export default function UnifiedNavbar() {
           contact: '联系我们',
           language: '语言:',
           contactButton: '联系我们'
+        }
+      case 'fr':
+        return {
+          explore: 'Explorer le terrain',
+          deck: 'Voir le deck',
+          faq: 'FAQ',
+          contact: 'Contact',
+          language: 'Langue :',
+          contactButton: 'Nous contacter'
         }
       default:
         return {
@@ -103,6 +116,11 @@ export default function UnifiedNavbar() {
     return () => clearTimeout(timer)
   }, [pathname, locale, setIsNavbarHidden])
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    warmAlternateLocalesForPath(pathname, router, { forceHeavy: true })
+  }, [mobileMenuOpen, pathname, router])
+
   // Prefetch language route on hover for instant switching
   const prefetchLanguageRoute = (newLocale: string) => {
     if (newLocale === currentLocale || !routing.locales.includes(newLocale as any)) return
@@ -156,25 +174,16 @@ export default function UnifiedNavbar() {
     
     // Build target path
     const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
-    
-    // Show preloader IMMEDIATELY - no delay, synchronous state update
-    showPreloaderB()
-    
-    // Navigate immediately - preloader will overlay everything
-    // Use microtask to ensure preloader state is set before navigation
-    Promise.resolve().then(() => {
-      router.push(targetPath)
-    })
+
+    router.prefetch(targetPath)
+    push(targetPath, { languageSwitch: true })
   }
 
-  // Handle Explore Terrain click
+  // Handle Explore Terrain click — show site preloader immediately (no artificial delay)
   const handleExploreTerrain = () => {
     startFadeOut()
-    
-    // Navigate to explore route (3D experience) after animations using next-intl router
-    setTimeout(() => {
-      router.push(`/${currentLocale}/explore`)
-    }, 1000)
+    router.prefetch(`/${currentLocale}/explore`)
+    push(`/${currentLocale}/explore`)
   }
 
   // Log visibility state for debugging (development only)
@@ -225,8 +234,13 @@ export default function UnifiedNavbar() {
                 {content.faq}
               </a>
               
-              {/* Language Toggle with prefetching */}
-              <div className="flex items-center gap-2">
+              {/* Language Toggle with prefetching — pointer intent warms all alternates before click */}
+              <div
+                className="flex items-center gap-2"
+                onPointerEnter={() =>
+                  warmAlternateLocalesForPath(pathname, router, { forceHeavy: true })
+                }
+              >
                 {languages.map((lang) => (
                   <button
                     key={lang.code}

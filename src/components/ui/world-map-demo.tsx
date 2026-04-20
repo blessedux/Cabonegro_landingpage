@@ -17,28 +17,18 @@ export function WorldMapDemo() {
   // Slides down at least 40px as user scrolls through the section
   const mapY = useTransform(scrollYProgress, [0, 1], ['0px', '40px']);
 
-  // Map slides horizontally from left to right as user scrolls
-  // Creates a side-to-side animation effect
-  const mapX = useTransform(scrollYProgress, [0, 1], [-50, 50]);
-
-  // Side margins increase (map width decreases) as user scrolls
-  // Start with larger margins (smaller width), increase to even larger margins (even smaller width)
-  // On mobile, keep full width (no margins) - handled via separate wrapper
-  const sideMargin = useTransform(scrollYProgress, [0, 1], [48, 120]); // 48px to 120px (3rem to 7.5rem)
-
   return (
     <div 
       ref={containerRef} 
-      className="pt-0 pb-0 bg-white w-full relative z-20 md:min-h-[100vh] md:mt-0"
+      className="pt-0 pb-0 bg-white w-full relative md:min-h-[100vh] md:mt-0"
       data-white-background="true"
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', zIndex: 20 }}
     >
-      {/* Mobile map - simple flow, no sticky, no wrapper */}
+      {/* Mobile map — centered, same horizontal inset as Partners */}
       <motion.div
-        className="md:hidden relative w-full bg-white mt-40"
+        className="md:hidden relative w-full max-w-7xl mx-auto px-3 md:px-6 bg-white mt-40"
         style={{
           y: mapY,
-          x: 0,
           height: '50vh'
         }}
       >
@@ -99,21 +89,16 @@ export function WorldMapDemo() {
         </div>
       </motion.div>
       
-      {/* Desktop sticky wrapper - with side margins and horizontal movement */}
+      {/* Desktop — aligned with Partners: max width + equal horizontal padding */}
+      <div className="hidden md:block w-full max-w-7xl mx-auto px-3 md:px-6">
       <motion.div 
-        className="hidden md:block sticky top-[6.5rem] flex items-start justify-center pt-0"
-        style={{
-          paddingLeft: sideMargin,
-          paddingRight: sideMargin,
-          zIndex: 1
-        }}
+        className="sticky top-[6.5rem] flex items-start justify-center pt-0 w-full"
+        style={{ zIndex: 1 }}
       >
-        {/* Desktop wrapper - with side margins and horizontal movement */}
         <motion.div
-          className="relative w-full max-w-full overflow-hidden bg-white"
+          className="relative w-full overflow-hidden bg-white"
           style={{
             y: mapY,
-            x: mapX,
             height: '100vh'
           }}
         >
@@ -174,6 +159,27 @@ export function WorldMapDemo() {
           </div>
         </motion.div>
       </motion.div>
+      </div>
+      
+      {/* Strategic Description Section - Below the map (no useScroll opacity: it could stay at 0) */}
+      <div className="w-full bg-white py-16 md:py-24 px-4 md:px-6 relative z-30">
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-black mb-6 text-center">
+            Strategic Maritime Gateway
+          </h3>
+          <div className="space-y-4 text-black text-base md:text-lg leading-relaxed">
+            <p>
+              Cabo Negro is positioned at the <strong>southernmost tip of Chile</strong>, directly on the <strong>Strait of Magellan</strong>—one of the world's most critical maritime corridors. This strategic location serves as a natural alternative route to the Panama Canal, connecting the Atlantic and Pacific oceans without tolls or congestion.
+            </p>
+            <p>
+              The region's industrial potential is supported by <strong>over 1,200 hectares</strong> of developable land, with direct access to deep-water ports capable of handling vessels up to <strong>200,000 DWT</strong>. The Strait of Magellan sees approximately <strong>15,000+ vessels annually</strong>, with growing traffic as global trade routes diversify.
+            </p>
+            <p>
+              Magallanes region hosts <strong>one of the world's largest wind energy potentials</strong>, with average wind speeds exceeding <strong>12 m/s</strong>, making it ideal for green hydrogen production. The industrial real estate development is projected to support <strong>$2+ billion in infrastructure investments</strong> over the next decade, positioning Cabo Negro as a key logistics and energy hub for South America.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

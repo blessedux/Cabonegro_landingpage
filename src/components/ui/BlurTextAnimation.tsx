@@ -25,7 +25,7 @@ export default function BlurTextAnimation({
   words,
   className = "",
   fontSize = "text-4xl md:text-5xl lg:text-6xl",
-  fontFamily = "font-['Avenir_Next',_'Avenir',_system-ui,_sans-serif]",
+  fontFamily = "font-primary",
   textColor = "text-white",
   animationDelay = 4000
 }: BlurTextAnimationProps) {
@@ -73,9 +73,12 @@ export default function BlurTextAnimation({
     };
   }, []);
 
+  // Determine the actual color value from textColor prop
+  const actualColor = textColor === 'text-black' ? '#000000' : textColor === 'text-white' ? '#ffffff' : undefined;
+  
   return (
-    <div className={`${className}`} style={{ color: '#ffffff' }}>
-      <p className={`${textColor} ${fontSize} ${fontFamily} font-bold leading-relaxed tracking-wide`} style={{ color: '#ffffff' }}>
+    <div className={`${className}`} style={actualColor ? { color: actualColor } : {}}>
+      <p className={`${textColor} ${fontSize} ${fontFamily} font-bold leading-relaxed tracking-wide`} style={actualColor ? { color: actualColor } : {}}>
         {textWords.map((word, index) => (
           <span
             key={index}
@@ -86,7 +89,7 @@ export default function BlurTextAnimation({
               transitionTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
               filter: isAnimating 
                 ? 'blur(0px) brightness(1) contrast(1)' 
-                : `blur(${word.blur}px) brightness(0.6)`,
+                : `blur(${word.blur}px) ${textColor === 'text-black' ? 'brightness(1)' : 'brightness(0.6)'}`,
               transform: isAnimating 
                 ? 'translateY(0) scale(1) rotateX(0deg)' 
                 : `translateY(20px) scale(${word.scale || 1}) rotateX(-15deg)`,
@@ -95,8 +98,8 @@ export default function BlurTextAnimation({
               transformStyle: 'preserve-3d',
               backfaceVisibility: 'hidden',
               textShadow: isAnimating 
-                ? '0 2px 8px rgba(255,255,255,0.1)' 
-                : '0 0 40px rgba(255,255,255,0.4)'
+                ? (textColor === 'text-black' ? '0 2px 8px rgba(0,0,0,0.1)' : '0 2px 8px rgba(255,255,255,0.1)')
+                : (textColor === 'text-black' ? '0 0 40px rgba(0,0,0,0.4)' : '0 0 40px rgba(255,255,255,0.4)')
             }}
           >
             {word.text}

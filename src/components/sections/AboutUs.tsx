@@ -1,13 +1,14 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import BlurTextAnimation from '@/components/ui/BlurTextAnimation'
+import { useRef, useState, useEffect, memo, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { MdDirectionsBoat, MdEnergySavingsLeaf } from 'react-icons/md'
 import Icon from '@mdi/react'
 import { mdiGantryCrane, mdiSatelliteVariant } from '@mdi/js'
+import { Button } from '@/components/ui/button'
+import { ArrowRight } from 'lucide-react'
+import { LinkWithPreloader } from '@/components/ui/LinkWithPreloader'
 
 // Code-split RotatingEarth component (includes D3.js ~200KB) - only load when needed
 const RotatingEarth = dynamic(() => import('@/components/ui/rotating-earth'), {
@@ -28,7 +29,9 @@ function LazyRotatingEarth({ width = 600, height = 400, className = "" }: { widt
         entries.forEach((entry) => {
           // Start loading when element is 200px away from viewport (rootMargin)
           if (entry.isIntersecting && !shouldLoad) {
-            console.log('🌍 [LazyRotatingEarth] Component entering viewport - loading RotatingEarth')
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🌍 [LazyRotatingEarth] Component entering viewport - loading RotatingEarth')
+            }
             setShouldLoad(true)
             // Disconnect observer once we've triggered the load
             observer.disconnect()
@@ -67,119 +70,171 @@ interface TextSection {
   description: string
 }
 
-// Important words to make bold (case-insensitive) - reduced to half
-const getImportantWords = (locale: string): string[] => {
-  if (locale === 'es') {
-    return ['Cabo Negro', 'Estrecho de Magallanes', 'Magallanes', 'portuario', 'logístico', 'tecnológico', 'nodo', 'industrial']
-  } else if (locale === 'zh') {
-    return ['卡波内格罗', '智利', '绿色氢', '战略']
-  } else if (locale === 'fr') {
-    return ['Cabo Negro', 'développement', 'industriel', 'maritime', 'hydrogène', 'vert']
-  } else {
-    return ['Cabo Negro', 'southernmost', 'strategic', 'gateway', 'green', 'hydrogen']
+/**
+ * About intro: only these exact phrases are bold.
+ * Latin locales: word tokens match after stripping edge punctuation (case-insensitive).
+ */
+const INTRO_BOLD_PHRASES: Record<'es' | 'en' | 'fr', readonly (readonly string[])[]> = {
+  es: [
+    ['estrecho', 'de', 'magallanes'],
+    ['cabo', 'negro'],
+    ['desarrollo', 'portuario', 'logístico', 'y', 'tecnológico'],
+  ],
+  en: [
+    ['strait', 'of', 'magellan'],
+    ['cabo', 'negro'],
+    ['port', 'logistics', 'and', 'technological', 'development'],
+  ],
+  fr: [
+    ['détroit', 'de', 'magellan'],
+    ['cabo', 'negro'],
+    ['développement', 'portuaire', 'logistique', 'et', 'technologique'],
+  ],
+}
+
+/** Chinese intros have no spaces between words — bold by exact substring. */
+const ZH_INTRO_BOLD_PHRASES = ['麦哲伦海峡', '卡波内格罗', '港口、物流和技术发展'] as const
+
+function tokenNorm(word: string): string {
+  return word.replace(/^[.,;:!?¿¡]+|[.,;:!?¿¡]+$/g, '').toLowerCase()
+}
+
+function buildLatinBoldMask(words: string[], phrases: readonly (readonly string[])[]): boolean[] {
+  const bold = new Array(words.length).fill(false)
+  for (const phrase of phrases) {
+    const len = phrase.length
+    for (let i = 0; i <= words.length - len; i++) {
+      let ok = true
+      for (let j = 0; j < len; j++) {
+        if (tokenNorm(words[i + j]) !== phrase[j]) {
+          ok = false
+          break
+        }
+      }
+      if (ok) {
+        for (let j = 0; j < len; j++) bold[i + j] = true
+      }
+    }
   }
+  return bold
 }
 
-// AnimatedWord component matching Stats component pattern
-function AnimatedWord({ 
-  word, 
-  index, 
-  totalWords, 
-  scrollYProgress,
-  isImportant = false
-}: { 
-  word: string
-  index: number
-  totalWords: number
-  scrollYProgress: any
-  isImportant?: boolean
-}) {
-  const start = index / totalWords;
-  const end = Math.min(start + 1 / totalWords, 0.99);
-  // Once opacity reaches 1, it stays at 1 (no fade out) - use clamp and ensure it never goes below the max reached value
-  const opacity = useTransform(
-    scrollYProgress, 
-    [start, end, 1], 
-    [0, 1, 1], // Third value ensures it stays at 1
-    { clamp: true }
-  );
-
-  return (
-    <span className="relative mr-2">
-      <span className="absolute opacity-20">{word}</span>
-      <motion.span 
-        style={{ opacity: opacity }}
-        className={isImportant ? 'font-bold' : ''}
-      >
-        {word}
-      </motion.span>
-    </span>
-  );
+function mergeBoldRanges(ranges: { start: number; end: number }[]): { start: number; end: number }[] {
+  const sorted = ranges
+    .filter((r) => r.start < r.end)
+    .sort((a, b) => a.start - b.start)
+  const out: { start: number; end: number }[] = []
+  for (const r of sorted) {
+    const last = out[out.length - 1]
+    if (!last || r.start > last.end) out.push({ ...r })
+    else last.end = Math.max(last.end, r.end)
+  }
+  return out
 }
 
-// Paragraph wrapper with scroll-based word animation - matching Stats component
-function AnimatedParagraph({ text, className = "", locale = 'en' }: { text: string; className?: string; locale?: string }) {
-  const container = useRef<HTMLParagraphElement>(null);
-  
-  // Animation starts when element enters viewport, completes quickly
-  const { scrollYProgress } = useScroll({
-    target: container,
-    offset: ["start 1.5", "start 0.8"], // Start earlier, complete early - similar to Stats component
-  });
-  
-  const words = text.split(" ");
-  const importantWords = getImportantWords(locale);
-
+/** Renders Chinese intro with bold only on exact phrase substrings (no space tokenization). */
+function ChineseIntroParagraph({ text, className = '' }: { text: string; className?: string }) {
+  const ranges: { start: number; end: number }[] = []
+  for (const p of ZH_INTRO_BOLD_PHRASES) {
+    let from = 0
+    while (from < text.length) {
+      const i = text.indexOf(p, from)
+      if (i === -1) break
+      ranges.push({ start: i, end: i + p.length })
+      from = i + p.length
+    }
+  }
+  const merged = mergeBoldRanges(ranges)
+  const parts: ReactNode[] = []
+  let cursor = 0
+  merged.forEach((r, idx) => {
+    if (cursor < r.start) {
+      parts.push(
+        <span key={`t-${idx}-a`}>{text.slice(cursor, r.start)}</span>
+      )
+    }
+    parts.push(
+      <span key={`t-${idx}-b`} className="font-bold">
+        {text.slice(r.start, r.end)}
+      </span>
+    )
+    cursor = r.end
+  })
+  if (cursor < text.length) {
+    parts.push(<span key="t-end">{text.slice(cursor)}</span>)
+  }
   return (
-    <p 
-      ref={container} 
-      className={`flex flex-wrap leading-relaxed ${className}`} 
-      style={{ 
-        color: '#ffffff',
-        fontSize: 'clamp(1rem, 1.5vw, 1.25rem)', // Smaller font size
-        lineHeight: '2', // Good spacing between lines
-        letterSpacing: '0.01em'
+    <p
+      className={`flex flex-wrap leading-relaxed ${className}`}
+      style={{
+        color: '#000000',
+        fontSize: 'clamp(1rem, 1.5vw, 1.25rem)',
+        lineHeight: '2',
+        letterSpacing: '0.01em',
       }}
     >
-      {words.map((word, i) => {
-        // Check if word (without punctuation) is important
-        const cleanWord = word.replace(/[.,;:!?¿¡]/g, '');
-        const isImportant = importantWords.some(important => 
-          cleanWord.toLowerCase() === important.toLowerCase() ||
-          cleanWord.toLowerCase().includes(important.toLowerCase()) ||
-          important.toLowerCase().includes(cleanWord.toLowerCase())
-        );
-        
-        return (
-          <AnimatedWord 
-            key={i}
-            word={word}
-            index={i}
-            totalWords={words.length}
-            scrollYProgress={scrollYProgress}
-            isImportant={isImportant}
-          />
-        );
-      })}
+      {parts}
     </p>
-  );
+  )
 }
 
-export default function AboutUs() {
+// Simple paragraph component — Latin locales: phrase-only bold via INTRO_BOLD_PHRASES
+function SimpleParagraph({ text, className = "", locale = 'en' }: { text: string; className?: string; locale?: string }) {
+  if (locale === 'zh') {
+    return <ChineseIntroParagraph text={text} className={className} />
+  }
+
+  const words = text.split(' ')
+  const phrases =
+    locale === 'es' ? INTRO_BOLD_PHRASES.es : locale === 'fr' ? INTRO_BOLD_PHRASES.fr : INTRO_BOLD_PHRASES.en
+  const boldMask = buildLatinBoldMask(words, phrases)
+
+  return (
+    <p
+      className={`flex flex-wrap leading-relaxed ${className}`}
+      style={{
+        color: '#000000',
+        fontSize: 'clamp(1rem, 1.5vw, 1.25rem)',
+        lineHeight: '2',
+        letterSpacing: '0.01em',
+      }}
+    >
+      {words.map((word, i) => (
+        <span key={i} className={`mr-2 ${boldMask[i] ? 'font-bold' : ''}`}>
+          {word}
+        </span>
+      ))}
+    </p>
+  )
+}
+
+function AboutUs() {
   const pathname = usePathname()
   
   // Determine locale from pathname
   const locale = pathname.startsWith('/es') ? 'es' : pathname.startsWith('/zh') ? 'zh' : pathname.startsWith('/fr') ? 'fr' : 'en'
+  
+  // CTA button text based on locale
+  const ctaText = locale === 'es' 
+    ? 'Explorar Terreno' 
+    : locale === 'zh' 
+    ? '探索地形' 
+    : locale === 'fr'
+    ? 'Explorer le Terrain'
+    : 'Explore Terrain'
+  
+  const basePath = locale === 'en' ? '' : `/${locale}`
   const aboutTitle = locale === 'es' ? 'Cabo Negro: Una localización estratégica' : locale === 'zh' ? '卡波内格罗海事码头' : locale === 'fr' ? 'Terminal Maritime Cabo Negro' : 'Cabo Negro Maritime Terminal'
   
   // Intro paragraph text
-  const introParagraph = locale === 'es' 
-    ? 'Chile es el país más austral del mundo. En su extremo sur, la ciudad de Punta Arenas se ubica directamente sobre el Estrecho de Magallanes, uno de los corredores marítimos más relevantes y estratégicos del hemisferio sur. El sector de Cabo Negro, a minutos de la ciudad, reúne condiciones únicas para el desarrollo portuario, logístico y tecnológico, consolidándose como nodo clave para el crecimiento industrial de Magallanes.'
-    : locale === 'zh'
-    ? '卡波内格罗代表了智利最南端的远见性工业和海事发展，旨在作为智利绿色氢经济和国际贸易路线的战略门户。'
-    : locale === 'fr'
-    ? 'Cabo Negro représente un développement industriel et maritime visionnaire à la pointe sud du Chili, conçu pour servir de porte d\'entrée stratégique pour l\'économie de l\'hydrogène vert du Chili et les routes commerciales internationales.'
-    : 'Cabo Negro represents a visionary industrial and maritime development at the southernmost tip of Chile, designed to serve as the strategic gateway for Chile\'s green hydrogen economy and international trade routes.'
+  const introParagraph =
+    locale === 'es'
+      ? 'Chile es el país más austral del mundo. En su extremo sur, la ciudad de Punta Arenas se ubica directamente sobre el Estrecho de Magallanes, uno de los corredores marítimos más relevantes y estratégicos del hemisferio sur. El sector de Cabo Negro, a minutos de la ciudad, reúne condiciones únicas para el desarrollo portuario, logístico y tecnológico, consolidándose como nodo clave para el crecimiento industrial de Magallanes.'
+      : locale === 'zh'
+        ? '智利是世界上最南端的国家。在其最南端，蓬塔阿雷纳斯市坐落于麦哲伦海峡之上，是南半球最重要、最具战略意义的海上走廊之一。卡波内格罗片区距市区仅数分钟车程，具备港口、物流和技术发展的独特条件，正成为麦哲伦地区工业增长的关键节点。'
+        : locale === 'fr'
+          ? 'Le Chili est le pays le plus austral du monde. À son extrême sud, la ville de Punta Arenas est située directement sur le détroit de Magellan, l\'un des corridors maritimes les plus importants et stratégiques de l\'hémisphère sud. Le secteur de Cabo Negro, à quelques minutes de la ville, réunit des conditions uniques pour le développement portuaire, logistique et technologique, s\'imposant comme nœud clé pour la croissance industrielle de la région de Magallanes.'
+          : 'Chile is the southernmost country in the world. In its far south, the city of Punta Arenas lies directly on the Strait of Magellan, one of the southern hemisphere\'s most relevant and strategic maritime corridors. The Cabo Negro area, minutes from the city, offers unique conditions for port, logistics, and technological development, establishing itself as a key node for industrial growth in Magallanes.'
   
   // Define icon sections based on locale - matching todo.md lines 54-57
   const textSections: TextSection[] = locale === 'es' ? [
@@ -269,112 +324,31 @@ export default function AboutUs() {
   ]
 
   const iconsContainerRef = useRef<HTMLDivElement>(null)
-  const [iconOpacities, setIconOpacities] = useState<number[]>([0, 0, 0, 0])
-  const maxOpacitiesRef = useRef<number[]>([0, 0, 0, 0]) // Track maximum opacity reached for each icon
   const [hoveredCard, setHoveredCard] = useState<number | null>(null) // Track which card is hovered
-
-  // Track scroll for icon fade-in animation - icons stay visible once they fade in
-  useEffect(() => {
-    const handleIconScroll = () => {
-      if (!iconsContainerRef.current) return
-      
-      const rect = iconsContainerRef.current.getBoundingClientRect()
-      const viewportHeight = window.innerHeight
-      // Trigger earlier - when container top is 80% down the viewport (sooner)
-      const triggerPoint = viewportHeight * 0.8
-      
-      const icons = iconsContainerRef.current.children
-      const newOpacities: number[] = []
-      
-      // Only calculate if icons container is in viewport or has been in viewport
-      if (rect.bottom > 0) {
-        for (let i = 0; i < icons.length; i++) {
-          const iconRect = icons[i].getBoundingClientRect()
-          const iconTop = iconRect.top
-          const iconCenter = iconTop + iconRect.height / 2
-          
-          // Each icon fades in when its center passes the trigger point
-          // Staggered by 50px between each icon
-          // Fade in over 80px for quicker animation
-          const iconTriggerPoint = triggerPoint - (i * 50)
-          const distance = iconCenter - iconTriggerPoint
-          
-          let opacity = 0
-          if (distance < 0) {
-            // Icon has passed trigger point - fade in
-            opacity = Math.min(1, 1 + (distance / 80))
-          } else if (distance < 80) {
-            // Icon is approaching trigger point - start fading in
-            opacity = Math.max(0, 1 - (distance / 80))
-          }
-          
-          opacity = Math.max(0, Math.min(1, opacity))
-          
-          // Track maximum opacity reached - once an icon reaches full opacity, keep it visible
-          if (opacity > maxOpacitiesRef.current[i]) {
-            maxOpacitiesRef.current[i] = opacity
-          }
-          
-          // If icon has been fully visible before, keep it at max opacity (don't fade out when scrolling down)
-          // Only fade out if scrolling back up above the section
-          if (maxOpacitiesRef.current[i] >= 1 && rect.top < viewportHeight * 1.5) {
-            // Keep at full opacity if we've seen it fully visible and we're still in/near the section
-            opacity = 1
-          } else if (maxOpacitiesRef.current[i] >= 1 && rect.top > viewportHeight * 1.5) {
-            // Only fade out if we scroll way back up (above 1.5 viewport heights)
-            opacity = Math.max(0, opacity)
-          } else {
-            // Use calculated opacity
-            opacity = Math.max(maxOpacitiesRef.current[i], opacity)
-          }
-          
-          newOpacities.push(opacity)
-        }
-      } else {
-        // Icons are above viewport - use max opacities if they've been visible, otherwise 0
-        for (let i = 0; i < icons.length; i++) {
-          if (maxOpacitiesRef.current[i] >= 1 && rect.top < viewportHeight * 2) {
-            // Keep visible if we've seen it and we're not too far up
-            newOpacities.push(1)
-          } else {
-            newOpacities.push(0)
-          }
-        }
-      }
-      
-      setIconOpacities(newOpacities)
-    }
-    
-    window.addEventListener('scroll', handleIconScroll, { passive: true })
-    handleIconScroll() // Initial calculation
-    
-    return () => {
-      window.removeEventListener('scroll', handleIconScroll)
-    }
-  }, [])
   
   
   return (
     <>
-      {/* Spacer to push AboutUs below the fold */}
-      <div className="h-[100vh]" />
-      
-      {/* AboutUs section */}
+      {/* AboutUs section - normal document flow */}
       <section 
         id="about"
         data-aboutus-section="true"
-        className="relative bg-transparent z-[4] py-24"
+        data-white-background="true"
+        className="relative py-24 w-full"
+        style={{
+          minHeight: '100vh',
+          backgroundColor: 'transparent', // Transparent to show gradient background
+          zIndex: 1, // Above gradient background (0) but below navbar (100)
+          position: 'relative',
+          isolation: 'isolate', // Create new stacking context
+          pointerEvents: 'auto' // Ensure it's interactive
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           {/* Title */}
           <div className="mb-16 w-full text-center">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-center text-white" style={{ color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-              <BlurTextAnimation 
-                text={aboutTitle}
-                fontSize="text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
-                textColor="text-white"
-                animationDelay={0}
-              />
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight text-center text-black" style={{ color: '#000000', textShadow: 'none' }}>
+              {aboutTitle}
             </h2>
           </div>
 
@@ -383,7 +357,7 @@ export default function AboutUs() {
             {/* Left column - Paragraph */}
             <div className="flex-1 w-full lg:w-1/2 mb-12 lg:mb-0">
               <div className="p-4" style={{ maxHeight: '400px', overflow: 'hidden' }}>
-                <AnimatedParagraph 
+                <SimpleParagraph 
                   text={introParagraph}
                   locale={locale}
                 />
@@ -400,15 +374,12 @@ export default function AboutUs() {
           <div ref={iconsContainerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full items-stretch">
             {textSections.map((section, index) => {
               const isHovered = hoveredCard === index
+              // Use label as stable unique key
+              const uniqueKey = `section-${section.label}`
               return (
                 <div
-                  key={index}
-                  className="flex flex-col items-start text-left p-6 rounded-lg border border-white/20 bg-white/5 backdrop-blur-md transition-all duration-300 hover:bg-white/10 hover:border-white/30 h-full"
-                  style={{ 
-                    opacity: iconOpacities[index] || 0,
-                    transform: `translateY(${iconOpacities[index] ? 0 : 20}px)`,
-                    transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
-                  }}
+                  key={uniqueKey}
+                  className="flex flex-col items-start text-left p-6 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300 hover:bg-gray-100 hover:border-gray-300 h-full"
                   onMouseEnter={(e) => {
                     e.stopPropagation()
                     setHoveredCard(index)
@@ -420,19 +391,19 @@ export default function AboutUs() {
                 >
                   <div className="w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mb-4">
                     {index === 0 && (
-                      <MdDirectionsBoat className="w-full h-full text-white" />
+                      <MdDirectionsBoat className="w-full h-full text-gray-700" />
                     )}
                     {index === 1 && (
-                      <MdEnergySavingsLeaf className="w-full h-full text-white" />
+                      <MdEnergySavingsLeaf className="w-full h-full text-gray-700" />
                     )}
                     {index === 2 && (
-                      <Icon path={mdiSatelliteVariant} size={80} className="text-white w-full h-full" />
+                      <Icon path={mdiSatelliteVariant} size={80} className="text-gray-700 w-full h-full" />
                     )}
                     {index === 3 && (
-                      <Icon path={mdiGantryCrane} size={80} className="text-white w-full h-full" />
+                      <Icon path={mdiGantryCrane} size={80} className="text-gray-700 w-full h-full" />
                     )}
                   </div>
-                  <h3 className="text-lg lg:text-xl text-white font-semibold mb-2">{section.title}</h3>
+                  <h3 className="text-lg lg:text-xl text-gray-800 font-semibold mb-2">{section.title}</h3>
                   <div 
                     className="overflow-hidden transition-all duration-300"
                     style={{
@@ -441,7 +412,7 @@ export default function AboutUs() {
                     }}
                   >
                     <p 
-                      className={`text-sm lg:text-base text-white/90 leading-relaxed transition-opacity duration-300 ${
+                      className={`text-sm lg:text-base text-gray-600 leading-relaxed transition-opacity duration-300 ${
                         isHovered ? 'opacity-100' : 'opacity-0'
                       }`}
                     >
@@ -452,11 +423,27 @@ export default function AboutUs() {
               )
             })}
           </div>
+          
+          {/* CTA Button - Below the cards - Disabled */}
+          <div className="mt-12 flex justify-center">
+            <Button
+              size="lg"
+              asChild
+              className="bg-white text-black hover:bg-white/90 font-semibold px-8 py-6 rounded-md shadow-lg transition-all duration-200"
+            >
+              <LinkWithPreloader href={`${basePath}/explore`}>
+                <span className="flex items-center gap-2">
+                  {ctaText}
+                  <ArrowRight className="w-5 h-5" />
+                </span>
+              </LinkWithPreloader>
+            </Button>
+          </div>
         </div>
       </section>
-      
-      {/* Spacer to push next section */}
-      <div className="h-[20vh]" />
     </>
   )
 }
+
+// Memoize AboutUs to prevent unnecessary re-renders
+export default memo(AboutUs)

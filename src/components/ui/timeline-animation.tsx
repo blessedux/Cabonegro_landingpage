@@ -1,65 +1,39 @@
 'use client'
 
-import { useRef, useEffect, useState, ReactNode } from 'react'
-import { motion, useScroll, useTransform, Variants } from 'framer-motion'
+import { useRef, ReactNode } from 'react'
+import { motion, useInView, Variants } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-interface TimelineContentProps {
-  as?: keyof JSX.IntrinsicElements | React.ComponentType<any>
+interface TimelineContentProps extends Record<string, unknown> {
+  as?: keyof JSX.IntrinsicElements | React.ComponentType<unknown>
   animationNum: number
-  timelineRef: React.RefObject<HTMLElement>
+  timelineRef: React.RefObject<HTMLElement | null>
   customVariants?: Variants
   className?: string
   children: ReactNode
-  [key: string]: any
 }
 
+/**
+ * Scroll-reveal wrapper. Uses viewport intersection (not parent scroll progress)
+ * so content reliably animates when it enters the viewport.
+ * Pass `custom={animationNum}` into variant functions via the `custom` prop on motion.
+ */
 export function TimelineContent({
   as: Component = 'div',
   animationNum,
-  timelineRef,
+  timelineRef: _timelineRef,
   customVariants,
   className,
   children,
   ...props
 }: TimelineContentProps) {
-  const [isVisible, setIsVisible] = useState(false)
-  const elementRef = useRef<HTMLElement>(null)
-
-  const { scrollYProgress } = useScroll({
-    target: timelineRef,
-    offset: ['start end', 'end start']
+  const elementRef = useRef<HTMLElement | null>(null)
+  const isInView = useInView(elementRef, {
+    once: true,
+    amount: 0.12,
+    margin: '0px 0px -12% 0px',
   })
 
-  // Calculate when this specific element should animate
-  // Each element animates at a different scroll progress point
-  const elementProgress = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [0, 1]
-  )
-
-  useEffect(() => {
-    const unsubscribe = elementProgress.on('change', (latest) => {
-      // Trigger animation when scroll progress reaches threshold
-      // Adjust threshold based on animationNum for staggered effect
-      const threshold = (animationNum * 0.1) % 1
-      if (latest >= threshold && !isVisible) {
-        setIsVisible(true)
-      }
-    })
-
-    // Also check initial state
-    const initialProgress = elementProgress.get()
-    const threshold = (animationNum * 0.1) % 1
-    if (initialProgress >= threshold) {
-      setIsVisible(true)
-    }
-
-    return unsubscribe
-  }, [elementProgress, animationNum, isVisible])
-
-  // Default variants if none provided
   const defaultVariants: Variants = {
     visible: {
       y: 0,
@@ -67,6 +41,7 @@ export function TimelineContent({
       filter: 'blur(0px)',
       transition: {
         duration: 0.5,
+        delay: animationNum * 0.06,
       },
     },
     hidden: {
@@ -76,9 +51,8 @@ export function TimelineContent({
     },
   }
 
-  const variants = customVariants || defaultVariants
+  const variants = customVariants ?? defaultVariants
 
-  // Map common HTML elements to motion components
   const getMotionComponent = () => {
     if (typeof Component === 'string') {
       switch (Component) {
@@ -110,10 +84,12 @@ export function TimelineContent({
 
   return (
     <MotionComponent
-      ref={elementRef as any}
+      // Polymorphic motion.* ref targets differ (div, a, span); HTMLElement ref is valid at runtime
+      ref={elementRef as never}
       initial="hidden"
-      animate={isVisible ? 'visible' : 'hidden'}
+      animate={isInView ? 'visible' : 'hidden'}
       variants={variants}
+      custom={animationNum}
       className={cn(className)}
       {...props}
     >
@@ -121,4 +97,3 @@ export function TimelineContent({
     </MotionComponent>
   )
 }
-

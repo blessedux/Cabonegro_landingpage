@@ -277,7 +277,7 @@ export default function Press() {
   }, [currentArticle])
 
   return (
-    <section className="py-8 px-4 bg-white relative z-[30] min-h-screen md:mb-0 mb-4" ref={heroRef} data-keep-navbar-black="true">
+    <section className="py-8 px-4 bg-white relative min-h-screen md:mb-0 mb-4" ref={heroRef} data-keep-navbar-black="true" style={{ zIndex: 20 }}>
       <div className="max-w-6xl mx-auto">
         <div className="relative">
           {/* Header */}

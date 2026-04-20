@@ -13,7 +13,7 @@ const getFAQs = (locale: string) => {
     en: [
       {
         question: 'What is Cabo Negro and how is the project structured?',
-        answer: 'Cabo Negro is a territorial platform composed of three independent projects, each with distinct purposes, scales, and opportunities:\n\n1. Cabo Negro Maritime Terminal,\n2. Technology & Logistics Park – Patagon Valley,\n3. Cabo Negro II Macro Lot.\n\nCompanies can be interested in one, two, or all three projects, depending on their needs. There is no dependency between them, although their proximity generates high-value logistical, technological, and operational synergies.'
+        answer: 'Cabo Negro is a territorial platform composed of three independent projects, each with distinct purposes, scales, and opportunities:\n\n1. Cabo Negro Maritime Terminal,\n2. Technology & Logistic Park – Patagon Valley,\n3. Cabo Negro II Macro Lot.\n\nCompanies can be interested in one, two, or all three projects, depending on their needs. There is no dependency between them, although their proximity generates high-value logistical, technological, and operational synergies.'
       },
       {
         question: 'Where is Cabo Negro located?',
@@ -36,7 +36,7 @@ const getFAQs = (locale: string) => {
         answer: 'The Cabo Negro Maritime Terminal is born to become the new entry point to the southern end of the continent. A protected multipurpose port, designed to receive the projects that are transforming Magallanes: energy, industry, technology, exploration, and Antarctic supply.\n\nIts strategic location, backup areas, and direct accessibility from Route 9 make it a next-generation logistics center.\n\nDeveloped together with Compas Marine, recognized experts in maritime terminal management in Chile, the project incorporates efficiency, security, and operational continuity standards that respond to current industry needs.\n\nIt is a port designed for the present, but prepared for the future growth of the region.'
       },
       {
-        question: 'What advantages does Patagon Valley (technology and logistics park) offer?',
+        question: 'What advantages does Patagon Valley (technology and logistic park) offer?',
         answer: 'Patagon Valley is designed for companies that require:\n\n· energy availability,\n· low latency and fiber optic connectivity,\n· LEO satellite communications,\n· operational proximity to a port,\n· scalable land for technological or logistical facilities.\n\nIt is ideal for technology, data centers, telecommunications, satellite, AI, marine robotics, and companies associated with green hydrogen.'
       },
       {
@@ -205,14 +205,14 @@ export default function FAQ() {
   const hasMoreQuestions = faqs.length > 6
 
   return (
-    <section className="pt-8 md:pt-20 pb-20 px-6 bg-white relative z-20" id="FAQ" data-white-background="true">
+    <section className="pt-8 md:pt-20 pb-20 px-6 bg-white relative" id="FAQ" data-white-background="true" style={{ zIndex: 20 }}>
       <div className="container mx-auto max-w-4xl">
         <motion.h2 
           initial={{ x: -50, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ margin: "-10% 0px -10% 0px" }}
-          className="text-4xl md:text-5xl font-bold mb-6"
+          viewport={{ once: true, amount: 0.35 }}
+          className="text-4xl md:text-5xl font-bold mb-6 font-primary"
         >
           {title}
         </motion.h2>
@@ -225,15 +225,18 @@ export default function FAQ() {
 
         <div className="relative">
           <div className="space-y-4">
-            {visibleFAQs.map((faq, index) => (
-              <Card
-                key={index}
-                className="bg-white border-gray-200 cursor-pointer hover:border-accent transition-colors shadow-sm"
-                onClick={() => setOpenFaq(openFaq === index ? null : index)}
-              >
+            {visibleFAQs.map((faq, index) => {
+              // Use question as stable unique key (questions are unique)
+              const uniqueKey = `faq-${faq.question.slice(0, 50).replace(/\s+/g, '-').toLowerCase()}`
+              return (
+                <Card
+                  key={uniqueKey}
+                  className="bg-white border-gray-200 cursor-pointer hover:border-accent transition-colors shadow-sm"
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold pr-4 text-foreground">{faq.question}</h3>
+                    <h3 className="text-lg font-semibold pr-4 text-foreground font-primary">{faq.question}</h3>
                     <ChevronDown
                       className={`w-5 h-5 flex-shrink-0 transition-transform text-gray-600 ${
                         openFaq === index ? 'rotate-180' : ''
@@ -245,7 +248,8 @@ export default function FAQ() {
                   )}
                 </CardContent>
               </Card>
-            ))}
+              )
+            })}
           </div>
 
           {/* Fade out gradient and expand chevron */}

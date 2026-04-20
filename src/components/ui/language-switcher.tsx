@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { routing } from '@/i18n/routing'
-import { usePreloader } from '@/contexts/PreloaderContext'
+import { useNavigateWithPreloader } from '@/hooks/useNavigateWithPreloader'
+import { warmAlternateLocalesForPath } from '@/lib/prefetch-alternate-locales-client'
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -18,11 +19,19 @@ export default function LanguageSwitcher() {
   const pathname = usePathname()
   const locale = useLocale()
   const [isOpen, setIsOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
-  const { setLanguageSwitch } = usePreloader()
-  
+  const { push } = useNavigateWithPreloader()
+
+  const warmLanguageSwitchIntent = useCallback(() => {
+    warmAlternateLocalesForPath(pathname, router, { forceHeavy: true })
+  }, [pathname, router])
+
   // Get current language using next-intl's useLocale hook
   const currentLanguage = languages.find(lang => lang.code === locale) || languages[0]
+
+  useEffect(() => {
+    if (!isOpen) return
+    warmLanguageSwitchIntent()
+  }, [isOpen, warmLanguageSwitchIntent])
 
   // Prefetch language route on hover for instant switching
   const prefetchLanguageRoute = (newLocale: string) => {
@@ -55,9 +64,6 @@ export default function LanguageSwitcher() {
       return
     }
     
-    // Set language switch flag to skip preloader and optimize performance
-    setLanguageSwitch(true)
-    
     // Close dropdown immediately for instant UI feedback
     setIsOpen(false)
     
@@ -77,18 +83,19 @@ export default function LanguageSwitcher() {
     
     // Build target path
     const targetPath = `/${newLocale}${pathWithoutLocale || ''}`
-    
-    // Use startTransition to make navigation non-blocking and faster
-    // This keeps the UI responsive during navigation
-    startTransition(() => {
-      router.push(targetPath)
-    })
+
+    router.prefetch(targetPath)
+
+    // Same path as UnifiedNavbar: sync overlay + language flag, then navigate (avoids stuck transition).
+    push(targetPath, { languageSwitch: true })
   }
 
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
+        onPointerEnter={warmLanguageSwitchIntent}
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-gray-900/80 backdrop-blur-sm rounded-lg border border-gray-700 hover:bg-gray-800/80 transition-colors"
       >
         <span className="text-lg">{currentLanguage.flag}</span>

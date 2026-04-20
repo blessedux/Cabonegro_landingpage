@@ -1,149 +1,143 @@
 'use client'
 
 import React, { Suspense } from 'react'
+import { createPortal } from 'react-dom'
 import { usePathname } from 'next/navigation'
 import { usePreloader } from '@/contexts/PreloaderContext'
+import { commitClientPathname } from '@/lib/client-pathname-sync'
 import PreloaderB from '@/components/ui/preloader-b'
+import { DeferredHomeWhileOverlay } from '@/components/ui/DeferredHomeWhileOverlay'
 import { usePageTransition } from '@/hooks/usePageTransition'
+import { usePrefetchAlternateLocales } from '@/hooks/usePrefetchAlternateLocales'
 
-// Minimal loading fallback to prevent white screen
+// Suspense fallback when a route segment is still loading (chunks)
 function LoadingFallback() {
-  return (
-    <div className="fixed inset-0 z-[99998] bg-white flex items-center justify-center">
-      <div className="relative">
-        <img
-          src="/cabonegro_logo.png"
-          alt="Cabo Negro"
-          className="w-24 h-24 sm:w-32 sm:h-32 object-contain opacity-80"
-          style={{
-            filter: 'brightness(0)', // Convert to black to match preloader
-          }}
-        />
-      </div>
-    </div>
-  )
+  // Use the same globe + topo overlay (no logo flash).
+  return <PreloaderB key="suspense-fallback-preloader-b" duration={0.5} shouldAutoHide={false} />
 }
 
 export function PageTransitionWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { isPreloaderBVisible, hidePreloaderB, isNavigating } = usePreloader()
-  usePageTransition() // This hook detects route changes and triggers preloader
+  // Client-only: avoids mutating shared module state during SSR (and keeps child reads in sync on hydrate).
+  if (typeof window !== 'undefined') {
+    commitClientPathname(pathname)
+  }
 
-  // Track previous pathname to detect navigation
-  const prevPathnameRef = React.useRef(pathname)
-  const isTransitioning = React.useRef(false)
+  const isExplorePage = pathname.includes('/explore')
+
+  const {
+    isPreloaderBVisible,
+    isNavigating,
+    isBootLayoutDone,
+    hasSeenPreloader,
+    hidePreloaderB,
+    setNavigating,
+  } = usePreloader()
+
+  /** Pathname-driven hide/show is centralized in usePageTransition only (no duplicate listeners). */
+  usePageTransition()
+
+  usePrefetchAlternateLocales(!isExplorePage)
+
   const [showWhiteBlocker, setShowWhiteBlocker] = React.useState(false)
 
-  React.useEffect(() => {
-    if (prevPathnameRef.current !== pathname) {
-      isTransitioning.current = true
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 PageTransitionWrapper: Pathname changed', {
-          from: prevPathnameRef.current,
-          to: pathname,
-          isNavigating,
-          isPreloaderBVisible
-        })
-      }
-      prevPathnameRef.current = pathname
-    }
-  }, [pathname, isNavigating, isPreloaderBVisible])
+  const maskPage =
+    !isBootLayoutDone || isNavigating || isPreloaderBVisible
 
-  // Control white blocker visibility with timeout for fast transitions
+  const showRouteOverlay = maskPage
+
+  /** Portal keeps the overlay out of the route subtree so heavy RSC commits don’t starve its paints */
+  const [overlayPortalTarget, setOverlayPortalTarget] = React.useState<HTMLElement | null>(null)
+  React.useLayoutEffect(() => {
+    setOverlayPortalTarget(document.body)
+  }, [])
+
   React.useEffect(() => {
-    // Show white blocker when navigating and PreloaderB not visible yet
-    if (isNavigating && !isPreloaderBVisible) {
+    if (isNavigating || isPreloaderBVisible) {
       setShowWhiteBlocker(true)
-      // Auto-hide after short timeout if PreloaderB doesn't appear (fast transition)
-      // This handles project → home navigation where PreloaderB is skipped
-      const timeout = setTimeout(() => {
-        if (!isPreloaderBVisible) {
-          setShowWhiteBlocker(false)
-          if (process.env.NODE_ENV === 'development') {
-            console.log('⚡ PageTransitionWrapper: White blocker auto-hide (fast transition detected)')
-          }
-        }
-      }, 100) // Hide after 100ms if PreloaderB doesn't appear
-      return () => clearTimeout(timeout)
-    } else {
-      // Hide immediately when PreloaderB appears or navigation completes
-      setShowWhiteBlocker(false)
     }
   }, [isNavigating, isPreloaderBVisible])
 
-  const handlePreloaderBComplete = () => {
-    // Don't hide here - let usePageTransition handle it
-    // This prevents double hiding and ensures proper timing
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ PageTransitionWrapper: PreloaderB onComplete called, waiting for usePageTransition to hide')
+  React.useEffect(() => {
+    if (isPreloaderBVisible && showWhiteBlocker) {
+      const timeout = setTimeout(() => {
+        setShowWhiteBlocker(false)
+      }, 50)
+      return () => clearTimeout(timeout)
     }
+
+    if (!isNavigating && !isPreloaderBVisible) {
+      setShowWhiteBlocker(false)
+    }
+  }, [isNavigating, isPreloaderBVisible, showWhiteBlocker])
+
+  /** Stuck overlay: repeat visitors / in-app nav only — first visit is controlled by LocaleHomePage. */
+  React.useEffect(() => {
+    if (!isBootLayoutDone || !hasSeenPreloader) return
+    if (!isPreloaderBVisible && !isNavigating) return
+    const t = window.setTimeout(() => {
+      hidePreloaderB()
+      setNavigating(false)
+    }, 12000)
+    return () => clearTimeout(t)
+  }, [
+    isBootLayoutDone,
+    hasSeenPreloader,
+    isPreloaderBVisible,
+    isNavigating,
+    pathname,
+    hidePreloaderB,
+    setNavigating,
+  ])
+
+  if (isExplorePage) {
+    return <>{children}</>
   }
 
-  if (process.env.NODE_ENV === 'development' && isNavigating) {
-    console.log('🎬 PageTransitionWrapper render:', {
-      isNavigating,
-      isPreloaderBVisible,
-      showWhiteBlocker,
-      pathname
-    })
-  }
+  const routeOverlayEl = showRouteOverlay ? (
+    <PreloaderB
+      key="app-route-overlay"
+      bootOnly={!isBootLayoutDone}
+      duration={0.5}
+      shouldAutoHide={false}
+    />
+  ) : null
+
+  const routeOverlayNode =
+    routeOverlayEl && overlayPortalTarget ? createPortal(routeOverlayEl, overlayPortalTarget) : routeOverlayEl
 
   return (
     <>
-      {/* Immediate white screen blocker - shows instantly when navigation starts */}
-      {/* This prevents white screen during the gap before PreloaderB renders */}
-      {/* CRITICAL: Must hide when navigation completes to prevent blocking navbar */}
-      {showWhiteBlocker && (
-        <div 
-          className="fixed inset-0 z-[99997] bg-white transition-opacity duration-200"
-          style={{
-            pointerEvents: showWhiteBlocker ? 'auto' : 'none', // Only block when actually showing
-            opacity: showWhiteBlocker ? 1 : 0,
-            visibility: showWhiteBlocker ? 'visible' : 'hidden' // Completely remove from interaction when hidden
-          }}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <img
-              src="/cabonegro_logo.png"
-              alt="Cabo Negro"
-              className="w-24 h-24 sm:w-32 sm:h-32 object-contain opacity-80"
-              style={{
-                filter: 'brightness(0)', // Convert to black to match preloader
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Show preloader during navigation ONLY (not first load) */}
-      {/* z-index 99999 ensures it overlays everything including navbar and white blocker */}
-      {/* LocaleHomePage handles first load preloader separately */}
-      {isPreloaderBVisible && isNavigating && (
-        <PreloaderB 
-          key={`preloader-nav-${pathname}`} // Unique key per route to ensure proper remounting
-          onComplete={handlePreloaderBComplete}
-          duration={0.5}
-          shouldAutoHide={true} // Enable auto-hide as fallback if hidePreloaderB() isn't called
+      {/*
+       * 50 ms flicker guard during route/locale swaps. Used to mount a full
+       * PreloaderB here (topo SVG + video), which cost ~15 ms of paint per
+       * toggle for no visual benefit — a solid white scrim is indistinguishable
+       * to the user for that window. The real animated preloader lives in
+       * `routeOverlayNode` below.
+       */}
+      {showWhiteBlocker && isBootLayoutDone ? (
+        <div
+          key="white-blocker"
+          aria-hidden
+          className="pointer-events-none fixed inset-0 bg-white"
+          style={{ zIndex: 100002 }}
         />
-      )}
-      
-      {/* Keep children visible during transition - overlay preloader on top */}
-      {/* This ensures old page stays visible until new page is ready, preventing white screens */}
-      {/* CRITICAL: Re-enable pointer events as soon as navigation completes to allow navbar clicks */}
-      {/* IMPORTANT: Don't block pointer events - let buttons and links work immediately */}
-      <div 
+      ) : null}
+
+      <div
         style={{
-          opacity: 1, // Always keep visible - preloader overlays on top
-          pointerEvents: 'auto' // Always allow interactions - preloader is just a visual overlay
+          opacity: maskPage ? 0 : 1,
+          transition: 'opacity 0.2s ease-out',
+          pointerEvents: maskPage ? 'none' : 'auto',
         }}
       >
-        {/* Wrap children in Suspense to prevent white screen during route transitions */}
-        {/* Show LoadingFallback only if navigating and Suspense is triggered */}
-        <Suspense fallback={isNavigating ? <LoadingFallback /> : null}>
-          {children}
+        {/* Always provide a fallback: when mask lifts, RSC/locale chunks can still suspend — null left an eternal blank */}
+        <Suspense fallback={<LoadingFallback />}>
+          <DeferredHomeWhileOverlay>{children}</DeferredHomeWhileOverlay>
         </Suspense>
       </div>
+
+      {routeOverlayNode}
     </>
   )
 }
-

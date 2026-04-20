@@ -7,11 +7,12 @@ import Navbar from '@/components/sections/Navbar'
 import NavbarEs from '@/components/sections/Navbar-es'
 import NavbarZh from '@/components/sections/Navbar-zh'
 import Contact from '@/components/sections/Contact'
+import ContactTopographicBackground from '@/components/ui/ContactTopographicBackground'
 
 // Code-split footer and cookie banner - only load when needed
+// Enable SSR for footer - it's lightweight and should render immediately
 const Footer = dynamic(() => import('@/components/sections/Footer'), { 
-  ssr: false,
-  loading: () => <div className="min-h-[200px]" />
+  ssr: true
 })
 const CookieBanner = dynamic(() => import('@/components/sections/CookieBanner'), { ssr: false })
 
@@ -28,12 +29,9 @@ export default function ContactPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen text-white"
-      style={{
-        background: "radial-gradient(40% 40% at 50% 20%, #0e19ae 0%, #0b1387 22.92%, #080f67 42.71%, #030526 88.54%)",
-      }}
-    >
+    <div className="relative min-h-screen bg-white text-gray-900">
+      <ContactTopographicBackground />
+
       {/* Navigation */}
       <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
         <div className="pointer-events-auto">
@@ -42,14 +40,16 @@ export default function ContactPage() {
       </div>
       
       {/* Main Content */}
-      <main className="pt-32 pb-20 px-6">
-        <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div></div>}>
+      <main className="relative z-10 pt-32 pb-20 px-6">
+        <Suspense fallback={<div className="min-h-[400px] flex items-center justify-center"><div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div></div>}>
           <Contact />
         </Suspense>
       </main>
       
       {/* Footer */}
-      <Footer />
+      <div className="relative z-10">
+        <Footer />
+      </div>
       
       {/* Cookie Banner */}
       <CookieBanner />

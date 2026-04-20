@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
+import { createContext, useContext, useState, ReactNode, useEffect, useLayoutEffect, useCallback, useMemo } from 'react'
 
 interface PreloaderContextType {
   isPreloaderVisible: boolean
@@ -10,6 +10,16 @@ interface PreloaderContextType {
   isPreloaderSimpleVisible: boolean
   isLanguageSwitch: boolean
   isNavigating: boolean
+  isVideoReady: boolean
+  navigationStartTime: number | null
+  /** False until the first client useLayoutEffect runs (localStorage + first-visit preloader). */
+  isBootLayoutDone: boolean
+  /**
+   * True for the last ~120ms before nav overlay hides: AmCharts + heavy topo work is stopped
+   * so the fade-out can run without main-thread stalls.
+   */
+  preloaderDrainHeavy: boolean
+  setPreloaderDrainHeavy: (drain: boolean) => void
   setPreloaderVisible: (visible: boolean) => void
   setPreloaderComplete: (complete: boolean) => void
   showPreloader: () => void
@@ -21,6 +31,7 @@ interface PreloaderContextType {
   hidePreloaderSimple: () => void
   setLanguageSwitch: (isSwitch: boolean) => void
   setNavigating: (navigating: boolean) => void
+  setVideoReady: (ready: boolean) => void
 }
 
 const PreloaderContext = createContext<PreloaderContextType | undefined>(undefined)
@@ -36,129 +47,184 @@ export function PreloaderProvider({ children }: { children: ReactNode }) {
   const [isPreloaderSimpleVisible, setIsPreloaderSimpleVisible] = useState(false)
   const [isLanguageSwitch, setIsLanguageSwitch] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
+  const [isVideoReady, setIsVideoReady] = useState(false)
+  const [navigationStartTime, setNavigationStartTime] = useState<number | null>(null)
+  const [isBootLayoutDone, setIsBootLayoutDone] = useState(false)
+  const [preloaderDrainHeavy, setPreloaderDrainHeavy] = useState(false)
 
-  // Initialize preloader state on mount (after hydration)
-  // Only set initial state - let LocaleHomePage control PreloaderB visibility
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Skip preloader initialization if this is a language switch
-      // Language switches use showPreloaderB() directly
-      if (isLanguageSwitch) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 PreloaderContext: Language switch detected, skipping initialization')
-        }
-        return
-      }
+  const showPreloaderB = useCallback(() => {
+    setPreloaderDrainHeavy(false)
+    setIsPreloaderBVisible(true)
+    setIsNavigating(true)
+    setIsVideoReady(false)
+    setNavigationStartTime(performance.now())
 
+    if (process.env.NODE_ENV === 'development') {
+      console.log('⏱️ [PERF] Navigation started', {
+        timestamp: performance.now(),
+      })
+    }
+  }, [])
+
+  // First-visit preloader: run in useLayoutEffect so state updates before first paint (no empty flash)
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+
+    if (!isLanguageSwitch) {
       const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
       if (!hasVisited) {
-        // First visit - show PreloaderB (LocaleHomePage will handle visibility and auto-hide)
         setHasSeenPreloader(false)
         setIsPreloaderComplete(false)
-        setIsPreloaderBVisible(true) // Show PreloaderB on first visit
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 PreloaderContext: First visit detected, showing PreloaderB (LocaleHomePage will control)')
-        }
+        showPreloaderB()
       } else {
-        // Return visit - let LocaleHomePage decide when to show PreloaderB
-        // Don't auto-show or auto-hide - let component control it
         setHasSeenPreloader(true)
         setIsPreloaderComplete(false)
-        // Don't set isPreloaderBVisible here - let LocaleHomePage control it
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔄 PreloaderContext: Return visit, LocaleHomePage will control PreloaderB visibility')
-        }
       }
+    }
+
+    setIsBootLayoutDone(true)
+  }, [isLanguageSwitch, showPreloaderB])
+
+  // Non-layout follow-up (logging only) — keep out of paint-critical path
+  useEffect(() => {
+    if (typeof window === 'undefined' || isLanguageSwitch) return
+    if (process.env.NODE_ENV === 'development') {
+      const hasVisited = localStorage.getItem('cabonegro-homepage-visited')
+      console.log(hasVisited ? '🔄 PreloaderContext: return visit' : '🔄 PreloaderContext: first visit → PreloaderB on')
     }
   }, [isLanguageSwitch])
 
-  const showPreloader = () => {
+  /** If overlay hid but navigating stayed true, PageTransitionWrapper keeps opacity 0 — recover. */
+  useEffect(() => {
+    if (!isPreloaderBVisible && isNavigating) {
+      setIsNavigating(false)
+    }
+  }, [isPreloaderBVisible, isNavigating])
+
+  const showPreloader = useCallback(() => {
     setIsPreloaderVisible(true)
     setIsPreloaderComplete(false)
-    // Reset language switch flag when showing preloader normally
     setIsLanguageSwitch(false)
-  }
+  }, [])
 
-  const hidePreloader = () => {
+  const hidePreloader = useCallback(() => {
     setIsPreloaderVisible(false)
-  }
+  }, [])
 
-  const completePreloader = () => {
+  const completePreloader = useCallback(() => {
     setIsPreloaderComplete(true)
     setHasSeenPreloader(true)
-    // Store in localStorage that user has seen preloader and assets are cached
-    // Only store on first load, not on language switches
     if (!isLanguageSwitch) {
       localStorage.setItem('cabonegro-preloader-seen', 'true')
       localStorage.setItem('cabonegro-assets-cached', 'true')
     }
-    // Auto-hide after completion
     setTimeout(() => {
       setIsPreloaderVisible(false)
-      // Reset language switch flag after preloader completes
       setIsLanguageSwitch(false)
     }, 1000)
-  }
+  }, [isLanguageSwitch])
 
-  const showPreloaderB = () => {
+  const hidePreloaderB = useCallback(() => {
+    const navigationTime = navigationStartTime ? performance.now() - navigationStartTime : null
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 PreloaderContext: showPreloaderB called', {
+      console.log('🔴 hidePreloaderB called', {
         wasVisible: isPreloaderBVisible,
-        wasNavigating: isNavigating
+        timestamp: Date.now(),
+        navigationTime: navigationTime ? `${navigationTime.toFixed(2)}ms` : 'N/A',
+        isLanguageSwitch
       })
     }
-    setIsPreloaderBVisible(true)
-    setIsNavigating(true)
-  }
-
-  const hidePreloaderB = () => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔄 PreloaderContext: hidePreloaderB called', {
-        wasVisible: isPreloaderBVisible,
-        wasNavigating: isNavigating
-      })
-    }
+    setPreloaderDrainHeavy(false)
     setIsPreloaderBVisible(false)
-    // CRITICAL: Reset navigation state immediately to re-enable navbar clicks
-    // Don't delay - navbar must be clickable as soon as preloader hides
     setIsNavigating(false)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ PreloaderContext: Preloader hidden and navigation state reset immediately')
+    setNavigationStartTime(null)
+    if (isLanguageSwitch) {
+      setIsLanguageSwitch(false)
     }
-  }
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔴 hidePreloaderB state updated', {
+        isPreloaderBVisible: false,
+        isNavigating: false,
+        isLanguageSwitch: false
+      })
+    }
+  }, [navigationStartTime, isPreloaderBVisible, isLanguageSwitch])
 
-  const showPreloaderSimple = () => {
-    console.log('🟢 showPreloaderSimple called - setting isPreloaderSimpleVisible to true')
+  const setVideoReady = useCallback((ready: boolean) => {
+    setIsVideoReady(ready)
+    if (ready && process.env.NODE_ENV === 'development') {
+      const timeSinceNav = navigationStartTime ? performance.now() - navigationStartTime : null
+      console.log('⏱️ [PERF] Video ready', {
+        timeSinceNav: timeSinceNav ? `${timeSinceNav.toFixed(2)}ms` : 'N/A',
+        timestamp: performance.now()
+      })
+    }
+  }, [navigationStartTime])
+
+  const showPreloaderSimple = useCallback(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🟢 showPreloaderSimple called')
+    }
     setIsPreloaderSimpleVisible(true)
-  }
+  }, [])
 
-  const hidePreloaderSimple = () => {
+  const hidePreloaderSimple = useCallback(() => {
     setIsPreloaderSimpleVisible(false)
-  }
+  }, [])
+
+  const contextValue = useMemo(
+    () => ({
+      isPreloaderVisible,
+      isPreloaderComplete,
+      hasSeenPreloader,
+      isPreloaderBVisible,
+      isPreloaderSimpleVisible,
+      isLanguageSwitch,
+      isNavigating,
+      isVideoReady,
+      navigationStartTime,
+      isBootLayoutDone,
+      preloaderDrainHeavy,
+      setPreloaderDrainHeavy,
+      setPreloaderVisible: setIsPreloaderVisible,
+      setPreloaderComplete: setIsPreloaderComplete,
+      showPreloader,
+      hidePreloader,
+      completePreloader,
+      showPreloaderB,
+      hidePreloaderB,
+      showPreloaderSimple,
+      hidePreloaderSimple,
+      setLanguageSwitch: setIsLanguageSwitch,
+      setNavigating: setIsNavigating,
+      setVideoReady,
+    }),
+    [
+      isPreloaderVisible,
+      isPreloaderComplete,
+      hasSeenPreloader,
+      isPreloaderBVisible,
+      isPreloaderSimpleVisible,
+      isLanguageSwitch,
+      isNavigating,
+      isVideoReady,
+      navigationStartTime,
+      isBootLayoutDone,
+      preloaderDrainHeavy,
+      setPreloaderDrainHeavy,
+      showPreloader,
+      hidePreloader,
+      completePreloader,
+      showPreloaderB,
+      hidePreloaderB,
+      showPreloaderSimple,
+      hidePreloaderSimple,
+      setVideoReady,
+    ]
+  )
 
   return (
-    <PreloaderContext.Provider
-      value={{
-        isPreloaderVisible,
-        isPreloaderComplete,
-        hasSeenPreloader,
-        isPreloaderBVisible,
-        isPreloaderSimpleVisible,
-        isLanguageSwitch,
-        isNavigating,
-        setPreloaderVisible: setIsPreloaderVisible,
-        setPreloaderComplete: setIsPreloaderComplete,
-        showPreloader,
-        hidePreloader,
-        completePreloader,
-        showPreloaderB,
-        hidePreloaderB,
-        showPreloaderSimple,
-        hidePreloaderSimple,
-        setLanguageSwitch: setIsLanguageSwitch,
-        setNavigating: setIsNavigating,
-      }}
-    >
+    <PreloaderContext.Provider value={contextValue}>
       {children}
     </PreloaderContext.Provider>
   )
