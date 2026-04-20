@@ -10,6 +10,11 @@ export const metadata: Metadata = {
 }
 
 export default function ExploreLayout({ children }: { children: React.ReactNode }) {
+  const cesiumJsSrc =
+    process.env.VERCEL_DEPLOYMENT_ID
+      ? `/_next/static/cesium/Cesium.js?v=${process.env.VERCEL_DEPLOYMENT_ID}`
+      : '/_next/static/cesium/Cesium.js'
+
   return (
     <>
       {/*
@@ -17,7 +22,6 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
         This must run before Cesium.js executes.
       */}
       <script
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: "window.CESIUM_BASE_URL='/_next/static/cesium/';",
         }}
@@ -30,7 +34,7 @@ export default function ExploreLayout({ children }: { children: React.ReactNode 
       */}
       <Script
         id="cesium-js"
-        src="/_next/static/cesium/Cesium.js"
+        src={cesiumJsSrc}
         strategy="afterInteractive"
       />
       <div
