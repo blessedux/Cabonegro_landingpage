@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import LocaleHomePage from '@/components/pages/LocaleHomePage';
 
 export default async function LocaleHome({
@@ -7,7 +7,8 @@ export default async function LocaleHome({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  
+  setRequestLocale(locale);
+
   // Pre-fetch translations for SSR
   await getTranslations({ locale });
   

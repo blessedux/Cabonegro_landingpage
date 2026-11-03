@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { PageTransitionWrapper } from '@/components/ui/PageTransitionWrapper';
 import { WebVitals } from '@/components/analytics/WebVitals';
@@ -22,6 +22,9 @@ export default async function LocaleLayout({
   
   // Validate that the incoming `locale` parameter is valid
   if (!routing.locales.includes(locale as any)) notFound();
+
+  // Without this, next-intl reads request headers and every locale page renders on demand.
+  setRequestLocale(locale);
 
   // Providing all messages to the client
   // side is the easiest way to get started
