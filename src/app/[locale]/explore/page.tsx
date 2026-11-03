@@ -1,3 +1,4 @@
+import { setRequestLocale } from 'next-intl/server'
 import CesiumExplorerLoader from '@/components/cesium/CesiumExplorerLoader'
 
 interface ExplorePageProps {
@@ -6,6 +7,7 @@ interface ExplorePageProps {
 
 export default async function ExplorePage({ params }: ExplorePageProps) {
   const { locale } = await params
+  setRequestLocale(locale)
 
   return (
     <div
